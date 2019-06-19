@@ -7,12 +7,12 @@
     <authors>nanoFramework project contributors</authors>
     <owners>nanoFramework project contributors</owners>
     <description>
-      Metadata Processor tool to be used when building .NET nanoFramework applications.
+      Metadata Processor tool to be used internally by the VS nanoFramework extension.
     </description>
     <releaseNotes>
     </releaseNotes>
     <summary>
-      Metadata Processor tool to be used when building .NET nanoFramework applications.
+      Metadata Processor tool to be used internally by the VS nanoFramework extension.
     </summary>
     <projectUrl>https://github.com/nanoframework/metadata-processor</projectUrl>
     <iconUrl>https://secure.gravatar.com/avatar/97d0e092247f0716db6d4b47b7d1d1ad</iconUrl>
@@ -24,6 +24,7 @@
     <tags>nanoFramework, nano Framework, NETNF, NETMF, Micro Framework, .net </tags>
   </metadata>
   <files>
-    <file src="bin\Release\nanoFramework.Tools.MetaDataProcessor.exe" target="content" />
+    <file src="bin\Release\nanoFramework.Tools.MetaDataProcessor.exe" target="build" />
+    <file src="nanoFramework.Tools.MetaDataProcessor.targets" target="build" />
   </files>
 </package>
