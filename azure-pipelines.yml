@@ -1,0 +1,173 @@
+trigger:
+  branches:
+    include:
+    - master
+    - develop
+    - release/*
+  paths:
+    exclude:
+    - /*.md
+    - .gitignore
+
+pr:
+  branches:
+    include:
+    - master
+    - develop
+    - release/*
+  autoCancel: true
+
+# add nf-tools repo to resources (for Azure Pipelines templates)
+resources:
+  repositories:
+    - repository: templates
+      type: github
+      name: nanoframework/nf-tools
+      endpoint: nanoframework
+
+jobs:
+
+##############################
+
+# build MDP
+- job: Build_MDP
+
+  pool:
+    vmImage: 'VS2017-Win2016'
+
+  variables:
+    buildPlatform: 'Any CPU'
+    buildConfiguration: 'Release'
+    solution: 'source\nanoFramework.Tools.MetadataProcessor.sln'
+
+  steps:
+
+  # need this here in order to persist GitHub credentials, do a shallow fetch AND init submodules
+  - checkout: self
+    persistCredentials: true
+    submodules: true
+
+  - script: |
+      git config --global user.email "nanoframework@outlook.com"
+      git config --global user.name "nfbot"
+    displayName: Setup git identity
+
+  - task: NuGetToolInstaller@0
+
+  - task: NuGetCommand@2
+    inputs:
+      restoreSolution: '$(solution)'
+
+  - task: VSBuild@1
+    inputs:
+      solution: '$(solution)'
+      platform: '$(buildPlatform)'
+      msbuildArgs: '/p:PublicRelease=true'
+      configuration: '$(buildConfiguration)'
+
+  - task: CopyFiles@1
+    inputs:
+      sourceFolder: $(Build.SourcesDirectory)
+      Contents: |
+        **\bin\Release\nanoFramework.Tools.MetaDataProcessor.exe
+      TargetFolder: '$(Build.ArtifactStagingDirectory)'
+      flattenFolders: true
+    condition: succeeded()
+    displayName: Collecting deployable artifacts
+
+  # update could build number (only possible if this is not a PR from a fork)
+  - task: PowerShell@2
+    inputs:
+        targetType: 'inline'
+        script: Write-Host "$("##vso[build.updatebuildnumber]")$env:NBGV_NuGetPackageVersion"
+    condition: and( succeeded(), ne(variables['system.pullrequest.isfork'], true) )
+    displayName: Update cloud build number
+
+  - task: NuGetCommand@2
+    inputs:
+      command: 'custom' 
+      arguments: 'pack source\Tools.MetaDataProcessor\package.nuspec -Version $(NBGV_NuGetPackageVersion)'
+    condition: succeeded()
+    displayName: Pack NuGet with MDP tool
+
+  - task: CopyFiles@1
+    inputs:
+      sourceFolder: $(Build.SourcesDirectory)
+      Contents: |
+        **\nanoFramework*.nupkg
+      TargetFolder: '$(Build.ArtifactStagingDirectory)'
+      flattenFolders: true
+    condition: succeeded()
+    displayName: Collecting NuGet package artifact
+
+  # publish artifacts (only possible if this is not a PR originated on a fork)
+  - task: PublishBuildArtifacts@1
+    inputs:
+      PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+      ArtifactName: deployables
+      ArtifactType: Container
+    condition: and( succeeded(), ne(variables['system.pullrequest.isfork'], true) )
+    displayName: Publish deployables artifacts
+
+  # push NuGet packages to MyGet feed (always happens except on PR builds)
+  - task: NuGetCommand@2
+    inputs:
+      command: push
+      nuGetFeedType: external
+      packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
+      publishFeedCredentials: 'MyGet'
+    condition: succeeded()
+    displayName: Push NuGet packages to MyGet
+
+  # push NuGet class lib package to NuGet (happens on tag builds for any branch)
+  - task: NuGetCommand@2
+    inputs:
+      command: push
+      nuGetFeedType: external
+      allowPackageConflicts: true
+      packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
+      publishFeedCredentials: 'NuGet'
+    condition: and( succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/v') )
+    continueOnError: true
+    displayName: Push NuGet packages to NuGet
+
+  # create or update GitHub release
+  - task: GitHubReleasePublish@1
+    inputs:
+      githubEndpoint: 'nanoFramework'
+      githubOwner: 'nanoframework'
+      githubRepositoryName: 'metadata-processor'
+      githubTag: v$(GitBuildVersionSimple)
+      githubReleaseTitle: 'nanoFramework Metadata Processor v$(GitBuildVersionSimple)'
+      githubReleaseNotes: 'add description here'
+      githubTargetCommitsh: $(Build.SourceVersion)
+      githubReleaseDraft: true
+      githubReleasePrerelease: false
+      githubReuseDraftOnly: true
+      githubReuseRelease: true
+      githubEditRelease: true
+      githubReleaseAsset: '$(Build.ArtifactStagingDirectory)/*.exe'
+    condition: and( succeeded(), not( startsWith(variables['Build.SourceBranch'], 'refs/pull') ), not( startsWith(variables['Build.SourceBranch'], 'refs/tags/v') ) )
+    displayName: Create/Update GitHub release
+
+##################################
+# report build failure to Discord
+- job: Report_Build_Failure
+  dependsOn:
+  - Build_MDP
+  condition: failed('Build_MDP')
+
+  pool:
+    vmImage: 'VS2017-Win2016'
+
+  steps:
+
+  - checkout: self
+    fetchDepth: 1
+
+  # step from template @ nf-tools repo
+  - template: azure-pipelines-templates/discord-webhook.yml@templates  
+    parameters:
+      status: 'failure'
+      webhookUrl: '$(DiscordWebhook)'
+      message: ''

@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>nanoFramework.Tools.MetadataProcessor</id>
+    <title>nanoFramework.Tools.MetadataProcessor</title>
+    <version>1.0.0</version>
+    <authors>nanoFramework project contributors</authors>
+    <owners>nanoFramework project contributors</owners>
+    <description>
+      Metadata Processor tool to be used when building .NET nanoFramework applications.
+    </description>
+    <releaseNotes>
+    </releaseNotes>
+    <summary>
+      Metadata Processor tool to be used when building .NET nanoFramework applications.
+    </summary>
+    <projectUrl>https://github.com/nanoframework/metadata-processor</projectUrl>
+    <iconUrl>https://secure.gravatar.com/avatar/97d0e092247f0716db6d4b47b7d1d1ad</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <licenseUrl>https://github.com/nanoframework/metadata-processor/LICENSE</licenseUrl>
+    <copyright>Copyright (c) 2019 The nanoFramework project contributors</copyright>
+    <dependencies></dependencies>
+    <references></references>
+    <tags>nanoFramework, nano Framework, NETNF, NETMF, Micro Framework, .net </tags>
+  </metadata>
+  <files>
+    <file src="bin\Release\nanoFramework.Tools.MetaDataProcessor.exe" target="content" />
+  </files>
+</package>
