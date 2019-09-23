@@ -53,6 +53,10 @@ jobs:
     displayName: Setup git identity
 
   - task: NuGetToolInstaller@0
+    inputs:
+      versionSpec: '4.9.3'
+    condition: not(variables['StartReleaseCandidate'])
+    displayName: 'Install specific version of NuGet'
 
   - task: NuGetCommand@2
     inputs:
