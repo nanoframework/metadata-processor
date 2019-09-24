@@ -91,7 +91,7 @@ jobs:
         Write-Host "Release draft: TRUE"
       }
     name: SetReleaseDraftVar
-    condition: not(variables['StartReleaseCandidate'])
+    condition: succeeded()
     displayName: Set release draft var
 
   - task: CopyFiles@1
