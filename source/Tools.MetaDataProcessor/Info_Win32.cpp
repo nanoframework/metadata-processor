@@ -457,7 +457,7 @@ static const CHAR c_Type_End[] =
 //--//
 
 static const CHAR c_Definition_Begin[] =
-"#include \"%S.h\"\n"
+"#include \"%S_native.h\"\n"
 "\n"
 "\n"
 "static const CLR_RT_MethodHandler method_lookup[] =\n"
