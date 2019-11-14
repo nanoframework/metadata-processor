@@ -425,7 +425,7 @@ static const CHAR c_WARNING_FILE_OVERWRITE_Header[] =
 // the include name bellow has to be in LOWER case
 static const CHAR c_Include_Header_Begin[] =
 "\n"
-"#include \"%S_native.h\"\n"
+"#include \"%S\"\n"
 "\n";
 
 static const CHAR c_Include_Interop_h[] =
@@ -457,7 +457,7 @@ static const CHAR c_Type_End[] =
 //--//
 
 static const CHAR c_Definition_Begin[] =
-"#include \"%S_native.h\"\n"
+"#include \"%S\"\n"
 "\n"
 "\n"
 "static const CLR_RT_MethodHandler method_lookup[] =\n"
