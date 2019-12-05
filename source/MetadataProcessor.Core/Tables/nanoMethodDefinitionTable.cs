@@ -54,6 +54,13 @@ namespace nanoFramework.Tools.MetadataProcessor
             MethodDefinition methodDefinition,
             out ushort referenceId)
         {
+            // compare against classes to exclude
+            if (_context.ClassNamesToExclude.Contains(methodDefinition.FullName))
+            {
+                referenceId = 0;
+                return false;
+            }
+
             return TryGetIdByValue(methodDefinition, out referenceId);
         }
 

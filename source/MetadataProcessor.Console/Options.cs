@@ -33,6 +33,13 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
             HelpText = "Loads one (or more) assembly file(s) as a dependency(ies).")]
         public IEnumerable<string> LoadHints { get; set; }
 
+        [Option(
+            "excludeClassByName",
+            Required = false,
+            Default = null,
+            HelpText = "Removes the class from an assembly.")]
+        public IEnumerable<string> ExcludeClassByName { get; set; }
+
 
     }
 }

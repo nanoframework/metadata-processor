@@ -79,14 +79,28 @@ namespace nanoFramework.Tools.MetadataProcessor
         public nanoTablesContext(
             AssemblyDefinition assemblyDefinition,
             List<string> explicitTypesOrder,
+            List<string> classNamesToExclude,
             ICustomStringSorter stringSorter,
             bool applyAttributesCompression)
         {
             AssemblyDefinition = assemblyDefinition;
 
+            ClassNamesToExclude = classNamesToExclude;
+
             foreach (var item in assemblyDefinition.CustomAttributes)
             {
                 _ignoringAttributes.Add(item.AttributeType.FullName);
+            }
+
+            // check CustomAttributes against list of classes to exclude
+            foreach (var item in assemblyDefinition.CustomAttributes)
+            {
+                // add it to ignore list, if it's not already there
+                if (ClassNamesToExclude.Contains(item.AttributeType.FullName) &&
+                    !_ignoringAttributes.Contains(item.AttributeType.FullName))
+                {
+                    _ignoringAttributes.Add(item.AttributeType.FullName);
+                }
             }
 
             NativeMethodsCrc = new NativeMethodsCrc(assemblyDefinition);
@@ -101,6 +115,20 @@ namespace nanoFramework.Tools.MetadataProcessor
             var typeReferences = mainModule.GetTypeReferences()
                 .Where(item => !IsAttribute(item))
                 .ToList();
+
+            // copy collection to remove classes to exclude
+            TypeReference[] typeReferencesCopy = new TypeReference[typeReferences.Count];
+            typeReferences.CopyTo(typeReferencesCopy);
+
+            // compare against classes to remove
+            foreach (TypeReference t in typeReferencesCopy)
+            {
+                if (ClassNamesToExclude.Contains(t.FullName))
+                {
+                    typeReferences.Remove(t);
+                }
+            }
+
             TypeReferencesTable = new nanoTypeReferenceTable(
                 typeReferences, this);
 
@@ -230,6 +258,8 @@ namespace nanoFramework.Tools.MetadataProcessor
         public nanoByteCodeTable ByteCodeTable { get; private set; }
 
         public nanoResourceFileTable ResourceFileTable { get; private set; }
+
+        public List<string> ClassNamesToExclude { get; private set; }
 
         private IEnumerable<Tuple<CustomAttribute, ushort>> GetAttributes(
             IEnumerable<ICustomAttributeProvider> types,
