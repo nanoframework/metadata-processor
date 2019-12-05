@@ -29,10 +29,14 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
 
             internal bool Minimize { get; set; }
 
+            internal bool Verbose { get; set; }
+
             public void Parse(string fileName)
             {
                 try
                 {
+                    if(Verbose) System.Console.WriteLine("Parsing assembly...");
+
                     _assemblyDefinition = AssemblyDefinition.ReadAssembly(fileName,
                         new ReaderParameters { AssemblyResolver = new LoadHintsAssemblyResolver(_loadHints)});
                 }
@@ -48,7 +52,9 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
             {
                 try
                 {
-                    var builder = new nanoAssemblyBuilder(_assemblyDefinition, _classNamesToExclude, Minimize);
+                    if (Verbose) System.Console.WriteLine("Compiling assembly...");
+
+                    var builder = new nanoAssemblyBuilder(_assemblyDefinition, _classNamesToExclude, Minimize, Verbose);
 
                     using (var stream = File.Open(fileName, FileMode.Create, FileAccess.ReadWrite))
                     using (var writer = new BinaryWriter(stream))
@@ -172,6 +178,9 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
 
             // set minimize option
             md.Minimize = o.Minimize;
+
+            // set verbose option
+            md.Verbose = o.Verbose;
 
             // parse assembly
             if (!string.IsNullOrEmpty(o.Parse))
