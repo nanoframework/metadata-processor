@@ -47,5 +47,12 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
             HelpText = "Minimizes the assembly, removing unwanted elements.")]
         public bool Minimize { get; set; }
 
+        [Option(
+            "verbose",
+            Required = false,
+            Default = false,
+            HelpText = "Outputs each command before executing it.")]
+        public bool Verbose { get; set; }
+
     }
 }
