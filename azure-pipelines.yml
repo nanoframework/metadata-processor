@@ -115,9 +115,9 @@ jobs:
   - task: NuGetCommand@2
     inputs:
       command: 'custom' 
-      arguments: 'pack source\Tools.MetaDataProcessor\package.nuspec -Version $(NBGV_NuGetPackageVersion)'
+      arguments: 'pack source\MetadataProcessor.Console\package.nuspec -Version $(NBGV_NuGetPackageVersion)'
     condition: succeeded()
-    displayName: Pack NuGet with MDP tool
+    displayName: Pack NuGet for MDP tool
 
   - task: CopyFiles@1
     inputs:
@@ -145,6 +145,7 @@ jobs:
       nuGetFeedType: external
       packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
       publishFeedCredentials: 'AzureArtifacts'
+      continueOnError: true
     condition: succeeded()
     displayName: Push NuGet packages to Azure Artifacts
 

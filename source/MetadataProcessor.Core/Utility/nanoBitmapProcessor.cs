@@ -1,0 +1,80 @@
+﻿//
+// Copyright (c) 2019 The nanoFramework project contributors
+// Original work from Oleg Rakhmatulin.
+// See LICENSE file in the project root for full license information.
+//
+
+using System.Drawing;
+using System.Drawing.Imaging;
+
+namespace nanoFramework.Tools.MetadataProcessor
+{
+    internal sealed class nanoBitmapProcessor
+    {
+        private readonly Bitmap _bitmap;
+
+        public nanoBitmapProcessor(
+            Bitmap bitmap)
+        {
+            _bitmap = bitmap;
+        }
+
+        public void Process(
+            nanoBinaryWriter writer)
+        {
+            writer.WriteUInt32((uint)_bitmap.Width);
+            writer.WriteUInt32((uint)_bitmap.Height);
+
+            writer.WriteUInt16(0x00);   // flags
+
+            var tinyImageFormat = GetTinytImageFormat(_bitmap.RawFormat);
+
+            if (tinyImageFormat != 0)
+            {
+                writer.WriteByte(0x01);     // bpp
+                writer.WriteByte(tinyImageFormat);
+                _bitmap.Save(writer.BaseStream, _bitmap.RawFormat);
+            }
+            else
+            {
+                writer.WriteByte(0x10);     // bpp
+                writer.WriteByte(tinyImageFormat);
+
+                var rect = new Rectangle(Point.Empty, _bitmap.Size);
+                using (var convertedBitmap =
+                    _bitmap.Clone(new Rectangle(Point.Empty, _bitmap.Size),
+                        PixelFormat.Format16bppRgb565))
+                {
+                    var bitmapData = convertedBitmap.LockBits(
+                        rect, ImageLockMode.ReadOnly, convertedBitmap.PixelFormat);
+
+                    var buffer = new short[bitmapData.Stride * convertedBitmap.Height / sizeof(short)];
+                    System.Runtime.InteropServices.Marshal.Copy(
+                        bitmapData.Scan0, buffer, 0, buffer.Length);
+
+                    convertedBitmap.UnlockBits(bitmapData);
+                    foreach (var item in buffer)
+                    {
+                        writer.WriteInt16(item);
+                    }
+                }
+            }
+        }
+
+        private byte GetTinytImageFormat(
+            ImageFormat rawFormat)
+        {
+            if (rawFormat.Equals(ImageFormat.Gif))
+            {
+                return 1;
+            }
+            
+            if (rawFormat.Equals(ImageFormat.Jpeg))
+            {
+                return 2;
+            }
+
+            return 0;
+        }
+    }
+}
