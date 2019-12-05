@@ -19,6 +19,8 @@ namespace nanoFramework.Tools.MetadataProcessor
     {
         private readonly nanoTablesContext _tablesContext;
 
+        private readonly bool _minimize;
+
         /// <summary>
         /// Creates new instance of <see cref="nanoAssemblyBuilder"/> object.
         /// </summary>
@@ -31,6 +33,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         public nanoAssemblyBuilder(
             AssemblyDefinition assemblyDefinition,
             List<string> classNamesToExclude,
+            bool minimize,
             List<string> explicitTypesOrder = null,
             ICustomStringSorter stringSorter = null,
             bool applyAttributesCompression = false)
@@ -41,6 +44,8 @@ namespace nanoFramework.Tools.MetadataProcessor
                 classNamesToExclude,
                 stringSorter,
                 applyAttributesCompression);
+
+            _minimize = minimize;
         }
 
         /// <summary>

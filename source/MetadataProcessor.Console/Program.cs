@@ -27,6 +27,8 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
 
             private List<string> _classNamesToExclude = new List<string>();
 
+            internal bool Minimize { get; set; }
+
             public void Parse(string fileName)
             {
                 try
@@ -46,7 +48,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
             {
                 try
                 {
-                    var builder = new nanoAssemblyBuilder(_assemblyDefinition, _classNamesToExclude);
+                    var builder = new nanoAssemblyBuilder(_assemblyDefinition, _classNamesToExclude, Minimize);
 
                     using (var stream = File.Open(fileName, FileMode.Create, FileAccess.ReadWrite))
                     using (var writer = new BinaryWriter(stream))
@@ -167,6 +169,9 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
                     md.AddClassToExclude(name);
                 }
             }
+
+            // set minimize option
+            md.Minimize = o.Minimize;
 
             // parse assembly
             if (!string.IsNullOrEmpty(o.Parse))

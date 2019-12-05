@@ -40,6 +40,12 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
             HelpText = "Removes the class from an assembly.")]
         public IEnumerable<string> ExcludeClassByName { get; set; }
 
+        [Option(
+            "minimize",
+            Required = false,
+            Default = false,
+            HelpText = "Minimizes the assembly, removing unwanted elements.")]
+        public bool Minimize { get; set; }
 
     }
 }
