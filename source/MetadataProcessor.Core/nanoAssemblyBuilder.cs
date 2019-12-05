@@ -30,12 +30,17 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// </param>
         public nanoAssemblyBuilder(
             AssemblyDefinition assemblyDefinition,
+            List<string> classNamesToExclude,
             List<string> explicitTypesOrder = null,
             ICustomStringSorter stringSorter = null,
             bool applyAttributesCompression = false)
         {
             _tablesContext = new nanoTablesContext(
-                assemblyDefinition, explicitTypesOrder, stringSorter, applyAttributesCompression);
+                assemblyDefinition, 
+                explicitTypesOrder,
+                classNamesToExclude,
+                stringSorter,
+                applyAttributesCompression);
         }
 
         /// <summary>

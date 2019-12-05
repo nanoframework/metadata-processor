@@ -25,6 +25,8 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
 
             private AssemblyDefinition _assemblyDefinition;
 
+            private List<string> _classNamesToExclude = new List<string>();
+
             public void Parse(string fileName)
             {
                 try
@@ -44,7 +46,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
             {
                 try
                 {
-                    var builder = new nanoAssemblyBuilder(_assemblyDefinition);
+                    var builder = new nanoAssemblyBuilder(_assemblyDefinition, _classNamesToExclude);
 
                     using (var stream = File.Open(fileName, FileMode.Create, FileAccess.ReadWrite))
                     using (var writer = new BinaryWriter(stream))
@@ -75,6 +77,12 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
                 string assemblyFileName)
             {
                 _loadHints[assemblyName] = assemblyFileName;
+            }
+
+            public void AddClassToExclude(
+                string className)
+            {
+                _classNamesToExclude.Add(className);
             }
         }
 
@@ -149,6 +157,15 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
                     md.AddLoadHint(o.LoadHints.ElementAt(hintCount++), o.LoadHints.ElementAt(hintCount++));
                 }
                 while (hintCount < o.LoadHints.Count());
+            }
+
+            // set class(es) to exclude
+            if (o.ExcludeClassByName.Any())
+            {
+                foreach (string name in o.ExcludeClassByName)
+                {
+                    md.AddClassToExclude(name);
+                }
             }
 
             // parse assembly
