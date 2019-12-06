@@ -40,33 +40,33 @@ namespace nanoFramework.Tools.MetadataProcessor
             }
         }
 
-        private static readonly IDictionary<string, nanoCLR_DataType> _primitiveTypes =
+        internal static readonly IDictionary<string, nanoCLR_DataType> PrimitiveTypes =
             new Dictionary<string, nanoCLR_DataType>(StringComparer.Ordinal);
 
         static nanoSignaturesTable()
         {
-            _primitiveTypes.Add(typeof(void).FullName, nanoCLR_DataType.DATATYPE_VOID);
+            PrimitiveTypes.Add(typeof(void).FullName, nanoCLR_DataType.DATATYPE_VOID);
 
-            _primitiveTypes.Add(typeof(sbyte).FullName, nanoCLR_DataType.DATATYPE_I1);
-            _primitiveTypes.Add(typeof(short).FullName, nanoCLR_DataType.DATATYPE_I2);
-            _primitiveTypes.Add(typeof(int).FullName, nanoCLR_DataType.DATATYPE_I4);
-            _primitiveTypes.Add(typeof(long).FullName, nanoCLR_DataType.DATATYPE_I8);
+            PrimitiveTypes.Add(typeof(sbyte).FullName, nanoCLR_DataType.DATATYPE_I1);
+            PrimitiveTypes.Add(typeof(short).FullName, nanoCLR_DataType.DATATYPE_I2);
+            PrimitiveTypes.Add(typeof(int).FullName, nanoCLR_DataType.DATATYPE_I4);
+            PrimitiveTypes.Add(typeof(long).FullName, nanoCLR_DataType.DATATYPE_I8);
 
-            _primitiveTypes.Add(typeof(byte).FullName, nanoCLR_DataType.DATATYPE_U1);
-            _primitiveTypes.Add(typeof(ushort).FullName, nanoCLR_DataType.DATATYPE_U2);
-            _primitiveTypes.Add(typeof(uint).FullName, nanoCLR_DataType.DATATYPE_U4);
-            _primitiveTypes.Add(typeof(ulong).FullName, nanoCLR_DataType.DATATYPE_U8);
+            PrimitiveTypes.Add(typeof(byte).FullName, nanoCLR_DataType.DATATYPE_U1);
+            PrimitiveTypes.Add(typeof(ushort).FullName, nanoCLR_DataType.DATATYPE_U2);
+            PrimitiveTypes.Add(typeof(uint).FullName, nanoCLR_DataType.DATATYPE_U4);
+            PrimitiveTypes.Add(typeof(ulong).FullName, nanoCLR_DataType.DATATYPE_U8);
 
-            _primitiveTypes.Add(typeof(float).FullName, nanoCLR_DataType.DATATYPE_R4);
-            _primitiveTypes.Add(typeof(double).FullName, nanoCLR_DataType.DATATYPE_R8);
+            PrimitiveTypes.Add(typeof(float).FullName, nanoCLR_DataType.DATATYPE_R4);
+            PrimitiveTypes.Add(typeof(double).FullName, nanoCLR_DataType.DATATYPE_R8);
 
-            _primitiveTypes.Add(typeof(char).FullName, nanoCLR_DataType.DATATYPE_CHAR);
-            _primitiveTypes.Add(typeof(string).FullName, nanoCLR_DataType.DATATYPE_STRING);
-            _primitiveTypes.Add(typeof(bool).FullName, nanoCLR_DataType.DATATYPE_BOOLEAN);
+            PrimitiveTypes.Add(typeof(char).FullName, nanoCLR_DataType.DATATYPE_CHAR);
+            PrimitiveTypes.Add(typeof(string).FullName, nanoCLR_DataType.DATATYPE_STRING);
+            PrimitiveTypes.Add(typeof(bool).FullName, nanoCLR_DataType.DATATYPE_BOOLEAN);
 
-            _primitiveTypes.Add(typeof(object).FullName, nanoCLR_DataType.DATATYPE_OBJECT);
-            _primitiveTypes.Add(typeof(IntPtr).FullName, nanoCLR_DataType.DATATYPE_I4);
-            _primitiveTypes.Add(typeof(UIntPtr).FullName, nanoCLR_DataType.DATATYPE_U4);
+            PrimitiveTypes.Add(typeof(object).FullName, nanoCLR_DataType.DATATYPE_OBJECT);
+            PrimitiveTypes.Add(typeof(IntPtr).FullName, nanoCLR_DataType.DATATYPE_I4);
+            PrimitiveTypes.Add(typeof(UIntPtr).FullName, nanoCLR_DataType.DATATYPE_U4);
         }
 
         /// <summary>
@@ -225,7 +225,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             bool expandEnumType)
         {
             nanoCLR_DataType dataType;
-            if (_primitiveTypes.TryGetValue(typeDefinition.FullName, out dataType))
+            if (PrimitiveTypes.TryGetValue(typeDefinition.FullName, out dataType))
             {
                 writer.WriteByte((byte)dataType);
                 return;
@@ -309,7 +309,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             }
         }
 
-        private byte[] GetSignature(
+        internal byte[] GetSignature(
             IMethodSignature methodReference)
         {
             using (var buffer = new MemoryStream())
@@ -441,7 +441,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             CustomAttributeArgument argument)
         {
             nanoCLR_DataType dataType;
-            if (_primitiveTypes.TryGetValue(argument.Type.FullName, out dataType))
+            if (PrimitiveTypes.TryGetValue(argument.Type.FullName, out dataType))
             {
                 switch (dataType)
                 {

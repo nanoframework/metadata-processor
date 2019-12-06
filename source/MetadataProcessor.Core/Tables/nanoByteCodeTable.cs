@@ -78,7 +78,6 @@ namespace nanoFramework.Tools.MetadataProcessor
             var rva = method.HasBody ? _lastAvailableRva : (ushort)0xFFFF;
             var id = (ushort)_methods.Count;
 
-            _context.NativeMethodsCrc.UpdateCrc(method);
             var byteCode = CreateByteCode(method);
 
             _methods.Add(method);

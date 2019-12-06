@@ -22,6 +22,8 @@ namespace nanoFramework.Tools.MetadataProcessor
         private readonly bool _minimize;
         private readonly bool _verbose;
 
+        public nanoTablesContext TablesContext => _tablesContext;
+
         /// <summary>
         /// Creates new instance of <see cref="nanoAssemblyBuilder"/> object.
         /// </summary>

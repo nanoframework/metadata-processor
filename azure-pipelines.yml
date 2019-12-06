@@ -145,7 +145,7 @@ jobs:
       nuGetFeedType: external
       packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
       publishFeedCredentials: 'AzureArtifacts'
-      continueOnError: true
+    continueOnError: true
     condition: succeeded()
     displayName: Push NuGet packages to Azure Artifacts
 
