@@ -4,13 +4,11 @@
 // See LICENSE file in the project root for full license information.
 //
 
-using CommandLine;
-using CommandLine.Text;
 using Mono.Cecil;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Xml;
 
@@ -102,10 +100,6 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
                 typeof(AssemblyInformationalVersionAttribute))
             as AssemblyInformationalVersionAttribute;
 
-            // build header information
-            var headerInfo = $"nanoFramework MetadataProcessor Utility v{informationalVersionAttribute.InformationalVersion}";
-            var copyrightInfo = new CopyrightInfo(true, $"nanoFramework project contributors", 2019);
-
             // output header to console
             System.Console.WriteLine($"nanoFramework MetadataProcessor Utility v{informationalVersionAttribute.InformationalVersion}");
             System.Console.WriteLine("Copyright (c) 2019 nanoFramework project contributors");
@@ -114,90 +108,56 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
             System.Console.WriteLine();
             System.Console.WriteLine();
 
-            // check for empty argument collection
-            if (!args.Any())
-            {
-                // no argument provided, show help text and usage examples
-
-                // because of short-comings in CommandLine parsing 
-                // need to customize the output to provide a consistent output
-                var parser = new Parser(config => config.HelpWriter = null);
-                var result = parser.ParseArguments<Options>(new string[] { "", "" });
-
-                var helpText = new HelpText(
-                    new HeadingInfo(headerInfo),
-                    copyrightInfo)
-                        .AddPreOptionsLine("No command was provided.")
-                        .AddPreOptionsLine("")
-                        .AddPreOptionsLine(HelpText.RenderUsageText(result))
-                        .AddPreOptionsLine("")
-                        .AddOptions(result);
-
-                System.Console.WriteLine(helpText.ToString());
-
-                return;
-            }
-
-            var parsedArguments = Parser.Default.ParseArguments<Options>(args);
-
-            parsedArguments
-                .WithParsed(opts => RunOptionsAndReturnExitCode(opts))
-                .WithNotParsed(errors => HandleErrors(errors));
-		}
-
-        static void RunOptionsAndReturnExitCode(Options o)
-        {
             var md = new MetadataProcessor();
 
-            // arguments have to be processed in this order, otherwise the parsing will fail
-
-            // load hints
-            if (o.LoadHints.Any())
+            for (var i = 0; i < args.Length; ++i)
             {
-                // load hints should be provided in the format: AssemblyName FilePath
-                // like in --loadhints mscorlib e:\folder\where\the\assembly\is\mscorlib.dll
-                // the LoadHints argument already provides the assembly details separated
+                var arg = args[i].ToLower(CultureInfo.InvariantCulture);
 
-                int hintCount = 0;
-
-                do
+                if ( (arg == "-h" ||
+                    arg == "-help" ||
+                    arg == "?") && 
+                    (i + 1 < args.Length))
                 {
-                    md.AddLoadHint(o.LoadHints.ElementAt(hintCount++), o.LoadHints.ElementAt(hintCount++));
+                    System.Console.WriteLine("");
+                    System.Console.WriteLine("-parse <path-to-assembly-file>                        Analyses .NET assembly.");
+                    System.Console.WriteLine("-compile <path-to-PE-file>                            Compiles an assembly into nanoCLR format.");
+                    System.Console.WriteLine("-loadHints <assembly-name> <path-to-assembly-file>    Loads one (or more) assembly file(s) as a dependency(ies).");
+                    System.Console.WriteLine("-excludeClassByName <class-name>                      Removes the class from an assembly.");
+                    System.Console.WriteLine("-minimize                                             Minimizes the assembly, removing unwanted elements.");
+                    System.Console.WriteLine("-verbose                                              Outputs each command before executing it.");
+                    System.Console.WriteLine("");
                 }
-                while (hintCount < o.LoadHints.Count());
-            }
-
-            // set class(es) to exclude
-            if (o.ExcludeClassByName.Any())
-            {
-                foreach (string name in o.ExcludeClassByName)
+                else if (arg == "-parse" && i + 1 < args.Length)
                 {
-                    md.AddClassToExclude(name);
+                    md.Parse(args[++i]);
+                }
+                else if (arg == "-compile" && i + 1 < args.Length)
+                {
+                    md.Compile(args[++i]);
+                }
+                else if (arg == "-excludeclassbyName" && i + 1 < args.Length)
+                {
+                    md.AddClassToExclude(args[++i]);
+                }
+                else if (arg == "-minimize" && i + 1 < args.Length)
+                {
+                    md.Minimize = true;
+                }
+                else if (arg == "-verbose" && i + 1 < args.Length)
+                {
+                    md.Verbose = true;
+                }
+                else if (arg == "-loadhints" && i + 2 < args.Length)
+                {
+                    md.AddLoadHint(args[i + 1], args[i + 2]);
+                    i += 2;
+                }
+                else
+                {
+                    System.Console.Error.WriteLine("Unknown command line option '{0}' ignored.", arg);
                 }
             }
-
-            // set minimize option
-            md.Minimize = o.Minimize;
-
-            // set verbose option
-            md.Verbose = o.Verbose;
-
-            // parse assembly
-            if (!string.IsNullOrEmpty(o.Parse))
-            {
-                md.Parse(o.Parse);
-            }
-
-            // compile PE
-            if (!string.IsNullOrEmpty(o.Compile))
-            {
-                md.Compile(o.Compile);
-            }
-        }
-
-        static void HandleErrors(IEnumerable<Error> errors)
-        {
-            // empty on purpose
-        }
+		}
     }
 }
