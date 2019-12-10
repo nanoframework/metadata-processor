@@ -70,6 +70,7 @@
     <Compile Include="Mono.Cecil\CodeWriter.cs" />
     <Compile Include="nanoAssemblyBuilder.cs" />
     <Compile Include="nanoAssemblyDefinition.cs" />
+    <Compile Include="nanoDependencyGenerator.cs" />
     <Compile Include="nanoSkeletonGenerator.cs" />
     <Compile Include="SkeletonGenerator\AssemblyClass.cs" />
     <Compile Include="SkeletonGenerator\AssemblyClassStubs.cs" />
@@ -99,6 +100,7 @@
     <Compile Include="Utility\nanoBitmapProcessor.cs" />
     <Compile Include="Utility\nanoCLR_DataType.cs" />
     <Compile Include="Utility\nanoFontProcessor.cs" />
+    <Compile Include="Utility\nanoDependencyGeneratorWriter.cs" />
     <Compile Include="Utility\nanoPdbxFileWriter.cs" />
     <Compile Include="Utility\nanoTypeDefinitionFlags.cs" />
     <Compile Include="Utility\nanoSerializationType.cs" />
