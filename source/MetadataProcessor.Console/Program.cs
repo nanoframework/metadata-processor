@@ -5,6 +5,7 @@
 //
 
 using Mono.Cecil;
+using nanoFramework.Tools.MetadataProcessor.Core;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -22,6 +23,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
                 new Dictionary<string, string>(StringComparer.Ordinal);
 
             private AssemblyDefinition _assemblyDefinition;
+            private nanoAssemblyBuilder _assemblyBuilder;
 
             private List<string> _classNamesToExclude = new List<string>();
 
@@ -52,17 +54,17 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
                 {
                     if (Verbose) System.Console.WriteLine("Compiling assembly...");
 
-                    var builder = new nanoAssemblyBuilder(_assemblyDefinition, _classNamesToExclude, Minimize, Verbose);
+                    _assemblyBuilder = new nanoAssemblyBuilder(_assemblyDefinition, _classNamesToExclude, Minimize, Verbose);
 
                     using (var stream = File.Open(fileName, FileMode.Create, FileAccess.ReadWrite))
                     using (var writer = new BinaryWriter(stream))
                     {
-                        builder.Write(GetBinaryWriter(writer));
+                        _assemblyBuilder.Write(GetBinaryWriter(writer));
                     }
 
                     using (var writer = XmlWriter.Create(Path.ChangeExtension(fileName, "pdbx")))
                     {
-                        builder.Write(writer);
+                        _assemblyBuilder.Write(writer);
                     }
                 }
                 catch (Exception)
@@ -89,6 +91,41 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
                 string className)
             {
                 _classNamesToExclude.Add(className);
+            }
+
+            public void GenerateSkeleton(
+                string file,
+                string name,
+                string project,
+                bool interopCode)
+            {
+                try
+                {
+                    if (interopCode)
+                    {
+                        System.Console.Error.WriteLine("Generator for Interop stubs is not supported yet.");
+
+                        Environment.Exit(1);
+                    }
+
+                    if (Verbose) System.Console.WriteLine("Generating skeleton files...");
+
+                    var skeletonGenerator = new nanoSkeletonGenerator(
+                        _assemblyBuilder.TablesContext,
+                        file,
+                        name,
+                        project,
+                        interopCode);
+
+                    skeletonGenerator.GenerateSkeleton();
+                }
+                catch (Exception ex)
+                {
+                    System.Console.Error.WriteLine(
+                        "Unable to generate skeleton files");
+
+                    Environment.Exit(1);
+                }
             }
         }
 
@@ -124,6 +161,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
                     System.Console.WriteLine("-compile <path-to-PE-file>                            Compiles an assembly into nanoCLR format.");
                     System.Console.WriteLine("-loadHints <assembly-name> <path-to-assembly-file>    Loads one (or more) assembly file(s) as a dependency(ies).");
                     System.Console.WriteLine("-excludeClassByName <class-name>                      Removes the class from an assembly.");
+                    System.Console.WriteLine("-generateskeleton                                     Generate skeleton files with stubs to add native code for an assembly.");
                     System.Console.WriteLine("-minimize                                             Minimizes the assembly, removing unwanted elements.");
                     System.Console.WriteLine("-verbose                                              Outputs each command before executing it.");
                     System.Console.WriteLine("");
@@ -136,7 +174,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
                 {
                     md.Compile(args[++i]);
                 }
-                else if (arg == "-excludeclassbyName" && i + 1 < args.Length)
+                else if (arg == "-excludeclassbyname" && i + 1 < args.Length)
                 {
                     md.AddClassToExclude(args[++i]);
                 }
@@ -152,6 +190,29 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
                 {
                     md.AddLoadHint(args[i + 1], args[i + 2]);
                     i += 2;
+                }
+                else if (arg == "-generateskeleton" && i + 2 < args.Length)
+                {
+                    // fill in arguments
+                    string file = args[i + 1];
+                    string name = args[i + 2];
+                    string project = args[i + 3];
+                    bool interopCode = false;
+
+                    if (!bool.TryParse(args[i + 4], out interopCode))
+                    {
+                        System.Console.Error.WriteLine("Bad parameter for generateSkeleton. Generate code without Interop support has to be 'true' or 'false'.");
+
+                        Environment.Exit(1);
+                    }
+
+                    md.GenerateSkeleton(
+                        file,
+                        name,
+                        project,
+                        interopCode);
+
+                    i += 4;
                 }
                 else
                 {

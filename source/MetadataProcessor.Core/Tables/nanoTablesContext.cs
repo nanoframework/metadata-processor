@@ -103,8 +103,6 @@ namespace nanoFramework.Tools.MetadataProcessor
                 }
             }
 
-            NativeMethodsCrc = new NativeMethodsCrc(assemblyDefinition);
-
             var mainModule = AssemblyDefinition.MainModule;
 
             // External references
@@ -116,28 +114,17 @@ namespace nanoFramework.Tools.MetadataProcessor
                 .Where(item => !IsAttribute(item))
                 .ToList();
 
-            // copy collection to remove classes to exclude
-            TypeReference[] typeReferencesCopy = new TypeReference[typeReferences.Count];
-            typeReferences.CopyTo(typeReferencesCopy);
-
-            // compare against classes to remove
-            foreach (TypeReference t in typeReferencesCopy)
-            {
-                if (ClassNamesToExclude.Contains(t.FullName))
-                {
-                    typeReferences.Remove(t);
-                }
-            }
-
             TypeReferencesTable = new nanoTypeReferenceTable(
                 typeReferences, this);
 
             var typeReferencesNames = new HashSet<string>(
                 typeReferences.Select(item => item.FullName),
                 StringComparer.Ordinal);
+
             var memberReferences = mainModule.GetMemberReferences()
                 .Where(item => typeReferencesNames.Contains(item.DeclaringType.FullName))
                 .ToList();
+
             FieldReferencesTable = new nanoFieldReferenceTable(
                 memberReferences.OfType<FieldReference>(), this);
             MethodReferencesTable = new nanoMethodReferenceTable(
@@ -157,6 +144,12 @@ namespace nanoFramework.Tools.MetadataProcessor
             var methods = types.SelectMany(item => GetOrderedMethods(item.Methods)).ToList();
 
             MethodDefinitionTable = new nanoMethodDefinitionTable(methods, this);
+
+            NativeMethodsCrc = new NativeMethodsCrc(
+                assemblyDefinition,
+                ClassNamesToExclude);
+
+            NativeMethodsCrc.UpdateCrc(TypeDefinitionTable);
 
             AttributesTable = new nanoAttributesTable(
                 GetAttributes(types, applyAttributesCompression),
@@ -388,7 +381,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             }
         }
 
-        private static IEnumerable<MethodDefinition> GetOrderedMethods(
+        internal static IEnumerable<MethodDefinition> GetOrderedMethods(
             IEnumerable<MethodDefinition> methods)
         {
             var ordered = methods

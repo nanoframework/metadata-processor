@@ -5,30 +5,32 @@
 //
 
 using Mono.Cecil;
+using nanoFramework.Tools.MetadataProcessor.Core.Extensions;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Text;
 
 namespace nanoFramework.Tools.MetadataProcessor
 {
     /// <summary>
-    /// Helper class for calculating native methods CRC value. Really caclulates CRC32 value
+    /// Helper class for calculating native methods CRC value. Really calculates CRC32 value
     /// for native method signatures (not methods itself) and signatures treated as string
-    /// values, formatted by weird rules incompartible with all rest codebase.
+    /// values, formatted by weird rules backported from .NETMF original implementation.
     /// </summary>
     public sealed class NativeMethodsCrc
     {
-        private readonly HashSet<string> _generatedNames = new HashSet<string>(StringComparer.Ordinal);
-
         private readonly byte[] _null = Encoding.ASCII.GetBytes("NULL");
 
         private readonly byte[] _name;
 
+        private readonly List<string> _classNamesToExclude;
+
         public NativeMethodsCrc(
-            AssemblyDefinition assembly)
+            AssemblyDefinition assembly,
+            List<string> classNamesToExclude)
         {
             _name = Encoding.ASCII.GetBytes(assembly.Name.Name);
+            _classNamesToExclude = classNamesToExclude;
         }
 
         public uint Current { get; private set; }
@@ -36,8 +38,9 @@ namespace nanoFramework.Tools.MetadataProcessor
         public void UpdateCrc(MethodDefinition method)
         {
             var type = method.DeclaringType;
-            if ((type.IsClass || type.IsValueType) &&
-                (method.RVA == 0xFFFFFFF && !method.IsAbstract))
+
+            if (type.IncludeInStub() &&
+                (method.RVA == 0 && !method.IsAbstract) )
             {
                 Current = Crc32.Compute(_name, Current);
                 Current = Crc32.Compute(Encoding.ASCII.GetBytes(GetClassName(type)), Current);
@@ -49,16 +52,16 @@ namespace nanoFramework.Tools.MetadataProcessor
             }
         }
 
-        private string GetClassName(
+        internal static string GetClassName(
             TypeDefinition type)
         {
             return (type != null
-                ? string.Concat(GetClassName(type.DeclaringType), type.Namespace, type.Name)
-                    .Replace(".", string.Empty)
+                ? string.Join("_", GetClassName(type.DeclaringType), type.Namespace, type.Name)
+                    .Replace(".", "_").TrimStart('_')
                 : string.Empty);
         }
 
-        private string GetMethodName(
+        internal static string GetMethodName(
             MethodDefinition method)
         {
             var name = string.Concat(method.Name, (method.IsStatic ? "___STATIC__" : "___"),
@@ -66,18 +69,10 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             var originalName = name.Replace(".", string.Empty);
 
-            var index = 1;
-            name = originalName;
-            while (_generatedNames.Add(name))
-            {
-                name = string.Concat(originalName, index.ToString(CultureInfo.InvariantCulture));
-                ++index;
-            }
-
-            return name;
+            return originalName;
         }
 
-        private IEnumerable<string> GetAllParameters(
+        private static IEnumerable<string> GetAllParameters(
             MethodDefinition method)
         {
             yield return GetParameterType(method.ReturnType);
@@ -91,10 +86,73 @@ namespace nanoFramework.Tools.MetadataProcessor
             }
         }
 
-        private string GetParameterType(
+        private static string GetParameterType(
             TypeReference parameterType)
         {
-            return parameterType.Name.ToUpper();
+            var typeName = "";
+            bool continueProcessing = true;
+
+            // special processing for arrays
+            if(parameterType.IsArray)
+            {
+                typeName += nanoCLR_DataType.DATATYPE_SZARRAY + "_" + GetnanoClrTypeName(parameterType.GetElementType());
+                continueProcessing = false;
+            }
+            else if (parameterType.IsByReference)
+            {
+                typeName += nanoCLR_DataType.DATATYPE_BYREF + "_" + GetnanoClrTypeName(parameterType.GetElementType());
+                continueProcessing = false;
+            }
+            else if(!parameterType.IsPrimitive &&
+                parameterType.IsValueType)
+            {
+                // TBD
+                continueProcessing = false;
+            }
+
+            if (continueProcessing)
+            {
+                typeName = GetnanoClrTypeName(parameterType);
+            }
+
+            // clear 'DATATYPE_' prefixes 
+            // and make it upper case
+            return typeName.Replace("DATATYPE_", "").ToUpper();
+        }
+
+        internal static string GetnanoClrTypeName(TypeReference parameterType)
+        {
+            // try getting primitive type
+
+            nanoCLR_DataType myType;
+            if(nanoSignaturesTable.PrimitiveTypes.TryGetValue(parameterType.FullName, out myType))
+            {
+                return myType.ToString();
+            }
+            else
+            {
+                // type is not primitive, get full qualified type name
+                return parameterType.FullName;
+            }
+        }
+
+        internal void UpdateCrc(nanoTypeDefinitionTable typeDefinitionTable)
+        {
+            foreach (var c in typeDefinitionTable.TypeDefinitions)
+            {
+                if (c.IncludeInStub() && !IsClassToExclude(c))
+                {
+                    foreach (var m in nanoTablesContext.GetOrderedMethods(c.Methods))
+                    {
+                        UpdateCrc(m);
+                    }
+                }
+            }
+        }
+
+        private bool IsClassToExclude(TypeDefinition td)
+        {
+            return _classNamesToExclude.Contains(td.FullName);
         }
     }
 }

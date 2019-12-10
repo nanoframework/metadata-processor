@@ -84,13 +84,6 @@ namespace nanoFramework.Tools.MetadataProcessor
             bool trackMaxReferenceId,
             out ushort referenceId)
         {
-            // compare against classes to exclude
-            if (_context.ClassNamesToExclude.Contains(field.FullName))
-            {
-                referenceId = 0;
-                return false;
-            }
-
             var found = TryGetIdByValue(field, out referenceId);
             if (trackMaxReferenceId && found)
             {
