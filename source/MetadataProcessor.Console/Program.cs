@@ -127,6 +127,28 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
                     Environment.Exit(1);
                 }
             }
+
+            public void GenerateDependency(string fileName)
+            {
+                try
+                {
+                    var dependencyGenerator = new nanoDependencyGenerator(
+                        _assemblyDefinition,
+                        _assemblyBuilder.TablesContext,
+                        fileName);
+
+                    using (var writer = XmlWriter.Create(fileName))
+                    {
+                        dependencyGenerator.Write(writer);
+                    }
+                }
+                catch (Exception)
+                {
+                    System.Console.Error.WriteLine(
+                        "Unable to generate and write dependency graph for assembly file '{0}'.", fileName);
+                    throw;
+                }
+            }
         }
 
         public static void Main(string[] args)
@@ -162,6 +184,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
                     System.Console.WriteLine("-loadHints <assembly-name> <path-to-assembly-file>    Loads one (or more) assembly file(s) as a dependency(ies).");
                     System.Console.WriteLine("-excludeClassByName <class-name>                      Removes the class from an assembly.");
                     System.Console.WriteLine("-generateskeleton                                     Generate skeleton files with stubs to add native code for an assembly.");
+                    System.Console.WriteLine("-generateDependency                                   Generates an XML file with the relationship between assemblies.");
                     System.Console.WriteLine("-minimize                                             Minimizes the assembly, removing unwanted elements.");
                     System.Console.WriteLine("-verbose                                              Outputs each command before executing it.");
                     System.Console.WriteLine("");
@@ -213,6 +236,10 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
                         interopCode);
 
                     i += 4;
+                }
+                else if (arg == "-generatedependency" && i + 1 < args.Length)
+                {
+                    md.GenerateDependency(args[++i]);
                 }
                 else
                 {

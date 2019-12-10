@@ -26,6 +26,13 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// Assembly tables context - contains all tables used for building target assembly.
         /// </summary>
         protected readonly nanoTablesContext _context;
+        
+        /// <summary>
+        /// Lookup table for finding item ID by item value.
+        /// </summary>
+        protected readonly IEnumerable<T> _items;
+
+        public IEnumerable<T> Items => _items;
 
         /// <summary>
         /// Creates new instance of <see cref="nanoReferenceTableBase{T}"/> object.
@@ -46,6 +53,8 @@ namespace nanoFramework.Tools.MetadataProcessor
                     comparer);
 
             _context = context;
+
+            _items = tinyTableItems;
         }
 
         /// <inheritdoc/>
