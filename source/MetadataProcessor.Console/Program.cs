@@ -97,11 +97,11 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
                 string file,
                 string name,
                 string project,
-                bool interopCode)
+                bool withoutInteropCode)
             {
                 try
                 {
-                    if (interopCode)
+                    if (!withoutInteropCode)
                     {
                         System.Console.Error.WriteLine("Generator for Interop stubs is not supported yet.");
 
@@ -115,7 +115,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
                         file,
                         name,
                         project,
-                        interopCode);
+                        withoutInteropCode);
 
                     skeletonGenerator.GenerateSkeleton();
                 }
@@ -220,9 +220,9 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
                     string file = args[i + 1];
                     string name = args[i + 2];
                     string project = args[i + 3];
-                    bool interopCode = false;
+                    bool withoutInteropCode = false;
 
-                    if (!bool.TryParse(args[i + 4], out interopCode))
+                    if (!bool.TryParse(args[i + 4], out withoutInteropCode))
                     {
                         System.Console.Error.WriteLine("Bad parameter for generateSkeleton. Generate code without Interop support has to be 'true' or 'false'.");
 
@@ -233,7 +233,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
                         file,
                         name,
                         project,
-                        interopCode);
+                        withoutInteropCode);
 
                     i += 4;
                 }
