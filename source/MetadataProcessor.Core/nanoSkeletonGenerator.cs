@@ -22,7 +22,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
         private readonly string _path;
         private readonly string _name;
         private readonly string _project;
-        private readonly bool _interopCode;
+        private readonly bool _withoutInteropCode;
 
         private string _assemblyName;
 
@@ -31,13 +31,13 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
             string path,
             string name,
             string project,
-            bool interopCode)
+            bool withoutInteropCode)
         {
             _tablesContext = tablesContext;
             _path = path;
             _name = name;
             _project = project;
-            _interopCode = interopCode;
+            _withoutInteropCode = withoutInteropCode;
         }
 
         public void GenerateSkeleton()
