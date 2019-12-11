@@ -27,6 +27,6 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="bin\Release\nanoFramework.Tools.MetadataProcessor.Core.dll" target="build" />
+    <file src="bin\Release\nanoFramework.Tools.MetadataProcessor.Core.dll" target="lib/net461" />
   </files>
 </package>
