@@ -103,11 +103,10 @@ namespace nanoFramework.Tools.MetadataProcessor
                 typeName += nanoCLR_DataType.DATATYPE_BYREF + "_" + GetnanoClrTypeName(parameterType.GetElementType());
                 continueProcessing = false;
             }
-            else if(!parameterType.IsPrimitive &&
-                parameterType.IsValueType)
+            else if(!parameterType.IsPrimitive)
             {
                 // TBD
-                continueProcessing = false;
+                continueProcessing = true;
             }
 
             if (continueProcessing)
@@ -117,7 +116,7 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             // clear 'DATATYPE_' prefixes 
             // and make it upper case
-            return typeName.Replace("DATATYPE_", "").ToUpper();
+            return typeName.Replace("DATATYPE_", "");
         }
 
         internal static string GetnanoClrTypeName(TypeReference parameterType)
