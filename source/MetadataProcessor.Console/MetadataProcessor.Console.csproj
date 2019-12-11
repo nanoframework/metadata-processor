@@ -69,7 +69,6 @@
     <ProjectReference Include="..\MetadataProcessor.Core\MetadataProcessor.Core.csproj">
       <Project>{e32f7d15-2499-440c-8026-4d5ee1c5ec3a}</Project>
       <Name>MetadataProcessor.Core</Name>
-      <Private>True</Private>
     </ProjectReference>
   </ItemGroup>
   <Import Project="..\packages\Nerdbank.GitVersioning.3.0.28\build\Nerdbank.GitVersioning.targets" Condition="Exists('..\packages\Nerdbank.GitVersioning.3.0.28\build\Nerdbank.GitVersioning.targets')" />
