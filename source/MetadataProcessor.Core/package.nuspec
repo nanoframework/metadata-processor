@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package >
   <metadata>
-    <id>nanoFramework.Tools.MetadataProcessor</id>
-    <title>nanoFramework.Tools.MetadataProcessor</title>
+    <id>nanoFramework.Tools.MetadataProcessor.Core</id>
+    <title>nanoFramework.Tools.MetadataProcessor.Core</title>
     <version>$version$</version>
     <authors>nanoFramework project contributors</authors>
     <owners>nanoFramework project contributors</owners>
@@ -19,12 +19,14 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <licenseUrl>https://github.com/nanoframework/metadata-processor/LICENSE</licenseUrl>
     <copyright>Copyright (c) 2019 The nanoFramework project contributors</copyright>
-    <dependencies></dependencies>
     <references></references>
     <tags>nanoFramework, nano Framework, NETNF, NETMF, Micro Framework, .net</tags>
+    <dependencies>
+      <dependency id="Mono.Cecil" version="0.11.1" />
+      <dependency id="Stubble.Core" version="1.6.3" />
+    </dependencies>
   </metadata>
   <files>
-    <file src="bin\Release\nanoFramework.Tools.MetaDataProcessor.exe" target="build" />
-    <file src="nanoFramework.Tools.MetaDataProcessor.targets" target="build" />
+    <file src="bin\Release\nanoFramework.Tools.MetadataProcessor.Core.dll" target="build" />
   </files>
 </package>

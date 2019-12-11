@@ -115,7 +115,7 @@ jobs:
   - task: NuGetCommand@2
     inputs:
       command: 'custom' 
-      arguments: 'pack source\MetadataProcessor.Console\package.nuspec -Version $(NBGV_NuGetPackageVersion)'
+      arguments: 'pack source\MetadataProcessor.Core\package.nuspec -Version $(NBGV_NuGetPackageVersion)'
     condition: succeeded()
     displayName: Pack NuGet for MDP tool
 
