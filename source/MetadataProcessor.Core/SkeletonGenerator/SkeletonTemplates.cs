@@ -90,7 +90,7 @@ const CLR_RT_NativeAssemblyData g_CLR_AssemblyNative_{{AssemblyName}} =
 //
 //-----------------------------------------------------------------------------
 
-#include ""{{HeaderFileName}}.h\""
+#include ""{{HeaderFileName}}.h""
 
 {{#Functions}}
 HRESULT {{Declaration}}( CLR_RT_StackFrame& stack )
