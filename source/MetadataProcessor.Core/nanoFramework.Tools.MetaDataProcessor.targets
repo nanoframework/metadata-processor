@@ -6,5 +6,35 @@
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
             <IncludeInVSIX>true</IncludeInVSIX>
         </Content>
+        <Content Include="$(MSBuildThisFileDirectory)Mono.Cecil.dll">
+            <InstallRoot>MSBuild</InstallRoot>
+            <VSIXSubPath>nanoFramework\v1.0\</VSIXSubPath>
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+            <IncludeInVSIX>true</IncludeInVSIX>
+        </Content>
+        <Content Include="$(MSBuildThisFileDirectory)Stubble.Core.dll">
+            <InstallRoot>MSBuild</InstallRoot>
+            <VSIXSubPath>nanoFramework\v1.0\</VSIXSubPath>
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+            <IncludeInVSIX>true</IncludeInVSIX>
+        </Content>
+        <Content Include="$(MSBuildThisFileDirectory)System.Collections.Immutable.dll">
+            <InstallRoot>MSBuild</InstallRoot>
+            <VSIXSubPath>nanoFramework\v1.0\</VSIXSubPath>
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+            <IncludeInVSIX>true</IncludeInVSIX>
+        </Content>
+        <Content Include="$(MSBuildThisFileDirectory)System.Runtime.CompilerServices.Unsafe.dll">
+            <InstallRoot>MSBuild</InstallRoot>
+            <VSIXSubPath>nanoFramework\v1.0\</VSIXSubPath>
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+            <IncludeInVSIX>true</IncludeInVSIX>
+        </Content>
+        <Content Include="$(MSBuildThisFileDirectory)System.Threading.Tasks.Extensions.dll">
+            <InstallRoot>MSBuild</InstallRoot>
+            <VSIXSubPath>nanoFramework\v1.0\</VSIXSubPath>
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+            <IncludeInVSIX>true</IncludeInVSIX>
+        </Content>
     </ItemGroup>
 </Project>

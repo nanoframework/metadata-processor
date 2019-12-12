@@ -28,7 +28,12 @@
   </metadata>
   <files>
     <file src="bin\Release\nanoFramework.Tools.MetadataProcessor.Core.dll" target="lib/net461" />
+
     <file src="bin\Release\nanoFramework.Tools.MetadataProcessor.Core.dll" target="build" />
+    <file src="bin\Release\Stubble.Core.dll" target="build" />
+    <file src="bin\Release\System.Collections.Immutable.dll" target="build" />
+    <file src="bin\Release\System.Runtime.CompilerServices.Unsafe.dll" target="build" />
+    <file src="bin\Release\System.Threading.Tasks.Extensions.dll" target="build" />
     <file src="nanoFramework.Tools.MetaDataProcessor.targets" target="build" />
   </files>
 </package>
