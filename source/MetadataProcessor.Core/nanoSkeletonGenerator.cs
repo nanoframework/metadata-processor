@@ -159,7 +159,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
             var assemblyData = new AssemblyDeclaration()
             {
-                Name = _name, 
+                Name = _name.Replace('.', '_'), 
                 ShortName = _project, 
                 ShortNameUpper = _project.ToUpperInvariant()
             };
