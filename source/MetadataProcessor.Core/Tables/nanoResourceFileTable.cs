@@ -40,15 +40,15 @@ namespace nanoFramework.Tools.MetadataProcessor
         }
 
         /// <summary>
-        /// Adds infromation about embedded resource file in Mono.Cecil format into list.
+        /// Adds information about embedded resource file in Mono.Cecil format into list.
         /// </summary>
-        /// <param name="item">Embedded resouce file information in Mono.Cecil format.</param>
-        /// <param name="count">Number of recource items in this resouce file.</param>
+        /// <param name="item">Embedded resource file information in Mono.Cecil format.</param>
+        /// <param name="count">Number of resource items in this resource file.</param>
         public void AddResourceFile(
             EmbeddedResource item,
             uint count)
         {
-            var correctFileName = Path.ChangeExtension(item.Name, ".tinyresources");
+            var correctFileName = Path.ChangeExtension(item.Name, ".nanoresources");
             var nameStringId = _context.StringTable.GetOrCreateStringId(correctFileName);
 
             _resouces.Add(new Tuple<ushort, uint>(nameStringId, count));

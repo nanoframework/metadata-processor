@@ -37,7 +37,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         }
 
         /// <summary>
-        /// Creates new instance of <see cref="TinyMethodReferenceTable"/> object.
+        /// Creates new instance of <see cref="nanoMethodReferenceTable"/> object.
         /// </summary>
         /// <param name="items">List of member references in Mono.Cecil format.</param>
         /// <param name="context">

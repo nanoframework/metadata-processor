@@ -9,7 +9,7 @@ using System.IO;
 namespace nanoFramework.Tools.MetadataProcessor
 {
     /// <summary>
-    /// Encapsulates logic for processing .tinyfont resource data and swap endianness if neede.
+    /// Encapsulates logic for processing .nanofont resource data and swap endianness if neede.
     /// </summary>
     internal sealed class nanoFontProcessor
     {

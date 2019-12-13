@@ -55,12 +55,12 @@ namespace nanoFramework.Tools.MetadataProcessor
 
         private void WriteClassInfo(
             XmlWriter writer,
-            uint tinyClrItemToken,
+            uint nanoClrItemToken,
             TypeDefinition item)
         {
             writer.WriteStartElement("Class");
 
-            WriteTokensPair(writer, item.MetadataToken.ToUInt32(), 0x04000000 | tinyClrItemToken);
+            WriteTokensPair(writer, item.MetadataToken.ToUInt32(), 0x04000000 | nanoClrItemToken);
 
             writer.WriteStartElement("Methods");
             foreach (var tuple in GetMethodsTokens(item.Methods))
@@ -79,7 +79,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                     writer.WriteStartElement("IL");
 
                     writer.WriteElementString("CLR", "0x" + offset.Item1.ToString("X8", CultureInfo.InvariantCulture));
-                    writer.WriteElementString("TinyCLR", "0x" + offset.Item2.ToString("X8", CultureInfo.InvariantCulture));
+                    writer.WriteElementString("nanoCLR", "0x" + offset.Item2.ToString("X8", CultureInfo.InvariantCulture));
 
                     writer.WriteEndElement();
                 }
@@ -130,12 +130,12 @@ namespace nanoFramework.Tools.MetadataProcessor
         private void WriteTokensPair(
             XmlWriter writer,
             uint clrToken,
-            uint tinyClrToken)
+            uint nanoClrToken)
         {
             writer.WriteStartElement("Token");
 
             writer.WriteElementString("CLR", "0x" + clrToken.ToString("X8", CultureInfo.InvariantCulture));
-            writer.WriteElementString("TinyCLR", "0x" + tinyClrToken.ToString("X8", CultureInfo.InvariantCulture));
+            writer.WriteElementString("nanoCLR", "0x" + nanoClrToken.ToString("X8", CultureInfo.InvariantCulture));
 
             writer.WriteEndElement();
         }
