@@ -34,6 +34,6 @@
     <file src="bin\Release\System.Collections.Immutable.dll" target="build" />
     <file src="bin\Release\System.Runtime.CompilerServices.Unsafe.dll" target="build" />
     <file src="bin\Release\System.Threading.Tasks.Extensions.dll" target="build" />
-    <file src="nanoFramework.Tools.MetaDataProcessor.targets" target="build" />
+    <file src="nanoFramework.Tools.MetaDataProcessor.Core.targets" target="build" />
   </files>
 </package>
