@@ -27,18 +27,18 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             writer.WriteUInt16(0x00);   // flags
 
-            var tinyImageFormat = GetTinytImageFormat(_bitmap.RawFormat);
+            var nanoImageFormat = GetnanoImageFormat(_bitmap.RawFormat);
 
-            if (tinyImageFormat != 0)
+            if (nanoImageFormat != 0)
             {
                 writer.WriteByte(0x01);     // bpp
-                writer.WriteByte(tinyImageFormat);
+                writer.WriteByte(nanoImageFormat);
                 _bitmap.Save(writer.BaseStream, _bitmap.RawFormat);
             }
             else
             {
                 writer.WriteByte(0x10);     // bpp
-                writer.WriteByte(tinyImageFormat);
+                writer.WriteByte(nanoImageFormat);
 
                 var rect = new Rectangle(Point.Empty, _bitmap.Size);
                 using (var convertedBitmap =
@@ -61,7 +61,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             }
         }
 
-        private byte GetTinytImageFormat(
+        private byte GetnanoImageFormat(
             ImageFormat rawFormat)
         {
             if (rawFormat.Equals(ImageFormat.Gif))

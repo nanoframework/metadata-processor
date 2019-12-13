@@ -37,24 +37,24 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// <summary>
         /// Creates new instance of <see cref="nanoReferenceTableBase{T}"/> object.
         /// </summary>
-        /// <param name="tinyTableItems">List of items for initial loading.</param>
+        /// <param name="nanoTableItems">List of items for initial loading.</param>
         /// <param name="comparer">Custom comparer for items (type-specific).</param>
         /// <param name="context">
         /// Assembly tables context - contains all tables used for building target assembly.
         /// </param>
         protected nanoReferenceTableBase(
-            IEnumerable<T> tinyTableItems,
+            IEnumerable<T> nanoTableItems,
             IEqualityComparer<T> comparer,
             nanoTablesContext context)
         {
-            _idsByItemsDictionary = tinyTableItems
+            _idsByItemsDictionary = nanoTableItems
                 .Select((reference, index) => new { reference, index })
                 .ToDictionary(item => item.reference, item => (ushort)item.index,
                     comparer);
 
             _context = context;
 
-            _items = tinyTableItems;
+            _items = nanoTableItems;
         }
 
         /// <inheritdoc/>
