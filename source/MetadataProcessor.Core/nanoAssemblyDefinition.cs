@@ -66,7 +66,11 @@ namespace nanoFramework.Tools.MetadataProcessor
         {
             // this replicates the original struct CLR_RECORD_ASSEMBLY
 
+            // marker
             writer.WriteString(c_NFAssemblyMarker_v1);
+
+            // need to set position because marker could be shorter
+            writer.BaseStream.Seek(c_HeaderCrc32Position, SeekOrigin.Begin);
 
             // header CRC32
             writer.WriteUInt32(0);
@@ -79,12 +83,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             writer.WriteUInt32(0);
 
             // native methods CRC32
-            writer.WriteUInt32(writer.IsBigEndian ? _context.NativeMethodsCrc.Current : 0x00);
-
-            // the existing MDP seems to have a bug because it's adding an extra byte at this place in the struct
-            // right between the NativeMethodsChecksum and PatchEntryOffset fields.
-            //// need this here to pad the structure in order to have a PE exactly as the one being generated now
-            //writer.WriteByte(0);
+            writer.WriteUInt32(writer.IsBigEndian ? _context.NativeMethodsCrc.Current : 0);
 
             // Native methods offset
             writer.WriteUInt32(0xFFFFFFFF);
