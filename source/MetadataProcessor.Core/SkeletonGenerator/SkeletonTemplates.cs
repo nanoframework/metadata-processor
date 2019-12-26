@@ -73,7 +73,7 @@ const CLR_RT_NativeAssemblyData g_CLR_AssemblyNative_{{AssemblyName}} =
     ////////////////////////////////////////////////////////////////////////////////////
     // check if the version bellow matches the one in AssemblyNativeVersion attribute //
     ////////////////////////////////////////////////////////////////////////////////////
-    { {{NativeVersion.Major}}, {{NativeVersion.Minor}}, {{NativeVersion.Revision}}, {{NativeVersion.Build}} }
+    { {{NativeVersion.Major}}, {{NativeVersion.Minor}}, {{NativeVersion.Build}}, {{NativeVersion.Revision}} }
 };
 ";
 
