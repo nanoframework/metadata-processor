@@ -1,4 +1,4 @@
-﻿//
+//
 // Copyright (c) 2019 The nanoFramework project contributors
 // See LICENSE file in the project root for full license information.
 //
@@ -33,7 +33,8 @@ struct Library_{{AssemblyName}}_{{Name}}
 	{{#StaticFields}}
     static const int FIELD_STATIC__{{Name}} = {{ReferenceIndex}};
 	{{/StaticFields}}
-	{{#InstanceFields}}
+
+    {{#InstanceFields}}
 		{{#FieldWarning}}
 		{{FieldWarning}}
 		{{/FieldWarning}}
