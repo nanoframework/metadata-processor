@@ -21,6 +21,7 @@ namespace nanoFramework.Tools.MetadataProcessor
 
         private readonly bool _minimize;
         private readonly bool _verbose;
+        private readonly bool _isCoreLibrary;
 
         public nanoTablesContext TablesContext => _tablesContext;
 
@@ -38,6 +39,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             List<string> classNamesToExclude,
             bool minimize,
             bool verbose,
+            bool isCoreLibrary = false,
             List<string> explicitTypesOrder = null,
             ICustomStringSorter stringSorter = null,
             bool applyAttributesCompression = false)
@@ -51,6 +53,7 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             _minimize = minimize;
             _verbose = verbose;
+            _isCoreLibrary = isCoreLibrary;
         }
 
         /// <summary>
@@ -60,7 +63,9 @@ namespace nanoFramework.Tools.MetadataProcessor
         public void Write(
             nanoBinaryWriter binaryWriter)
         {
-            var header = new nanoAssemblyDefinition(_tablesContext);
+            var header = new nanoAssemblyDefinition(
+                _tablesContext,
+                _isCoreLibrary);
             header.Write(binaryWriter, true);
 
             foreach (var table in GetTables(_tablesContext))
