@@ -1,4 +1,4 @@
-﻿//
+//
 // Copyright (c) 2019 The nanoFramework project contributors
 // See LICENSE file in the project root for full license information.
 //
@@ -176,7 +176,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
                     // static fields
                     int fieldCount = 0;
-                    foreach (var f in c.Fields.Where(f => f.IsStatic))
+                    foreach (var f in c.Fields.Where(f => f.IsStatic && !f.HasConstant))
                     {
                         classData.StaticFields.Add(new StaticField()
                         {
@@ -184,6 +184,11 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                             ReferenceIndex = staticFieldCount + fieldCount++
                         });
                     }
+
+                    int firstInstanceFieldId = GetInstanceFieldsOffset(c);
+
+                    // 0 based index, need to add 1
+                    firstInstanceFieldId++;
 
                     // instance fields
                     fieldCount = 0;
@@ -206,7 +211,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                                 classData.InstanceFields.Add(new InstanceField()
                                 {
                                     Name = f.Name,
-                                    ReferenceIndex = fieldRefId + 1
+                                    ReferenceIndex = firstInstanceFieldId++
                                 });
                             }
                             fieldCount++;
@@ -258,6 +263,57 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
         private bool IsClassToExclude(TypeDefinition td)
         {
             return _tablesContext.ClassNamesToExclude.Contains(td.FullName);
+        }
+
+        private int GetInstanceFieldsOffset(TypeDefinition c)
+        {
+            // check if this type has a base type different from System.Object
+            if( c.BaseType != null &&
+                c.BaseType.FullName != "System.Object")
+            {
+                // get base parent type fields count
+                return GetNestedFieldsCount(c.BaseType.Resolve());
+            }
+            else
+            {
+                return 0;
+            }
+        }
+
+        private int GetNestedFieldsCount(TypeDefinition c)
+        {
+            ushort tt;
+
+            int fieldCount = 0;
+
+            if (c.BaseType != null &&
+                c.BaseType.FullName != "System.Object")
+            {
+                // get parent type fields count
+                fieldCount = GetNestedFieldsCount(c.BaseType.Resolve());
+
+                // now add the fields count from this type
+                if (_tablesContext.TypeDefinitionTable.TryGetTypeReferenceId(c, out tt))
+                {
+                    fieldCount += _tablesContext.TypeDefinitionTable.TypeDefinitions[tt].Fields.Count(f => !f.IsStatic);
+                }
+
+                return fieldCount;
+            }
+            else
+            {
+                // get the fields count from this type
+
+                if (_tablesContext.TypeDefinitionTable.TryGetTypeReferenceId(c, out tt))
+                {
+                    return _tablesContext.TypeDefinitionTable.TypeDefinitions[tt].Fields.Count(f => !f.IsStatic);
+                }
+                else
+                {
+                    // can't find this type in the table
+                    return 0;
+                }
+            }
         }
     }
 }
