@@ -1,4 +1,4 @@
-﻿//
+//
 // Copyright (c) 2019 The nanoFramework project contributors
 // See LICENSE file in the project root for full license information.
 //
@@ -13,16 +13,16 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
         {
             var typeDefFlags = nanoTypeDefinitionTable.GetFlags(value);
 
-            if (typeDefFlags.HasFlag(
-                nanoTypeDefinitionFlags.TD_Delegate |
-                nanoTypeDefinitionFlags.TD_MulticastDelegate))
+            if ( typeDefFlags.HasFlag(nanoTypeDefinitionFlags.TD_Delegate) ||
+                 typeDefFlags.HasFlag(nanoTypeDefinitionFlags.TD_MulticastDelegate))
             {
                 return false;
             }
 
             // Only generate a stub for classes and value types.
-            if (value.IsClass ||
-                value.IsValueType)
+            if ( (value.IsClass ||
+                  value.IsValueType) &&
+                 !value.IsEnum)
             { 
                 return true;
             }
