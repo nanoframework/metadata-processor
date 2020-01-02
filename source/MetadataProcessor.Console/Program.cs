@@ -48,13 +48,15 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
                 }
             }
 
-            public void Compile(string fileName)
+            public void Compile(
+                string fileName,
+                bool isCoreLibrary)
             {
                 try
                 {
                     if (Verbose) System.Console.WriteLine("Compiling assembly...");
 
-                    _assemblyBuilder = new nanoAssemblyBuilder(_assemblyDefinition, _classNamesToExclude, Minimize, Verbose);
+                    _assemblyBuilder = new nanoAssemblyBuilder(_assemblyDefinition, _classNamesToExclude, Minimize, Verbose, isCoreLibrary);
 
                     using (var stream = File.Open(fileName, FileMode.Create, FileAccess.ReadWrite))
                     using (var writer = new BinaryWriter(stream))
@@ -180,7 +182,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
                 {
                     System.Console.WriteLine("");
                     System.Console.WriteLine("-parse <path-to-assembly-file>                        Analyses .NET assembly.");
-                    System.Console.WriteLine("-compile <path-to-PE-file>                            Compiles an assembly into nanoCLR format.");
+                    System.Console.WriteLine("-compile <path-to-PE-file>                            Compiles an assembly into nanoCLR format. Optionally flags if this it's a core library.");
                     System.Console.WriteLine("-loadHints <assembly-name> <path-to-assembly-file>    Loads one (or more) assembly file(s) as a dependency(ies).");
                     System.Console.WriteLine("-excludeClassByName <class-name>                      Removes the class from an assembly.");
                     System.Console.WriteLine("-generateskeleton                                     Generate skeleton files with stubs to add native code for an assembly.");
@@ -193,9 +195,18 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
                 {
                     md.Parse(args[++i]);
                 }
-                else if (arg == "-compile" && i + 1 < args.Length)
+                else if (arg == "-compile" && i + 2 < args.Length)
                 {
-                    md.Compile(args[++i]);
+                    bool isCoreLibrary = false;
+
+                    if (!bool.TryParse(args[i + 2], out isCoreLibrary))
+                    {
+                        System.Console.Error.WriteLine("Bad parameter for compile. IsCoreLib options has to be 'true' or 'false'.");
+
+                        Environment.Exit(1);
+                    }
+
+                    md.Compile(args[i + 1], isCoreLibrary);
                 }
                 else if (arg == "-excludeclassbyname" && i + 1 < args.Length)
                 {

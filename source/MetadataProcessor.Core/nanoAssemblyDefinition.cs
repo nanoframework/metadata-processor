@@ -34,6 +34,11 @@ namespace nanoFramework.Tools.MetadataProcessor
         private readonly nanoTablesContext _context;
 
         /// <summary>
+        /// Flag for core libraries.
+        /// </summary>
+        private readonly bool _isCoreLibrary = false;
+
+        /// <summary>
         /// Offset for current table address writing.
         /// </summary>
         private long _tablesOffset;
@@ -50,9 +55,11 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// Assembly tables context - contains all tables used for building target assembly.
         /// </param>
         public nanoAssemblyDefinition(
-            nanoTablesContext context)
+            nanoTablesContext context,
+            bool isCoreLibrary)
         {
             _context = context;
+            _isCoreLibrary = isCoreLibrary;
         }
 
         /// <summary>
@@ -82,8 +89,8 @@ namespace nanoFramework.Tools.MetadataProcessor
             // keeping this here for now, just for compatibility
             writer.WriteUInt32(0);
 
-            // native methods CRC32
-            writer.WriteUInt32(writer.IsBigEndian ? _context.NativeMethodsCrc.Current : 0);
+            // native methods CRC32, only for core libs
+            writer.WriteUInt32(_isCoreLibrary ? _context.NativeMethodsCrc.Current : 0);
 
             // Native methods offset
             writer.WriteUInt32(0xFFFFFFFF);
