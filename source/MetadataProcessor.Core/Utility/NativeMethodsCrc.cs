@@ -1,4 +1,4 @@
-﻿//
+//
 // Copyright (c) 2019 The nanoFramework project contributors
 // Original work from Oleg Rakhmatulin.
 // See LICENSE file in the project root for full license information.
@@ -131,7 +131,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             else
             {
                 // type is not primitive, get full qualified type name
-                return parameterType.FullName;
+                return parameterType.FullName.Replace(".", String.Empty);
             }
         }
 
