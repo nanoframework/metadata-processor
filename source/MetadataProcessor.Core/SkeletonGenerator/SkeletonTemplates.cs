@@ -57,7 +57,7 @@ extern const CLR_RT_NativeAssemblyData g_CLR_AssemblyNative_{{Name}};
 ";
 
         internal static string AssemblyLookupTemplate =
-@"#include ""{{HeaderFileName}}.h\""
+@"#include ""{{HeaderFileName}}.h""
 
 static const CLR_RT_MethodHandler method_lookup[] =
 {
