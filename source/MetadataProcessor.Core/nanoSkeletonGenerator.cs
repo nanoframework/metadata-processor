@@ -176,7 +176,10 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
                     // static fields
                     int fieldCount = 0;
-                    foreach (var f in c.Fields.Where(f => f.IsStatic && !f.HasConstant))
+                    var staticFields = c.Fields.Where(f => f.IsStatic && !f.HasConstant);
+                    staticFieldCount += staticFields.Count();
+
+                    foreach (var f in staticFields)
                     {
                         classData.StaticFields.Add(new StaticField()
                         {
@@ -245,8 +248,6 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                         assemblyData.Classes.Add(classData);
                     }
                 }
-
-                staticFieldCount += c.Fields.Count(f => f.IsStatic);
             }
 
             var stubble = new StubbleBuilder().Build();
