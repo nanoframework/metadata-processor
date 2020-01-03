@@ -207,6 +207,8 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
                     }
 
                     md.Compile(args[i + 1], isCoreLibrary);
+
+                    i += 2;
                 }
                 else if (arg == "-excludeclassbyname" && i + 1 < args.Length)
                 {
