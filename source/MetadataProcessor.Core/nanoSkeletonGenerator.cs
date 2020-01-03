@@ -177,7 +177,6 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                     // static fields
                     int fieldCount = 0;
                     var staticFields = c.Fields.Where(f => f.IsStatic && !f.HasConstant);
-                    staticFieldCount += staticFields.Count();
 
                     foreach (var f in staticFields)
                     {
@@ -187,6 +186,9 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                             ReferenceIndex = staticFieldCount + fieldCount++
                         });
                     }
+
+                    // update static field counter
+                    staticFieldCount += staticFields.Count();
 
                     int firstInstanceFieldId = GetInstanceFieldsOffset(c);
 
