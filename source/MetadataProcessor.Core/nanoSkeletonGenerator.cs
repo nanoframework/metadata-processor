@@ -176,7 +176,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
                     // static fields
                     int fieldCount = 0;
-                    var staticFields = c.Fields.Where(f => f.IsStatic && !f.HasConstant);
+                    var staticFields = c.Fields.Where(f => f.IsStatic && !f.IsLiteral);
 
                     foreach (var f in staticFields)
                     {
@@ -197,7 +197,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
                     // instance fields
                     fieldCount = 0;
-                    foreach (var f in c.Fields.Where(f => !f.IsStatic))
+                    foreach (var f in c.Fields.Where(f => !f.IsStatic && !f.IsLiteral))
                     {
                         // sanity check for field name
                         // like auto-vars and such
