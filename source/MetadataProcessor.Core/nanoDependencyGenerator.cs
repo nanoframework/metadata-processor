@@ -27,7 +27,6 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
         private string _assemblyName;
         private nanoTablesContext tablesContext;
-        private string fileName;
         private string _fileName;
 
         public nanoDependencyGenerator(

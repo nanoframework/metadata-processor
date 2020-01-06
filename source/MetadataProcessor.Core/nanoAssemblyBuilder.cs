@@ -5,8 +5,11 @@
 //
 
 using Mono.Cecil;
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Text;
 using System.Xml;
 
 namespace nanoFramework.Tools.MetadataProcessor
@@ -19,7 +22,6 @@ namespace nanoFramework.Tools.MetadataProcessor
     {
         private readonly nanoTablesContext _tablesContext;
 
-        private readonly bool _minimize;
         private readonly bool _verbose;
         private readonly bool _isCoreLibrary;
 
@@ -37,7 +39,6 @@ namespace nanoFramework.Tools.MetadataProcessor
         public nanoAssemblyBuilder(
             AssemblyDefinition assemblyDefinition,
             List<string> classNamesToExclude,
-            bool minimize,
             bool verbose,
             bool isCoreLibrary = false,
             List<string> explicitTypesOrder = null,
@@ -49,9 +50,9 @@ namespace nanoFramework.Tools.MetadataProcessor
                 explicitTypesOrder,
                 classNamesToExclude,
                 stringSorter,
-                applyAttributesCompression);
+                applyAttributesCompression,
+                verbose);
 
-            _minimize = minimize;
             _verbose = verbose;
             _isCoreLibrary = isCoreLibrary;
         }
@@ -81,6 +82,452 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             binaryWriter.BaseStream.Seek(0, SeekOrigin.Begin);
             header.Write(binaryWriter, false);
+        }
+
+        /// <summary>
+        /// Minimizes the assembly, removing unwanted and unused elements.
+        /// </summary>
+        /// <remarks>
+        /// In order to minize an assembly it has to have been previously compiled.
+        /// </remarks>
+        public void Minimize()
+        {
+            // remove unused types
+
+            // build collection with all types except the ones to exclude
+            var setNew = new HashSet<MetadataToken>();
+            var set = new HashSet<MetadataToken>();
+
+            foreach (var t in _tablesContext.TypeDefinitionTable.TypeDefinitions)
+            {
+                if (!_tablesContext.TypeDefinitionTable.IsClassToExclude(t))
+                {
+                    setNew.Add(t.MetadataToken);
+                }
+                else
+                {
+                    if (_verbose) System.Console.WriteLine($"Excluding {t.FullName}");
+                }
+            }
+
+            while(setNew.Count > 0)
+            {
+                var setAdd = new HashSet<MetadataToken>();
+
+                foreach (var t in setNew.OrderBy(t => t.ToInt32()))
+                {
+                    set.Add(t);
+
+                    if(_verbose)
+                    {
+                        var typeDescription = TokenToString(t);
+                        System.Console.WriteLine($"Including {typeDescription}");
+                    }
+
+                    HashSet<MetadataToken> setTmp = BuildDependencyList(t);
+
+                    // show dependencies
+                    if (_verbose)
+                    {
+                        ShowDependencies(t, set, setTmp);
+                    }
+
+                    // copy type def
+                    foreach (var td in setTmp.OrderBy(mt => mt.ToInt32()))
+                    {
+                        setAdd.Add(td);
+                    }
+                }
+
+                // remove type
+                setNew = new HashSet<MetadataToken>();
+
+                foreach(var t in setAdd.OrderBy(mt => mt.ToInt32()))
+                {
+                    if(!set.Contains(t))
+                    {
+                        setNew.Add(t);
+                    }
+                }
+            }
+
+            _tablesContext.UsedElements = set;
+
+            // need to reset several tables
+            _tablesContext.ResetStringsTable();
+            _tablesContext.TypeDefinitionTable.ResetByteCodeOffsets();
+            _tablesContext.ResetByteCodeTable();
+            _tablesContext.ResetSignaturesTable();
+            _tablesContext.ResetStringsTable();
+        }
+
+        private void ShowDependencies(MetadataToken token, HashSet<MetadataToken> set, HashSet<MetadataToken> setTmp)
+        {
+            var tokenFrom = TokenToString(token);
+
+            foreach (var m in setTmp.OrderBy(mt => mt.ToInt32()))
+            {
+                if (!set.Contains(m))
+                {
+                    System.Console.WriteLine($"{tokenFrom} -> {TokenToString(m)}");
+                }
+            }
+        }
+
+        private void ShowDependencies(int token, HashSet<int> set, HashSet<int> setTmp)
+        {
+            var tokenFrom = TokenToString(token);
+
+            foreach (var m in setTmp.OrderBy(mt => mt))
+            {
+                if (!set.Contains(m))
+                {
+                    System.Console.WriteLine($"{tokenFrom} -> {TokenToString(m)}");
+                }
+            }
+        }
+
+        private HashSet<int> BuildDependencyList(int token)
+        {
+            var tokens = BuildDependencyList(_tablesContext.AssemblyDefinition.MainModule.LookupToken(token).MetadataToken);
+
+            var output = new HashSet<int>();
+
+            var dummy = tokens.Select(t => output.Add(t.ToInt32())).ToList();
+
+            return output;
+        }
+
+        private HashSet<MetadataToken> BuildDependencyList(MetadataToken token)
+        {
+            var set = new HashSet<MetadataToken>();
+
+            switch (token.TokenType)
+            {
+                case TokenType.TypeRef:
+                    var tr = _tablesContext.TypeReferencesTable.Items.FirstOrDefault(i => i.MetadataToken == token);
+                    switch (tr.Scope.MetadataToken.TokenType)
+                    {
+                        case TokenType.AssemblyRef: 
+                        case TokenType.TypeRef:
+                            set.Add(tr.Scope.MetadataToken);
+                            break;
+                    }
+                    break;
+
+                case TokenType.MemberRef:
+                    var mr = _tablesContext.MethodReferencesTable.Items.FirstOrDefault(i => i.MetadataToken == token);
+                    // TODO
+                    break;
+
+                case TokenType.TypeSpec:
+                    var ts = _tablesContext.TypeSpecificationsTable.TryGetTypeSpecification(token);
+
+                    if(ts != null)
+                    {
+                        set.Add(token);
+                    }
+
+                    break;
+
+                case TokenType.TypeDef:
+                    var td = _tablesContext.TypeDefinitionTable.Items.FirstOrDefault(i => i.MetadataToken == token);
+
+                    if (td.BaseType != null)
+                    {
+                        set.Add(td.BaseType.MetadataToken);
+                    }
+
+                    if (td.DeclaringType != null)
+                    {
+                        set.Add(td.DeclaringType.MetadataToken);
+                    }
+
+                    // include attributes
+                    foreach(var c in td.CustomAttributes)
+                    {
+                        if (!_tablesContext.ClassNamesToExclude.Contains(c.AttributeType.FullName))
+                        {
+                            set.Add(c.AttributeType.MetadataToken);
+                        }
+                    }
+
+                    // fields
+                    var tdFields = td.Fields.Where(f => !f.IsLiteral);
+
+                    foreach (var f in tdFields)
+                    {
+                        if (!_tablesContext.ClassNamesToExclude.Contains(f.DeclaringType.FullName))
+                        {
+                            set.Add(f.MetadataToken);
+                        }
+                    }
+
+                    // methods
+                    foreach (var m in td.Methods)
+                    {
+                        if (!_tablesContext.ClassNamesToExclude.Contains(m.DeclaringType.FullName))
+                        {
+                            set.Add(m.MetadataToken);
+                        }
+                    }
+
+                    // interfaces
+                    foreach (var i in td.Interfaces)
+                    {
+                        if (!_tablesContext.ClassNamesToExclude.Contains(i.InterfaceType.FullName))
+                        {
+                            set.Add(i.MetadataToken);
+                        }
+                    }
+
+                    break;
+
+                case TokenType.Field:
+                    var fd = _tablesContext.FieldsTable.Items.FirstOrDefault(i => i.MetadataToken == token);
+                    set.Add(fd.MetadataToken);
+                    
+                    // attributes
+                    foreach (var c in fd.CustomAttributes)
+                    {
+                        if (!_tablesContext.ClassNamesToExclude.Contains(c.AttributeType.FullName))
+                        {
+                            set.Add(c.AttributeType.MetadataToken);
+                        }
+                    }
+
+                    break;
+
+                case TokenType.Method:
+                    var md = _tablesContext.MethodDefinitionTable.Items.FirstOrDefault(i => i.MetadataToken == token);
+
+                    // return value
+                    if( md.ReturnType.FullName != "System.Void" &&
+                        md.ReturnType.FullName != "System.String" &&
+                        !md.ReturnType.IsArray)
+                    {
+                        set.Add(md.ReturnType.MetadataToken);
+                    }
+
+                    // parameters
+                    foreach(var p in md.Parameters)
+                    {
+                        if (p.ParameterType.DeclaringType != null)
+                        {
+                            set.Add(p.ParameterType.DeclaringType.MetadataToken);
+                        }
+                    }
+
+                    if (md.HasBody)
+                    {
+                        // variables
+                        foreach (var v in md.Body.Variables)
+                        {
+                            if (v.VariableType.DeclaringType != null)
+                            {
+                                set.Add(v.VariableType.DeclaringType.MetadataToken);
+                            }
+                            else if (v.VariableType.MetadataType == MetadataType.Class)
+                            {
+                                set.Add(v.VariableType.MetadataToken);
+                            }
+                        }
+
+                        // op codes
+                        foreach (var i in md.Body.Instructions)
+                        {
+                            if (i.Operand is MethodReference ||
+                                i.Operand is FieldReference ||
+                                i.Operand is TypeDefinition ||
+                                i.Operand is TypeSpecification)
+                            {
+                                set.Add(((IMetadataTokenProvider)i.Operand).MetadataToken);
+                            }
+                            else if (i.Operand is String)
+                            {
+                                var stringId = _tablesContext.StringTable.GetOrCreateStringId((string)i.Operand);
+
+                                var newToken = new MetadataToken(TokenType.String, stringId);
+
+                                set.Add(newToken);
+                            }
+
+                        }
+                   
+                        // exceptions
+                        foreach (var e in md.Body.ExceptionHandlers)
+                        {
+                            if(e.HandlerType ==  Mono.Cecil.Cil.ExceptionHandlerType.Filter)
+                            {
+                                set.Add(((IMetadataTokenProvider)e.FilterStart.Operand).MetadataToken);
+                            }
+                        }
+                    }
+
+                    // attributes
+                    foreach (var c in md.CustomAttributes)
+                    {
+                        if (!_tablesContext.ClassNamesToExclude.Contains(c.AttributeType.FullName))
+                        {
+                            set.Add(c.AttributeType.MetadataToken);
+                        }
+                    }
+
+                    break;
+
+                case TokenType.InterfaceImpl:
+                    // because we don't have an interface definition table
+                    // have to do it the hard way: search the type definition that contains the interface
+                    foreach (var t in _tablesContext.TypeDefinitionTable.Items)
+                    {
+                        var ii1 = t.Interfaces.FirstOrDefault(i => i.MetadataToken == token);
+                        if (ii1 != null)
+                        {
+                            set.Add(ii1.InterfaceType.MetadataToken);
+                            set.Add(t.MetadataToken);
+
+                            break;
+                        }
+                    }
+
+                    break;
+            }
+
+            return set;
+        }
+
+        private string TokenToString(int token)
+        {
+            return TokenToString(_tablesContext.AssemblyDefinition.MainModule.LookupToken(token).MetadataToken);
+        }
+
+        private string TokenToString(MetadataToken token)
+        {
+            StringBuilder output = new StringBuilder();
+
+            switch (token.TokenType)
+            {
+                case TokenType.TypeRef:
+                    var tr = _tablesContext.TypeReferencesTable.Items.FirstOrDefault(i => i.MetadataToken == token);
+
+                    if(tr.Scope != null)
+                    {
+                        output.Append(TokenToString(tr.Scope.MetadataToken));
+                        if (tr.Scope.MetadataToken.TokenType is TokenType.TypeRef)
+                        {
+                            output.Append(".");
+                        }
+                    }
+
+                    output.Append(tr.FullName);
+                    break;
+
+                case TokenType.TypeDef:
+                    var td = _tablesContext.TypeDefinitionTable.Items.FirstOrDefault(i => i.MetadataToken == token);
+
+                    if (td.DeclaringType != null)
+                    {
+                        output.Append(TokenToString(td.DeclaringType.MetadataToken));
+                        output.Append("+");
+
+                        output.Append(td.Name);
+                    }
+                    else
+                    {
+                        output.Append(td.FullName);
+                    }
+
+                    break;
+
+                case TokenType.Field:
+                    var fd = _tablesContext.FieldsTable.Items.FirstOrDefault(i => i.MetadataToken == token);
+
+                    if (fd.DeclaringType != null)
+                    {
+                        output.Append(TokenToString(fd.DeclaringType.MetadataToken));
+                        output.Append("::");
+                    }
+
+                    output.Append(fd.Name);
+                    break;
+
+                case TokenType.Method:
+                    var md = _tablesContext.MethodDefinitionTable.Items.FirstOrDefault(i => i.MetadataToken == token);
+
+                    if (md.DeclaringType != null)
+                    {
+                        output.Append(TokenToString(md.DeclaringType.MetadataToken));
+                        output.Append("::");
+                    }
+
+                    output.Append(md.Name);
+
+                    break;
+
+                case TokenType.InterfaceImpl:
+
+                    // because we don't have an interface definition table
+                    // have to do it the hard way: search the type definition that contains the interface
+                    foreach (var t in _tablesContext.TypeDefinitionTable.Items)
+                    {
+                        var ii = t.Interfaces.FirstOrDefault(i => i.MetadataToken == token);
+                        if (ii != null)
+                        {
+                            var classToken = TokenToString(t.MetadataToken);
+                            var interfaceToken = TokenToString(ii.InterfaceType.MetadataToken);
+
+                            output.Append($"[{classToken} implements {interfaceToken}]");
+
+                            break;
+                        }
+                    }
+
+                    break;
+
+                case TokenType.MemberRef:
+                    var mr = _tablesContext.MethodReferencesTable.Items.FirstOrDefault(i => i.MetadataToken == token);
+
+                    if (mr.DeclaringType != null)
+                    {
+                        output.Append(TokenToString(mr.DeclaringType.MetadataToken));
+                        output.Append("::");
+                    }
+
+                    output.Append(mr.FullName);
+                    break;
+
+                case TokenType.ModuleRef:
+                    // TODO
+                    break;
+
+
+                case TokenType.TypeSpec:
+                    output.Append($"[TypeSpec 0x{token.ToUInt32().ToString("X8")}]");
+                    break;
+
+                case TokenType.AssemblyRef:
+                    var ar = _tablesContext.AssemblyReferenceTable.Items.FirstOrDefault(i => i.MetadataToken == token);
+
+                    output.Append($"[{ar.FullName}]");
+                    break;
+
+                case TokenType.String:
+                    var sr = _tablesContext.StringTable.TryGetString((ushort)token.RID);
+
+                    if (sr != null)
+                    {
+                        output.Append($"'{sr}'");
+                    }
+                    break;
+            }
+
+            // output token ID if empty
+            if (output.Length == 0)
+            {
+                output.Append($"[0x{token.ToUInt32().ToString("X8")}]");
+            }
+
+            return output.ToString();
         }
 
         public void Write(

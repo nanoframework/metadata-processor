@@ -9,7 +9,6 @@ using Stubble.Core.Builders;
 using System;
 using System.IO;
 using System.Linq;
-using System.Text;
 
 namespace nanoFramework.Tools.MetadataProcessor.Core
 {
@@ -114,13 +113,12 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
             };
 
 
-            foreach (var c in _tablesContext.TypeDefinitionTable.TypeDefinitions)
+            foreach (var c in _tablesContext.TypeDefinitionTable.GetUsedItems())
             {
                 // only care about types that have methods
                 if (c.HasMethods)
                 {
-                    if (c.IncludeInStub() &&
-                        !IsClassToExclude(c))
+                    if (c.IncludeInStub())
                     {
                         var className = NativeMethodsCrc.GetClassName(c);
 
@@ -142,11 +140,15 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                             {
                                 // method won't be included, still
                                 // need to add a NULL entry for it
+                                // unless it's on the exclude list
 
-                                assemblyLookup.LookupTable.Add(new Method()
+                                if (!IsClassToExclude(c))
                                 {
-                                    Declaration = "NULL"
-                                });
+                                    assemblyLookup.LookupTable.Add(new Method()
+                                    {
+                                        Declaration = "NULL"
+                                    });
+                                }
                             }
                         }
                     }
@@ -154,13 +156,17 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                     {
                         // type won't be included, still
                         // need to add a NULL entry for each method 
+                        // unless it's on the exclude list
 
-                        for (int i = 0; i < c.Methods.Count; i++)
+                        if (!IsClassToExclude(c))
                         {
-                            assemblyLookup.LookupTable.Add(new Method()
+                            for (int i = 0; i < c.Methods.Count; i++)
                             {
-                                Declaration = "NULL"
-                            });
+                                assemblyLookup.LookupTable.Add(new Method()
+                                {
+                                    Declaration = "NULL"
+                                });
+                            }
                         }
                     }
                 }
@@ -186,7 +192,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                 ShortNameUpper = _project.ToUpperInvariant()
             };
 
-            foreach (var c in _tablesContext.TypeDefinitionTable.TypeDefinitions)
+            foreach (var c in _tablesContext.TypeDefinitionTable.GetUsedItems())
             {
                 if (c.IncludeInStub() && 
                     !IsClassToExclude(c))
@@ -233,8 +239,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                         }
                         else
                         {
-                            ushort fieldRefId;
-                            if (_tablesContext.FieldsTable.TryGetFieldReferenceId(f, false, out fieldRefId))
+                            if (_tablesContext.FieldsTable.TryGetFieldReferenceId(f, false, out ushort fieldRefId))
                             {
                                 classData.InstanceFields.Add(new InstanceField()
                                 {

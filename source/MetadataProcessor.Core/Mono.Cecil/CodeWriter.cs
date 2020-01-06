@@ -469,7 +469,12 @@ namespace nanoFramework.Tools.MetadataProcessor
             ushort typeReferenceMask = 0x4000)
         {
             ushort referenceId;
-            if (_context.TypeReferencesTable.TryGetTypeReferenceId(typeReference, out referenceId))
+
+            if(typeReference is TypeSpecification)
+            {
+                referenceId = _context.TypeSpecificationsTable.GetOrCreateTypeSpecificationId(typeReference);
+            }
+            else if (_context.TypeReferencesTable.TryGetTypeReferenceId(typeReference, out referenceId))
             {
                 referenceId |= typeReferenceMask; // External type reference
             }

@@ -8,6 +8,7 @@ using Mono.Cecil;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace nanoFramework.Tools.MetadataProcessor
 {
@@ -83,7 +84,12 @@ namespace nanoFramework.Tools.MetadataProcessor
             _methods.Add(method);
             _lastAvailableRva += (ushort)byteCode.Length;
 
-            _rvasByMethodNames.Add(method.FullName, rva);
+            // need to check if table already has this key (because of second pass to minimize)
+            if (!_rvasByMethodNames.ContainsKey(method.FullName))
+            {
+                _rvasByMethodNames.Add(method.FullName, rva);
+            }
+
             return id;
         }
 
@@ -105,9 +111,19 @@ namespace nanoFramework.Tools.MetadataProcessor
         public void Write(
             nanoBinaryWriter writer)
         {
-            foreach (var method in _methods)
+            if (_context.UsedElements != null)
             {
-                writer.WriteBytes(CreateByteCode(method, writer));
+                foreach (var method in _methods.Where(item => _context.UsedElements.Contains(item.MetadataToken)))
+                {
+                    writer.WriteBytes(CreateByteCode(method, writer));
+                }
+            }
+            else
+            {
+                foreach (var method in _methods)
+                {
+                    writer.WriteBytes(CreateByteCode(method, writer));
+                }
             }
         }
 

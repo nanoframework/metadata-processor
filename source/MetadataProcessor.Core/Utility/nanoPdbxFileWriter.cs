@@ -34,7 +34,15 @@ namespace nanoFramework.Tools.MetadataProcessor
             WriteVersionInfo(writer, _context.AssemblyDefinition.Name.Version);
 
             writer.WriteStartElement("Classes");
-            _context.TypeDefinitionTable.ForEachItems((token, item) => WriteClassInfo(writer, token, item));
+
+            if (_context.UsedElements != null)
+            {
+                _context.TypeDefinitionTable.ForEachItemInUse((token, item) => WriteClassInfo(writer, token, item));
+            }
+            else
+            {
+                _context.TypeDefinitionTable.ForEachItems((token, item) => WriteClassInfo(writer, token, item));
+            }
 
             writer.WriteEndDocument();            
         }

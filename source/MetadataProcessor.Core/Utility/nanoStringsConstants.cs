@@ -29,6 +29,17 @@ namespace nanoFramework.Tools.MetadataProcessor
             return _idsByStrings.TryGetValue(value, out index);
         }
 
+        /// <summary>
+        /// Try to get a string value from the string constant table providing the index.
+        /// </summary>
+        /// <param name="index">String index in table.</param>
+        /// <returns>The string value or a null if the index doesn't exist.</returns>
+        public static string TryGetString(ushort index)
+        {
+            // try to get string from id table
+            return _idsByStrings.FirstOrDefault(s => s.Value == index).Key;
+        }
+
         private static readonly IDictionary<string, ushort> _idsByStrings = new[]
         {
              /* 0000 */ ".cctor",

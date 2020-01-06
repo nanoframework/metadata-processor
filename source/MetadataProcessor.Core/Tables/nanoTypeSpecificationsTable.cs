@@ -12,7 +12,7 @@ using System.Linq;
 namespace nanoFramework.Tools.MetadataProcessor
 {
     /// <summary>
-    /// Encapsulates logic for storing type sprcifications list and writing this
+    /// Encapsulates logic for storing type specifications list and writing this
     /// list into target assembly in .NET nanoFramework format.
     /// </summary>
     public sealed class nanoTypeSpecificationsTable : InanoTable
@@ -95,6 +95,19 @@ namespace nanoFramework.Tools.MetadataProcessor
             out ushort referenceId)
         {
             return _idByTypeSpecifications.TryGetValue(typeReference, out referenceId);
+        }
+
+        public TypeReference TryGetTypeSpecification(MetadataToken token)
+        {
+            foreach (var t in _idByTypeSpecifications)
+            {
+                if(t.Key.MetadataToken == token)
+                {
+                    return t.Key;
+                }
+            }
+
+            return null;
         }
 
         /// <inheritdoc/>

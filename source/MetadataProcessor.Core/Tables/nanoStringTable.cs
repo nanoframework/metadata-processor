@@ -4,6 +4,7 @@
 // See LICENSE file in the project root for full license information.
 //
 
+using Mono.Cecil;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -88,6 +89,25 @@ namespace nanoFramework.Tools.MetadataProcessor
             return id;
         }
 
+        /// <summary>
+        /// Try to get a string value from the table providing the reference identifier.
+        /// </summary>
+        /// <param name="id">Existing identifier in table.</param>
+        /// <returns>The string value or a null if the identifier doesn't exist.</returns>
+        public string TryGetString(ushort id)
+        {
+            // try to get string from id table
+            var output = _idsByStrings.FirstOrDefault(s => s.Value == id).Key;
+
+            if(output == null)
+            {
+                // try to find string in string constant table
+                output = nanoStringsConstants.TryGetString(id);
+            }
+
+            return output;
+        }
+
         /// <inheritdoc/>
         public void Write(
             nanoBinaryWriter writer)
@@ -110,6 +130,30 @@ namespace nanoFramework.Tools.MetadataProcessor
             foreach (var item in _stringSorter.Sort(fakeStringTable._idsByStrings.Keys))
             {
                 GetOrCreateStringId(item, false);
+            }
+        }
+
+        public void RemoveUnusedItems(HashSet<MetadataToken> items)
+        {
+            var setAll = new HashSet<MetadataToken>();
+
+            // build a collection of the existing tokens
+            foreach (var a in _idsByStrings)
+            {
+                setAll.Add(new MetadataToken(TokenType.String, a.Value));
+            }
+
+            // remove the ones that are used
+            foreach (var t in items)
+            {
+                setAll.Remove(t);
+            }
+
+            // the ones left are the ones not used, OK to remove them
+            foreach (var t in setAll)
+            {
+                var itemToRemove = TryGetString((ushort)t.ToUInt32());
+                _idsByStrings.Remove(itemToRemove);
             }
         }
     }

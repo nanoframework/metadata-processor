@@ -4,6 +4,7 @@
 // See LICENSE file in the project root for full license information.
 //
 
+using Mono.Cecil;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,7 +27,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// Assembly tables context - contains all tables used for building target assembly.
         /// </summary>
         protected readonly nanoTablesContext _context;
-        
+
         /// <summary>
         /// Lookup table for finding item ID by item value.
         /// </summary>
@@ -61,11 +62,24 @@ namespace nanoFramework.Tools.MetadataProcessor
         public void Write(
             nanoBinaryWriter writer)
         {
-            foreach (var item in _idsByItemsDictionary
-                .OrderBy(item => item.Value)
-                .Select(item => item.Key))
+            if (_context.UsedElements != null)
             {
-                WriteSingleItem(writer, item);
+                foreach (var item in _idsByItemsDictionary
+                    .Where(item => _context.UsedElements.Contains(((IMetadataTokenProvider)item.Key).MetadataToken))
+                    .OrderBy(item => item.Value)
+                    .Select(item => item.Key))
+                {
+                    WriteSingleItem(writer, item);
+                }
+            }
+            else
+            {
+                foreach (var item in _idsByItemsDictionary
+                    .OrderBy(item => item.Value)
+                    .Select(item => item.Key))
+                {
+                    WriteSingleItem(writer, item);
+                }
             }
         }
 
@@ -78,12 +92,32 @@ namespace nanoFramework.Tools.MetadataProcessor
             }
         }
 
+        public void ForEachItemInUse(Action<uint, T> action)
+        {
+            foreach (var item in _idsByItemsDictionary
+                .Where(item => _context.UsedElements.Contains(((IMetadataTokenProvider)item.Key).MetadataToken))
+                .OrderBy(item => item.Value))
+            {
+                action(item.Value, item.Key);
+            }
+        }
+
         /// <summary>
         /// Helper method for allocating strings from table before table will be written.
         /// </summary>
         public void AllocateStrings()
         {
             foreach (var item in _idsByItemsDictionary
+                .OrderBy(item => item.Value)
+                .Select(item => item.Key))
+            {
+                AllocateSingleItemStrings(item);
+            }
+        }
+        public void AllocateStringsInUse()
+        {
+            foreach (var item in _idsByItemsDictionary
+                .Where(item => _context.UsedElements.Contains(((IMetadataTokenProvider)item.Key).MetadataToken))
                 .OrderBy(item => item.Value)
                 .Select(item => item.Key))
             {
@@ -144,5 +178,29 @@ namespace nanoFramework.Tools.MetadataProcessor
         protected abstract void WriteSingleItem(
             nanoBinaryWriter writer,
             T item);
+
+        public IEnumerable<T> GetUsedItems()
+        {
+            List<T> usedItems = new List<T>();
+
+            if (_context.UsedElements != null)
+            {
+
+                foreach (var item in _idsByItemsDictionary
+                                        .Where(item => _context.UsedElements.Contains(((IMetadataTokenProvider)item.Key).MetadataToken)))
+                {
+                    usedItems.Add(item.Key);
+                }
+            }
+            else
+            {
+                foreach (var item in _idsByItemsDictionary)
+                {
+                    usedItems.Add(item.Key);
+                }
+            }
+
+            return usedItems;
+        }
     }
 }
