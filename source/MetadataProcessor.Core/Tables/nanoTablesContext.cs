@@ -97,9 +97,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             AssemblyReferenceTable = new nanoAssemblyReferenceTable(
                 mainModule.AssemblyReferences, this);
 
-            var typeReferences = mainModule.GetTypeReferences()
-                .Where(item => !IsAttribute(item))
-                .ToList();
+            var typeReferences = mainModule.GetTypeReferences();
 
             TypeReferencesTable = new nanoTypeReferenceTable(
                 typeReferences, this);
