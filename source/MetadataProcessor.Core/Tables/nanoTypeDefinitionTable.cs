@@ -352,7 +352,7 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             if (baseType != null && 
                 baseType.FullName == "System.Delegate" &&
-                definition.FullName == "System.MulticastDelegate")
+                definition.FullName != "System.MulticastDelegate")
             {
                 flags |= nanoTypeDefinitionFlags.TD_Delegate;
             }
