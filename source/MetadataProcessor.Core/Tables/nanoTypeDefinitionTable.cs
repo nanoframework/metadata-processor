@@ -57,7 +57,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             : base(items, new TypeDefinitionEqualityComparer(), context)
         {
             TypeDefinitions = items
-                .Select(t => t).ToList();
+                .Select(t => t).OrderBy(t => t.FullName).ToList();
         }
 
         /// <summary>
@@ -151,8 +151,8 @@ namespace nanoFramework.Tools.MetadataProcessor
             nanoBinaryWriter writer)
         {
             var firstStaticFieldId = _context.FieldsTable.MaxFieldId;
-            var staticFieldsNumber = 0;
-            foreach (var field in fieldsList.Where(item => item.IsStatic))
+            var staticFieldsCount = 0;
+            foreach (var field in fieldsList.Where(item => item.IsStatic && !item.IsLiteral))
             {
                 ushort fieldReferenceId;
                 _context.FieldsTable.TryGetFieldReferenceId(field, true, out fieldReferenceId);
@@ -161,33 +161,33 @@ namespace nanoFramework.Tools.MetadataProcessor
                 _context.SignaturesTable.GetOrCreateSignatureId(field);
                 _context.StringTable.GetOrCreateStringId(field.Name);
 
-                ++staticFieldsNumber;
+                ++staticFieldsCount;
             }
 
-            var firstInstanseFieldId = _context.FieldsTable.MaxFieldId;
-            var instanceFieldsNumber = 0;
-            foreach (var field in fieldsList.Where(item => !item.IsStatic))
+            var firstInstanceFieldId = _context.FieldsTable.MaxFieldId;
+            var instanceFieldsCount = 0;
+            foreach (var field in fieldsList.Where(item => !item.IsStatic && !item.IsLiteral))
             {
                 ushort fieldReferenceId;
                 _context.FieldsTable.TryGetFieldReferenceId(field, true, out fieldReferenceId);
-                firstInstanseFieldId = Math.Min(firstInstanseFieldId, fieldReferenceId);
+                firstInstanceFieldId = Math.Min(firstInstanceFieldId, fieldReferenceId);
 
                 _context.SignaturesTable.GetOrCreateSignatureId(field);
                 _context.StringTable.GetOrCreateStringId(field.Name);
 
-                ++instanceFieldsNumber;
+                ++instanceFieldsCount;
             }
 
-            if (firstStaticFieldId > firstInstanseFieldId)
+            if (firstStaticFieldId > firstInstanceFieldId)
             {
-                firstStaticFieldId = firstInstanseFieldId;
+                firstStaticFieldId = firstInstanceFieldId;
             }
 
             writer.WriteUInt16(firstStaticFieldId);
-            writer.WriteUInt16(firstInstanseFieldId);
+            writer.WriteUInt16(firstInstanceFieldId);
 
-            writer.WriteByte((byte) staticFieldsNumber);
-            writer.WriteByte((byte) instanceFieldsNumber);
+            writer.WriteByte((byte) staticFieldsCount);
+            writer.WriteByte((byte) instanceFieldsCount);
         }
 
         private void WriteMethodBodies(
@@ -196,31 +196,31 @@ namespace nanoFramework.Tools.MetadataProcessor
             nanoBinaryWriter writer)
         {
             ushort firstMethodId = 0xFFFF;
-            var virtualMethodsNumber = 0;
+            var virtualMethodsCount = 0;
             foreach (var method in methods.Where(item => item.IsVirtual))
             {
                 firstMethodId = Math.Min(firstMethodId, _context.ByteCodeTable.GetMethodId(method));
                 CreateMethodSignatures(method);
-                ++virtualMethodsNumber;
+                ++virtualMethodsCount;
             }
 
-            var instanceMethodsNumber = 0;
+            var instanceMethodsCount = 0;
             foreach (var method in methods.Where(item => !(item.IsVirtual || item.IsStatic)))
             {
                 firstMethodId = Math.Min(firstMethodId, _context.ByteCodeTable.GetMethodId(method));
                 CreateMethodSignatures(method);
-                ++instanceMethodsNumber;
+                ++instanceMethodsCount;
             }
 
-            var staticMethodsNumber = 0;
+            var staticMethodsCount = 0;
             foreach (var method in methods.Where(item => item.IsStatic))
             {
                 firstMethodId = Math.Min(firstMethodId, _context.ByteCodeTable.GetMethodId(method));
                 CreateMethodSignatures(method);
-                ++staticMethodsNumber;
+                ++staticMethodsCount;
             }
 
-            if (virtualMethodsNumber + instanceMethodsNumber + staticMethodsNumber == 0)
+            if (virtualMethodsCount + instanceMethodsCount + staticMethodsCount == 0)
             {
                 firstMethodId = _context.ByteCodeTable.NextMethodId;
             }
@@ -229,9 +229,9 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             writer.WriteUInt16(firstMethodId);
 
-            writer.WriteByte((byte)virtualMethodsNumber);
-            writer.WriteByte((byte)instanceMethodsNumber);
-            writer.WriteByte((byte)staticMethodsNumber);
+            writer.WriteByte((byte)virtualMethodsCount);
+            writer.WriteByte((byte)instanceMethodsCount);
+            writer.WriteByte((byte)staticMethodsCount);
         }
 
         private void CreateMethodSignatures(
@@ -344,9 +344,17 @@ namespace nanoFramework.Tools.MetadataProcessor
             }
 
             var baseType = definition.BaseType;
-            if (baseType != null && baseType.FullName == "System.MulticastDelegate")
+            if (baseType != null && 
+                baseType.FullName == "System.MulticastDelegate")
             {
                 flags |= nanoTypeDefinitionFlags.TD_MulticastDelegate;
+            }
+
+            if (baseType != null && 
+                baseType.FullName == "System.Delegate" &&
+                definition.FullName == "System.MulticastDelegate")
+            {
+                flags |= nanoTypeDefinitionFlags.TD_Delegate;
             }
 
             return flags;

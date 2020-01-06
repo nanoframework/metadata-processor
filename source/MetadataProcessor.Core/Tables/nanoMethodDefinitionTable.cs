@@ -76,8 +76,12 @@ namespace nanoFramework.Tools.MetadataProcessor
             _context.SignaturesTable.WriteDataType(item.ReturnType, writer, false, false);
             if (item.ReturnType is TypeSpecification)
             {
-                _context.TypeSpecificationsTable
-                    .GetOrCreateTypeSpecificationId(item.ReturnType);
+                // developer note
+                // This check is wrong. A TypeSpecification is showing when the return type it's an array which is OK.
+                // Requires further investigation to evaluate what's the correct condition required to add an entry to the Type Specifications Table
+
+                //_context.TypeSpecificationsTable
+                //    .GetOrCreateTypeSpecificationId(item.ReturnType);
             }
 
             writer.WriteByte(parametersCount);

@@ -17,48 +17,31 @@ namespace nanoFramework.Tools.MetadataProcessor
             new HashSet<string>(StringComparer.Ordinal)
             {
                 // Assembly-level attributes
-                "System.Reflection.AssemblyCultureAttribute",
-                "System.Reflection.AssemblyVersionAttribute",
-                "System.Reflection.AssemblyFileVersionAttribute",
-                "System.Reflection.AssemblyTrademarkAttribute",
-                "System.Reflection.AssemblyTitleAttribute",
-                "System.Reflection.AssemblyProductAttribute",
-                "System.Reflection.AssemblyKeyNameAttribute",
-                "System.Reflection.AssemblyKeyFileAttribute",
-                "System.Reflection.AssemblyInformationalVersionAttribute",
-                "System.Reflection.AssemblyFlagsAttribute",
-                "System.Reflection.AssemblyDescriptionAttribute",
-                "System.Reflection.AssemblyDelaySignAttribute",
-                "System.Reflection.AssemblyDefaultAliasAttribute",
-                "System.Reflection.AssemblyCopyrightAttribute",
-                "System.Reflection.AssemblyConfigurationAttribute",
-                "System.Reflection.AssemblyCompanyAttribute",
                 "System.Runtime.InteropServices.ComVisibleAttribute",
                 "System.Runtime.InteropServices.GuidAttribute",
 
                 // Compiler-specific attributes
-                "System.ParamArrayAttribute",
-                "System.SerializableAttribute",
-                "System.NonSerializedAttribute",
-                "System.Runtime.InteropServices.StructLayoutAttribute",
-                "System.Runtime.InteropServices.LayoutKind",
-                "System.Runtime.InteropServices.OutAttribute",
-                "System.Runtime.CompilerServices.ExtensionAttribute",
-                "System.Runtime.CompilerServices.MethodImplAttribute",
-                "System.Runtime.CompilerServices.InternalsVisibleToAttribute",
-                "System.Runtime.CompilerServices.IndexerNameAttribute",
-                "System.Runtime.CompilerServices.MethodImplOptions",
-                "System.Reflection.FieldNoReflectionAttribute",
-                "System.Reflection.DefaultMemberAttribute",
+                //"System.ParamArrayAttribute",
+                //"System.SerializableAttribute",
+                //"System.NonSerializedAttribute",
+                //"System.Runtime.InteropServices.StructLayoutAttribute",
+                //"System.Runtime.InteropServices.LayoutKind",
+                //"System.Runtime.InteropServices.OutAttribute",
+                //"System.Runtime.CompilerServices.ExtensionAttribute",
+                //"System.Runtime.CompilerServices.MethodImplAttribute",
+                //"System.Runtime.CompilerServices.InternalsVisibleToAttribute",
+                //"System.Runtime.CompilerServices.IndexerNameAttribute",
+                //"System.Runtime.CompilerServices.MethodImplOptions",
+                //"System.Reflection.FieldNoReflectionAttribute",
 
                 // Debugger-specific attributes
                 "System.Diagnostics.DebuggableAttribute",
+                //"System.Diagnostics.DebuggerBrowsableAttribute",
+                //"System.Diagnostics.DebuggerBrowsableState",
+                "System.Diagnostics.DebuggerHiddenAttribute",
                 "System.Diagnostics.DebuggerNonUserCodeAttribute",
                 "System.Diagnostics.DebuggerStepThroughAttribute",
                 "System.Diagnostics.DebuggerDisplayAttribute",
-                "System.Diagnostics.DebuggerBrowsableAttribute",
-                "System.Diagnostics.DebuggerBrowsableState",
-                "System.Diagnostics.DebuggerHiddenAttribute",
 
                 // Compile-time attributes
                 "System.AttributeUsageAttribute",
@@ -73,7 +56,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                 // Not supported attributes
                 "System.MTAThreadAttribute",
                 "System.STAThreadAttribute",
-                "System.Reflection.DefaultMemberAttribute",
+                //"System.Reflection.DefaultMemberAttribute",
             };
 
         public nanoTablesContext(
@@ -87,11 +70,6 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             ClassNamesToExclude = classNamesToExclude;
 
-            foreach (var item in assemblyDefinition.CustomAttributes)
-            {
-                _ignoringAttributes.Add(item.AttributeType.FullName);
-            }
-
             // check CustomAttributes against list of classes to exclude
             foreach (var item in assemblyDefinition.CustomAttributes)
             {
@@ -100,6 +78,15 @@ namespace nanoFramework.Tools.MetadataProcessor
                     !_ignoringAttributes.Contains(item.AttributeType.FullName))
                 {
                     _ignoringAttributes.Add(item.AttributeType.FullName);
+                }
+            }
+
+            // check ignoring attributes against ClassNamesToExclude 
+            foreach(var className in ClassNamesToExclude)
+            {
+                if(!_ignoringAttributes.Contains(className))
+                {
+                    _ignoringAttributes.Add(className);
                 }
             }
 

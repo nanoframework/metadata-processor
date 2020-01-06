@@ -66,7 +66,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// <param name="value">String value for obtaining identifier.</param>
         /// <param name="useConstantsTable">
         /// If <c>true</c> hard-coded string constants table will be used (should be <c>false</c>
-        /// for byte code writer because onlyloader use this pre-defined string table optimization).
+        /// for byte code writer because only loader use this pre-defined string table optimization).
         /// </param>
         /// <returns>Existing identifier if string already in table or new one.</returns>
         public ushort GetOrCreateStringId(

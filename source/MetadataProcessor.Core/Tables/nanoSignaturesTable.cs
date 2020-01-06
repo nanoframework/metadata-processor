@@ -519,7 +519,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             }
 
             var fullSignatures = GetFullSignaturesArray();
-            for (var i = 0; i < fullSignatures.Length - signature.Length; ++i)
+            for (var i = 0; i <= fullSignatures.Length - signature.Length; ++i)
             {
                 if (signature.SequenceEqual(fullSignatures.Skip(i).Take(signature.Length)))
                 {
