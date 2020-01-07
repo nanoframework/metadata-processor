@@ -151,7 +151,8 @@ namespace nanoFramework.Tools.MetadataProcessor
 
         private bool IsClassToExclude(TypeDefinition td)
         {
-            return _classNamesToExclude.Contains(td.FullName);
+            return (_classNamesToExclude.Contains(td.FullName) ||
+                    _classNamesToExclude.Contains(td.DeclaringType?.FullName));
         }
     }
 }

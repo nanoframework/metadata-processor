@@ -36,8 +36,8 @@ namespace nanoFramework.Tools.MetadataProcessor
 
                 // Debugger-specific attributes
                 "System.Diagnostics.DebuggableAttribute",
-                //"System.Diagnostics.DebuggerBrowsableAttribute",
-                //"System.Diagnostics.DebuggerBrowsableState",
+                "System.Diagnostics.DebuggerBrowsableAttribute",
+                "System.Diagnostics.DebuggerBrowsableState",
                 "System.Diagnostics.DebuggerHiddenAttribute",
                 "System.Diagnostics.DebuggerNonUserCodeAttribute",
                 "System.Diagnostics.DebuggerStepThroughAttribute",
@@ -74,8 +74,10 @@ namespace nanoFramework.Tools.MetadataProcessor
             foreach (var item in assemblyDefinition.CustomAttributes)
             {
                 // add it to ignore list, if it's not already there
-                if (ClassNamesToExclude.Contains(item.AttributeType.FullName) &&
-                    !_ignoringAttributes.Contains(item.AttributeType.FullName))
+                if ((ClassNamesToExclude.Contains(item.AttributeType.FullName) ||
+                     ClassNamesToExclude.Contains(item.AttributeType.DeclaringType?.FullName)) &&
+                    !(_ignoringAttributes.Contains(item.AttributeType.FullName) ||
+                      _ignoringAttributes.Contains(item.AttributeType.DeclaringType?.FullName)))
                 {
                     _ignoringAttributes.Add(item.AttributeType.FullName);
                 }
@@ -262,9 +264,8 @@ namespace nanoFramework.Tools.MetadataProcessor
             MemberReference typeReference)
         {
             return
-                _ignoringAttributes.Contains(typeReference.FullName) ||
-                (typeReference.DeclaringType != null &&
-                    _ignoringAttributes.Contains(typeReference.DeclaringType.FullName));
+                (_ignoringAttributes.Contains(typeReference.FullName) ||
+                 _ignoringAttributes.Contains(typeReference.DeclaringType?.FullName));
         }
 
         private static List<TypeDefinition> GetOrderedTypes(

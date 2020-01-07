@@ -116,24 +116,46 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
             foreach (var c in _tablesContext.TypeDefinitionTable.TypeDefinitions)
             {
-                if (c.IncludeInStub() && !IsClassToExclude(c))
+                // only care about types that have methods
+                if (c.HasMethods)
                 {
-                    var className = NativeMethodsCrc.GetClassName(c);
-
-                    foreach (var m in nanoTablesContext.GetOrderedMethods(c.Methods))
+                    if (c.IncludeInStub() &&
+                        !IsClassToExclude(c))
                     {
-                        var rva = _tablesContext.ByteCodeTable.GetMethodRva(m);
+                        var className = NativeMethodsCrc.GetClassName(c);
 
-                        // check method inclusion
-                        if ((rva == 0xFFFF &&
-                             !m.IsAbstract))
+                        foreach (var m in nanoTablesContext.GetOrderedMethods(c.Methods))
                         {
-                            assemblyLookup.LookupTable.Add(new Method()
+                            var rva = _tablesContext.ByteCodeTable.GetMethodRva(m);
+
+                            // check method inclusion
+                            // method is not a native implementation (RVA 0xFFFF) and is not abstract
+                            if ((rva == 0xFFFF &&
+                                 !m.IsAbstract))
                             {
-                                Declaration = $"Library_{_project}_{className}::{NativeMethodsCrc.GetMethodName(m)}"
-                            });
+                                assemblyLookup.LookupTable.Add(new Method()
+                                {
+                                    Declaration = $"Library_{_project}_{className}::{NativeMethodsCrc.GetMethodName(m)}"
+                                });
+                            }
+                            else
+                            {
+                                // method won't be included, still
+                                // need to add a NULL entry for it
+
+                                assemblyLookup.LookupTable.Add(new Method()
+                                {
+                                    Declaration = "NULL"
+                                });
+                            }
                         }
-                        else
+                    }
+                    else
+                    {
+                        // type won't be included, still
+                        // need to add a NULL entry for each method 
+
+                        for (int i = 0; i < c.Methods.Count; i++)
                         {
                             assemblyLookup.LookupTable.Add(new Method()
                             {
@@ -166,7 +188,8 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
             foreach (var c in _tablesContext.TypeDefinitionTable.TypeDefinitions)
             {
-                if (c.IncludeInStub() && !IsClassToExclude(c))
+                if (c.IncludeInStub() && 
+                    !IsClassToExclude(c))
                 {
                     var classData = new Class()
                     {
@@ -265,7 +288,8 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
         private bool IsClassToExclude(TypeDefinition td)
         {
-            return _tablesContext.ClassNamesToExclude.Contains(td.FullName);
+            return (_tablesContext.ClassNamesToExclude.Contains(td.FullName) ||
+                    _tablesContext.ClassNamesToExclude.Contains(td.DeclaringType?.FullName));
         }
 
         private int GetInstanceFieldsOffset(TypeDefinition c)
@@ -298,7 +322,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                 // now add the fields count from this type
                 if (_tablesContext.TypeDefinitionTable.TryGetTypeReferenceId(c, out tt))
                 {
-                    fieldCount += _tablesContext.TypeDefinitionTable.TypeDefinitions[tt].Fields.Count(f => !f.IsStatic);
+                    fieldCount += c.Fields.Count(f => !f.IsStatic && !f.IsLiteral);
                 }
 
                 return fieldCount;
@@ -309,7 +333,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
                 if (_tablesContext.TypeDefinitionTable.TryGetTypeReferenceId(c, out tt))
                 {
-                    return _tablesContext.TypeDefinitionTable.TypeDefinitions[tt].Fields.Count(f => !f.IsStatic);
+                    return c.Fields.Count(f => !f.IsStatic && !f.IsLiteral);
                 }
                 else
                 {

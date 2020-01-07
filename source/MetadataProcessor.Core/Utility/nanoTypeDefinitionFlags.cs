@@ -17,6 +17,9 @@ namespace nanoFramework.Tools.MetadataProcessor
         TD_Scope_None = 0x0000,
 
         // Class is public scope.
+        TD_Scope_NotPublic =            0x0000,
+
+        // Class is public scope.
         TD_Scope_Public =               0x0001,
         // Class is nested with public visibility.
         TD_Scope_NestedPublic =         0x0002,
@@ -34,17 +37,19 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// <summary>
         /// Mask for scope flags
         /// </summary>
-        TD_Scope = 
-            TD_Scope_Public | 
-            TD_Scope_NestedPublic | 
-            TD_Scope_NestedPrivate |
-            TD_Scope_NestedFamily |
-            TD_Scope_NestedAssembly |
-            TD_Scope_NestedFamANDAssem |
+        TD_Scope =
+            TD_Scope_NotPublic          |
+            TD_Scope_Public             | 
+            TD_Scope_NestedPublic       | 
+            TD_Scope_NestedPrivate      |
+            TD_Scope_NestedFamily       |
+            TD_Scope_NestedAssembly     |
+            TD_Scope_NestedFamANDAssem  |
             TD_Scope_NestedFamORAssem,
 
         TD_Serializable =               0x0008,
 
+        TD_Semantics_Class =            0x0000,
         TD_Semantics_ValueType =        0x0010,
         TD_Semantics_Interface =        0x0020,
         TD_Semantics_Enum =             0x0030,
@@ -52,9 +57,10 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// <summary>
         /// Mask for semantics flags
         /// </summary>
-        TD_Semantics = 
-            TD_Semantics_ValueType | 
-            TD_Semantics_Interface | 
+        TD_Semantics =
+            TD_Semantics_Class      |
+            TD_Semantics_ValueType  | 
+            TD_Semantics_Interface  | 
             TD_Semantics_Enum,
 
         TD_Abstract =                   0x0040,

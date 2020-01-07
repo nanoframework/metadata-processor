@@ -50,7 +50,6 @@ struct Library_{{AssemblyName}}_{{Name}}
 };
 
 {{/Classes}}
-
 extern const CLR_RT_NativeAssemblyData g_CLR_AssemblyNative_{{Name}};
 
 #endif  //_{{ShortNameUpper}}_H_

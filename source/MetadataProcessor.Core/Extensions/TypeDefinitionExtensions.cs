@@ -20,9 +20,8 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
             }
 
             // Only generate a stub for classes and value types.
-            if ( (value.IsClass ||
-                  value.IsValueType) &&
-                 !value.IsEnum)
+            if ( typeDefFlags.HasFlag(nanoTypeDefinitionFlags.TD_Semantics_Class) ||
+                 typeDefFlags.HasFlag(nanoTypeDefinitionFlags.TD_Semantics_ValueType) )
             { 
                 return true;
             }
