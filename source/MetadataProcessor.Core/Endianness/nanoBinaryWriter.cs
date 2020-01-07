@@ -233,7 +233,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         }
 
         /// <summary>
-        /// Write single unsigned byte into underying stream.
+        /// Write single unsigned byte into underlying stream.
         /// </summary>
         /// <param name="value">Unsigned byte value for writing.</param>
         public void WriteByte(byte value)
@@ -242,7 +242,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         }
 
         /// <summary>
-        /// Write single signed byte into underying stream.
+        /// Write single signed byte into underlying stream.
         /// </summary>
         /// <param name="value">Signed byte value for writing.</param>
         public void WriteSByte(sbyte value)
@@ -251,7 +251,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         }
 
         /// <summary>
-        /// Write version information into underying stream.
+        /// Write version information into underlying stream.
         /// </summary>
         /// <param name="value">Version information value for writing.</param>
         public void WriteVersion(Version value)
@@ -263,7 +263,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         }
 
         /// <summary>
-        /// Write raw string value (in UTF-8 encoding) into underying stream.
+        /// Write raw string value (in UTF-8 encoding) into underlying stream.
         /// </summary>
         /// <param name="value">String value for writing.</param>
         public void WriteString(string value)
@@ -273,7 +273,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         }
 
         /// <summary>
-        /// Write raw bytes array into underying stream.
+        /// Write raw bytes array into underlying stream.
         /// </summary>
         /// <param name="value">Raw bytes array for writing.</param>
         public void WriteBytes(byte[] value)
@@ -282,7 +282,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         }
 
         /// <summary>
-        /// Write single signed word into underying stream.
+        /// Write single signed word into underlying stream.
         /// </summary>
         /// <param name="value">Signed word value for writing.</param>
         public void WriteInt16(short value)
@@ -291,7 +291,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         }
 
         /// <summary>
-        /// Write single signed double word into underying stream.
+        /// Write single signed double word into underlying stream.
         /// </summary>
         /// <param name="value">Signed double word value for writing.</param>
         public void WriteInt32(int value)
@@ -300,7 +300,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         }
 
         /// <summary>
-        /// Write single signed quad word into underying stream.
+        /// Write single signed quad word into underlying stream.
         /// </summary>
         /// <param name="value">Signed quad word value for writing.</param>
         public void WriteInt64(long value)
@@ -333,31 +333,31 @@ namespace nanoFramework.Tools.MetadataProcessor
         }
 
         /// <summary>
-        /// Write single unsigned word into underying stream.
+        /// Write single unsigned word into underlying stream.
         /// </summary>
         /// <param name="value">Unsigned word value for writing.</param>
         public abstract void WriteUInt16(ushort value);
 
         /// <summary>
-        /// Write single signed double word into underying stream.
+        /// Write single signed double word into underlying stream.
         /// </summary>
         /// <param name="value">Unsigned double word value for writing.</param>
         public abstract void WriteUInt32(uint value);
 
         /// <summary>
-        /// Write single signed quad word into underying stream.
+        /// Write single signed quad word into underlying stream.
         /// </summary>
         /// <param name="value">Unsigned quad word value for writing.</param>
         public abstract void WriteUInt64(ulong value);
 
         /// <summary>
-        /// Write single floating point value (4 bytes) into underying stream.
+        /// Write single floating point value (4 bytes) into underlying stream.
         /// </summary>
         /// <param name="value">Floating point value for writing.</param>
         public abstract void WriteSingle(float value);
 
         /// <summary>
-        /// Write single floating point value (8 bytes) into underying stream.
+        /// Write single floating point value (8 bytes) into underlying stream.
         /// </summary>
         /// <param name="value">Floating point value for writing.</param>
         public abstract void WriteDouble(double value);

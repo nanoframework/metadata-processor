@@ -160,7 +160,6 @@ namespace nanoFramework.Tools.MetadataProcessor
             _tablesContext.MethodDefinitionTable.RemoveUnusedItems(set);
             _tablesContext.MethodReferencesTable.RemoveUnusedItems(set);
             _tablesContext.TypeDefinitionTable.RemoveUnusedItems(set);
-            _tablesContext.TypeReferencesTable.RemoveUnusedItems(set);
             _tablesContext.TypeDefinitionTable.ResetByteCodeOffsets();
             _tablesContext.AttributesTable.RemoveUnusedItems(set);
             _tablesContext.ResetByteCodeTable();
@@ -207,15 +206,12 @@ namespace nanoFramework.Tools.MetadataProcessor
                 {
                     // remove unused interfaces
                     // because we don't have an interface definition table
-                    // have to do it the hard way: search the type definition that contains the interface
-                    foreach (var t in _tablesContext.TypeDefinitionTable.Items)
+                    // have to do it the hard way: search the type definition that contains the interface type
+                    var ii = _tablesContext.TypeDefinitionTable.Items.FirstOrDefault(t => t.MetadataToken == i.InterfaceType.MetadataToken);
+                    if (ii == null)
                     {
-                        var ii = t.Interfaces.FirstOrDefault(iRef => iRef.MetadataToken == i.MetadataToken);
-                        if (ii == null)
-                        {
-                            interfacesToRemove.Add(i);
-                            break;
-                        }
+                        interfacesToRemove.Add(i);
+                        break;
                     }
                 }
 
