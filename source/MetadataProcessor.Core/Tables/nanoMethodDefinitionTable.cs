@@ -80,8 +80,11 @@ namespace nanoFramework.Tools.MetadataProcessor
                 // This check is wrong. A TypeSpecification is showing when the return type it's an array which is OK.
                 // Requires further investigation to evaluate what's the correct condition required to add an entry to the Type Specifications Table
 
-                //_context.TypeSpecificationsTable
-                //    .GetOrCreateTypeSpecificationId(item.ReturnType);
+                //if (!item.ReturnType.GetElementType().IsPrimitive &&
+                //    item.ReturnType.GetElementType().FullName != "System.Object")
+                //{
+                //    _context.TypeSpecificationsTable.GetOrCreateTypeSpecificationId(item.ReturnType);
+                //}
             }
 
             writer.WriteByte(parametersCount);
@@ -234,7 +237,8 @@ namespace nanoFramework.Tools.MetadataProcessor
                 //flag |= MD_HasAttributes; // ???
             }
 
-            if (method == method.Module.EntryPoint)
+            if (method.Module != null &&
+                method == method.Module.EntryPoint)
             {
                 flag |= MD_EntryPoint;
             }
@@ -244,24 +248,27 @@ namespace nanoFramework.Tools.MetadataProcessor
                 flag |= MD_HasExceptionHandlers;
             }
 
-            var baseType = method.DeclaringType.BaseType;
-            if (baseType != null && baseType.FullName == "System.MulticastDelegate")
+            if (method.DeclaringType != null)
             {
-                if (method.IsConstructor)
+                var baseType = method.DeclaringType.BaseType;
+                if (baseType != null && baseType.FullName == "System.MulticastDelegate")
                 {
-                    flag |= MD_DelegateConstructor;
-                }
-                else if (method.Name == "Invoke")
-                {
-                    flag |= MD_DelegateInvoke;
-                }
-                else if (method.Name == "BeginInvoke")
-                {
-                    flag |= MD_DelegateBeginInvoke;
-                }
-                else if (method.Name == "EndInvoke")
-                {
-                    flag |= MD_DelegateEndInvoke;
+                    if (method.IsConstructor)
+                    {
+                        flag |= MD_DelegateConstructor;
+                    }
+                    else if (method.Name == "Invoke")
+                    {
+                        flag |= MD_DelegateInvoke;
+                    }
+                    else if (method.Name == "BeginInvoke")
+                    {
+                        flag |= MD_DelegateBeginInvoke;
+                    }
+                    else if (method.Name == "EndInvoke")
+                    {
+                        flag |= MD_DelegateEndInvoke;
+                    }
                 }
             }
 

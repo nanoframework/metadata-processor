@@ -64,7 +64,8 @@ namespace nanoFramework.Tools.MetadataProcessor
             List<string> explicitTypesOrder,
             List<string> classNamesToExclude,
             ICustomStringSorter stringSorter,
-            bool applyAttributesCompression)
+            bool applyAttributesCompression,
+            bool verbose)
         {
             AssemblyDefinition = assemblyDefinition;
 
@@ -241,6 +242,8 @@ namespace nanoFramework.Tools.MetadataProcessor
 
         public List<string> ClassNamesToExclude { get; private set; }
 
+        public HashSet<MetadataToken> UsedElements { get; internal set; }
+
         private IEnumerable<Tuple<CustomAttribute, ushort>> GetAttributes(
             IEnumerable<ICustomAttributeProvider> types,
             bool applyAttributesCompression)
@@ -403,6 +406,57 @@ namespace nanoFramework.Tools.MetadataProcessor
             foreach (var method in ordered.Where(item => !item.IsStatic))
             {
                 yield return method;
+            }
+        }
+
+        internal void ResetByteCodeTable()
+        {
+            ByteCodeTable = new nanoByteCodeTable(this);
+        }
+
+        internal void ResetSignaturesTable()
+        {
+            SignaturesTable = new nanoSignaturesTable(this);
+        }
+
+        internal void ResetStringsTable()
+        {
+            StringTable = new nanoStringTable();
+
+            // Pre-allocate strings from some tables
+            AssemblyReferenceTable.AllocateStrings();
+            TypeReferencesTable.AllocateStrings();
+
+            var mainModule = AssemblyDefinition.MainModule;
+
+            var typeReferences = mainModule.GetTypeReferences();
+
+            var typeReferencesNames = new HashSet<string>(
+                typeReferences
+                .Where(item => UsedElements.Contains(((IMetadataTokenProvider)item).MetadataToken))
+                .Select(item => item.FullName),
+                StringComparer.Ordinal);
+
+            var memberReferences = mainModule.GetMemberReferences()
+                .Where(item => UsedElements.Contains(((IMetadataTokenProvider)item).MetadataToken))
+                .Where(item => typeReferencesNames.Contains(item.DeclaringType.FullName))
+                .ToList();
+
+            foreach (var item in memberReferences)
+            {
+                StringTable.GetOrCreateStringId(item.Name);
+
+                var fieldReference = item as FieldReference;
+                if (fieldReference != null)
+                {
+                    SignaturesTable.GetOrCreateSignatureId(fieldReference);
+                }
+
+                var methodReference = item as MethodReference;
+                if (methodReference != null)
+                {
+                    SignaturesTable.GetOrCreateSignatureId(methodReference);
+                }
             }
         }
     }

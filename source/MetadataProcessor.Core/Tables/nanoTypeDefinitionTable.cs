@@ -122,7 +122,12 @@ namespace nanoFramework.Tools.MetadataProcessor
                         var offsets = CodeWriter
                             .PreProcessMethod(method, _context.ByteCodeTable.FakeStringTable)
                             .ToList();
-                        _byteCodeOffsets.Add(method.MetadataToken.ToUInt32(), offsets);
+
+                        // need to check if table already has this key (because of second pass to minimize)
+                        if (!_byteCodeOffsets.ContainsKey(method.MetadataToken.ToUInt32()))
+                        {
+                            _byteCodeOffsets.Add(method.MetadataToken.ToUInt32(), offsets);
+                        }
                     }
                 }
                 foreach (var nestedType in item.NestedTypes)
@@ -132,7 +137,12 @@ namespace nanoFramework.Tools.MetadataProcessor
                         var offsets = CodeWriter
                             .PreProcessMethod(method, _context.ByteCodeTable.FakeStringTable)
                             .ToList();
-                        _byteCodeOffsets.Add(method.MetadataToken.ToUInt32(), offsets);
+
+                        // need to check if table already has this key (because of second pass to minimize)
+                        if (!_byteCodeOffsets.ContainsKey(method.MetadataToken.ToUInt32()))
+                        {
+                            _byteCodeOffsets.Add(method.MetadataToken.ToUInt32(), offsets);
+                        }
                     }
                 }
 
@@ -358,6 +368,16 @@ namespace nanoFramework.Tools.MetadataProcessor
             }
 
             return flags;
+        }
+
+        internal bool IsClassToExclude(TypeDefinition td)
+        {
+            return _context.ClassNamesToExclude.Contains(td.FullName);
+        }
+
+        internal void ResetByteCodeOffsets()
+        {
+            _byteCodeOffsets = new Dictionary<uint, List<Tuple<uint, uint>>>();
         }
     }
 }

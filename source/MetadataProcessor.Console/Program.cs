@@ -27,9 +27,11 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
 
             private List<string> _classNamesToExclude = new List<string>();
 
-            internal bool Minimize { get; set; }
+            internal string PeFileName;
 
             internal bool Verbose { get; set; }
+
+            internal bool VerboseMinimize { get; set; }
 
             public void Parse(string fileName)
             {
@@ -56,7 +58,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
                 {
                     if (Verbose) System.Console.WriteLine("Compiling assembly...");
 
-                    _assemblyBuilder = new nanoAssemblyBuilder(_assemblyDefinition, _classNamesToExclude, Minimize, Verbose, isCoreLibrary);
+                    _assemblyBuilder = new nanoAssemblyBuilder(_assemblyDefinition, _classNamesToExclude, VerboseMinimize, isCoreLibrary);
 
                     using (var stream = File.Open(fileName, FileMode.Create, FileAccess.ReadWrite))
                     using (var writer = new BinaryWriter(stream))
@@ -73,6 +75,34 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
                 {
                     System.Console.Error.WriteLine(
                         "Unable to compile output assembly file '{0}' - check parse command results.", fileName);
+                    throw;
+                }
+            }
+
+            public void Minimize(
+                string fileName)
+            {
+                try
+                {
+                    if (Verbose) System.Console.WriteLine("Minimizing assembly...");
+
+                    _assemblyBuilder.Minimize();
+
+                    using (var stream = File.Open(fileName, FileMode.Create, FileAccess.ReadWrite))
+                    using (var writer = new BinaryWriter(stream))
+                    {
+                        _assemblyBuilder.Write(GetBinaryWriter(writer));
+                    }
+
+                    using (var writer = XmlWriter.Create(Path.ChangeExtension(fileName, "pdbx")))
+                    {
+                        _assemblyBuilder.Write(writer);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Console.Error.WriteLine(
+                        "Unable to minimize assembly file '{0}'.", fileName);
                     throw;
                 }
             }
@@ -189,6 +219,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
                     System.Console.WriteLine("-generateDependency                                   Generates an XML file with the relationship between assemblies.");
                     System.Console.WriteLine("-minimize                                             Minimizes the assembly, removing unwanted elements.");
                     System.Console.WriteLine("-verbose                                              Outputs each command before executing it.");
+                    System.Console.WriteLine("-verboseMinimize                                      Turns on verbose level for the minimization phase.");
                     System.Console.WriteLine("");
                 }
                 else if (arg == "-parse" && i + 1 < args.Length)
@@ -206,7 +237,9 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
                         Environment.Exit(1);
                     }
 
-                    md.Compile(args[i + 1], isCoreLibrary);
+                    md.PeFileName = args[i + 1];
+
+                    md.Compile(md.PeFileName, isCoreLibrary);
 
                     i += 2;
                 }
@@ -216,11 +249,15 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
                 }
                 else if (arg == "-minimize" && i + 1 < args.Length)
                 {
-                    md.Minimize = true;
+                    md.Minimize(md.PeFileName);
                 }
                 else if (arg == "-verbose" && i + 1 < args.Length)
                 {
                     md.Verbose = true;
+                }
+                else if (arg == "-verboseminimize" && i + 1 < args.Length)
+                {
+                    md.VerboseMinimize = true;
                 }
                 else if (arg == "-loadhints" && i + 2 < args.Length)
                 {
