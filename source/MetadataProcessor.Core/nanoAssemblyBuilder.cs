@@ -164,6 +164,61 @@ namespace nanoFramework.Tools.MetadataProcessor
             _tablesContext.ResetByteCodeTable();
             _tablesContext.ResetSignaturesTable();
             _tablesContext.ResetStringsTable();
+
+            // renormalize type definitions look-up tables
+            // by removing items that are not used
+
+            foreach (var c in _tablesContext.TypeDefinitionTable.Items)
+            {
+                // collect fields to remove
+                List<FieldDefinition> fieldsToRemove = new List<FieldDefinition>();
+
+                foreach (var f in c.Fields)
+                {
+                    if (_tablesContext.FieldsTable.Items.FirstOrDefault(i => i.MetadataToken == f.MetadataToken) == null)
+                    {
+                        fieldsToRemove.Add(f);
+                    }
+                }
+
+                // remove unused fields
+                fieldsToRemove.Select(i => c.Fields.Remove(i)).ToList();
+
+                // collect methods to remove
+                List<MethodDefinition> methodsToRemove = new List<MethodDefinition>();
+
+                foreach (var m in c.Methods)
+                {
+                    if(_tablesContext.MethodDefinitionTable.Items.FirstOrDefault(i => i.MetadataToken == m.MetadataToken) == null)
+                    {
+                        methodsToRemove.Add(m);
+                    }
+                }
+
+                // remove unused methods
+                methodsToRemove.Select(i => c.Methods.Remove(i)).ToList();
+
+                // collect interfaces to remove
+                List<InterfaceImplementation> interfacesToRemove = new List<InterfaceImplementation>();
+
+                foreach (var i in c.Interfaces)
+                {
+                    // remove unused interfaces
+                    // because we don't have an interface definition table
+                    // have to do it the hard way: search the type definition that contains the interface
+                    foreach (var t in _tablesContext.TypeDefinitionTable.Items)
+                    {
+                        var ii = t.Interfaces.FirstOrDefault(iRef => iRef.MetadataToken == i.MetadataToken);
+                        if (ii == null)
+                        {
+                            interfacesToRemove.Add(i);
+                            break;
+                        }
+                    }
+                }
+
+                interfacesToRemove.Select(i => c.Interfaces.Remove(i)).ToList();
+            }
         }
 
         private void ShowDependencies(MetadataToken token, HashSet<MetadataToken> set, HashSet<MetadataToken> setTmp)

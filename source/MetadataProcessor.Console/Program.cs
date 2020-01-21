@@ -8,6 +8,7 @@ using Mono.Cecil;
 using nanoFramework.Tools.MetadataProcessor.Core;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
@@ -185,14 +186,10 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
 
         public static void Main(string[] args)
 		{
-            // grab the assembly version
-            var informationalVersionAttribute = Attribute.GetCustomAttribute(
-                Assembly.GetEntryAssembly(),
-                typeof(AssemblyInformationalVersionAttribute))
-            as AssemblyInformationalVersionAttribute;
+            FileVersionInfo fileVersion = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location);
 
             // output header to console
-            System.Console.WriteLine($"nanoFramework MetadataProcessor Utility v{informationalVersionAttribute.InformationalVersion}");
+            System.Console.WriteLine($"nanoFramework MetadataProcessor Utility v{fileVersion.ToString()}");
             System.Console.WriteLine("Copyright (c) 2019 nanoFramework project contributors");
             System.Console.WriteLine();
             System.Console.WriteLine("For documentation, report issues and support visit our GitHub repo: www.github.com\\nanoFramework");
