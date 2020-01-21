@@ -463,7 +463,8 @@ static const CHAR c_Definition_Begin[] =
 "static const CLR_RT_MethodHandler method_lookup[] =\n"
 "{\n";
 
-static const CHAR c_Definition_Body[] = "    Library_%S_%s::%s,\n";
+static const CHAR c_Definition_Body[]			= "    Library_%S_%s::%s,\n";
+static const CHAR c_Definition_Body_Invalid[]	= "    **Library_%S_%s::%s,\n";
 
 static const CHAR c_Definition_End[] =
 
@@ -1777,6 +1778,14 @@ void CLR_RT_Assembly::GenerateSkeleton_NoInterop(LPCWSTR szFileName, LPCWSTR szP
 					}
 					else
 					{
+						////////////////////////////////////////////////////
+						////////////////////////////////////////////////////
+						// use when debugging to output invalid declaration
+						//BuildMethodName(md, name, mapMethods);
+						//Dump_Printf(c_Definition_Body_Invalid, szName, cls_name.c_str(), name.c_str());
+						////////////////////////////////////////////////////
+						////////////////////////////////////////////////////
+
 						Dump_Printf("    NULL,\n");
 					}
 				}

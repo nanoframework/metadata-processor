@@ -2711,7 +2711,11 @@ HRESULT MetaData::Parser::RemoveUnused()
 
         std::wstring str; TokenToString( tk, str );
 
-        if(m_setFilter_ExcludeClassByName.find( str ) != m_setFilter_ExcludeClassByName.end()) continue;
+		if (m_setFilter_ExcludeClassByName.find(str) != m_setFilter_ExcludeClassByName.end())
+		{
+			wprintf(L"Excluding %s\n", str.c_str());
+			continue;
+		}
 
         setNew.insert( tk );
     }

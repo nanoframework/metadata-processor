@@ -120,34 +120,39 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                 {
                     if (c.IncludeInStub())
                     {
-                        var className = NativeMethodsCrc.GetClassName(c);
-
-                        foreach (var m in nanoTablesContext.GetOrderedMethods(c.Methods))
+                        // don't include if it's on the exclude list
+                        if (!IsClassToExclude(c))
                         {
-                            var rva = _tablesContext.ByteCodeTable.GetMethodRva(m);
+                            var className = NativeMethodsCrc.GetClassName(c);
 
-                            // check method inclusion
-                            // method is not a native implementation (RVA 0xFFFF) and is not abstract
-                            if ((rva == 0xFFFF &&
-                                 !m.IsAbstract))
+                            foreach (var m in nanoTablesContext.GetOrderedMethods(c.Methods))
                             {
-                                assemblyLookup.LookupTable.Add(new Method()
-                                {
-                                    Declaration = $"Library_{_project}_{className}::{NativeMethodsCrc.GetMethodName(m)}"
-                                });
-                            }
-                            else
-                            {
-                                // method won't be included, still
-                                // need to add a NULL entry for it
-                                // unless it's on the exclude list
+                                var rva = _tablesContext.ByteCodeTable.GetMethodRva(m);
 
-                                if (!IsClassToExclude(c))
+                                // check method inclusion
+                                // method is not a native implementation (RVA 0xFFFF) and is not abstract
+                                if ((rva == 0xFFFF &&
+                                     !m.IsAbstract))
                                 {
                                     assemblyLookup.LookupTable.Add(new Method()
                                     {
-                                        Declaration = "NULL"
+                                        Declaration = $"Library_{_project}_{className}::{NativeMethodsCrc.GetMethodName(m)}"
                                     });
+                                }
+                                else
+                                {
+                                    // method won't be included, still
+                                    // need to add a NULL entry for it
+                                    // unless it's on the exclude list
+
+                                    if (!IsClassToExclude(c))
+                                    {
+                                        assemblyLookup.LookupTable.Add(new Method()
+                                        {
+                                            Declaration = "NULL"
+                                            //Declaration = $"**Library_{_project}_{NativeMethodsCrc.GetClassName(c)}::{NativeMethodsCrc.GetMethodName(m)}"
+                                        });
+                                    }
                                 }
                             }
                         }
@@ -160,11 +165,12 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
                         if (!IsClassToExclude(c))
                         {
-                            for (int i = 0; i < c.Methods.Count; i++)
+                            foreach (var m in nanoTablesContext.GetOrderedMethods(c.Methods))
                             {
                                 assemblyLookup.LookupTable.Add(new Method()
                                 {
                                     Declaration = "NULL"
+                                    //Declaration = $"**Library_{_project}_{NativeMethodsCrc.GetClassName(c)}::{NativeMethodsCrc.GetMethodName(m)}"
                                 });
                             }
                         }
