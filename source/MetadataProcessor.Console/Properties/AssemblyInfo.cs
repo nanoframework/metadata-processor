@@ -10,3 +10,5 @@ using System.Runtime.CompilerServices;
 [assembly: AssemblyCompany("nanoFramework project contributors")]
 [assembly: AssemblyProduct("")]
 [assembly: AssemblyCopyright("Copyright (c) 2019 The nanoFramework project contributors")]
+[assembly: AssemblyVersion("1.0")]
+[assembly: AssemblyFileVersion("1.0")]
