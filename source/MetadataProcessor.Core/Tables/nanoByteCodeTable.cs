@@ -111,19 +111,9 @@ namespace nanoFramework.Tools.MetadataProcessor
         public void Write(
             nanoBinaryWriter writer)
         {
-            if (_context.UsedElements != null)
+            foreach (var method in _methods)
             {
-                foreach (var method in _methods.Where(item => _context.UsedElements.Contains(item.MetadataToken)))
-                {
-                    writer.WriteBytes(CreateByteCode(method, writer));
-                }
-            }
-            else
-            {
-                foreach (var method in _methods)
-                {
-                    writer.WriteBytes(CreateByteCode(method, writer));
-                }
+                writer.WriteBytes(CreateByteCode(method, writer));
             }
         }
 

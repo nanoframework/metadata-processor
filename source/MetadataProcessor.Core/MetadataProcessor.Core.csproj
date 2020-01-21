@@ -124,6 +124,7 @@
     <Compile Include="Utility\NativeMethodsCrc.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="key.snk" />
     <None Include="packages.config" />
     <Compile Include="SkeletonGenerator\SkeletonTemplates.cs" />

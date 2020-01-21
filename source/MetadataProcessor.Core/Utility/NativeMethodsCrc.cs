@@ -137,7 +137,7 @@ namespace nanoFramework.Tools.MetadataProcessor
 
         internal void UpdateCrc(nanoTypeDefinitionTable typeDefinitionTable)
         {
-            foreach (var c in typeDefinitionTable.TypeDefinitions)
+            foreach (var c in typeDefinitionTable.Items)
             {
                 if (c.IncludeInStub() && !IsClassToExclude(c))
                 {
