@@ -242,8 +242,6 @@ namespace nanoFramework.Tools.MetadataProcessor
 
         public List<string> ClassNamesToExclude { get; private set; }
 
-        public HashSet<MetadataToken> UsedElements { get; internal set; }
-
         private IEnumerable<Tuple<CustomAttribute, ushort>> GetAttributes(
             IEnumerable<ICustomAttributeProvider> types,
             bool applyAttributesCompression)
@@ -433,12 +431,10 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             var typeReferencesNames = new HashSet<string>(
                 typeReferences
-                .Where(item => UsedElements.Contains(((IMetadataTokenProvider)item).MetadataToken))
                 .Select(item => item.FullName),
                 StringComparer.Ordinal);
 
             var memberReferences = mainModule.GetMemberReferences()
-                .Where(item => UsedElements.Contains(((IMetadataTokenProvider)item).MetadataToken))
                 .Where(item => typeReferencesNames.Contains(item.DeclaringType.FullName))
                 .ToList();
 

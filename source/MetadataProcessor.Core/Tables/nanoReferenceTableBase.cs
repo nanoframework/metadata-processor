@@ -21,7 +21,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// <summary>
         /// Lookup table for finding item ID by item value.
         /// </summary>
-        private readonly Dictionary<T, ushort> _idsByItemsDictionary;
+        private Dictionary<T, ushort> _idsByItemsDictionary;
 
         /// <summary>
         /// Assembly tables context - contains all tables used for building target assembly.
@@ -31,9 +31,11 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// <summary>
         /// Lookup table for finding item ID by item value.
         /// </summary>
-        protected readonly IEnumerable<T> _items;
+        protected IEnumerable<T> _items;
 
         public IEnumerable<T> Items => _items;
+
+        private readonly IEqualityComparer<T> _comparer;
 
         /// <summary>
         /// Creates new instance of <see cref="nanoReferenceTableBase{T}"/> object.
@@ -55,6 +57,8 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             _context = context;
 
+            _comparer = comparer;
+
             _items = nanoTableItems;
         }
 
@@ -62,24 +66,11 @@ namespace nanoFramework.Tools.MetadataProcessor
         public void Write(
             nanoBinaryWriter writer)
         {
-            if (_context.UsedElements != null)
+            foreach (var item in _idsByItemsDictionary
+                .OrderBy(item => item.Value)
+                .Select(item => item.Key))
             {
-                foreach (var item in _idsByItemsDictionary
-                    .Where(item => _context.UsedElements.Contains(((IMetadataTokenProvider)item.Key).MetadataToken))
-                    .OrderBy(item => item.Value)
-                    .Select(item => item.Key))
-                {
-                    WriteSingleItem(writer, item);
-                }
-            }
-            else
-            {
-                foreach (var item in _idsByItemsDictionary
-                    .OrderBy(item => item.Value)
-                    .Select(item => item.Key))
-                {
-                    WriteSingleItem(writer, item);
-                }
+                WriteSingleItem(writer, item);
             }
         }
 
@@ -92,32 +83,12 @@ namespace nanoFramework.Tools.MetadataProcessor
             }
         }
 
-        public void ForEachItemInUse(Action<uint, T> action)
-        {
-            foreach (var item in _idsByItemsDictionary
-                .Where(item => _context.UsedElements.Contains(((IMetadataTokenProvider)item.Key).MetadataToken))
-                .OrderBy(item => item.Value))
-            {
-                action(item.Value, item.Key);
-            }
-        }
-
         /// <summary>
         /// Helper method for allocating strings from table before table will be written.
         /// </summary>
         public void AllocateStrings()
         {
             foreach (var item in _idsByItemsDictionary
-                .OrderBy(item => item.Value)
-                .Select(item => item.Key))
-            {
-                AllocateSingleItemStrings(item);
-            }
-        }
-        public void AllocateStringsInUse()
-        {
-            foreach (var item in _idsByItemsDictionary
-                .Where(item => _context.UsedElements.Contains(((IMetadataTokenProvider)item.Key).MetadataToken))
                 .OrderBy(item => item.Value)
                 .Select(item => item.Key))
             {
@@ -179,28 +150,25 @@ namespace nanoFramework.Tools.MetadataProcessor
             nanoBinaryWriter writer,
             T item);
 
-        public IEnumerable<T> GetUsedItems()
+        /// <summary>
+        /// Remove unused items from table.
+        /// </summary>
+        public void RemoveUnusedItems(HashSet<MetadataToken> set)
         {
+            // build a collection of the current items that are present in the used items set
             List<T> usedItems = new List<T>();
 
-            if (_context.UsedElements != null)
+            foreach (var item in _idsByItemsDictionary
+                                    .Where(item => set.Contains(((IMetadataTokenProvider)item.Key).MetadataToken)))
             {
-
-                foreach (var item in _idsByItemsDictionary
-                                        .Where(item => _context.UsedElements.Contains(((IMetadataTokenProvider)item.Key).MetadataToken)))
-                {
-                    usedItems.Add(item.Key);
-                }
-            }
-            else
-            {
-                foreach (var item in _idsByItemsDictionary)
-                {
-                    usedItems.Add(item.Key);
-                }
+                usedItems.Add(item.Key);
             }
 
-            return usedItems;
+            // re-create the items dictionary with the used items only
+            _idsByItemsDictionary = usedItems
+            .Select((reference, index) => new { reference, index })
+            .ToDictionary(item => item.reference, item => (ushort)item.index,
+                _comparer);
         }
     }
 }

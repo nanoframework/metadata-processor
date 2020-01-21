@@ -151,10 +151,15 @@ namespace nanoFramework.Tools.MetadataProcessor
                 }
             }
 
-            _tablesContext.UsedElements = set;
-
-            // need to reset several tables
+            // need to reset several tables so they are recreated only with the used items
             _tablesContext.ResetStringsTable();
+            _tablesContext.AssemblyReferenceTable.RemoveUnusedItems(set);
+            _tablesContext.FieldsTable.RemoveUnusedItems(set);
+            _tablesContext.FieldReferencesTable.RemoveUnusedItems(set);
+            _tablesContext.MethodDefinitionTable.RemoveUnusedItems(set);
+            _tablesContext.MethodReferencesTable.RemoveUnusedItems(set);
+            _tablesContext.TypeDefinitionTable.RemoveUnusedItems(set);
+            _tablesContext.TypeReferencesTable.RemoveUnusedItems(set);
             _tablesContext.TypeDefinitionTable.ResetByteCodeOffsets();
             _tablesContext.ResetByteCodeTable();
             _tablesContext.ResetSignaturesTable();

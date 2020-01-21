@@ -113,7 +113,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
             };
 
 
-            foreach (var c in _tablesContext.TypeDefinitionTable.GetUsedItems())
+            foreach (var c in _tablesContext.TypeDefinitionTable.Items)
             {
                 // only care about types that have methods
                 if (c.HasMethods)
@@ -192,7 +192,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                 ShortNameUpper = _project.ToUpperInvariant()
             };
 
-            foreach (var c in _tablesContext.TypeDefinitionTable.GetUsedItems())
+            foreach (var c in _tablesContext.TypeDefinitionTable.Items)
             {
                 if (c.IncludeInStub() && 
                     !IsClassToExclude(c))
