@@ -51,7 +51,8 @@ namespace nanoFramework.Tools.MetadataProcessor
                 classNamesToExclude,
                 stringSorter,
                 applyAttributesCompression,
-                verbose);
+                verbose,
+                isCoreLibrary);
 
             _verbose = verbose;
             _isCoreLibrary = isCoreLibrary;
@@ -361,7 +362,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                     // attributes
                     foreach (var c in fd.CustomAttributes)
                     {
-                        if (!_tablesContext.ClassNamesToExclude.Contains(c.AttributeType.Name))
+                        if (!_tablesContext.ClassNamesToExclude.Contains(c.AttributeType.FullName))
                         {   
                             set.Add(c.Constructor.MetadataToken);
                         }
@@ -438,7 +439,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                     // attributes
                     foreach (var c in md.CustomAttributes)
                     {
-                        if (!_tablesContext.ClassNamesToExclude.Contains(c.AttributeType.Name))
+                        if (!_tablesContext.ClassNamesToExclude.Contains(c.AttributeType.FullName))
                         {
                             set.Add(c.Constructor.MetadataToken);
                         }

@@ -84,11 +84,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             _methods.Add(method);
             _lastAvailableRva += (ushort)byteCode.Length;
 
-            // need to check if table already has this key (because of second pass to minimize)
-            if (!_rvasByMethodNames.ContainsKey(method.FullName))
-            {
-                _rvasByMethodNames.Add(method.FullName, rva);
-            }
+            _rvasByMethodNames.Add(method.FullName, rva);
 
             return id;
         }

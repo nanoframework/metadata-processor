@@ -169,6 +169,8 @@ namespace nanoFramework.Tools.MetadataProcessor
             .Select((reference, index) => new { reference, index })
             .ToDictionary(item => item.reference, item => (ushort)item.index,
                 _comparer);
+
+            _items = usedItems;
         }
     }
 }

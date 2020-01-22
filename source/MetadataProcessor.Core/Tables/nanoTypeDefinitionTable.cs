@@ -123,11 +123,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                             .PreProcessMethod(method, _context.ByteCodeTable.FakeStringTable)
                             .ToList();
 
-                        // need to check if table already has this key (because of second pass to minimize)
-                        if (!_byteCodeOffsets.ContainsKey(method.MetadataToken.ToUInt32()))
-                        {
-                            _byteCodeOffsets.Add(method.MetadataToken.ToUInt32(), offsets);
-                        }
+                        _byteCodeOffsets.Add(method.MetadataToken.ToUInt32(), offsets);
                     }
                 }
                 foreach (var nestedType in item.NestedTypes)
@@ -138,11 +134,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                             .PreProcessMethod(method, _context.ByteCodeTable.FakeStringTable)
                             .ToList();
 
-                        // need to check if table already has this key (because of second pass to minimize)
-                        if (!_byteCodeOffsets.ContainsKey(method.MetadataToken.ToUInt32()))
-                        {
-                            _byteCodeOffsets.Add(method.MetadataToken.ToUInt32(), offsets);
-                        }
+                        _byteCodeOffsets.Add(method.MetadataToken.ToUInt32(), offsets);
                     }
                 }
 
@@ -160,13 +152,13 @@ namespace nanoFramework.Tools.MetadataProcessor
             IList<FieldDefinition> fieldsList,
             nanoBinaryWriter writer)
         {
-            var firstStaticFieldId = _context.FieldsTable.MaxFieldId;
+            ushort firstStaticFieldId = 0;
             var staticFieldsCount = 0;
             foreach (var field in fieldsList.Where(item => item.IsStatic && !item.IsLiteral))
             {
                 ushort fieldReferenceId;
                 _context.FieldsTable.TryGetFieldReferenceId(field, true, out fieldReferenceId);
-                firstStaticFieldId = Math.Min(firstStaticFieldId, fieldReferenceId);
+                firstStaticFieldId = Math.Min(_context.FieldsTable.MaxFieldId, fieldReferenceId);
 
                 _context.SignaturesTable.GetOrCreateSignatureId(field);
                 _context.StringTable.GetOrCreateStringId(field.Name);
@@ -174,13 +166,13 @@ namespace nanoFramework.Tools.MetadataProcessor
                 ++staticFieldsCount;
             }
 
-            var firstInstanceFieldId = _context.FieldsTable.MaxFieldId;
+            ushort firstInstanceFieldId = 0;
             var instanceFieldsCount = 0;
             foreach (var field in fieldsList.Where(item => !item.IsStatic && !item.IsLiteral))
             {
                 ushort fieldReferenceId;
                 _context.FieldsTable.TryGetFieldReferenceId(field, true, out fieldReferenceId);
-                firstInstanceFieldId = Math.Min(firstInstanceFieldId, fieldReferenceId);
+                firstInstanceFieldId = Math.Min(_context.FieldsTable.MaxFieldId, fieldReferenceId);
 
                 _context.SignaturesTable.GetOrCreateSignatureId(field);
                 _context.StringTable.GetOrCreateStringId(field.Name);
