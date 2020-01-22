@@ -123,11 +123,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                             .PreProcessMethod(method, _context.ByteCodeTable.FakeStringTable)
                             .ToList();
 
-                        // need to check if table already has this key (because of second pass to minimize)
-                        if (!_byteCodeOffsets.ContainsKey(method.MetadataToken.ToUInt32()))
-                        {
-                            _byteCodeOffsets.Add(method.MetadataToken.ToUInt32(), offsets);
-                        }
+                        _byteCodeOffsets.Add(method.MetadataToken.ToUInt32(), offsets);
                     }
                 }
                 foreach (var nestedType in item.NestedTypes)
@@ -138,11 +134,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                             .PreProcessMethod(method, _context.ByteCodeTable.FakeStringTable)
                             .ToList();
 
-                        // need to check if table already has this key (because of second pass to minimize)
-                        if (!_byteCodeOffsets.ContainsKey(method.MetadataToken.ToUInt32()))
-                        {
-                            _byteCodeOffsets.Add(method.MetadataToken.ToUInt32(), offsets);
-                        }
+                        _byteCodeOffsets.Add(method.MetadataToken.ToUInt32(), offsets);
                     }
                 }
 
