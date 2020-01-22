@@ -244,11 +244,11 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
                 {
                     md.AddClassToExclude(args[++i]);
                 }
-                else if (arg == "-minimize" && i + 1 < args.Length)
+                else if (arg == "-minimize")
                 {
                     md.Minimize(md.PeFileName);
                 }
-                else if (arg == "-verbose" && i + 1 < args.Length)
+                else if (arg == "-verbose")
                 {
                     md.Verbose = true;
                 }
