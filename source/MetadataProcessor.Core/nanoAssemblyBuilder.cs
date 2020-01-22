@@ -51,7 +51,8 @@ namespace nanoFramework.Tools.MetadataProcessor
                 classNamesToExclude,
                 stringSorter,
                 applyAttributesCompression,
-                verbose);
+                verbose,
+                isCoreLibrary);
 
             _verbose = verbose;
             _isCoreLibrary = isCoreLibrary;
