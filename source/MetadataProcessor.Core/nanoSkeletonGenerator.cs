@@ -100,7 +100,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
         private void GenerateAssemblyLookup()
         {
             // grab native version from assembly attribute
-            var nativeVersionAttribute = _tablesContext.AssemblyDefinition.CustomAttributes.FirstOrDefault(a => a?.AttributeType.Name == "AssemblyNativeVersionAttribute");
+            var nativeVersionAttribute = _tablesContext.AssemblyDefinition.CustomAttributes.FirstOrDefault(a => a?.AttributeType?.Name == "AssemblyNativeVersionAttribute");
             Version nativeVersion = new Version((string)nativeVersionAttribute.ConstructorArguments[0].Value);
 
             var assemblyLookup = new AssemblyLookupTable()
