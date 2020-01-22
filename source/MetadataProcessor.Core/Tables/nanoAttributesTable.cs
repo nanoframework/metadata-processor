@@ -20,18 +20,18 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// <summary>
         /// List of custom attributes in Mono.Cecil format for all internal types.
         /// </summary>
-        private readonly IEnumerable<Tuple<CustomAttribute, ushort>> _typesAttributes;
+        private IEnumerable<Tuple<CustomAttribute, ushort>> _typesAttributes;
 
         /// <summary>
         /// List of custom attributes in Mono.Cecil format for all internal fields.
         /// </summary>
         /// 
-        private readonly IEnumerable<Tuple<CustomAttribute, ushort>> _fieldsAttributes;
+        private IEnumerable<Tuple<CustomAttribute, ushort>> _fieldsAttributes;
 
         /// <summary>
         /// List of custom attributes in Mono.Cecil format for all internal methods.
         /// </summary>
-        private readonly IEnumerable<Tuple<CustomAttribute, ushort>> _methodsAttributes;
+        private IEnumerable<Tuple<CustomAttribute, ushort>> _methodsAttributes;
 
         /// <summary>
         /// Assembly tables context - contains all tables used for building target assembly.
@@ -91,6 +91,52 @@ namespace nanoFramework.Tools.MetadataProcessor
                 writer.WriteUInt16(_context.GetMethodReferenceId(attribute.Constructor));
                 writer.WriteUInt16(_context.SignaturesTable.GetOrCreateSignatureId(attribute));
             }
+        }
+
+        /// <summary>
+        /// Remove unused items from attribute tables.
+        /// </summary>
+        public void RemoveUnusedItems(HashSet<MetadataToken> set)
+        {
+            // build a collection of the current items that are present in the used items set
+            List<Tuple<CustomAttribute, ushort>> usedItems = new List<Tuple<CustomAttribute, ushort>>();
+
+            // types attributes
+            foreach (var item in _typesAttributes
+                                    .Where(item => set.Contains(((IMetadataTokenProvider)item.Item1.Constructor).MetadataToken)))
+            {
+                usedItems.Add(item);
+            }
+
+            // re-create the items dictionary with the used items only
+            _typesAttributes = usedItems
+            .Select(a => new Tuple<CustomAttribute, ushort>(a.Item1, a.Item2));
+
+            // fields attributes
+            usedItems = new List<Tuple<CustomAttribute, ushort>>();
+
+            foreach (var item in _fieldsAttributes
+                                    .Where(item => set.Contains(((IMetadataTokenProvider)item.Item1.Constructor).MetadataToken)))
+            {
+                usedItems.Add(item);
+            }
+
+            // re-create the items dictionary with the used items only
+            _fieldsAttributes = usedItems
+            .Select(a => new Tuple<CustomAttribute, ushort>(a.Item1, a.Item2));
+
+            // methods attributes
+            usedItems = new List<Tuple<CustomAttribute, ushort>>();
+
+            foreach (var item in _methodsAttributes
+                                    .Where(item => set.Contains(((IMetadataTokenProvider)item.Item1.Constructor).MetadataToken)))
+            {
+                usedItems.Add(item);
+            }
+
+            // re-create the items dictionary with the used items only
+            _methodsAttributes = usedItems
+            .Select(a => new Tuple<CustomAttribute, ushort>(a.Item1, a.Item2));
         }
     }
 }

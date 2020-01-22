@@ -161,11 +161,12 @@ namespace nanoFramework.Tools.MetadataProcessor
             _tablesContext.TypeDefinitionTable.RemoveUnusedItems(set);
             _tablesContext.TypeReferencesTable.RemoveUnusedItems(set);
             _tablesContext.TypeDefinitionTable.ResetByteCodeOffsets();
+            _tablesContext.AttributesTable.RemoveUnusedItems(set);
             _tablesContext.ResetByteCodeTable();
             _tablesContext.ResetSignaturesTable();
             _tablesContext.ResetStringsTable();
-
-            // renormalize type definitions look-up tables
+             
+            // renormalise type definitions look-up tables
             // by removing items that are not used
 
             foreach (var c in _tablesContext.TypeDefinitionTable.Items)
@@ -277,7 +278,13 @@ namespace nanoFramework.Tools.MetadataProcessor
 
                 case TokenType.MemberRef:
                     var mr = _tablesContext.MethodReferencesTable.Items.FirstOrDefault(i => i.MetadataToken == token);
-                    // TODO
+
+                    if (mr != null &&
+                        mr.DeclaringType != null)
+                    {
+                        set.Add(mr.DeclaringType.MetadataToken);
+                    }
+                
                     break;
 
                 case TokenType.TypeSpec:
@@ -345,14 +352,18 @@ namespace nanoFramework.Tools.MetadataProcessor
 
                 case TokenType.Field:
                     var fd = _tablesContext.FieldsTable.Items.FirstOrDefault(i => i.MetadataToken == token);
-                    set.Add(fd.MetadataToken);
+
+                    if (fd is TypeReference)
+                    {
+                        set.Add(fd.MetadataToken);
+                    }
                     
                     // attributes
                     foreach (var c in fd.CustomAttributes)
                     {
-                        if (!_tablesContext.ClassNamesToExclude.Contains(c.AttributeType.FullName))
-                        {
-                            set.Add(c.AttributeType.MetadataToken);
+                        if (!_tablesContext.ClassNamesToExclude.Contains(c.AttributeType.Name))
+                        {   
+                            set.Add(c.Constructor.MetadataToken);
                         }
                     }
 
@@ -427,9 +438,9 @@ namespace nanoFramework.Tools.MetadataProcessor
                     // attributes
                     foreach (var c in md.CustomAttributes)
                     {
-                        if (!_tablesContext.ClassNamesToExclude.Contains(c.AttributeType.FullName))
+                        if (!_tablesContext.ClassNamesToExclude.Contains(c.AttributeType.Name))
                         {
-                            set.Add(c.AttributeType.MetadataToken);
+                            set.Add(c.Constructor.MetadataToken);
                         }
                     }
 
