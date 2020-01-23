@@ -153,7 +153,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// <summary>
         /// Remove unused items from table.
         /// </summary>
-        public void RemoveUnusedItems(HashSet<MetadataToken> set)
+        public virtual void RemoveUnusedItems(HashSet<MetadataToken> set)
         {
             // build a collection of the current items that are present in the used items set
             List<T> usedItems = new List<T>();

@@ -42,7 +42,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         private IDictionary<uint, List<Tuple<uint, uint>>> _byteCodeOffsets =
             new Dictionary<uint, List<Tuple<uint, uint>>>();
 
-        public List<TypeDefinition> TypeDefinitions { get; }
+        public List<TypeDefinition> TypeDefinitions { get; private set; }
 
         /// <summary>
         /// Creates new instance of <see cref="nanoTypeDefinitionTable"/> object.
@@ -158,7 +158,12 @@ namespace nanoFramework.Tools.MetadataProcessor
             {
                 ushort fieldReferenceId;
                 _context.FieldsTable.TryGetFieldReferenceId(field, true, out fieldReferenceId);
-                firstStaticFieldId = Math.Min(_context.FieldsTable.MaxFieldId, fieldReferenceId);
+
+                if (staticFieldsCount == 0)
+                {
+                    // this is to be checked only on the 1st pass
+                    firstStaticFieldId = Math.Min(_context.FieldsTable.MaxFieldId, fieldReferenceId);
+                }
 
                 _context.SignaturesTable.GetOrCreateSignatureId(field);
                 _context.StringTable.GetOrCreateStringId(field.Name);
@@ -172,7 +177,12 @@ namespace nanoFramework.Tools.MetadataProcessor
             {
                 ushort fieldReferenceId;
                 _context.FieldsTable.TryGetFieldReferenceId(field, true, out fieldReferenceId);
-                firstInstanceFieldId = Math.Min(_context.FieldsTable.MaxFieldId, fieldReferenceId);
+
+                if (instanceFieldsCount == 0)
+                {
+                    // this is to be checked only on the 1st pass
+                    firstInstanceFieldId = Math.Min(_context.FieldsTable.MaxFieldId, fieldReferenceId);
+                }
 
                 _context.SignaturesTable.GetOrCreateSignatureId(field);
                 _context.StringTable.GetOrCreateStringId(field.Name);
@@ -370,6 +380,24 @@ namespace nanoFramework.Tools.MetadataProcessor
         internal void ResetByteCodeOffsets()
         {
             _byteCodeOffsets = new Dictionary<uint, List<Tuple<uint, uint>>>();
+        }
+
+        public override void RemoveUnusedItems(HashSet<MetadataToken> set)
+        {
+            base.RemoveUnusedItems(set);
+
+            // remove
+            // build a collection of the current items that are present in the used items set
+            List<TypeDefinition> usedItems = new List<TypeDefinition>();
+
+            foreach (var item in TypeDefinitions
+                                    .Where(item => set.Contains(item.MetadataToken)))
+            {
+                usedItems.Add(item);
+            }
+
+            // replace existing collection
+            TypeDefinitions = usedItems;
         }
     }
 }
