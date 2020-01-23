@@ -7,6 +7,7 @@
 using Mono.Cecil;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace nanoFramework.Tools.MetadataProcessor
 {
@@ -184,6 +185,14 @@ namespace nanoFramework.Tools.MetadataProcessor
             }
 
             return flag;
+        }
+
+        public override void RemoveUnusedItems(HashSet<MetadataToken> set)
+        {
+            base.RemoveUnusedItems(set);
+
+            // adjust ID
+            _maxReferenceId = _items.Count();
         }
     }
 }
