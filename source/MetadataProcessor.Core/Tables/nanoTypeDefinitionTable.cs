@@ -190,9 +190,12 @@ namespace nanoFramework.Tools.MetadataProcessor
                 ++instanceFieldsCount;
             }
 
-            if (firstStaticFieldId > firstInstanceFieldId)
+            if (firstStaticFieldId < firstInstanceFieldId)
             {
-                firstStaticFieldId = firstInstanceFieldId;
+                if (instanceFieldsCount > 0 && staticFieldsCount > 0)
+                {
+                    firstStaticFieldId = firstInstanceFieldId;
+                }
             }
 
             writer.WriteUInt16(firstStaticFieldId);
