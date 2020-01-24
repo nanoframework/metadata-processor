@@ -245,6 +245,13 @@ namespace nanoFramework.Tools.MetadataProcessor
                 return;
             }
 
+            nanoCLR_DataType dataType;
+            if (PrimitiveTypes.TryGetValue(typeDefinition.FullName, out dataType))
+            {
+                writer.WriteByte((byte)dataType);
+                return;
+            }
+
             if (typeDefinition is TypeSpecification)
             {
                //Debug.Fail("Gotcha!");
