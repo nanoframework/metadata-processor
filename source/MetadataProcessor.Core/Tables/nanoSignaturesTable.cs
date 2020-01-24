@@ -225,14 +225,24 @@ namespace nanoFramework.Tools.MetadataProcessor
             bool expandEnumType,
             bool isTypeDefinition)
         {
-            if (!isTypeDefinition)
+            if (isTypeDefinition)
             {
-                nanoCLR_DataType dataType;
-                if (PrimitiveTypes.TryGetValue(typeDefinition.FullName, out dataType))
+                if (typeDefinition.MetadataType == MetadataType.Object)
                 {
-                    writer.WriteByte((byte)dataType);
+                    writer.WriteByte((byte)nanoCLR_DataType.DATATYPE_CLASS);
                     return;
                 }
+                else
+                {
+
+                }
+            }
+
+            nanoCLR_DataType dataType;
+            if (PrimitiveTypes.TryGetValue(typeDefinition.FullName, out dataType))
+            {
+                writer.WriteByte((byte)dataType);
+                return;
             }
 
             if (typeDefinition is TypeSpecification)
@@ -280,12 +290,6 @@ namespace nanoFramework.Tools.MetadataProcessor
                     var array = (ArrayType)typeDefinition;
                     WriteDataType(array.ElementType, writer, true, expandEnumType, isTypeDefinition);
                 }
-                return;
-            }
-
-            if(typeDefinition.MetadataType == MetadataType.Object)
-            {
-                writer.WriteByte((byte)nanoCLR_DataType.DATATYPE_CLASS);
                 return;
             }
 
