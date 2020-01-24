@@ -105,11 +105,6 @@ namespace nanoFramework.Tools.MetadataProcessor
                 .Where(field => !field.HasConstant)
                 .OrderByDescending(field => field.IsStatic)
                 .ToList();
-            foreach (var field in fieldsList)
-            {
-                _context.SignaturesTable.GetOrCreateSignatureId(field);
-                _context.SignaturesTable.GetOrCreateSignatureId(field.InitialValue);
-            }
 
             using (var stream = new MemoryStream(6))
             {
@@ -140,7 +135,7 @@ namespace nanoFramework.Tools.MetadataProcessor
 
                 WriteMethodBodies(item.Methods, item.Interfaces, writer);
 
-                _context.SignaturesTable.WriteDataType(item, writer, false, true);
+                _context.SignaturesTable.WriteDataType(item, writer, false, true, true);
 
                 writer.WriteBytes(stream.ToArray());
             }
@@ -154,45 +149,56 @@ namespace nanoFramework.Tools.MetadataProcessor
         {
             ushort firstStaticFieldId = 0;
             var staticFieldsCount = 0;
-            foreach (var field in fieldsList.Where(item => item.IsStatic && !item.IsLiteral))
+            foreach (var field in fieldsList.Where(item => item.IsStatic))
             {
                 ushort fieldReferenceId;
-                _context.FieldsTable.TryGetFieldReferenceId(field, true, out fieldReferenceId);
-
-                if (staticFieldsCount == 0)
+                if (_context.FieldsTable.TryGetFieldReferenceId(field, false, out fieldReferenceId))
                 {
-                    // this is to be checked only on the 1st pass
-                    firstStaticFieldId = Math.Min(_context.FieldsTable.MaxFieldId, fieldReferenceId);
+                    if (staticFieldsCount == 0)
+                    {
+                        // this is to be checked only on the 1st pass
+                        firstStaticFieldId = fieldReferenceId;
+                    }
+
+                    _context.SignaturesTable.GetOrCreateSignatureId(field);
+                    _context.SignaturesTable.GetOrCreateSignatureId(field.InitialValue);
+                    _context.StringTable.GetOrCreateStringId(field.Name);
+
+                    ++staticFieldsCount;
                 }
-
-                _context.SignaturesTable.GetOrCreateSignatureId(field);
-                _context.StringTable.GetOrCreateStringId(field.Name);
-
-                ++staticFieldsCount;
+                else
+                {
+                    // field ID not found!!
+                }
             }
 
             ushort firstInstanceFieldId = 0;
             var instanceFieldsCount = 0;
-            foreach (var field in fieldsList.Where(item => !item.IsStatic && !item.IsLiteral))
+            foreach (var field in fieldsList.Where(item => !item.IsStatic))
             {
                 ushort fieldReferenceId;
-                _context.FieldsTable.TryGetFieldReferenceId(field, true, out fieldReferenceId);
-
-                if (instanceFieldsCount == 0)
+                if (_context.FieldsTable.TryGetFieldReferenceId(field, false, out fieldReferenceId))
                 {
-                    // this is to be checked only on the 1st pass
-                    firstInstanceFieldId = Math.Min(_context.FieldsTable.MaxFieldId, fieldReferenceId);
+                    if (instanceFieldsCount == 0)
+                    {
+                        // this is to be checked only on the 1st pass
+                        firstInstanceFieldId = fieldReferenceId;
+                    }
+
+                    _context.SignaturesTable.GetOrCreateSignatureId(field);
+                    _context.StringTable.GetOrCreateStringId(field.Name);
+
+                    ++instanceFieldsCount;
                 }
-
-                _context.SignaturesTable.GetOrCreateSignatureId(field);
-                _context.StringTable.GetOrCreateStringId(field.Name);
-
-                ++instanceFieldsCount;
+                else
+                {
+                    // field ID not found!!
+                }
             }
 
             if (firstStaticFieldId < firstInstanceFieldId)
             {
-                if (instanceFieldsCount > 0 && staticFieldsCount > 0)
+                if (instanceFieldsCount > 0 && staticFieldsCount == 0)
                 {
                     firstStaticFieldId = firstInstanceFieldId;
                 }

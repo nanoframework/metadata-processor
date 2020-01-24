@@ -222,13 +222,17 @@ namespace nanoFramework.Tools.MetadataProcessor
             TypeReference typeDefinition,
             nanoBinaryWriter writer,
             bool alsoWriteSubType,
-            bool expandEnumType)
+            bool expandEnumType,
+            bool isTypeDefinition)
         {
-            nanoCLR_DataType dataType;
-            if (PrimitiveTypes.TryGetValue(typeDefinition.FullName, out dataType))
+            if (!isTypeDefinition)
             {
-                writer.WriteByte((byte)dataType);
-                return;
+                nanoCLR_DataType dataType;
+                if (PrimitiveTypes.TryGetValue(typeDefinition.FullName, out dataType))
+                {
+                    writer.WriteByte((byte)dataType);
+                    return;
+                }
             }
 
             if (typeDefinition is TypeSpecification)
@@ -274,8 +278,14 @@ namespace nanoFramework.Tools.MetadataProcessor
                 if (alsoWriteSubType)
                 {
                     var array = (ArrayType)typeDefinition;
-                    WriteDataType(array.ElementType, writer, true, expandEnumType);
+                    WriteDataType(array.ElementType, writer, true, expandEnumType, isTypeDefinition);
                 }
+                return;
+            }
+
+            if(typeDefinition.MetadataType == MetadataType.Object)
+            {
+                writer.WriteByte((byte)nanoCLR_DataType.DATATYPE_CLASS);
                 return;
             }
 
@@ -375,6 +385,10 @@ namespace nanoFramework.Tools.MetadataProcessor
 
                 if (isFieldSignature)
                 {
+                    //////////////////////////////////////////////////////////
+                    // dev notes: this is coming from
+                    // CorCallingConvention.IMAGE_CEE_CS_CALLCONV_FIELD = 0x06
+                    //////////////////////////////////////////////////////////
                     writer.Write((byte)0x06); // Field signature prefix
                 }
                 WriteTypeInfo(typeReference, binaryWriter);
@@ -538,20 +552,22 @@ namespace nanoFramework.Tools.MetadataProcessor
             TypeReference typeReference,
             nanoBinaryWriter writer)
         {
+            // dev notes: from the original MDP
+            // If there is modifier on type record of local variable, we put it before type of local variable.
             if (typeReference.IsOptionalModifier)
             {
-                writer.WriteByte(0); // OpTypeModifier ???
+                writer.WriteByte(0x0); // OpTypeModifier ???
             }
 
             var byReference = typeReference as ByReferenceType;
             if (byReference != null)
             {
                 writer.WriteByte((byte)nanoCLR_DataType.DATATYPE_BYREF);
-                WriteDataType(byReference.ElementType, writer, true, false);
+                WriteDataType(byReference.ElementType, writer, true, false, false);
             }
             else
             {
-                WriteDataType(typeReference, writer, true, false);
+                WriteDataType(typeReference, writer, true, false, false);
             }
         }
 

@@ -73,7 +73,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                 ++parametersCount; // add implicit 'this' pointer into non-static methods
             }
 
-            _context.SignaturesTable.WriteDataType(item.ReturnType, writer, false, false);
+            _context.SignaturesTable.WriteDataType(item.ReturnType, writer, false, false, false);
             if (item.ReturnType is TypeSpecification)
             {
                 // developer note
