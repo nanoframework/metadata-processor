@@ -225,23 +225,10 @@ namespace nanoFramework.Tools.MetadataProcessor
             bool expandEnumType,
             bool isTypeDefinition)
         {
-            if (isTypeDefinition)
+            if (isTypeDefinition &&
+                typeDefinition.MetadataType == MetadataType.Object)
             {
-                if (typeDefinition.MetadataType == MetadataType.Object)
-                {
-                    writer.WriteByte((byte)nanoCLR_DataType.DATATYPE_CLASS);
-                    return;
-                }
-                else
-                {
-
-                }
-            }
-
-            nanoCLR_DataType dataType;
-            if (PrimitiveTypes.TryGetValue(typeDefinition.FullName, out dataType))
-            {
-                writer.WriteByte((byte)dataType);
+                writer.WriteByte((byte)nanoCLR_DataType.DATATYPE_CLASS);
                 return;
             }
 
