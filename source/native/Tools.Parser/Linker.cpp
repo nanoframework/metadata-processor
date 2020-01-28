@@ -1015,6 +1015,8 @@ HRESULT WatchAssemblyBuilder::Linker::ProcessMemberRef()
             if(!AllocString           (  mr.m_name          , dst->name, false )) REPORT_NO_MEMORY();
             if(!AllocSignatureForField( &mr.m_sig.m_sigField, dst->sig         )) REPORT_NO_MEMORY();
 
+			DumpSig(tk, dst->sig, m_tmpSig, (int)(m_tmpSigPtr - m_tmpSig));
+
             tk2 = m_lookupIDs[ mr.m_tr ]; if(CLR_TypeFromTk(tk2) != TBL_TypeRef) REPORT_NO_MEMORY();
 
             dst->container = CLR_DataFromTk( tk2 );
@@ -1028,6 +1030,8 @@ HRESULT WatchAssemblyBuilder::Linker::ProcessMemberRef()
 
             if(!AllocString            (  mr.m_name           , dst->name, false )) REPORT_NO_MEMORY();
             if(!AllocSignatureForMethod( &mr.m_sig.m_sigMethod, dst->sig         )) REPORT_NO_MEMORY();
+
+			DumpSig(tk, dst->sig, m_tmpSig, (int)(m_tmpSigPtr - m_tmpSig));
 
             tk2 = m_lookupIDs[ mr.m_tr ]; if(CLR_TypeFromTk(tk2) != TBL_TypeRef) REPORT_NO_MEMORY();
 
@@ -1509,9 +1513,10 @@ HRESULT WatchAssemblyBuilder::Linker::ProcessFieldDef( MetaData::TypeDef& td, CL
 
     CLR_RECORD_FIELDDEF* dst = m_tableFieldDef.Alloc( 1 ); if(dst == NULL) REPORT_NO_MEMORY();
 
-
     if(!AllocString           (  fd.m_name          , dst->name, false )) REPORT_NO_MEMORY();
     if(!AllocSignatureForField( &fd.m_sig.m_sigField, dst->sig         )) REPORT_NO_MEMORY();
+
+	DumpSig(fd.m_fd, dst->sig, m_tmpSig, (int)(m_tmpSigPtr - m_tmpSig));
 
     switch(fd.m_flags & fdFieldAccessMask)
     {
@@ -1695,6 +1700,8 @@ HRESULT WatchAssemblyBuilder::Linker::ProcessMethodDef( MetaData::TypeDef& td, C
     if(!AllocString            (  md.m_name  , dst->name  , false )) REPORT_NO_MEMORY();
     if(!AllocSignatureForMethod( &md.m_method, dst->sig           )) REPORT_NO_MEMORY();
 
+	DumpSig(md.m_md, dst->sig, m_tmpSig, (int)(m_tmpSigPtr - m_tmpSig));
+
     NANOCLR_CHECK_HRESULT(CheckRange( md.m_method.m_lstParams, dst->numArgs, L"number", L"arguments" ));
 
     dst->numArgs = (CLR_UINT8)                          md.m_method.m_lstParams.size()  ; if((md.m_flags & mdStatic) == 0) dst->numArgs++; // Include the 'this' pointer in the number of arguments.
@@ -1723,6 +1730,21 @@ HRESULT WatchAssemblyBuilder::Linker::ProcessMethodDef( MetaData::TypeDef& td, C
     }
 
     NANOCLR_CLEANUP_END();
+}
+
+void WatchAssemblyBuilder::Linker::DumpSig(CLR_UINT32 token, CLR_UINT16 sig, const BYTE* sigRaw, size_t sigLen)
+{
+	printf("%d -> ", token);
+
+	const BYTE* sigCopy = sigRaw;
+	size_t      sigLenCopy = sigLen;
+
+	while (sigLenCopy-- > 0)
+	{
+		printf("%02X", *sigCopy++);
+	}
+
+	printf(" -> %04X\n", sig);
 }
 
 //--//

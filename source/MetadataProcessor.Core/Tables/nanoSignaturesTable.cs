@@ -7,6 +7,7 @@
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Collections.Generic;
+using nanoFramework.Tools.MetadataProcessor.Core.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -70,7 +71,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         }
 
         /// <summary>
-        /// Stores list of unique signatures and corresspoinding identifiers.
+        /// Stores list of unique signatures and corresponding identifiers.
         /// </summary>
         private readonly IDictionary<byte[], ushort> _idsBySignatures =
             new Dictionary<byte[], ushort>(new ByteArrayComparer());
@@ -79,6 +80,8 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// Assembly tables context - contains all tables used for building target assembly.
         /// </summary>
         private readonly nanoTablesContext _context;
+
+        private readonly bool _verbose;
 
         /// <summary>
         /// Last available signature id (offset in resulting table).
@@ -91,10 +94,11 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// <param name="context">
         /// Assembly tables context - contains all tables used for building target assembly.
         /// </param>
-        public nanoSignaturesTable(
-            nanoTablesContext context)
+        public nanoSignaturesTable(nanoTablesContext context)
         {
             _context = context;
+
+            _verbose = true;
         }
 
         /// <summary>
@@ -104,7 +108,12 @@ namespace nanoFramework.Tools.MetadataProcessor
         public ushort GetOrCreateSignatureId(
             MethodDefinition methodDefinition)
         {
-            return GetOrCreateSignatureIdImpl(GetSignature(methodDefinition));
+            var sig = GetSignature(methodDefinition);
+            var sigId = GetOrCreateSignatureIdImpl(sig);
+
+            if (_verbose) Console.WriteLine($"{methodDefinition.MetadataToken.ToInt32()} -> {sig.BufferToHexString()} -> {sigId.ToString("X4")}");
+
+            return sigId;
         }
 
         /// <summary>
@@ -114,7 +123,12 @@ namespace nanoFramework.Tools.MetadataProcessor
         public ushort GetOrCreateSignatureId(
             FieldDefinition fieldDefinition)
         {
-            return GetOrCreateSignatureIdImpl(GetSignature(fieldDefinition.FieldType, true));
+            var sig = GetSignature(fieldDefinition.FieldType, true);
+            var sigId = GetOrCreateSignatureIdImpl(sig);
+
+            if (_verbose) Console.WriteLine($"{fieldDefinition.MetadataToken.ToInt32()} -> {sig.BufferToHexString()} -> {sigId.ToString("X4")}");
+
+            return sigId;
         }
 
         /// <summary>
@@ -124,7 +138,12 @@ namespace nanoFramework.Tools.MetadataProcessor
         public ushort GetOrCreateSignatureId(
             FieldReference fieldReference)
         {
-            return GetOrCreateSignatureIdImpl(GetSignature(fieldReference));
+            var sig = GetSignature(fieldReference);
+            var sigId = GetOrCreateSignatureIdImpl(sig);
+
+            if (_verbose) Console.WriteLine($"{fieldReference.MetadataToken.ToInt32()} -> {sig.BufferToHexString()} -> {sigId.ToString("X4")}");
+
+            return sigId;
         }
 
         /// <summary>
@@ -134,7 +153,12 @@ namespace nanoFramework.Tools.MetadataProcessor
         public ushort GetOrCreateSignatureId(
             MethodReference methodReference)
         {
-            return GetOrCreateSignatureIdImpl(GetSignature(methodReference));
+            var sig = GetSignature(methodReference);
+            var sigId = GetOrCreateSignatureIdImpl(sig);
+
+            if (_verbose) Console.WriteLine($"{methodReference.MetadataToken.ToInt32()} -> {sig.BufferToHexString()} -> {sigId.ToString("X4")}");
+
+            return sigId;
         }
 
         /// <summary>
@@ -189,7 +213,12 @@ namespace nanoFramework.Tools.MetadataProcessor
         public ushort GetOrCreateSignatureId(
             InterfaceImplementation interfaceImplementation)
         {
-            return GetOrCreateSignatureIdImpl(GetSignature(interfaceImplementation, false));
+            var sig = GetSignature(interfaceImplementation, false);
+            var sigId = GetOrCreateSignatureIdImpl(sig);
+
+            if (_verbose) Console.WriteLine($"{interfaceImplementation.MetadataToken.ToInt32()} -> {sig.BufferToHexString()} -> {sigId.ToString("X4")}");
+
+            return sigId;
         }
 
         /// <summary>
@@ -199,7 +228,12 @@ namespace nanoFramework.Tools.MetadataProcessor
         public ushort GetOrCreateSignatureId(
             TypeReference typeReference)
         {
-            return GetOrCreateSignatureIdImpl(GetSignature(typeReference, false));
+            var sig = GetSignature(typeReference, false);
+            var sigId = GetOrCreateSignatureIdImpl(sig);
+
+            if (_verbose) Console.WriteLine($"{typeReference.MetadataToken.ToInt32()} -> {sig.BufferToHexString()} -> {sigId.ToString("X4")}");
+
+            return sigId;
         }
 
         /// <summary>
@@ -208,7 +242,12 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// <param name="customAttribute">Custom attribute in Mono.Cecil format.</param>
         public ushort GetOrCreateSignatureId(CustomAttribute customAttribute)
         {
-            return GetOrCreateSignatureIdImpl(GetSignature(customAttribute));
+            var sig = GetSignature(customAttribute);
+            var sigId = GetOrCreateSignatureIdImpl(sig);
+
+            if (_verbose) Console.WriteLine($"{customAttribute.ToString()} -> {sig.BufferToHexString()} -> {sigId.ToString("X4")}");
+
+            return sigId;
         }
 
         /// <summary>
@@ -589,7 +628,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             if (typeDefinition is TypeSpecification &&
                 _context.TypeSpecificationsTable.TryGetTypeReferenceId(typeDefinition, out referenceId))
             {
-                    writer.WriteMetadataToken(((uint)referenceId << 2) | 0x04);
+                    writer.WriteMetadataToken(((uint)referenceId << 2) | 0x02);
             }
             else if (_context.TypeReferencesTable.TryGetTypeReferenceId(typeDefinition, out referenceId))
             {

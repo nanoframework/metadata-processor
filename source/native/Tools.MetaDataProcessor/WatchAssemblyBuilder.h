@@ -252,6 +252,8 @@ namespace WatchAssemblyBuilder
 
 		HRESULT DumpPdbxToken(CLR_XmlUtil& xml, IXMLDOMNodePtr pNodeParent, mdToken tk);
 
+		void DumpSig(CLR_UINT32 token, CLR_UINT16 sig, const BYTE* sigRaw, size_t sigLen);
+
 	public:
 		Linker();
 		~Linker();
