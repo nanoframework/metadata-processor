@@ -81,7 +81,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// </summary>
         private readonly nanoTablesContext _context;
 
-        private readonly bool _verbose;
+        private readonly bool _verbose = false;
 
         /// <summary>
         /// Last available signature id (offset in resulting table).
@@ -98,7 +98,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         {
             _context = context;
 
-            _verbose = true;
+            //_verbose = true;
         }
 
         /// <summary>
