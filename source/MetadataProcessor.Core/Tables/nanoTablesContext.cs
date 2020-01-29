@@ -65,8 +65,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             List<string> classNamesToExclude,
             ICustomStringSorter stringSorter,
             bool applyAttributesCompression,
-            bool verbose,
-            bool isCoreLibrary)
+            bool verbose)
         {
             AssemblyDefinition = assemblyDefinition;
 
@@ -122,34 +121,6 @@ namespace nanoFramework.Tools.MetadataProcessor
             // Internal types definitions
 
             var types = GetOrderedTypes(mainModule, explicitTypesOrder);
-
-            // mscorlib requires a particular type order
-            if(isCoreLibrary)
-            {
-                var indexOfSystemObject = types.IndexOf(types.FirstOrDefault(t => t.FullName == "System.Object"));
-                if (indexOfSystemObject >= 0)
-                {
-                    TypeDefinition item = types[indexOfSystemObject];
-                    types.RemoveAt(indexOfSystemObject);
-                    types.Insert(0, item);
-                }
-
-                var indexOfSystemValueType = types.IndexOf(types.FirstOrDefault(t => t.FullName == "System.ValueType"));
-                if (indexOfSystemValueType >= 0)
-                {
-                    TypeDefinition item = types[indexOfSystemValueType];
-                    types.RemoveAt(indexOfSystemValueType);
-                    types.Insert(1, item);
-                }
-
-                var indexOfSystemException = types.IndexOf(types.FirstOrDefault(t => t.FullName == "System.Exception1"));
-                if (indexOfSystemException >= 0)
-                {
-                    TypeDefinition item = types[indexOfSystemException];
-                    types.RemoveAt(indexOfSystemException);
-                    types.Insert(2, item);
-                }
-            }
 
             TypeDefinitionTable = new nanoTypeDefinitionTable(types, this);
             
