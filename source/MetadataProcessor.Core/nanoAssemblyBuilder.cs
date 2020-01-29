@@ -285,7 +285,36 @@ namespace nanoFramework.Tools.MetadataProcessor
                     {
                         set.Add(mr.DeclaringType.MetadataToken);
                     }
-                
+
+                    if(mr != null &&
+                        mr.ReturnType != null)
+                    {
+                        if (mr.ReturnType.IsArray)
+                        {
+                            if (mr.ReturnType.DeclaringType != null)
+                            {
+                                set.Add(mr.ReturnType.DeclaringType.MetadataToken);
+                            }
+                        }
+                        else
+                        {
+                            if (mr.ReturnType.FullName != "System.Void" &&
+                                mr.ReturnType.FullName != "System.String")
+                            {
+                                set.Add(mr.ReturnType.MetadataToken);
+                            }
+                        }
+                    }
+
+                    // parameters
+                    foreach (var p in mr.Parameters)
+                    {
+                        if (p.ParameterType.DeclaringType != null)
+                        {
+                            set.Add(p.ParameterType.DeclaringType.MetadataToken);
+                        }
+                    }
+
                     break;
 
                 case TokenType.TypeSpec:
