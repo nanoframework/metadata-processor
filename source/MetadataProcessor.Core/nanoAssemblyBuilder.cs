@@ -40,6 +40,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             AssemblyDefinition assemblyDefinition,
             List<string> classNamesToExclude,
             bool verbose,
+            bool isCoreLibrary = false,
             List<string> explicitTypesOrder = null,
             ICustomStringSorter stringSorter = null,
             bool applyAttributesCompression = false)
@@ -50,9 +51,11 @@ namespace nanoFramework.Tools.MetadataProcessor
                 classNamesToExclude,
                 stringSorter,
                 applyAttributesCompression,
-                verbose);
+                verbose,
+                isCoreLibrary);
 
             _verbose = verbose;
+            _isCoreLibrary = isCoreLibrary;
         }
 
         /// <summary>

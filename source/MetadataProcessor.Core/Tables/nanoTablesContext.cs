@@ -65,7 +65,8 @@ namespace nanoFramework.Tools.MetadataProcessor
             List<string> classNamesToExclude,
             ICustomStringSorter stringSorter,
             bool applyAttributesCompression,
-            bool verbose)
+            bool verbose,
+            bool isCoreLibrary)
         {
             AssemblyDefinition = assemblyDefinition;
 

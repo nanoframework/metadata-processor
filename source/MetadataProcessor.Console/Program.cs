@@ -52,13 +52,14 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
             }
 
             public void Compile(
-                string fileName)
+                string fileName,
+                bool isCoreLibrary)
             {
                 try
                 {
                     if (Verbose) System.Console.WriteLine("Compiling assembly...");
 
-                    _assemblyBuilder = new nanoAssemblyBuilder(_assemblyDefinition, _classNamesToExclude, VerboseMinimize);
+                    _assemblyBuilder = new nanoAssemblyBuilder(_assemblyDefinition, _classNamesToExclude, VerboseMinimize, isCoreLibrary);
 
                     using (var stream = File.Open(fileName, FileMode.Create, FileAccess.ReadWrite))
                     using (var writer = new BinaryWriter(stream))
@@ -222,11 +223,20 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
                 {
                     md.Parse(args[++i]);
                 }
-                else if (arg == "-compile" && i + 1 < args.Length)
+                else if (arg == "-compile" && i + 2 < args.Length)
                 {
+                    bool isCoreLibrary = false;
+
+                    if (!bool.TryParse(args[i + 2], out isCoreLibrary))
+                    {
+                        System.Console.Error.WriteLine("Bad parameter for compile. IsCoreLib options has to be 'true' or 'false'.");
+
+                        Environment.Exit(1);
+                    }
+
                     md.PeFileName = args[i + 1];
 
-                    md.Compile(md.PeFileName);
+                    md.Compile(md.PeFileName, isCoreLibrary);
 
                     i += 2;
                 }
