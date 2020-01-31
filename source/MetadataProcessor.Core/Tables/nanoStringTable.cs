@@ -58,6 +58,8 @@ namespace nanoFramework.Tools.MetadataProcessor
             _stringSorter = stringSorter ?? new EmptyStringSorter();
         }
 
+        
+
         /// <summary>
         /// Gets existing or creates new string reference identifier related to passed string value.
         /// </summary>
@@ -155,6 +157,11 @@ namespace nanoFramework.Tools.MetadataProcessor
                 var itemToRemove = TryGetString((ushort)t.ToUInt32());
                 _idsByStrings.Remove(itemToRemove);
             }
+        }
+
+        public Dictionary<string, ushort> GetItems()
+        {
+            return _idsByStrings;
         }
     }
 }

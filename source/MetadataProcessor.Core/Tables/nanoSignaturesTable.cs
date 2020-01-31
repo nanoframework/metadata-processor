@@ -46,7 +46,7 @@ namespace nanoFramework.Tools.MetadataProcessor
 
         static nanoSignaturesTable()
         {
-            PrimitiveTypes.Add(typeof(void).FullName, nanoCLR_DataType.DATATYPE_VOID);
+            PrimitiveTypes.Add(typeof(void).FullName, nanoCLR_DataType.DATATYPE_VALUETYPE);
 
             PrimitiveTypes.Add(typeof(sbyte).FullName, nanoCLR_DataType.DATATYPE_I1);
             PrimitiveTypes.Add(typeof(short).FullName, nanoCLR_DataType.DATATYPE_I2);
@@ -66,8 +66,17 @@ namespace nanoFramework.Tools.MetadataProcessor
             PrimitiveTypes.Add(typeof(bool).FullName, nanoCLR_DataType.DATATYPE_BOOLEAN);
 
             PrimitiveTypes.Add(typeof(object).FullName, nanoCLR_DataType.DATATYPE_OBJECT);
-            PrimitiveTypes.Add(typeof(IntPtr).FullName, nanoCLR_DataType.DATATYPE_I4);
-            PrimitiveTypes.Add(typeof(UIntPtr).FullName, nanoCLR_DataType.DATATYPE_U4);
+            PrimitiveTypes.Add(typeof(IntPtr).FullName, nanoCLR_DataType.DATATYPE_VALUETYPE);
+            //PrimitiveTypes.Add(typeof(UIntPtr).FullName, nanoCLR_DataType.DATATYPE_U4);
+
+            PrimitiveTypes.Add("System.DateTime", nanoCLR_DataType.DATATYPE_DATETIME);
+            PrimitiveTypes.Add("System.TimeSpan", nanoCLR_DataType.DATATYPE_TIMESPAN);
+
+            PrimitiveTypes.Add("System.RuntimeTypeHandle", nanoCLR_DataType.DATATYPE_REFLECTION);
+            PrimitiveTypes.Add("System.RuntimeFieldHandle", nanoCLR_DataType.DATATYPE_REFLECTION);
+            PrimitiveTypes.Add("System.RuntimeMethodHandle", nanoCLR_DataType.DATATYPE_REFLECTION);
+
+            PrimitiveTypes.Add("System.WeakReference", nanoCLR_DataType.DATATYPE_WEAKCLASS);
         }
 
         /// <summary>

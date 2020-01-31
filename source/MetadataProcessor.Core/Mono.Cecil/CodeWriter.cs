@@ -115,7 +115,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                         offsetChanged = true;
                         break;
                     case OperandType.InlineString:
-                        stringTable.GetOrCreateStringId((string) instruction.Operand, false);
+                        stringTable.GetOrCreateStringId((string) instruction.Operand, true);
                         offset -= 2;
                         offsetChanged = true;
                         break;
@@ -407,7 +407,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                     _writer.WriteDouble((double)operand);
 		            break;
 		        case OperandType.InlineString:
-		            var stringReferenceId = _stringTable.GetOrCreateStringId((string) operand, false);
+		            var stringReferenceId = _stringTable.GetOrCreateStringId((string) operand, true);
                     _writer.WriteUInt16(stringReferenceId);
 		            break;
                 case OperandType.InlineMethod:

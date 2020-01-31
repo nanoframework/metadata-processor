@@ -115,7 +115,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             writer.WriteUInt16(methodSignature);
         }
 
-        private uint GetFlags(
+        public static uint GetFlags(
             MethodDefinition method)
         {
             const uint MD_Scope_Private =           0x00000001; // Accessible only by the parent type.

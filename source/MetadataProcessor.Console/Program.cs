@@ -34,6 +34,8 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
 
             internal bool VerboseMinimize { get; set; }
 
+            public bool DumpMetadata { get; internal set; } = false;
+
             public void Parse(string fileName)
             {
                 try
@@ -71,6 +73,14 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
                     {
                         _assemblyBuilder.Write(writer);
                     }
+
+                    if(DumpMetadata)
+                    {
+                        nanoDumperGenerator dumper = new nanoDumperGenerator(
+                            _assemblyBuilder.TablesContext,
+                            Path.ChangeExtension(fileName, "dump.txt"));
+                        dumper.DumpAll();
+                    }
                 }
                 catch (Exception)
                 {
@@ -98,6 +108,14 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
                     using (var writer = XmlWriter.Create(Path.ChangeExtension(fileName, "pdbx")))
                     {
                         _assemblyBuilder.Write(writer);
+                    }
+
+                    if (DumpMetadata)
+                    {
+                        nanoDumperGenerator dumper = new nanoDumperGenerator(
+                            _assemblyBuilder.TablesContext,
+                            Path.ChangeExtension(fileName, "dump.txt"));
+                        dumper.DumpAll();
                     }
                 }
                 catch (Exception ex)
@@ -217,6 +235,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
                     System.Console.WriteLine("-minimize                                             Minimizes the assembly, removing unwanted elements.");
                     System.Console.WriteLine("-verbose                                              Outputs each command before executing it.");
                     System.Console.WriteLine("-verboseMinimize                                      Turns on verbose level for the minimization phase.");
+                    System.Console.WriteLine("-dump_all                                             Generates a report of an assembly's metadata.");
                     System.Console.WriteLine("");
                 }
                 else if (arg == "-parse" && i + 1 < args.Length)
@@ -287,6 +306,10 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
                 else if (arg == "-generatedependency" && i + 1 < args.Length)
                 {
                     md.GenerateDependency(args[++i]);
+                }
+                else if (arg == "-dump_all" && i + 1 < args.Length)
+                {
+                    md.DumpMetadata = true;
                 }
                 else
                 {
