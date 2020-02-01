@@ -493,36 +493,60 @@ void MetaData::Parser::Dump_EnumTypeDefs( bool fNoByteCode )
                     const CLR_UINT8* IP    = il.Code;
                     const CLR_UINT8* IPend = IP + il.GetCodeSize();
 
+					CLR_UINT16 ilCount = 0;
+
+					// 1st pass: count the number of instructions
                     while(IP < IPend)
                     {
                         CLR_OPCODE op = CLR_ReadNextOpcode( IP );
 
-                        fwprintf( m_output, L"           %-12S", c_CLR_RT_OpcodeLookup[op].m_name );
-
                         if(IsOpParamToken( c_CLR_RT_OpcodeLookup[op].m_opParam ))
                         {
                             CLR_UINT32 arg; NANOCLR_READ_UNALIGNED_UINT32( arg, IP );
-
-                            fwprintf( m_output, L"[%08x]", arg );
                         }
                         else
                         {
                             IP = CLR_SkipBodyOfOpcode( IP, op );
                         }
 
-                        fwprintf( m_output, L"\n" );
+						ilCount++;
                     }
+
+					fwprintf(m_output, L"        IL count: %d\n", ilCount);
+
+					IP = il.Code;
+					IPend = IP + il.GetCodeSize();
+
+					// 2nd pass: output the instructions
+					while (IP < IPend)
+					{
+						CLR_OPCODE op = CLR_ReadNextOpcode(IP);
+
+						fwprintf(m_output, L"           %-12S", c_CLR_RT_OpcodeLookup[op].m_name);
+
+						if (IsOpParamToken(c_CLR_RT_OpcodeLookup[op].m_opParam))
+						{
+							CLR_UINT32 arg; NANOCLR_READ_UNALIGNED_UINT32(arg, IP);
+
+							fwprintf(m_output, L"[%08x]", arg);
+						}
+						else
+						{
+							IP = CLR_SkipBodyOfOpcode(IP, op);
+						}
+
+						fwprintf(m_output, L"\n");
+					}
+
                 }
             }
-
-            fwprintf( m_output, L"\n" );
         }
 
         for(mdInterfaceImplListIter it3 = td.m_interfaces.begin(); it3 != td.m_interfaces.end(); it3++)
         {
             InterfaceImpl& ii = m_mapDef_Interface[*it3];
 
-            fwprintf( m_output, L"    InterfaceImplProps [%08x]: Itf: %08x\n", ii.m_td, ii.m_itf );
+            fwprintf( m_output, L"    InterfaceImplProps [%08x]: Itf: %08x\n", *it3, ii.m_itf );
         }
 
         fwprintf( m_output, L"\n" );

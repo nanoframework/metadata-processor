@@ -292,10 +292,15 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                     case nanoCLR_DataType.DATATYPE_U8:
                     case nanoCLR_DataType.DATATYPE_R4:
                     case nanoCLR_DataType.DATATYPE_R8:
-                    case nanoCLR_DataType.DATATYPE_STRING:
                     case nanoCLR_DataType.DATATYPE_BYREF:
                     case nanoCLR_DataType.DATATYPE_OBJECT:
                         return dataType.ToString().Replace("DATATYPE_", "");
+
+                    case nanoCLR_DataType.DATATYPE_LAST_PRIMITIVE:
+                        return "STRING";
+
+                    case nanoCLR_DataType.DATATYPE_REFLECTION:
+                        return type.FullName.Replace(".", "");
                 }
             }
 
