@@ -29,7 +29,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         ELEMENT_TYPE_STRING = 0xe,
 
         // every type above PTR will be simple type
-        ELEMENT_TYPE_PTR = 0xf,      // PTR <type>
+        ELEMENT_TYPE_PTR = 0x0F,      // PTR <type>
         ELEMENT_TYPE_BYREF = 0x10,     // BYREF <type>
 
         // Please use ELEMENT_TYPE_VALUETYPE. ELEMENT_TYPE_VALUECLASS is deprecated.

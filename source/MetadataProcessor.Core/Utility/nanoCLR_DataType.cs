@@ -38,7 +38,7 @@ namespace nanoFramework.Tools.MetadataProcessor
 
         // All the above types can be marshaled by assignment.
 #if NANOCLR_NO_ASSEMBLY_STRINGS
-        DATATYPE_LAST_PRIMITIVE_TO_MARSHAL  = DATATYPE_STRING,
+        DATATYPE_LAST_PRIMITIVE_TO_MARSHAL = DATATYPE_STRING,
 #else
         DATATYPE_LAST_PRIMITIVE_TO_MARSHAL = DATATYPE_TIMESPAN,
 #endif

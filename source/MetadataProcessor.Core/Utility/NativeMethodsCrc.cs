@@ -126,7 +126,26 @@ namespace nanoFramework.Tools.MetadataProcessor
             nanoCLR_DataType myType;
             if(nanoSignaturesTable.PrimitiveTypes.TryGetValue(parameterType.FullName, out myType))
             {
-                return myType.ToString();
+                if (myType == nanoCLR_DataType.DATATYPE_LAST_PRIMITIVE)
+                {
+                    return "DATATYPE_STRING";
+                }
+                else if (myType == nanoCLR_DataType.DATATYPE_LAST_NONPOINTER)
+                {
+                    return "DATATYPE_TIMESPAN";
+                }
+                else if (myType == nanoCLR_DataType.DATATYPE_LAST_PRIMITIVE_TO_MARSHAL)
+                {
+                    return "DATATYPE_TIMESPAN";
+                }
+                else if (myType == nanoCLR_DataType.DATATYPE_LAST_PRIMITIVE_TO_PRESERVE)
+                {
+                    return "DATATYPE_R8";
+                }
+                else
+                {
+                    return myType.ToString();
+                }
             }
             else
             {
