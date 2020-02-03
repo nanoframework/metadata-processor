@@ -58,7 +58,8 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
         {
             foreach (var c in _tablesContext.TypeDefinitionTable.TypeDefinitions)
             {
-                if (c.IncludeInStub() && !IsClassToExclude(c))
+                if (c.IncludeInStub() && 
+                    !c.IsClassToExclude())
                 {
                     var className = NativeMethodsCrc.GetClassName(c);
 
@@ -121,7 +122,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                     if (c.IncludeInStub())
                     {
                         // don't include if it's on the exclude list
-                        if (!IsClassToExclude(c))
+                        if (!c.IsClassToExclude())
                         {
                             var className = NativeMethodsCrc.GetClassName(c);
 
@@ -145,7 +146,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                                     // need to add a NULL entry for it
                                     // unless it's on the exclude list
 
-                                    if (!IsClassToExclude(c))
+                                    if (!c.IsClassToExclude())
                                     {
                                         assemblyLookup.LookupTable.Add(new Method()
                                         {
@@ -163,7 +164,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                         // need to add a NULL entry for each method 
                         // unless it's on the exclude list
 
-                        if (!IsClassToExclude(c))
+                        if (!c.IsClassToExclude())
                         {
                             foreach (var m in nanoTablesContext.GetOrderedMethods(c.Methods))
                             {
@@ -201,7 +202,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
             foreach (var c in _tablesContext.TypeDefinitionTable.Items)
             {
                 if (c.IncludeInStub() && 
-                    !IsClassToExclude(c))
+                    !c.IsClassToExclude())
                 {
                     var classData = new Class()
                     {
@@ -295,12 +296,6 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                 var output = stubble.Render(SkeletonTemplates.AssemblyHeaderTemplate, assemblyData);
                 headerFile.Write(output);
             }
-        }
-
-        private bool IsClassToExclude(TypeDefinition td)
-        {
-            return (_tablesContext.ClassNamesToExclude.Contains(td.FullName) ||
-                    _tablesContext.ClassNamesToExclude.Contains(td.DeclaringType?.FullName));
         }
 
         private int GetInstanceFieldsOffset(TypeDefinition c)
