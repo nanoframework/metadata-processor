@@ -92,7 +92,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             GetOrCreateStringId(item.Name);
         }
 
-        private ushort GetScope(
+        internal ushort GetScope(
             TypeReference typeReference)
         {
             if (typeReference.DeclaringType == null)

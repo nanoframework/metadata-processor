@@ -19,14 +19,6 @@ namespace nanoFramework.Tools.MetadataProcessor
                 // Assembly-level attributes
                 "System.Runtime.InteropServices.ComVisibleAttribute",
                 "System.Runtime.InteropServices.GuidAttribute",
-                "System.Reflection.AssemblyTitleAttribute",
-                "System.Reflection.AssemblyDescriptionAttribute",
-                "System.Reflection.AssemblyConfigurationAttribute",
-                "System.Reflection.AssemblyCompanyAttribute",
-                "System.Reflection.AssemblyProductAttribute",
-                "System.Reflection.AssemblyCopyrightAttribute",
-                "System.Reflection.AssemblyTrademarkAttribute",
-                "System.Reflection.AssemblyFileVersionAttribute",
 
                 // Compiler-specific attributes
                 //"System.ParamArrayAttribute",
@@ -108,17 +100,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             AssemblyReferenceTable = new nanoAssemblyReferenceTable(
                 mainModule.AssemblyReferences, this);
 
-            var typeReferences = mainModule.GetTypeReferences().ToList();
-            
-            // remove types in ignore list
-            foreach (var a in _ignoringAttributes)
-            {
-                var typeToExclude = typeReferences.FirstOrDefault(t => t.FullName == a);
-                if (typeToExclude != null)
-                {
-                    typeReferences.Remove(typeToExclude);
-                }
-            }
+            var typeReferences = mainModule.GetTypeReferences();
 
             TypeReferencesTable = new nanoTypeReferenceTable(
                 typeReferences, this);
@@ -139,16 +121,6 @@ namespace nanoFramework.Tools.MetadataProcessor
             // Internal types definitions
 
             var types = GetOrderedTypes(mainModule, explicitTypesOrder);
-
-            // remove types in ignore list
-            foreach (var a in _ignoringAttributes)
-            {
-                var typeToExclude = types.FirstOrDefault(t => t.FullName == a);
-                if(typeToExclude != null)
-                {
-                    types.Remove(typeToExclude);
-                }
-            }
 
             TypeDefinitionTable = new nanoTypeDefinitionTable(types, this);
             
