@@ -235,10 +235,12 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
             {
                 ushort refId;
 
+                var metadataScopeType = _tablesContext.AssemblyReferenceTable.Items.FirstOrDefault(a => a == t.Scope);
+
                 var typeRef = new TypeRef()
                 {
                     Name = t.Name,
-                    Scope = t.Scope.MetadataScopeType.ToString("x8")
+                    Scope = _tablesContext.AssemblyReferenceTable.GetReferenceId(metadataScopeType).ToString("x8")
                 };
 
                 if (_tablesContext.TypeReferencesTable.TryGetTypeReferenceId(t, out refId))

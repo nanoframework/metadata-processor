@@ -381,11 +381,6 @@ namespace nanoFramework.Tools.MetadataProcessor
             return flags;
         }
 
-        internal bool IsClassToExclude(TypeDefinition td)
-        {
-            return _context.ClassNamesToExclude.Contains(td.FullName);
-        }
-
         internal void ResetByteCodeOffsets()
         {
             _byteCodeOffsets = new Dictionary<uint, List<Tuple<uint, uint>>>();

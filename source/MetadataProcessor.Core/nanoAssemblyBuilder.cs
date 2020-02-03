@@ -5,6 +5,7 @@
 //
 
 using Mono.Cecil;
+using nanoFramework.Tools.MetadataProcessor.Core.Extensions;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -101,7 +102,7 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             foreach (var t in _tablesContext.TypeDefinitionTable.TypeDefinitions)
             {
-                if (!_tablesContext.TypeDefinitionTable.IsClassToExclude(t))
+                if (!t.IsClassToExclude())
                 {
                     setNew.Add(t.MetadataToken);
                 }
@@ -339,7 +340,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                     // include attributes
                     foreach(var c in td.CustomAttributes)
                     {
-                        if (!_tablesContext.ClassNamesToExclude.Contains(c.AttributeType.FullName))
+                        if (!nanoTablesContext.ClassNamesToExclude.Contains(c.AttributeType.FullName))
                         {
                             set.Add(c.AttributeType.MetadataToken);
                         }
@@ -350,7 +351,7 @@ namespace nanoFramework.Tools.MetadataProcessor
 
                     foreach (var f in tdFields)
                     {
-                        if (!_tablesContext.ClassNamesToExclude.Contains(f.DeclaringType.FullName))
+                        if (!nanoTablesContext.ClassNamesToExclude.Contains(f.DeclaringType.FullName))
                         {
                             set.Add(f.MetadataToken);
                         }
@@ -359,7 +360,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                     // methods
                     foreach (var m in td.Methods)
                     {
-                        if (!_tablesContext.ClassNamesToExclude.Contains(m.DeclaringType.FullName))
+                        if (!nanoTablesContext.ClassNamesToExclude.Contains(m.DeclaringType.FullName))
                         {
                             set.Add(m.MetadataToken);
                         }
@@ -368,7 +369,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                     // interfaces
                     foreach (var i in td.Interfaces)
                     {
-                        if (!_tablesContext.ClassNamesToExclude.Contains(i.InterfaceType.FullName))
+                        if (!nanoTablesContext.ClassNamesToExclude.Contains(i.InterfaceType.FullName))
                         {
                             set.Add(i.MetadataToken);
                         }
@@ -387,7 +388,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                     // attributes
                     foreach (var c in fd.CustomAttributes)
                     {
-                        if (!_tablesContext.ClassNamesToExclude.Contains(c.AttributeType.FullName))
+                        if (!nanoTablesContext.ClassNamesToExclude.Contains(c.AttributeType.FullName))
                         {   
                             set.Add(c.Constructor.MetadataToken);
                         }
@@ -464,7 +465,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                     // attributes
                     foreach (var c in md.CustomAttributes)
                     {
-                        if (!_tablesContext.ClassNamesToExclude.Contains(c.AttributeType.FullName))
+                        if (!nanoTablesContext.ClassNamesToExclude.Contains(c.AttributeType.FullName))
                         {
                             set.Add(c.Constructor.MetadataToken);
                         }

@@ -12,12 +12,14 @@ namespace nanoFramework.Tools.MetadataProcessor
 {{#AssemblyReferences}}
 AssemblyRefProps [{{ReferenceId}}]: Flags: {{Flags}} '{{Name}}'
 {{/AssemblyReferences}}
+
 {{#TypeReferences}}
 TypeRefProps [{{ReferenceId}}]: Scope: {{Scope}} '{{Name}}'
 {{#MemberReferences}}
     MemberRefProps [{{ReferenceId}}]: '{{Name}}' [{{Signature}}]
 {{/MemberReferences}}
 {{/TypeReferences}}
+
 {{#TypeDefinitions}}
 TypeDefProps [{{ReferenceId}}]: Flags: {{Flags}} Extends: {{ExtendsType}} Enclosed: {{EnclosedType}} '{{Name}}'
 {{#FieldDefinitions}}
@@ -43,6 +45,7 @@ TypeDefProps [{{ReferenceId}}]: Flags: {{Flags}} Extends: {{ExtendsType}} Enclos
 {{/InterfaceDefinitions}}
 
 {{/TypeDefinitions}}
+
 {{#UserStrings}}
 UserString [{{ReferenceId}}]: '{{Content}}'
 {{/UserStrings}}
