@@ -110,34 +110,38 @@ namespace nanoFramework.Tools.MetadataProcessor
             {
                 WriteClassFields(fieldsList, writer.GetMemoryBasedClone(stream));
 
-                if (item.DeclaringType == null)
+                if (_context.MinimizeComplete)
                 {
-                    foreach (var method in item.Methods)
+
+                    if (item.DeclaringType == null)
                     {
-                        var offsets = CodeWriter
-                            .PreProcessMethod(method, _context.ByteCodeTable.FakeStringTable)
-                            .ToList();
+                        foreach (var method in item.Methods)
+                        {
+                            var offsets = CodeWriter
+                                .PreProcessMethod(method, _context.ByteCodeTable.FakeStringTable)
+                                .ToList();
 
-                        _byteCodeOffsets.Add(method.MetadataToken.ToUInt32(), offsets);
+                            _byteCodeOffsets.Add(method.MetadataToken.ToUInt32(), offsets);
+                        }
                     }
-                }
-                foreach (var nestedType in item.NestedTypes)
-                {
-                    foreach (var method in nestedType.Methods)
+                    foreach (var nestedType in item.NestedTypes)
                     {
-                        var offsets = CodeWriter
-                            .PreProcessMethod(method, _context.ByteCodeTable.FakeStringTable)
-                            .ToList();
+                        foreach (var method in nestedType.Methods)
+                        {
+                            var offsets = CodeWriter
+                                .PreProcessMethod(method, _context.ByteCodeTable.FakeStringTable)
+                                .ToList();
 
-                        _byteCodeOffsets.Add(method.MetadataToken.ToUInt32(), offsets);
+                            _byteCodeOffsets.Add(method.MetadataToken.ToUInt32(), offsets);
+                        }
                     }
+
+                    WriteMethodBodies(item.Methods, item.Interfaces, writer);
+
+                    _context.SignaturesTable.WriteDataType(item, writer, false, true, true);
+
+                    writer.WriteBytes(stream.ToArray());
                 }
-
-                WriteMethodBodies(item.Methods, item.Interfaces, writer);
-
-                _context.SignaturesTable.WriteDataType(item, writer, false, true, true);
-
-                writer.WriteBytes(stream.ToArray());
             }
 
             writer.WriteUInt16((ushort)GetFlags(item)); // flags

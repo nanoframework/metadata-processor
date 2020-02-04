@@ -55,6 +55,11 @@ namespace nanoFramework.Tools.MetadataProcessor
             nanoBinaryWriter writer,
             AssemblyNameReference item)
         {
+            if (!_context.MinimizeComplete)
+            {
+                return;
+            }
+
             WriteStringReference(writer, item.Name);
             writer.WriteUInt16(0); // padding
 

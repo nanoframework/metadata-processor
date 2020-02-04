@@ -63,11 +63,14 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
 
                     _assemblyBuilder = new nanoAssemblyBuilder(_assemblyDefinition, _classNamesToExclude, VerboseMinimize, isCoreLibrary);
 
-                    using (var stream = File.Open(fileName, FileMode.Create, FileAccess.ReadWrite))
+                    using (var stream = File.Open(Path.ChangeExtension(fileName, "tmp"), FileMode.Create, FileAccess.ReadWrite))
                     using (var writer = new BinaryWriter(stream))
                     {
                         _assemblyBuilder.Write(GetBinaryWriter(writer));
                     }
+
+                    // OK to delete tmp PE file
+                    File.Delete(Path.ChangeExtension(fileName, "tmp"));
 
                     if (Verbose) System.Console.WriteLine("Minimizing assembly...");
 
