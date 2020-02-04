@@ -421,40 +421,6 @@ namespace nanoFramework.Tools.MetadataProcessor
         internal void ResetStringsTable()
         {
             StringTable = new nanoStringTable();
-
-            // Pre-allocate strings from some tables
-            AssemblyReferenceTable.AllocateStrings();
-            TypeReferencesTable.AllocateStrings();
-
-            var mainModule = AssemblyDefinition.MainModule;
-
-            var typeReferences = mainModule.GetTypeReferences();
-
-            var typeReferencesNames = new HashSet<string>(
-                typeReferences
-                .Select(item => item.FullName),
-                StringComparer.Ordinal);
-
-            var memberReferences = mainModule.GetMemberReferences()
-                .Where(item => typeReferencesNames.Contains(item.DeclaringType.FullName))
-                .ToList();
-
-            foreach (var item in memberReferences)
-            {
-                StringTable.GetOrCreateStringId(item.Name);
-
-                var fieldReference = item as FieldReference;
-                if (fieldReference != null)
-                {
-                    SignaturesTable.GetOrCreateSignatureId(fieldReference);
-                }
-
-                var methodReference = item as MethodReference;
-                if (methodReference != null)
-                {
-                    SignaturesTable.GetOrCreateSignatureId(methodReference);
-                }
-            }
         }
     }
 }

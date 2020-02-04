@@ -166,7 +166,6 @@ namespace nanoFramework.Tools.MetadataProcessor
             _tablesContext.AttributesTable.RemoveUnusedItems(set);
             _tablesContext.ResetByteCodeTable();
             _tablesContext.ResetSignaturesTable();
-            _tablesContext.ResetStringsTable();
              
             // renormalise type definitions look-up tables
             // by removing items that are not used
