@@ -241,6 +241,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         public nanoResourceFileTable ResourceFileTable { get; private set; }
 
         public static List<string> ClassNamesToExclude { get; private set; }
+        public bool MinimizeComplete { get; internal set; } = false;
 
         private IEnumerable<Tuple<CustomAttribute, ushort>> GetAttributes(
             IEnumerable<ICustomAttributeProvider> types,

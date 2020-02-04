@@ -1,6 +1,6 @@
+using Mono.Cecil;
 using System;
 using System.Collections.Generic;
-using Mono.Cecil;
 
 namespace nanoFramework.Tools.MetadataProcessor
 {
@@ -62,6 +62,11 @@ namespace nanoFramework.Tools.MetadataProcessor
             nanoBinaryWriter writer,
             MethodDefinition item)
         {
+            if (!_context.MinimizeComplete)
+            {
+                return;
+            }
+
             WriteStringReference(writer, item.Name);
             writer.WriteUInt16(_context.ByteCodeTable.GetMethodRva(item));
 

@@ -66,6 +66,11 @@ namespace nanoFramework.Tools.MetadataProcessor
             nanoBinaryWriter writer,
             FieldDefinition item)
         {
+            if (!_context.MinimizeComplete)
+            {
+                return;
+            }
+
             WriteStringReference(writer, item.Name);
             writer.WriteUInt16(_context.SignaturesTable.GetOrCreateSignatureId(item));
 

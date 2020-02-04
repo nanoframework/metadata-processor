@@ -68,6 +68,11 @@ namespace nanoFramework.Tools.MetadataProcessor
             nanoBinaryWriter writer,
             MethodReference item)
         {
+            if (!_context.MinimizeComplete)
+            {
+                return;
+            }
+
             ushort referenceId;
             _context.TypeReferencesTable.TryGetTypeReferenceId(item.DeclaringType, out referenceId);
 

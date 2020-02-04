@@ -24,13 +24,13 @@ namespace nanoFramework.Tools.MetadataProcessor
         private readonly IList<MethodDefinition> _methods = new List<MethodDefinition>();
 
         /// <summary>
-        /// Maps method full names to method RVAs (offsets in resutling table).
+        /// Maps method full names to method RVAs (offsets in resulting table).
         /// </summary>
         private readonly IDictionary<string, ushort> _rvasByMethodNames =
             new Dictionary<string, ushort>(StringComparer.Ordinal);
 
         /// <summary>
-        /// Temprorary string table for code generators used duing initial load.
+        /// Temporary string table for code generators used during initial load.
         /// </summary>
         private readonly nanoStringTable _fakeStringTable = new nanoStringTable();
 
@@ -57,12 +57,12 @@ namespace nanoFramework.Tools.MetadataProcessor
         }
 
         /// <summary>
-        /// Next method identifier. Used for reproducing strange original MetadataProcessor behavior.
+        /// Next method identifier. Used for reproducing strange original MetadataProcessor behaviour.
         /// </summary>
         public ushort NextMethodId { get { return (ushort)_methods.Count; } }
 
         /// <summary>
-        /// Temprorary string table for code generators used duing initial load.
+        /// Temporary string table for code generators used duing initial load.
         /// </summary>
         public nanoStringTable FakeStringTable { get { return _fakeStringTable; } }
 

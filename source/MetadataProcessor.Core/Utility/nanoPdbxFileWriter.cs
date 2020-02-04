@@ -7,6 +7,7 @@
 using Mono.Cecil;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Xml;
@@ -75,12 +76,26 @@ namespace nanoFramework.Tools.MetadataProcessor
                     writer.WriteElementString("HasByteCode", "false");
                 }
                 writer.WriteStartElement("ILMap");
+
+                // sanity check vars
+                uint prevItem1 = 0;
+                uint prevItem2 = 0;
+
                 foreach (var offset in _context.TypeDefinitionTable.GetByteCodeOffsets(tuple.Item1))
                 {
+                    if (prevItem1 > 0)
+                    {
+                        // 1st pass, load prevs with current values
+                        Debug.Assert(prevItem1 < offset.Item1);
+                        Debug.Assert(prevItem2 < offset.Item2);
+                    }
                     writer.WriteStartElement("IL");
 
                     writer.WriteElementString("CLR", "0x" + offset.Item1.ToString("X8", CultureInfo.InvariantCulture));
                     writer.WriteElementString("nanoCLR", "0x" + offset.Item2.ToString("X8", CultureInfo.InvariantCulture));
+
+                    prevItem1 = offset.Item1;
+                    prevItem2 = offset.Item2;
 
                     writer.WriteEndElement();
                 }

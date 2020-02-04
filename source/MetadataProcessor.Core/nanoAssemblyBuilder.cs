@@ -219,6 +219,9 @@ namespace nanoFramework.Tools.MetadataProcessor
 
                 interfacesToRemove.Select(i => c.Interfaces.Remove(i)).ToList();
             }
+
+            // flag minimize completed
+            _tablesContext.MinimizeComplete = true;
         }
 
         private void ShowDependencies(MetadataToken token, HashSet<MetadataToken> set, HashSet<MetadataToken> setTmp)
