@@ -100,7 +100,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
                 catch (Exception)
                 {
                     System.Console.Error.WriteLine(
-                        "Unable to compile output assembly file '{0}' - check parse command results.", fileName);
+                        $"Unable to compile output assembly file '{fileName}' - check parse command results.");
                     throw;
                 }
             }
