@@ -440,7 +440,8 @@ namespace nanoFramework.Tools.MetadataProcessor
                             if (i.Operand is MethodReference ||
                                 i.Operand is FieldReference ||
                                 i.Operand is TypeDefinition ||
-                                i.Operand is TypeSpecification)
+                                i.Operand is TypeSpecification ||
+                                i.Operand is TypeReference)
                             {
                                 set.Add(((IMetadataTokenProvider)i.Operand).MetadataToken);
                             }
