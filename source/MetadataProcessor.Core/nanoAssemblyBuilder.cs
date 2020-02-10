@@ -309,7 +309,12 @@ namespace nanoFramework.Tools.MetadataProcessor
                     // parameters
                     foreach (var p in mr.Parameters)
                     {
-                        if (p.ParameterType.DeclaringType != null)
+                        if (p.ParameterType.IsValueType &&
+                            !p.ParameterType.IsPrimitive)
+                        {
+                            set.Add(p.ParameterType.MetadataToken);
+                        }
+                        else if (p.ParameterType.DeclaringType != null)
                         {
                             set.Add(p.ParameterType.DeclaringType.MetadataToken);
                         }
@@ -387,7 +392,11 @@ namespace nanoFramework.Tools.MetadataProcessor
                     {
                         set.Add(fd.MetadataToken);
                     }
-                    
+                    else if (fd.FieldType.IsValueType)
+                    {
+                        set.Add(fd.FieldType.MetadataToken);
+                    }
+
                     // attributes
                     foreach (var c in fd.CustomAttributes)
                     {
@@ -405,7 +414,8 @@ namespace nanoFramework.Tools.MetadataProcessor
                     // return value
                     if( md.ReturnType.FullName != "System.Void" &&
                         md.ReturnType.FullName != "System.String" &&
-                        !md.ReturnType.IsArray)
+                        !md.ReturnType.IsArray &&
+                        !md.ReturnType.IsPrimitive)
                     {
                         set.Add(md.ReturnType.MetadataToken);
                     }
@@ -595,7 +605,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                         output.Append("::");
                     }
 
-                    output.Append(mr.FullName);
+                    output.Append(mr.Name);
                     break;
 
                 case TokenType.ModuleRef:
@@ -610,7 +620,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                 case TokenType.AssemblyRef:
                     var ar = _tablesContext.AssemblyReferenceTable.Items.FirstOrDefault(i => i.MetadataToken == token);
 
-                    output.Append($"[{ar.FullName}]");
+                    output.Append($"[{ar.Name}]");
                     break;
 
                 case TokenType.String:
