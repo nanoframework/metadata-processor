@@ -281,42 +281,47 @@ namespace nanoFramework.Tools.MetadataProcessor
                     var mr = _tablesContext.MethodReferencesTable.Items.FirstOrDefault(i => i.MetadataToken == token);
 
                     if (mr != null &&
-                        mr.DeclaringType != null)
-                    {
-                        set.Add(mr.DeclaringType.MetadataToken);
-                    }
-
-                    if(mr != null &&
                         mr.ReturnType != null)
                     {
-                        if (mr.ReturnType.IsArray)
+                        if (mr.MethodReturnType.ReturnType.IsValueType &&
+                            !mr.MethodReturnType.ReturnType.IsPrimitive)
+                        {
+                            set.Add(mr.MethodReturnType.ReturnType.MetadataToken);
+                        }
+                        else if (mr.ReturnType.IsArray)
                         {
                             if (mr.ReturnType.DeclaringType != null)
                             {
                                 set.Add(mr.ReturnType.DeclaringType.MetadataToken);
                             }
                         }
-                        else
+                        else if (mr.ReturnType.FullName != "System.Void" &&
+                                mr.ReturnType.FullName != "System.String" &&
+                                !mr.MethodReturnType.ReturnType.IsPrimitive)
                         {
-                            if (mr.ReturnType.FullName != "System.Void" &&
-                                mr.ReturnType.FullName != "System.String")
-                            {
-                                set.Add(mr.ReturnType.MetadataToken);
-                            }
+                            set.Add(mr.ReturnType.MetadataToken);
+                        }
+                        else if(mr.DeclaringType != null)
+                        {
+                            set.Add(mr.DeclaringType.MetadataToken);
                         }
                     }
 
                     // parameters
                     foreach (var p in mr.Parameters)
                     {
-                        if (p.ParameterType.IsValueType &&
-                            !p.ParameterType.IsPrimitive)
+                        if (p.ParameterType.DeclaringType != null)
+                        {
+                            set.Add(p.ParameterType.DeclaringType.MetadataToken);
+                        }
+                        else if (p.ParameterType.MetadataType == MetadataType.Class)
                         {
                             set.Add(p.ParameterType.MetadataToken);
                         }
-                        else if (p.ParameterType.DeclaringType != null)
+                        else if (p.ParameterType.IsValueType &&
+                                !p.ParameterType.IsPrimitive)
                         {
-                            set.Add(p.ParameterType.DeclaringType.MetadataToken);
+                            set.Add(p.ParameterType.MetadataToken);
                         }
                     }
 
@@ -392,7 +397,13 @@ namespace nanoFramework.Tools.MetadataProcessor
                     {
                         set.Add(fd.MetadataToken);
                     }
-                    else if (fd.FieldType.IsValueType)
+                    else if (fd.FieldType.IsValueType &&
+                             !fd.FieldType.IsPrimitive)
+                    {
+                        set.Add(fd.FieldType.MetadataToken);
+                    }
+                    else if (!fd.FieldType.IsValueType &&
+                            !fd.FieldType.IsPrimitive)
                     {
                         set.Add(fd.FieldType.MetadataToken);
                     }
@@ -427,6 +438,15 @@ namespace nanoFramework.Tools.MetadataProcessor
                         {
                             set.Add(p.ParameterType.DeclaringType.MetadataToken);
                         }
+                        else if (p.ParameterType.MetadataType == MetadataType.Class)
+                        {
+                            set.Add(p.ParameterType.MetadataToken);
+                        }
+                        else if (p.ParameterType.IsValueType &&
+                                !p.ParameterType.IsPrimitive)
+                        {
+                            set.Add(p.ParameterType.MetadataToken);
+                        }
                     }
 
                     if (md.HasBody)
@@ -439,6 +459,11 @@ namespace nanoFramework.Tools.MetadataProcessor
                                 set.Add(v.VariableType.DeclaringType.MetadataToken);
                             }
                             else if (v.VariableType.MetadataType == MetadataType.Class)
+                            {
+                                set.Add(v.VariableType.MetadataToken);
+                            }
+                            else if (v.VariableType.IsValueType &&
+                                    !v.VariableType.IsPrimitive)
                             {
                                 set.Add(v.VariableType.MetadataToken);
                             }
