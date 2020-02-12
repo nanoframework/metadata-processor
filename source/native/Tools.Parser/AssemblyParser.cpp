@@ -2639,6 +2639,8 @@ HRESULT MetaData::Parser::IncludeAttributes( mdToken tk, mdTokenSet& set )
         L"System.Diagnostics.ConditionalAttribute",
         // Don't include any debugging attributes
         L"System.Diagnostics.DebuggableAttribute",
+		L"System.Diagnostics.DebuggerBrowsableAttribute",
+		L"System.Diagnostics.DebuggerBrowsableState",
         L"System.Diagnostics.DebuggerHiddenAttribute",
         L"System.Diagnostics.DebuggerNonUserCodeAttribute",
         L"System.Diagnostics.DebuggerStepThroughAttribute",
