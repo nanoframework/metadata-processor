@@ -5,9 +5,11 @@
 //
 
 using Mono.Cecil;
+using Mono.Collections.Generic;
 using nanoFramework.Tools.MetadataProcessor.Core.Extensions;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -278,11 +280,22 @@ namespace nanoFramework.Tools.MetadataProcessor
                     break;
 
                 case TokenType.MemberRef:
+
+                    Collection<ParameterDefinition> parameters = null;
+
+                    // try to find a method reference
                     var mr = _tablesContext.MethodReferencesTable.Items.FirstOrDefault(i => i.MetadataToken == token);
 
                     if (mr != null &&
                         mr.ReturnType != null)
                     {
+                        parameters = mr.Parameters;
+
+                        if (mr.DeclaringType != null)
+                        {
+                            set.Add(mr.DeclaringType.MetadataToken);
+                        }
+
                         if (mr.MethodReturnType.ReturnType.IsValueType &&
                             !mr.MethodReturnType.ReturnType.IsPrimitive)
                         {
@@ -294,34 +307,88 @@ namespace nanoFramework.Tools.MetadataProcessor
                             {
                                 set.Add(mr.ReturnType.DeclaringType.MetadataToken);
                             }
+                            else
+                            {
+                                set.Add(mr.DeclaringType.MetadataToken);
+                            }
                         }
-                        else if (mr.ReturnType.FullName != "System.Void" &&
-                                mr.ReturnType.FullName != "System.String" &&
-                                !mr.MethodReturnType.ReturnType.IsPrimitive)
+                        else
                         {
-                            set.Add(mr.ReturnType.MetadataToken);
+                            if (mr.ReturnType.MetadataType == MetadataType.ValueType)
+                            {
+                                if (mr.ReturnType.FullName != "System.Void" &&
+                                    mr.ReturnType.FullName != "System.String" &&
+                                    mr.ReturnType.FullName != "System.Object" &&
+                                    !mr.ReturnType.IsPrimitive)
+                                {
+                                    set.Add(mr.ReturnType.MetadataToken);
+                                }
+                            }
+                            if (mr.ReturnType.MetadataType == MetadataType.Class)
+                            {
+                                set.Add(mr.ReturnType.MetadataToken);
+                            }
                         }
-                        else if(mr.DeclaringType != null)
+
+                        // parameters
+                        foreach (var p in mr.Parameters)
                         {
-                            set.Add(mr.DeclaringType.MetadataToken);
+                            if (p.ParameterType.DeclaringType != null)
+                            {
+                                set.Add(p.ParameterType.DeclaringType.MetadataToken);
+                            }
+                            else if (p.ParameterType.MetadataType == MetadataType.Class)
+                            {
+                                set.Add(p.ParameterType.MetadataToken);
+                            }
+                            else if (p.ParameterType.IsValueType &&
+                                    !p.ParameterType.IsPrimitive)
+                            {
+                                set.Add(p.ParameterType.MetadataToken);
+                            }
                         }
                     }
 
-                    // parameters
-                    foreach (var p in mr.Parameters)
+                    if (mr == null)
                     {
-                        if (p.ParameterType.DeclaringType != null)
+                        // try now with field references
+                        var fr = _tablesContext.FieldReferencesTable.Items.FirstOrDefault(i => i.MetadataToken == token);
+
+                        if (fr != null)
                         {
-                            set.Add(p.ParameterType.DeclaringType.MetadataToken);
-                        }
-                        else if (p.ParameterType.MetadataType == MetadataType.Class)
-                        {
-                            set.Add(p.ParameterType.MetadataToken);
-                        }
-                        else if (p.ParameterType.IsValueType &&
-                                !p.ParameterType.IsPrimitive)
-                        {
-                            set.Add(p.ParameterType.MetadataToken);
+                            if (fr.DeclaringType != null)
+                            {
+                                set.Add(fr.DeclaringType.MetadataToken);
+                            }
+
+                            if (fr.FieldType.IsValueType &&
+                                !fr.FieldType.IsPrimitive)
+                            {
+                                set.Add(fr.FieldType.MetadataToken);
+                            }
+                            else if (fr.FieldType.IsArray)
+                            {
+                                if (fr.FieldType.DeclaringType != null)
+                                {
+                                    set.Add(fr.FieldType.MetadataToken);
+                                }
+                                else
+                                {
+                                    set.Add(fr.DeclaringType.MetadataToken);
+                                }
+                            }
+                            else if (fr.FieldType.FullName != "System.Void" &&
+                                    fr.FieldType.FullName != "System.String" &&
+                                    fr.FieldType.FullName != "System.Object" &&
+                                    fr.FieldType.IsValueType &&
+                                    !fr.FieldType.IsPrimitive)
+                            {
+                                set.Add(fr.FieldType.MetadataToken);
+                            }
+                            else if (fr.FieldType.DeclaringType != null)
+                            {
+                                set.Add(fr.FieldType.DeclaringType.MetadataToken);
+                            }
                         }
                     }
 
@@ -353,7 +420,8 @@ namespace nanoFramework.Tools.MetadataProcessor
                     // include attributes
                     foreach(var c in td.CustomAttributes)
                     {
-                        if (!nanoTablesContext.ClassNamesToExclude.Contains(c.AttributeType.FullName))
+                        if (!nanoTablesContext.ClassNamesToExclude.Contains(c.AttributeType.FullName) && 
+                            c.AttributeType.IsToInclude())
                         {
                             set.Add(c.AttributeType.MetadataToken);
                         }
@@ -402,8 +470,22 @@ namespace nanoFramework.Tools.MetadataProcessor
                     {
                         set.Add(fd.FieldType.MetadataToken);
                     }
+                    else if (fd.FieldType.IsArray)
+                    {
+                        if (fd.FieldType.DeclaringType != null)
+                        {
+                            set.Add(fd.FieldType.DeclaringType.MetadataToken);
+                        }
+                        else
+                        {
+                            set.Add(fd.DeclaringType.MetadataToken);
+                        }
+                    }
                     else if (!fd.FieldType.IsValueType &&
-                            !fd.FieldType.IsPrimitive)
+                            !fd.FieldType.IsPrimitive &&
+                            fd.FieldType.FullName != "System.Void" &&
+                            fd.FieldType.FullName != "System.String" &&
+                            fd.FieldType.FullName != "System.Object")
                     {
                         set.Add(fd.FieldType.MetadataToken);
                     }
@@ -411,7 +493,8 @@ namespace nanoFramework.Tools.MetadataProcessor
                     // attributes
                     foreach (var c in fd.CustomAttributes)
                     {
-                        if (!nanoTablesContext.ClassNamesToExclude.Contains(c.AttributeType.FullName))
+                        if (!nanoTablesContext.ClassNamesToExclude.Contains(c.AttributeType.FullName) &&
+                            c.AttributeType.IsToInclude())
                         {   
                             set.Add(c.Constructor.MetadataToken);
                         }
@@ -423,29 +506,57 @@ namespace nanoFramework.Tools.MetadataProcessor
                     var md = _tablesContext.MethodDefinitionTable.Items.FirstOrDefault(i => i.MetadataToken == token);
 
                     // return value
-                    if( md.ReturnType.FullName != "System.Void" &&
-                        md.ReturnType.FullName != "System.String" &&
-                        !md.ReturnType.IsArray &&
-                        !md.ReturnType.IsPrimitive)
+                    if (md.ReturnType.IsValueType &&
+                             !md.ReturnType.IsPrimitive)
+                    {
+                        set.Add(md.ReturnType.MetadataToken);
+                    }
+                    else if (md.ReturnType.IsArray)
+                    {
+                        if (md.ReturnType.DeclaringType != null)
+                        {
+                            set.Add(md.ReturnType.DeclaringType.MetadataToken);
+                        }
+                        else
+                        {
+                            set.Add(md.DeclaringType.MetadataToken);
+                        }
+                    }
+                    else if (!md.ReturnType.IsValueType &&
+                            !md.ReturnType.IsPrimitive &&
+                            md.ReturnType.FullName != "System.Void" &&
+                            md.ReturnType.FullName != "System.String" &&
+                            md.ReturnType.FullName != "System.Object")
                     {
                         set.Add(md.ReturnType.MetadataToken);
                     }
 
                     // parameters
-                    foreach(var p in md.Parameters)
+                    foreach (var p in md.Parameters)
                     {
-                        if (p.ParameterType.DeclaringType != null)
+                        TypeReference parameterType = null;
+
+                        if (p.ParameterType is ByReferenceType byReference)
                         {
-                            set.Add(p.ParameterType.DeclaringType.MetadataToken);
+                            parameterType = byReference.ElementType;
                         }
-                        else if (p.ParameterType.MetadataType == MetadataType.Class)
+                        else
                         {
-                            set.Add(p.ParameterType.MetadataToken);
+                            parameterType = p.ParameterType;
                         }
-                        else if (p.ParameterType.IsValueType &&
-                                !p.ParameterType.IsPrimitive)
+
+                        if (parameterType.DeclaringType != null)
                         {
-                            set.Add(p.ParameterType.MetadataToken);
+                            set.Add(parameterType.DeclaringType.MetadataToken);
+                        }
+                        else if (parameterType.MetadataType == MetadataType.Class)
+                        {
+                            set.Add(parameterType.MetadataToken);
+                        }
+                        else if (parameterType.IsValueType &&
+                                !parameterType.IsPrimitive)
+                        {
+                            set.Add(parameterType.MetadataToken);
                         }
                     }
 
@@ -480,7 +591,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                             {
                                 set.Add(((IMetadataTokenProvider)i.Operand).MetadataToken);
                             }
-                            else if (i.Operand is String)
+                            else if (i.Operand is string)
                             {
                                 var stringId = _tablesContext.StringTable.GetOrCreateStringId((string)i.Operand);
 
@@ -504,7 +615,8 @@ namespace nanoFramework.Tools.MetadataProcessor
                     // attributes
                     foreach (var c in md.CustomAttributes)
                     {
-                        if (!nanoTablesContext.ClassNamesToExclude.Contains(c.AttributeType.FullName))
+                        if (!nanoTablesContext.ClassNamesToExclude.Contains(c.AttributeType.FullName) &&
+                            c.AttributeType.IsToInclude())
                         {
                             set.Add(c.Constructor.MetadataToken);
                         }
@@ -622,15 +734,40 @@ namespace nanoFramework.Tools.MetadataProcessor
                     break;
 
                 case TokenType.MemberRef:
+
+                    TypeReference typeRef = null;
+                    string typeName = string.Empty;
+
+                    // try to find a method reference
                     var mr = _tablesContext.MethodReferencesTable.Items.FirstOrDefault(i => i.MetadataToken == token);
 
-                    if (mr.DeclaringType != null)
+                    if (mr != null)
                     {
-                        output.Append(TokenToString(mr.DeclaringType.MetadataToken));
+                        typeRef = mr.DeclaringType;
+                        typeName = mr.Name;
+                    }
+                    else
+                    {
+                        // try now with field references
+                        var fr = _tablesContext.FieldReferencesTable.Items.FirstOrDefault(i => i.MetadataToken == token);
+
+                        if (fr != null)
+                        {
+                            typeRef = fr.DeclaringType;
+                            typeName = fr.Name;
+                        }
+                    }
+
+                    Debug.Assert(typeRef != null);
+                    Debug.Assert(typeName != string.Empty);
+
+                    if (typeRef != null)
+                    {
+                        output.Append(TokenToString(typeRef.MetadataToken));
                         output.Append("::");
                     }
 
-                    output.Append(mr.Name);
+                    output.Append(typeName);
                     break;
 
                 case TokenType.ModuleRef:
