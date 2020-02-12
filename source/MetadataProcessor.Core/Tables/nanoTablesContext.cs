@@ -13,10 +13,10 @@ namespace nanoFramework.Tools.MetadataProcessor
 {
     public sealed class nanoTablesContext
     {
-        private readonly HashSet<string> _ignoringAttributes =
-            new HashSet<string>(StringComparer.Ordinal)
+        internal static HashSet<string> IgnoringAttributes { get; } = new HashSet<string>(StringComparer.Ordinal)
             {
                 // Assembly-level attributes
+                "System.Reflection.AssemblyFileVersionAttribute",
                 "System.Runtime.InteropServices.ComVisibleAttribute",
                 "System.Runtime.InteropServices.GuidAttribute",
 
@@ -53,6 +53,9 @@ namespace nanoFramework.Tools.MetadataProcessor
                 // Intellisense filtering attributes
                 "System.ComponentModel.EditorBrowsableAttribute",
 
+                //Not supported
+                "System.Reflection.DefaultMemberAttribute",
+
                 // Not supported attributes
                 "System.MTAThreadAttribute",
                 "System.STAThreadAttribute",
@@ -77,19 +80,19 @@ namespace nanoFramework.Tools.MetadataProcessor
                 // add it to ignore list, if it's not already there
                 if ((ClassNamesToExclude.Contains(item.AttributeType.FullName) ||
                      ClassNamesToExclude.Contains(item.AttributeType.DeclaringType?.FullName)) &&
-                    !(_ignoringAttributes.Contains(item.AttributeType.FullName) ||
-                      _ignoringAttributes.Contains(item.AttributeType.DeclaringType?.FullName)))
+                    !(IgnoringAttributes.Contains(item.AttributeType.FullName) ||
+                      IgnoringAttributes.Contains(item.AttributeType.DeclaringType?.FullName)))
                 {
-                    _ignoringAttributes.Add(item.AttributeType.FullName);
+                    IgnoringAttributes.Add(item.AttributeType.FullName);
                 }
             }
 
             // check ignoring attributes against ClassNamesToExclude 
             foreach(var className in ClassNamesToExclude)
             {
-                if(!_ignoringAttributes.Contains(className))
+                if(!IgnoringAttributes.Contains(className))
                 {
-                    _ignoringAttributes.Add(className);
+                    IgnoringAttributes.Add(className);
                 }
             }
 
@@ -266,8 +269,8 @@ namespace nanoFramework.Tools.MetadataProcessor
             MemberReference typeReference)
         {
             return
-                (_ignoringAttributes.Contains(typeReference.FullName) ||
-                 _ignoringAttributes.Contains(typeReference.DeclaringType?.FullName));
+                (IgnoringAttributes.Contains(typeReference.FullName) ||
+                 IgnoringAttributes.Contains(typeReference.DeclaringType?.FullName));
         }
 
         private static List<TypeDefinition> GetOrderedTypes(

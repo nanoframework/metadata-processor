@@ -95,6 +95,7 @@
     <Compile Include="DumpGenerator\DumpTemplates.cs" />
     <Compile Include="Endianness\nanoBinaryWriter.cs" />
     <Compile Include="Extensions\ByteArrayExtensions.cs" />
+    <Compile Include="Extensions\TypeReferenceExtensions.cs" />
     <Compile Include="Extensions\TypeDefinitionExtensions.cs" />
     <Compile Include="InanoTable.cs" />
     <Compile Include="Mono.Cecil\CodeWriter.cs" />
