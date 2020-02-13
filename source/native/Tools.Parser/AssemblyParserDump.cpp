@@ -348,7 +348,15 @@ void MetaData::Parser::Dump_PrintSigForLocalVar( LocalVarSignature& sig )
         fwprintf( m_output, L" " );
 
         Dump_PrintSigForType( *it++ );
-        if(it != sig.m_lstVars.end()) fwprintf( m_output, L"," );
+        
+		if (it != sig.m_lstVars.end())
+		{
+			fwprintf(m_output, L",");
+		}
+		else
+		{
+			fwprintf(m_output, L" ");
+		}
     }
 
     fwprintf( m_output, L"}" );
@@ -383,9 +391,9 @@ void MetaData::Parser::Dump_EnumAssemblyRefs()
         AssemblyRef& ar = it->second;
 
         fwprintf( m_output, L"AssemblyRefProps [%08x]: Flags: %08x '%s'\n", ar.m_ar, ar.m_flags, ar.m_name.c_str() );
-
-        fwprintf( m_output, L"\n" );
     }
+
+    fwprintf( m_output, L"\n" );
 }
 
 void MetaData::Parser::Dump_EnumModuleRefs()
@@ -418,9 +426,9 @@ void MetaData::Parser::Dump_EnumTypeRefs()
             Dump_PrintSigForTypeSpec( mr.m_sig );
             fwprintf( m_output, L"]\n" );
         }
-
-        fwprintf( m_output, L"\n" );
     }
+
+	fwprintf(m_output, L"\n");
 }
 
 void MetaData::Parser::Dump_EnumTypeDefs( bool fNoByteCode )
@@ -548,9 +556,9 @@ void MetaData::Parser::Dump_EnumTypeDefs( bool fNoByteCode )
 
             fwprintf( m_output, L"    InterfaceImplProps [%08x]: Itf: %08x\n", *it3, ii.m_itf );
         }
-
-        fwprintf( m_output, L"\n" );
     }
+
+	fwprintf(m_output, L"\n"); 
 }
 
 void MetaData::Parser::Dump_EnumCustomAttributes()
@@ -590,6 +598,8 @@ void MetaData::Parser::Dump_EnumCustomAttributes()
             fwprintf( m_output, L"\n" );
         }
     }
+
+	fwprintf(m_output, L"\n");
 }
 
 void MetaData::Parser::Dump_EnumUserStrings()

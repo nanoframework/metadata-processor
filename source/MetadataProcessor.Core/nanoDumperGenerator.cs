@@ -6,6 +6,7 @@
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Collections.Generic;
+using nanoFramework.Tools.MetadataProcessor.Core.Extensions;
 using Stubble.Core.Builders;
 using System;
 using System.Collections.Generic;
@@ -55,9 +56,28 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
         private void DumpCustomAttributes(DumpAllTable dumpTable)
         {
-            foreach (var a in _tablesContext.AssemblyDefinition.CustomAttributes)
+            foreach (var a in _tablesContext.TypeDefinitionTable.Items.Where(td => td.HasCustomAttributes))
             {
+                foreach (var ma in a.Methods)
+                {
+                    var attribute = new AttributeCustom()
+                    {
+                        Name = a.Module.Assembly.Name.Name,
+                        ReferenceId = ma.MetadataToken.ToInt32().ToString("x8"),
+                        TypeToken = a.CustomAttributes[0].Constructor.MetadataToken.ToInt32().ToString("x8")
+                    };
 
+                    dumpTable.Attributes.Add(attribute);
+                }
+
+                var attribute1 = new AttributeCustom()
+                {
+                    Name = a.Module.Assembly.Name.Name,
+                    ReferenceId = a.MetadataToken.ToInt32().ToString("x8"),
+                    TypeToken = a.CustomAttributes[0].Constructor.MetadataToken.ToInt32().ToString("x8")
+                };
+
+                dumpTable.Attributes.Add(attribute1);
             }
         }
 
@@ -85,7 +105,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
         private void DumpTypeDefinitions(DumpAllTable dumpTable)
         {
-            foreach (var t in _tablesContext.TypeDefinitionTable.Items)
+            foreach (var t in _tablesContext.TypeDefinitionTable.Items.OrderBy(tr => tr.MetadataToken.ToInt32()))
             {
                 // fill type definition
                 var typeDef = new TypeDef()
@@ -142,7 +162,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                         ReferenceId = m.MetadataToken.ToInt32().ToString("x8"),
                         Name = m.Name,
                         RVA = m.RVA.ToString("x8"),
-                        Implementation = "Implementation",
+                        Implementation = "00000000",
                         Signature = PrintSignatureForMethod(m)
                     };
 
@@ -231,24 +251,37 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
         private void DumpTypeReferences(DumpAllTable dumpTable)
         {
-            foreach (var t in _tablesContext.TypeReferencesTable.Items)
+            foreach (var t in _tablesContext.TypeReferencesTable.Items.OrderBy(tr => tr.MetadataToken.ToInt32()))
             {
                 ushort refId;
 
                 var typeRef = new TypeRef()
                 {
-                    Name = t.Name,
-                    Scope = _tablesContext.TypeReferencesTable.GetScope(t).ToString("x8")
+                    Name = t.FullName,
+                    Scope = new MetadataToken(TokenType.AssemblyRef, _tablesContext.TypeReferencesTable.GetScope(t)).ToInt32().ToString("x8")
                 };
 
                 if (_tablesContext.TypeReferencesTable.TryGetTypeReferenceId(t, out refId))
                 {
-                    typeRef.ReferenceId = "0x" + refId.ToString("x8");
-                    typeRef.Name = t.FullName;
+                    typeRef.ReferenceId = new MetadataToken(TokenType.TypeRef, refId).ToInt32().ToString("x8");
                 }
 
-                // TODO 
-                // list member refs
+                // list member refs               
+                foreach(var m in _tablesContext.MethodReferencesTable.Items.Where(mr => mr.DeclaringType == t))
+                {
+                    var memberRef = new MemberRef()
+                    {
+                        Name = m.Name
+                    };
+
+                    if (_tablesContext.MethodReferencesTable.TryGetMethodReferenceId(m, out refId))
+                    {
+                        memberRef.ReferenceId = new MetadataToken(TokenType.MemberRef, refId).ToInt32().ToString("x8");
+                        memberRef.Signature = PrintSignatureForMethod(m);
+                    }
+
+                    typeRef.MemberReferences.Add(memberRef);
+                }
 
                 dumpTable.TypeReferences.Add(typeRef);
             }
@@ -266,8 +299,8 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                 dumpTable.AssemblyReferences.Add(new AssemblyRef()
                 {
                     Name = a.Name,
-                    ReferenceId = "0x" + _tablesContext.AssemblyReferenceTable.GetReferenceId(a).ToString("x8"),
-                    Flags = "0x"
+                    ReferenceId = new MetadataToken(TokenType.AssemblyRef, _tablesContext.AssemblyReferenceTable.GetReferenceId(a)).ToInt32().ToString("x8"),
+                    Flags = "00000000"
                 });
             }
         }
@@ -330,6 +363,16 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                 return arraySig.ToString();
             }
 
+            if(type.MetadataType == MetadataType.IntPtr)
+            {
+                return "I";
+            }
+
+            if (type.MetadataType == MetadataType.UIntPtr)
+            {
+                return "U";
+            }
+
             return "";
         }
 
@@ -337,13 +380,12 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
         {
             var sig = new StringBuilder(PrintSignatureForType(method.ReturnType));
 
-            sig.Append("(");
+            sig.Append("( ");
 
             foreach(var p in method.Parameters)
             {
-                sig.Append(" ");
                 sig.Append(PrintSignatureForType(p.ParameterType));
-                sig.Append(" , ");
+                sig.Append(", ");
             }
 
             // remove trailing", "
@@ -356,7 +398,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                 sig.Append(" ");
             }
 
-            sig.Append(")");
+            sig.Append(" )");
 
             return sig.ToString();
         }
@@ -365,13 +407,12 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
         private string PrintSignatureForLocalVar(Collection<VariableDefinition> variables)
         {
             StringBuilder sig = new StringBuilder();
-            sig.Append("{");
+            sig.Append("{ ");
 
             foreach (var l in variables)
             {
-                sig.Append(" ");
                 sig.Append(PrintSignatureForType(l.VariableType));
-                sig.Append(" , ");
+                sig.Append(", ");
             }
 
             // remove trailing", "
@@ -384,7 +425,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                 sig.Append(" ");
             }
 
-            sig.Append("}");
+            sig.Append(" }");
 
             return sig.ToString();
         }
