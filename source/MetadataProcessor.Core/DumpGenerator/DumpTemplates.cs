@@ -8,8 +8,7 @@ namespace nanoFramework.Tools.MetadataProcessor
     internal partial class DumpTemplates
     {
         internal static string DumpAllTemplate =
-@"
-{{#AssemblyReferences}}
+@"{{#AssemblyReferences}}
 AssemblyRefProps [{{ReferenceId}}]: Flags: {{Flags}} '{{Name}}'
 {{/AssemblyReferences}}
 
@@ -26,7 +25,7 @@ TypeDefProps [{{ReferenceId}}]: Flags: {{Flags}} Extends: {{ExtendsType}} Enclos
     FieldDefProps [{{ReferenceId}}]: Attr: {{Attributes}} Flags: {{Flags}} '{{Name}}' [{{Signature}}]
 {{/FieldDefinitions}}
 {{#MethodDefinitions}}
-    MethodDefProps [{{ReferenceId}}]: Flags: {{Flags}} Impl: {{Implementation}} RVA: {{RVA}}  '{{Name}}' [{{Signature}}]
+    MethodDefProps [{{ReferenceId}}]: Flags: {{Flags}} Impl: {{Implementation}} RVA: {{RVA}} '{{Name}}' [{{Signature}}]
         {{#Locals}}
         Locals {{Locals}}
         {{/Locals}}
@@ -45,6 +44,10 @@ TypeDefProps [{{ReferenceId}}]: Flags: {{Flags}} Extends: {{ExtendsType}} Enclos
 {{/InterfaceDefinitions}}
 
 {{/TypeDefinitions}}
+
+{{#Attributes}}
+Attribute: {{Name}}::[{{ReferenceId}} {{TypeToken}}]
+{{/Attributes}}
 
 {{#UserStrings}}
 UserString [{{ReferenceId}}]: '{{Content}}'
