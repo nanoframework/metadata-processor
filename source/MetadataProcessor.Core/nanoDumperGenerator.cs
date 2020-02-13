@@ -307,6 +307,16 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
         private string PrintSignatureForType(TypeReference type)
         {
+            if(type.MetadataType == MetadataType.IntPtr)
+            {
+                return "I";
+            }
+
+            if (type.MetadataType == MetadataType.UIntPtr)
+            {
+                return "U";
+            }
+
             nanoCLR_DataType dataType;
             if (nanoSignaturesTable.PrimitiveTypes.TryGetValue(type.FullName, out dataType))
             {
@@ -363,15 +373,6 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                 return arraySig.ToString();
             }
 
-            if(type.MetadataType == MetadataType.IntPtr)
-            {
-                return "I";
-            }
-
-            if (type.MetadataType == MetadataType.UIntPtr)
-            {
-                return "U";
-            }
 
             return "";
         }
