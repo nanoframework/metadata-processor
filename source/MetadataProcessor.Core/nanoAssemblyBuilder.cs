@@ -92,7 +92,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// Minimizes the assembly, removing unwanted and unused elements.
         /// </summary>
         /// <remarks>
-        /// In order to minize an assembly it has to have been previously compiled.
+        /// In order to minimize an assembly it has to have been previously compiled.
         /// </remarks>
         public void Minimize()
         {
@@ -156,7 +156,6 @@ namespace nanoFramework.Tools.MetadataProcessor
             }
 
             // need to reset several tables so they are recreated only with the used items
-            _tablesContext.ResetStringsTable();
             _tablesContext.AssemblyReferenceTable.RemoveUnusedItems(set);
             _tablesContext.TypeReferencesTable.RemoveUnusedItems(set);
             _tablesContext.FieldsTable.RemoveUnusedItems(set);
@@ -168,7 +167,8 @@ namespace nanoFramework.Tools.MetadataProcessor
             _tablesContext.AttributesTable.RemoveUnusedItems(set);
             _tablesContext.ResetByteCodeTable();
             _tablesContext.ResetSignaturesTable();
-             
+            _tablesContext.StringTable.RemoveUnusedItems(set);
+            
             // renormalise type definitions look-up tables
             // by removing items that are not used
 
