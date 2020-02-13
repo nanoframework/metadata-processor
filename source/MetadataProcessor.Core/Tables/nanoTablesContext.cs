@@ -420,10 +420,5 @@ namespace nanoFramework.Tools.MetadataProcessor
         {
             SignaturesTable = new nanoSignaturesTable(this);
         }
-
-        internal void ResetStringsTable()
-        {
-            StringTable = new nanoStringTable();
-        }
     }
 }

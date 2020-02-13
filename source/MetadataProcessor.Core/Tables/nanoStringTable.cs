@@ -35,7 +35,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// <summary>
         /// Maps for each unique string and related identifier (offset in strings table).
         /// </summary>
-        private readonly Dictionary<string, ushort> _idsByStrings =
+        private Dictionary<string, ushort> _idsByStrings =
             new Dictionary<string, ushort>(StringComparer.Ordinal);
 
         /// <summary>
@@ -138,6 +138,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         public void RemoveUnusedItems(HashSet<MetadataToken> items)
         {
             var setAll = new HashSet<MetadataToken>();
+            List<string> usedStrings = new List<string>();
 
             // build a collection of the existing tokens
             foreach (var a in _idsByStrings)
@@ -148,14 +149,25 @@ namespace nanoFramework.Tools.MetadataProcessor
             // remove the ones that are used
             foreach (var t in items)
             {
-                setAll.Remove(t);
+                if(setAll.Remove(t))
+                {
+                    usedStrings.Add(TryGetString((ushort)t.ToUInt32()));
+                }
             }
 
-            // the ones left are the ones not used, OK to remove them
-            foreach (var t in setAll)
+            // reset dictionary
+            _idsByStrings = new Dictionary<string, ushort>(StringComparer.Ordinal);
+            
+            // and last ID too
+            _lastAvailableId = 0;
+
+            // First item in string table always empty string
+            GetOrCreateStringId(string.Empty);
+
+            // fill in the dictionary with the used strings
+            foreach (var s in usedStrings)
             {
-                var itemToRemove = TryGetString((ushort)t.ToUInt32());
-                _idsByStrings.Remove(itemToRemove);
+                GetOrCreateStringId(s);
             }
         }
 
