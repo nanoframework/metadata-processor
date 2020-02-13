@@ -62,7 +62,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         public ushort NextMethodId { get { return (ushort)_methods.Count; } }
 
         /// <summary>
-        /// Temporary string table for code generators used duing initial load.
+        /// Temporary string table for code generators used during initial load.
         /// </summary>
         public nanoStringTable FakeStringTable { get { return _fakeStringTable; } }
 
