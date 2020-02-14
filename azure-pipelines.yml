@@ -149,7 +149,7 @@ jobs:
       packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
       publishFeedCredentials: 'AzureArtifacts'
     continueOnError: true
-    condition: succeeded()
+    condition: and( succeeded(), ne(variables['system.pullrequest.isfork'], true) )
     displayName: Push NuGet packages to Azure Artifacts
 
   # create or update GitHub release
