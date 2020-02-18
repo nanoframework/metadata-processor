@@ -4,8 +4,8 @@
 //
 
 using Mono.Cecil;
+using Mustache;
 using nanoFramework.Tools.MetadataProcessor.Core.Extensions;
-using Stubble.Core.Builders;
 using System;
 using System.IO;
 using System.Linq;
@@ -86,11 +86,15 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                     // anything to add to the header?
                     if (classStubs.Functions.Count > 0)
                     {
-                        var stubble = new StubbleBuilder().Build();
+                        FormatCompiler compiler = new FormatCompiler
+                        {
+                            RemoveNewLines = false
+                        };
+                        Generator generator = compiler.Compile(SkeletonTemplates.ClassStubTemplate);
 
                         using (var headerFile = File.CreateText(Path.Combine(_path, $"{_project}_{className}.cpp")))
                         {
-                            var output = stubble.Render(SkeletonTemplates.ClassStubTemplate, classStubs);
+                            var output = generator.Render(classStubs);
                             headerFile.Write(output);
                         }
                     }
@@ -179,11 +183,12 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                 }
             }
 
-            var stubble = new StubbleBuilder().Build();
+            FormatCompiler compiler = new FormatCompiler();
+            Generator generator = compiler.Compile(SkeletonTemplates.AssemblyLookupTemplate);
 
             using (var headerFile = File.CreateText(Path.Combine(_path, $"{_project}.cpp")))
             {
-                var output = stubble.Render(SkeletonTemplates.AssemblyLookupTemplate, assemblyLookup);
+                var output = generator.Render(assemblyLookup);
                 headerFile.Write(output);
             }
         }
@@ -287,13 +292,14 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                 }
             }
 
-            var stubble = new StubbleBuilder().Build();
+            FormatCompiler compiler = new FormatCompiler();
+            Generator generator = compiler.Compile(SkeletonTemplates.AssemblyHeaderTemplate);
 
             Directory.CreateDirectory(_path);
 
             using (var headerFile = File.CreateText(Path.Combine(_path, $"{_project}.h")))
             {
-                var output = stubble.Render(SkeletonTemplates.AssemblyHeaderTemplate, assemblyData);
+                var output = generator.Render(assemblyData);
                 headerFile.Write(output);
             }
         }
