@@ -6,8 +6,8 @@
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Collections.Generic;
+using Mustache;
 using nanoFramework.Tools.MetadataProcessor.Core.Extensions;
-using Stubble.Core.Builders;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -45,11 +45,13 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
             DumpCustomAttributes(dumpTable);
             DumpUserStrings(dumpTable);
 
-            var stubble = new StubbleBuilder().Build();
+
+            FormatCompiler compiler = new FormatCompiler();
+            Generator generator = compiler.Compile(DumpTemplates.DumpAllTemplate);
 
             using (var dumpFile = File.CreateText(_path))
             {
-                var output = stubble.Render(DumpTemplates.DumpAllTemplate, dumpTable);
+                var output = generator.Render(dumpTable);
                 dumpFile.Write(output);
             }
         }

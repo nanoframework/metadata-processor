@@ -7,77 +7,84 @@ namespace nanoFramework.Tools.MetadataProcessor
 {
     internal partial class SkeletonTemplates
     {
-        internal static string AssemblyHeaderTemplate = 
-@"//-----------------------------------------------------------------------------
-//
-//                   ** WARNING! ** 
-//    This file was generated automatically by a tool.
-//    Re-running the tool will overwrite this file.
-//    You should copy this file to a custom location
-//    before adding any customization in the copy to
-//    prevent loss of your changes when the tool is
-//    re-run.
-//
-//-----------------------------------------------------------------------------
+        internal const string AssemblyHeaderTemplate =
+@"//-----------------------------------------------------------------------------{{#newline}}
+//{{#newline}}
+//                   ** WARNING! ** {{#newline}}
+//    This file was generated automatically by a tool.{{#newline}}
+//    Re-running the tool will overwrite this file.{{#newline}}
+//    You should copy this file to a custom location{{#newline}}
+//    before adding any customization in the copy to{{#newline}}
+//    prevent loss of your changes when the tool is{{#newline}}
+//    re-run.{{#newline}}
+//{{#newline}}
+//-----------------------------------------------------------------------------{{#newline}}
+{{#newline}}
 
-#ifndef _{{ShortNameUpper}}_H_
-#define _{{ShortNameUpper}}_H_
+#ifndef _{{ShortNameUpper}}_H_{{#newline}}
+#define _{{ShortNameUpper}}_H_{{#newline}}
+{{#newline}}
 
-#include <nanoCLR_Interop.h>
-#include <nanoCLR_Runtime.h>
-#include <corlib_native.h>
+#include <nanoCLR_Interop.h>{{#newline}}
+#include <nanoCLR_Runtime.h>{{#newline}}
+#include <corlib_native.h>{{#newline}}
+{{#newline}}
 
-{{#Classes}}
-struct Library_{{AssemblyName}}_{{Name}}
-{
-	{{#StaticFields}}
-    static const int FIELD_STATIC__{{Name}} = {{ReferenceIndex}};
-	{{/StaticFields}}
+{{#each Classes}}
+struct Library_{{AssemblyName}}_{{Name}}{{#newline}}
+{{{#newline}}
 
-    {{#InstanceFields}}
-		{{#FieldWarning}}
-		{{FieldWarning}}
-		{{/FieldWarning}}
-    static const int FIELD__{{Name}} = {{ReferenceIndex}};
-	{{/InstanceFields}}
+{{#each StaticFields}}
+    static const int FIELD_STATIC__{{Name}} = {{ReferenceIndex}};{{#newline}}
+{{/each}}
+{{#if StaticFields}}{{#newline}}{{/if}}
 
-	{{#Methods}}
-    NANOCLR_NATIVE_DECLARE({{Declaration}});
-	{{/Methods}}
+{{#each InstanceFields}}
+{{#if FieldWarning}}{{FieldWarning}}{{/if}}
+    static const int FIELD__{{Name}} = {{ReferenceIndex}};{{#newline}}
+{{/each}}
+{{#if InstanceFields}}{{#newline}}{{/if}}
 
-    //--//
+{{#each Methods}}
+    NANOCLR_NATIVE_DECLARE({{Declaration}});{{#newline}}
+{{/each}}
+{{#if Methods}}{{#newline}}{{/if}}
 
-};
-
-{{/Classes}}
-extern const CLR_RT_NativeAssemblyData g_CLR_AssemblyNative_{{Name}};
-
-#endif  //_{{ShortNameUpper}}_H_
+    //--//{{#newline}}
+{{#newline}}
+};{{#newline}}
+{{#newline}}
+{{/each}}
+extern const CLR_RT_NativeAssemblyData g_CLR_AssemblyNative_{{Name}};{{#newline}}
+{{#newline}}
+#endif  //_{{ShortNameUpper}}_H_{{#newline}}
 ";
 
-        internal static string AssemblyLookupTemplate =
-@"#include ""{{HeaderFileName}}.h""
+        internal const string AssemblyLookupTemplate =
+@"#include ""{{HeaderFileName}}.h""{{#newline}}
+{{#newline}}
 
-static const CLR_RT_MethodHandler method_lookup[] =
-{
-{{#LookupTable}}
-    {{Declaration}},
-{{/LookupTable}}
-};
+static const CLR_RT_MethodHandler method_lookup[] ={{#newline}}
+{{{#newline}}
+{{#each LookupTable}}
+    {{Declaration}},{{#newline}}
+{{/each}}
+};{{#newline}}
+{{#newline}}
 
-const CLR_RT_NativeAssemblyData g_CLR_AssemblyNative_{{AssemblyName}} =
-{
-    ""{{Name}}"",
-    {{NativeCRC32}},
-    method_lookup,
-    ////////////////////////////////////////////////////////////////////////////////////
-    // check if the version bellow matches the one in AssemblyNativeVersion attribute //
-    ////////////////////////////////////////////////////////////////////////////////////
-    { {{NativeVersion.Major}}, {{NativeVersion.Minor}}, {{NativeVersion.Build}}, {{NativeVersion.Revision}} }
-};
+const CLR_RT_NativeAssemblyData g_CLR_AssemblyNative_{{AssemblyName}} ={{#newline}}
+{{{#newline}}
+    ""{{Name}}"",{{#newline}}
+    {{NativeCRC32}},{{#newline}}
+    method_lookup,{{#newline}}
+    ////////////////////////////////////////////////////////////////////////////////////{{#newline}}
+    // check if the version bellow matches the one in AssemblyNativeVersion attribute //{{#newline}}
+    ////////////////////////////////////////////////////////////////////////////////////{{#newline}}
+    { {{NativeVersion.Major}}, {{NativeVersion.Minor}}, {{NativeVersion.Build}}, {{NativeVersion.Revision}} }{{#newline}}
+};{{#newline}}
 ";
 
-        internal static string ClassStubTemplate =
+        internal const string ClassStubTemplate =
 @"//-----------------------------------------------------------------------------
 //
 //                   ** WARNING! ** 
@@ -92,7 +99,7 @@ const CLR_RT_NativeAssemblyData g_CLR_AssemblyNative_{{AssemblyName}} =
 
 #include ""{{HeaderFileName}}.h""
 
-{{#Functions}}
+{{#each Functions}}
 HRESULT {{Declaration}}( CLR_RT_StackFrame& stack )
 {
     NANOCLR_HEADER();
@@ -101,8 +108,6 @@ HRESULT {{Declaration}}( CLR_RT_StackFrame& stack )
 
     NANOCLR_NOCLEANUP();
 }
-
-{{/Functions}}
-";
+{{/each}}";
     }
 }

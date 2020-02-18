@@ -7,52 +7,58 @@ namespace nanoFramework.Tools.MetadataProcessor
 {
     internal partial class DumpTemplates
     {
-        internal static string DumpAllTemplate =
-@"{{#AssemblyReferences}}
-AssemblyRefProps [{{ReferenceId}}]: Flags: {{Flags}} '{{Name}}'
-{{/AssemblyReferences}}
+        internal const string DumpAllTemplate =
+@"{{#each AssemblyReferences}}
+AssemblyRefProps [{{ReferenceId}}]: Flags: {{Flags}} '{{Name}}'{{#newline}}
+{{/each}}
+{{#if AssemblyReferences}}{{#newline}}{{/if}}
 
-{{#TypeReferences}}
-TypeRefProps [{{ReferenceId}}]: Scope: {{Scope}} '{{Name}}'
-{{#MemberReferences}}
-    MemberRefProps [{{ReferenceId}}]: '{{Name}}' [{{Signature}}]
-{{/MemberReferences}}
-{{/TypeReferences}}
+{{#each TypeReferences}}
+TypeRefProps [{{ReferenceId}}]: Scope: {{Scope}} '{{Name}}'{{#newline}}
+{{#each MemberReferences}}
+    MemberRefProps [{{ReferenceId}}]: '{{Name}}' [{{Signature}}]{{#newline}}
+{{/each}}
+{{#newline}}
+{{/each}}
+{{#if TypeReferences}}{{#newline}}{{/if}}
 
-{{#TypeDefinitions}}
-TypeDefProps [{{ReferenceId}}]: Flags: {{Flags}} Extends: {{ExtendsType}} Enclosed: {{EnclosedType}} '{{Name}}'
-{{#FieldDefinitions}}
-    FieldDefProps [{{ReferenceId}}]: Attr: {{Attributes}} Flags: {{Flags}} '{{Name}}' [{{Signature}}]
-{{/FieldDefinitions}}
-{{#MethodDefinitions}}
-    MethodDefProps [{{ReferenceId}}]: Flags: {{Flags}} Impl: {{Implementation}} RVA: {{RVA}} '{{Name}}' [{{Signature}}]
-        {{#Locals}}
-        Locals {{Locals}}
-        {{/Locals}}
-        {{#ExceptionHandlers}}
-        EH: {{ExceptionHandler}}
-        {{/ExceptionHandlers}}
-        {{#ILCodeInstructionsCount}}
-        IL count: {{ILCodeInstructionsCount}}
-        {{/ILCodeInstructionsCount}}
-           {{#ILCode}}
-           {{IL}}
-           {{/ILCode}}
-{{/MethodDefinitions}}
-{{#InterfaceDefinitions}}
-    InterfaceImplProps [{{ReferenceId}}]: Itf: {{Interface}}
-{{/InterfaceDefinitions}}
+{{#each TypeDefinitions}}
+TypeDefProps [{{ReferenceId}}]: Flags: {{Flags}} Extends: {{ExtendsType}} Enclosed: {{EnclosedType}} '{{Name}}'{{#newline}}
+{{#each FieldDefinitions}}
+    FieldDefProps [{{ReferenceId}}]: Attr: {{Attributes}} Flags: {{Flags}} '{{Name}}' [{{Signature}}]{{#newline}}
+{{/each}}
 
-{{/TypeDefinitions}}
+{{#each MethodDefinitions}}
+    MethodDefProps [{{ReferenceId}}]: Flags: {{Flags}} Impl: {{Implementation}} RVA: {{RVA}} '{{Name}}' [{{Signature}}]{{#newline}}
+{{#if Locals}}
+        Locals {{Locals}}{{#newline}}
+{{/if}}
+{{#each ExceptionHandlers}}
+        EH: {{Handler}}{{#newline}}
+{{/each}}
+{{#if ILCodeInstructionsCount}}
+        IL count: {{ILCodeInstructionsCount}}{{#newline}}
+{{/if}}
+{{#each ILCode}}
+           {{IL}}{{#newline}}
+{{/each}}
+{{/each}}
 
-{{#Attributes}}
-Attribute: {{Name}}::[{{ReferenceId}} {{TypeToken}}]
-{{/Attributes}}
+{{#each InterfaceDefinitions}}
+    InterfaceImplProps [{{ReferenceId}}]: Itf: {{Interface}}{{#newline}}
+{{/each}}
+{{#if InterfaceDefinitions}}{{#newline}}{{/if}}
+{{#newline}}
+{{/each}}
 
-{{#UserStrings}}
-UserString [{{ReferenceId}}]: '{{Content}}'
-{{/UserStrings}}
+{{#each Attributes}}
+Attribute: {{Name}}::[{{ReferenceId}} {{TypeToken}}]{{#newline}}
+{{/each}}
+{{#if Attributes}}{{#newline}}{{/if}}
+
+{{#each UserStrings}}
+UserString [{{ReferenceId}}]: '{{Content}}'{{#newline}}
+{{/each}}
 ";
-
     }
 }

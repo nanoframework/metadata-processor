@@ -5,7 +5,6 @@
 
 using Mono.Cecil;
 using nanoFramework.Tools.MetadataProcessor.Core.Extensions;
-using Stubble.Core.Builders;
 using System;
 using System.IO;
 using System.Linq;
