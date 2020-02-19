@@ -48,17 +48,30 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// </summary>
         private ushort _lastAvailableId;
 
+        private ushort _lastPreAllocatedId;
+
+        /// <summary>
+        /// Assembly tables context - contains all tables used for building target assembly.
+        /// </summary>
+        private readonly nanoTablesContext _context;
+
+        /// <summary>
+        /// Last pre-allocated string identifier.
+        /// </summary>
+        public ushort LastPreAllocatedId { get => _lastPreAllocatedId; }
+
         /// <summary>
         /// Creates new instance of <see cref="nanoStringTable"/> object.
         /// </summary>
         public nanoStringTable(
+            nanoTablesContext context,
             ICustomStringSorter stringSorter = null)
         {
             GetOrCreateStringId(string.Empty); // First item in string table always empty string
             _stringSorter = stringSorter ?? new EmptyStringSorter();
-        }
 
-        
+            _context = context;
+        }
 
         /// <summary>
         /// Gets existing or creates new string reference identifier related to passed string value.
@@ -163,6 +176,46 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             // First item in string table always empty string
             GetOrCreateStringId(string.Empty);
+
+            // Pre-allocate strings from some tables
+            _context.AssemblyReferenceTable.AllocateStrings();
+            _context.TypeReferencesTable.AllocateStrings();
+
+
+            var memberReferences = _context.AssemblyDefinition.MainModule.GetMemberReferences();
+            List<MemberReference> memberReferencesInUse = new List<MemberReference>();
+
+            foreach (var item in memberReferences)
+            {
+                var memberRef = _context.TypeReferencesTable.Items.FirstOrDefault(m => m.FullName.Contains(item.DeclaringType.FullName));
+                if (memberRef != null)
+                {
+                    memberReferencesInUse.Add(item);
+                }
+            }
+
+            foreach (var item in memberReferencesInUse)
+            {
+                GetOrCreateStringId(item.Name);
+            }
+
+            foreach (var item in _context.TypeDefinitionTable.Items)
+            {
+                GetOrCreateStringId(item.Namespace);
+                GetOrCreateStringId(item.Name);
+
+                foreach (var f in item.Fields)
+                {
+                    GetOrCreateStringId(f.Name);
+                }
+
+                foreach (var m in item.Methods)
+                {
+                    GetOrCreateStringId(m.Name);
+                }
+            }
+
+            _lastPreAllocatedId = _idsByStrings.Last().Value;
 
             // fill in the dictionary with the used strings
             foreach (var s in usedStrings)
