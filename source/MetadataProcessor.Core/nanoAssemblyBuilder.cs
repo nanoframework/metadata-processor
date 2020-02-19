@@ -335,7 +335,14 @@ namespace nanoFramework.Tools.MetadataProcessor
                         {
                             if (p.ParameterType.DeclaringType != null)
                             {
-                                set.Add(p.ParameterType.DeclaringType.MetadataToken);
+                                if (p.ParameterType.Resolve().IsEnum)
+                                {
+                                    set.Add(p.ParameterType.MetadataToken);
+                                }
+                                else
+                                {
+                                    set.Add(p.ParameterType.DeclaringType.MetadataToken);
+                                }
                             }
                             else if (p.ParameterType.MetadataType == MetadataType.Class)
                             {
