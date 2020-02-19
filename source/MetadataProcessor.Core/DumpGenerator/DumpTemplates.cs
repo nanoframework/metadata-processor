@@ -18,7 +18,6 @@ TypeRefProps [{{ReferenceId}}]: Scope: {{Scope}} '{{Name}}'{{#newline}}
 {{#each MemberReferences}}
     MemberRefProps [{{ReferenceId}}]: '{{Name}}' [{{Signature}}]{{#newline}}
 {{/each}}
-{{#newline}}
 {{/each}}
 {{#if TypeReferences}}{{#newline}}{{/if}}
 
@@ -48,8 +47,8 @@ TypeDefProps [{{ReferenceId}}]: Flags: {{Flags}} Extends: {{ExtendsType}} Enclos
     InterfaceImplProps [{{ReferenceId}}]: Itf: {{Interface}}{{#newline}}
 {{/each}}
 {{#if InterfaceDefinitions}}{{#newline}}{{/if}}
-{{#newline}}
 {{/each}}
+{{#if TypeDefinitions}}{{#newline}}{{/if}}
 
 {{#each Attributes}}
 Attribute: {{Name}}::[{{ReferenceId}} {{TypeToken}}]{{#newline}}
