@@ -159,7 +159,9 @@ namespace nanoFramework.Tools.MetadataProcessor
             // Strings and signatures
 
             SignaturesTable = new nanoSignaturesTable(this);
-            StringTable = new nanoStringTable(stringSorter);
+            StringTable = new nanoStringTable(
+                this,
+                stringSorter);
 
             // Byte code table
             ByteCodeTable = new nanoByteCodeTable(this);

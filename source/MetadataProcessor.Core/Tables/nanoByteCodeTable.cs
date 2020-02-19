@@ -32,7 +32,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// <summary>
         /// Temporary string table for code generators used during initial load.
         /// </summary>
-        private readonly nanoStringTable _fakeStringTable = new nanoStringTable();
+        private readonly nanoStringTable _fakeStringTable;
 
         /// <summary>
         /// Assembly tables context - contains all tables used for building target assembly.
@@ -54,6 +54,8 @@ namespace nanoFramework.Tools.MetadataProcessor
             nanoTablesContext context)
         {
             _context = context;
+
+            _fakeStringTable = new nanoStringTable(_context);
         }
 
         /// <summary>

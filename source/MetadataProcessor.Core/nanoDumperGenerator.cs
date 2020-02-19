@@ -85,7 +85,10 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
         private void DumpUserStrings(DumpAllTable dumpTable)
         {
-            foreach (var s in _tablesContext.StringTable.GetItems().OrderBy(i => i.Value))
+            // start at 1, because 0 is the empty string entry
+            int tokenId = 1;
+
+            foreach (var s in _tablesContext.StringTable.GetItems().OrderBy(i => i.Value).Where(i => i.Value > _tablesContext.StringTable.LastPreAllocatedId))
             {
                 // don't output the empty string
                 if(s.Value == 0)
@@ -94,7 +97,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                 }
 
                 // fake the metadata token from the ID
-                var stringMetadataToken = new MetadataToken(TokenType.String, s.Value);
+                var stringMetadataToken = new MetadataToken(TokenType.String, tokenId++);
 
                 dumpTable.UserStrings.Add(
                     new UserString()
