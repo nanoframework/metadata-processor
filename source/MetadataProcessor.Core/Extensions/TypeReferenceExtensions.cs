@@ -4,6 +4,7 @@
 //
 
 using Mono.Cecil;
+using System.Text;
 
 namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
 {
@@ -12,6 +13,219 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
         public static bool IsToInclude(this TypeReference value)
         {
             return !nanoTablesContext.IgnoringAttributes.Contains(value.FullName);
+        }
+
+        public static string TypeSignatureAsString(this TypeReference type)
+        {
+            if (type.MetadataType == MetadataType.IntPtr)
+            {
+                return "I";
+            }
+
+            if (type.MetadataType == MetadataType.UIntPtr)
+            {
+                return "U";
+            }
+
+            nanoCLR_DataType dataType;
+            if (nanoSignaturesTable.PrimitiveTypes.TryGetValue(type.FullName, out dataType))
+            {
+                switch (dataType)
+                {
+                    case nanoCLR_DataType.DATATYPE_VOID:
+                    case nanoCLR_DataType.DATATYPE_BOOLEAN:
+                    case nanoCLR_DataType.DATATYPE_CHAR:
+                    case nanoCLR_DataType.DATATYPE_I1:
+                    case nanoCLR_DataType.DATATYPE_U1:
+                    case nanoCLR_DataType.DATATYPE_I2:
+                    case nanoCLR_DataType.DATATYPE_U2:
+                    case nanoCLR_DataType.DATATYPE_I4:
+                    case nanoCLR_DataType.DATATYPE_U4:
+                    case nanoCLR_DataType.DATATYPE_I8:
+                    case nanoCLR_DataType.DATATYPE_U8:
+                    case nanoCLR_DataType.DATATYPE_R4:
+                    case nanoCLR_DataType.DATATYPE_BYREF:
+                    case nanoCLR_DataType.DATATYPE_OBJECT:
+                        return dataType.ToString().Replace("DATATYPE_", "");
+
+                    case nanoCLR_DataType.DATATYPE_LAST_PRIMITIVE:
+                        return "STRING";
+
+                    case nanoCLR_DataType.DATATYPE_LAST_PRIMITIVE_TO_PRESERVE:
+                        return "R8";
+
+                    case nanoCLR_DataType.DATATYPE_LAST_PRIMITIVE_TO_MARSHAL:
+                        return "TIMESPAN";
+
+                    case nanoCLR_DataType.DATATYPE_REFLECTION:
+                        return type.FullName.Replace(".", "");
+                }
+            }
+
+            if (type.MetadataType == MetadataType.Class)
+            {
+                StringBuilder classSig = new StringBuilder("CLASS [");
+                classSig.Append(type.MetadataToken.ToInt32().ToString("x8"));
+                classSig.Append("]");
+
+                return classSig.ToString();
+            }
+
+            if (type.MetadataType == MetadataType.ValueType)
+            {
+                StringBuilder valueTypeSig = new StringBuilder("VALUETYPE [");
+                valueTypeSig.Append(type.MetadataToken.ToInt32().ToString("x8"));
+                valueTypeSig.Append("]");
+
+                return valueTypeSig.ToString();
+            }
+
+            if (type.IsArray)
+            {
+                StringBuilder arraySig = new StringBuilder("SZARRAY ");
+                arraySig.Append(type.GetElementType().TypeSignatureAsString());
+
+                return arraySig.ToString();
+            }
+
+            return "";
+        }
+
+        public static string ToNativeTypeAsString(this TypeReference type)
+        {
+            nanoCLR_DataType dataType;
+            if (nanoSignaturesTable.PrimitiveTypes.TryGetValue(type.FullName, out dataType))
+            {
+                switch (dataType)
+                {
+                    case nanoCLR_DataType.DATATYPE_VOID:
+                        return "void";
+                    case nanoCLR_DataType.DATATYPE_BOOLEAN:
+                        return "bool";
+                    case nanoCLR_DataType.DATATYPE_CHAR:
+                        return "char";
+                    case nanoCLR_DataType.DATATYPE_I1:
+                        return "int8_t";
+                    case nanoCLR_DataType.DATATYPE_U1:
+                        return "uint8_t";
+                    case nanoCLR_DataType.DATATYPE_I2:
+                        return "int16_t";
+                    case nanoCLR_DataType.DATATYPE_U2:
+                        return "uint16_t";
+                    case nanoCLR_DataType.DATATYPE_I4:
+                        return "int32_t";
+                    case nanoCLR_DataType.DATATYPE_U4:
+                        return "uint32_t";
+                    case nanoCLR_DataType.DATATYPE_I8:
+                        return "int64_t";
+                    case nanoCLR_DataType.DATATYPE_U8:
+                        return "uint64_t";
+                    case nanoCLR_DataType.DATATYPE_R4:
+                        return "float";
+                    case nanoCLR_DataType.DATATYPE_BYREF:
+                        return "";
+
+                    // system.String
+                    case nanoCLR_DataType.DATATYPE_LAST_PRIMITIVE:
+                        return "const char*";
+
+                    // System.Double
+                    case nanoCLR_DataType.DATATYPE_LAST_PRIMITIVE_TO_PRESERVE:
+                        return "double";
+
+                    default:
+                        return "UNSUPPORTED";
+                }
+            }
+
+            if (type.MetadataType == MetadataType.Class)
+            {
+                return "UNSUPPORTED";
+            }
+
+            if (type.MetadataType == MetadataType.ValueType)
+            {
+                return "UNSUPPORTED";
+            }
+
+            if (type.IsArray)
+            {
+                StringBuilder arraySig = new StringBuilder("CLR_RT_TypedArray_");
+                arraySig.Append(type.GetElementType().ToCLRTypeAsString());
+
+                return arraySig.ToString();
+            }
+
+            return "";
+        }
+
+        public static string ToCLRTypeAsString(this TypeReference type)
+        {
+            nanoCLR_DataType dataType;
+            if (nanoSignaturesTable.PrimitiveTypes.TryGetValue(type.FullName, out dataType))
+            {
+                switch (dataType)
+                {
+                    case nanoCLR_DataType.DATATYPE_VOID:
+                        return "void";
+                    case nanoCLR_DataType.DATATYPE_BOOLEAN:
+                        return "bool";
+                    case nanoCLR_DataType.DATATYPE_CHAR:
+                        return "CHAR";
+                    case nanoCLR_DataType.DATATYPE_I1:
+                        return "INT8";
+                    case nanoCLR_DataType.DATATYPE_U1:
+                        return "UINT8";
+                    case nanoCLR_DataType.DATATYPE_I2:
+                        return "INT16";
+                    case nanoCLR_DataType.DATATYPE_U2:
+                        return "UINT16";
+                    case nanoCLR_DataType.DATATYPE_I4:
+                        return "INT32";
+                    case nanoCLR_DataType.DATATYPE_U4:
+                        return "UINT32";
+                    case nanoCLR_DataType.DATATYPE_I8:
+                        return "INT64";
+                    case nanoCLR_DataType.DATATYPE_U8:
+                        return "UINT64";
+                    case nanoCLR_DataType.DATATYPE_R4:
+                        return "float";
+                    case nanoCLR_DataType.DATATYPE_BYREF:
+                        return "NONE";
+
+                    // system.String
+                    case nanoCLR_DataType.DATATYPE_LAST_PRIMITIVE:
+                        return "LPCSTR";
+
+                    // System.Double
+                    case nanoCLR_DataType.DATATYPE_LAST_PRIMITIVE_TO_PRESERVE:
+                        return "double";
+
+                    default:
+                        return "UNSUPPORTED";
+                }
+            }
+
+            if (type.MetadataType == MetadataType.Class)
+            {
+                return "UNSUPPORTED";
+            }
+
+            if (type.MetadataType == MetadataType.ValueType)
+            {
+                return "UNSUPPORTED";
+            }
+
+            if (type.IsArray)
+            {
+                StringBuilder arraySig = new StringBuilder();
+                arraySig.Append(type.GetElementType().ToCLRTypeAsString());
+                arraySig.Append("_ARRAY");
+
+                return arraySig.ToString();
+            }
+
+            return "";
         }
     }
 }

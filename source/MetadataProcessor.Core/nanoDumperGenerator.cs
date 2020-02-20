@@ -153,7 +153,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                         Name = f.Name,
                         Flags = att.ToString("x8"),
                         Attributes = att.ToString("x8"),
-                        Signature = PrintSignatureForType(f.FieldType)
+                        Signature = f.FieldType.TypeSignatureAsString()
                     };
 
                     typeDef.FieldDefinitions.Add(fieldDef);
@@ -310,87 +310,15 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
             }
         }
 
-        private string PrintSignatureForType(TypeReference type)
-        {
-            if(type.MetadataType == MetadataType.IntPtr)
-            {
-                return "I";
-            }
-
-            if (type.MetadataType == MetadataType.UIntPtr)
-            {
-                return "U";
-            }
-
-            nanoCLR_DataType dataType;
-            if (nanoSignaturesTable.PrimitiveTypes.TryGetValue(type.FullName, out dataType))
-            {
-                switch(dataType)
-                {
-                    case nanoCLR_DataType.DATATYPE_VOID:
-                    case nanoCLR_DataType.DATATYPE_BOOLEAN:
-                    case nanoCLR_DataType.DATATYPE_CHAR:
-                    case nanoCLR_DataType.DATATYPE_I1:
-                    case nanoCLR_DataType.DATATYPE_U1:
-                    case nanoCLR_DataType.DATATYPE_I2:
-                    case nanoCLR_DataType.DATATYPE_U2:
-                    case nanoCLR_DataType.DATATYPE_I4:
-                    case nanoCLR_DataType.DATATYPE_U4:
-                    case nanoCLR_DataType.DATATYPE_I8:
-                    case nanoCLR_DataType.DATATYPE_U8:
-                    case nanoCLR_DataType.DATATYPE_R4:
-                    case nanoCLR_DataType.DATATYPE_R8:
-                    case nanoCLR_DataType.DATATYPE_BYREF:
-                    case nanoCLR_DataType.DATATYPE_OBJECT:
-                        return dataType.ToString().Replace("DATATYPE_", "");
-
-                    case nanoCLR_DataType.DATATYPE_LAST_PRIMITIVE:
-                        return "STRING";
-
-                    case nanoCLR_DataType.DATATYPE_REFLECTION:
-                        return type.FullName.Replace(".", "");
-                }
-            }
-
-            if (type.MetadataType == MetadataType.Class)
-            {
-                StringBuilder classSig = new StringBuilder("CLASS [");
-                classSig.Append(type.MetadataToken.ToInt32().ToString("x8"));
-                classSig.Append("]");
-
-                return classSig.ToString();
-            }
-
-            if (type.MetadataType == MetadataType.ValueType)
-            {
-                StringBuilder valueTypeSig = new StringBuilder("VALUETYPE [");
-                valueTypeSig.Append(type.MetadataToken.ToInt32().ToString("x8"));
-                valueTypeSig.Append("]");
-
-                return valueTypeSig.ToString();
-            }
-
-            if (type.IsArray)
-            {
-                StringBuilder arraySig = new StringBuilder("SZARRAY ");
-                arraySig.Append(PrintSignatureForType(type.GetElementType()));
-
-                return arraySig.ToString();
-            }
-
-
-            return "";
-        }
-
         private string PrintSignatureForMethod(MethodReference method)
         {
-            var sig = new StringBuilder(PrintSignatureForType(method.ReturnType));
+            var sig = new StringBuilder(method.ReturnType.TypeSignatureAsString());
 
             sig.Append("( ");
 
             foreach(var p in method.Parameters)
             {
-                sig.Append(PrintSignatureForType(p.ParameterType));
+                sig.Append(p.ParameterType.TypeSignatureAsString());
                 sig.Append(", ");
             }
 
@@ -417,7 +345,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
             foreach (var l in variables)
             {
-                sig.Append(PrintSignatureForType(l.VariableType));
+                sig.Append(l.VariableType.TypeSignatureAsString());
                 sig.Append(", ");
             }
 

@@ -13,6 +13,8 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
         public string ShortName;
         public string ShortNameUpper;
 
+        public bool IsCoreLib = false;
+
         public List<Class> Classes = new List<Class>();
     }
 
@@ -20,10 +22,11 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
     {
         public string Name;
         public string AssemblyName;
+        public string ShortNameUpper;
 
         public List<StaticField> StaticFields = new List<StaticField>();
         public List<InstanceField> InstanceFields = new List<InstanceField>();
-        public List<Method> Methods = new List<Method>();
+        public List<MethodStub> Methods = new List<MethodStub>();
     }
 
     public class StaticField
@@ -40,8 +43,25 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
         public string FieldWarning;
     }
 
-    public class Method
+    public class MethodStub
     {
+        public string Declaration;
+        public string DeclarationForUserCode;
+        public string CallFromMarshalling;
+        public string ReturnType;
+        public string MarshallingReturnType;
+        public bool HasReturnType;
+        public bool IsStatic = false;
+
+        public List<ParameterDeclaration> ParameterDeclaration = new List<ParameterDeclaration>();
+    }
+
+    public class ParameterDeclaration
+    {
+        public string Index;
+        public string Type;
+        public string Name;
+        public string MarshallingDeclaration;
         public string Declaration;
     }
 }
