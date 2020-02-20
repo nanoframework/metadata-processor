@@ -9,6 +9,7 @@ using nanoFramework.Tools.MetadataProcessor.Core.Extensions;
 using System;
 using System.IO;
 using System.Linq;
+using System.Text;
 
 namespace nanoFramework.Tools.MetadataProcessor.Core
 {
@@ -22,7 +23,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
         private readonly string _name;
         private readonly string _project;
         private readonly bool _withoutInteropCode;
-
+        private readonly bool _isCoreLib;
         private string _assemblyName;
 
         public nanoSkeletonGenerator(
@@ -30,13 +31,15 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
             string path,
             string name,
             string project,
-            bool withoutInteropCode)
+            bool withoutInteropCode,
+            bool isCoreLib)
         {
             _tablesContext = tablesContext;
             _path = path;
             _name = name;
             _project = project;
             _withoutInteropCode = withoutInteropCode;
+            _isCoreLib = isCoreLib;
         }
 
         public void GenerateSkeleton()
@@ -50,7 +53,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
             // generate <assembly>.cpp with the lookup definition
             GenerateAssemblyLookup();
 
-            // generate <assembly>_<type>.cpp files with the type definition and stubs.
+            // generate stub files for classes, headers and marshalling code, if required
             GenerateStubs();
         }
 
@@ -63,10 +66,30 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                 {
                     var className = NativeMethodsCrc.GetClassName(c);
 
-                    var classStubs = new AssemblyClassStubs()
+                    var classStubs = new AssemblyClassStubs();
+
+                    if (!_withoutInteropCode)
                     {
-                        HeaderFileName = _project
-                    };
+                        // Interop code needs to use the root namespace
+
+                        classStubs.HeaderFileName = $"{_assemblyName}_{_project}";
+                        classStubs.ClassHeaderFileName = className;
+                        classStubs.ClassName = c.Name;
+                        classStubs.ShortNameUpper = $"{_assemblyName}_{_project}_{className}".ToUpper();
+                        classStubs.RootNamespace = _assemblyName;
+                        classStubs.ProjectName = _project;
+                    }
+                    else
+                    {
+                        // projects with Interop can use a simplified naming
+
+                        classStubs.HeaderFileName = _project;
+                        classStubs.ClassHeaderFileName = className;
+                        classStubs.ClassName = c.Name;
+                        classStubs.ShortNameUpper = $"{_assemblyName}_{_project}_{className}".ToUpper();
+                        classStubs.RootNamespace = _assemblyName;
+                        classStubs.ProjectName = _project;
+                    }
 
                     foreach (var m in nanoTablesContext.GetOrderedMethods(c.Methods))
                     {
@@ -76,26 +99,159 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                         if (rva == 0xFFFF &&
                             !m.IsAbstract)
                         {
-                            classStubs.Functions.Add(new Method()
+                            var newMethod = new MethodStub()
                             {
                                 Declaration = $"Library_{_project}_{className}::{NativeMethodsCrc.GetMethodName(m)}"
-                            });
+                            };
+
+                            if(!_withoutInteropCode)
+                            {
+                                // process with Interop code
+
+                                newMethod.IsStatic = m.IsStatic;
+                                newMethod.HasReturnType = (
+                                    m.MethodReturnType != null && 
+                                    m.MethodReturnType.ReturnType.FullName != "System.Void");
+
+                                StringBuilder declaration = new StringBuilder();
+
+                                newMethod.ReturnType = m.MethodReturnType.ReturnType.ToNativeTypeAsString();
+
+                                newMethod.MarshallingReturnType = newMethod.ReturnType;
+
+                                declaration.Append($"{m.Name}");
+                                declaration.Append("( ");
+
+                                StringBuilder marshallingCall = new StringBuilder($"{m.Name}");
+                                marshallingCall.Append("( ");
+
+                                // loop through the parameters
+                                if (m.HasParameters)
+                                {
+                                    int parameterIndex = 0;
+
+                                    foreach (var item in m.Parameters)
+                                    {
+                                        // get the parameter type
+                                        var parameterType = item.ParameterType.ToNativeTypeAsString();
+
+                                        // compose the function declaration
+                                        declaration.Append($"{parameterType} param{parameterIndex.ToString()}, ");
+
+                                        // compose the function call
+                                        marshallingCall.Append($"param{parameterIndex.ToString()}, ");
+
+                                        // compose the variable block
+                                        var parameterDeclaration = new ParameterDeclaration()
+                                        {
+                                            Index = parameterIndex.ToString(),
+                                            Name = $"param{parameterIndex.ToString()}",
+                                        };
+
+                                        if(item.ParameterType.IsByReference)
+                                        {
+                                            // declaration like
+                                            // INT8 param1;
+                                            // UINT8 heapblock1[CLR_RT_HEAP_BLOCK_SIZE];
+
+                                            parameterDeclaration.Type = parameterType;
+
+                                            parameterDeclaration.Declaration = 
+                                                $"{parameterType} {parameterDeclaration.Name};" + Environment.NewLine +
+                                                $"        UINT8 heapblock{parameterIndex.ToString()}[CLR_RT_HEAP_BLOCK_SIZE];";
+
+                                            parameterDeclaration.MarshallingDeclaration = $"Interop_Marshal_{parameterType}_ByRef( stack, heapblock{(parameterIndex + (m.IsStatic ? 0 : 1)).ToString()}, {parameterDeclaration.Name} )";
+
+                                        }
+                                        else if (item.ParameterType.IsArray)
+                                        {
+                                            // declaration like
+                                            // CLR_RT_TypedArray_UINT8 param0;
+
+                                            parameterDeclaration.Type = parameterType;
+                                            parameterDeclaration.Declaration = $"{parameterType} {parameterDeclaration.Name};";
+                                            parameterDeclaration.MarshallingDeclaration = $"Interop_Marshal_{item.ParameterType.GetElementType().ToCLRTypeAsString()}_ARRAY( stack, {(parameterIndex + (m.IsStatic ? 0 : 1)).ToString()}, {parameterDeclaration.Name} )";
+                                        }
+                                        else
+                                        {
+                                            // declaration like
+                                            // INT8 param1;
+
+                                            parameterDeclaration.Type = parameterType;
+                                            parameterDeclaration.Declaration = $"{parameterType} {parameterDeclaration.Name};";
+                                            parameterDeclaration.MarshallingDeclaration = $"Interop_Marshal_{parameterType}( stack, {(parameterIndex + (m.IsStatic ? 0 : 1)).ToString()}, {parameterDeclaration.Name} )";
+                                       }
+
+                                        newMethod.ParameterDeclaration.Add(parameterDeclaration);
+                                    }
+
+                                    declaration.Append("HRESULT &hr )");
+                                    marshallingCall.Append("hr )");
+                                }
+                                else
+                                {
+                                    declaration.Append(" HRESULT &hr )");
+                                    marshallingCall.Append(" hr )");
+                                }
+
+                                newMethod.DeclarationForUserCode = declaration.ToString();
+                                newMethod.CallFromMarshalling = marshallingCall.ToString();
+                            }
+
+                            classStubs.Functions.Add(newMethod);
                         }
                     }
 
                     // anything to add to the header?
                     if (classStubs.Functions.Count > 0)
                     {
-                        FormatCompiler compiler = new FormatCompiler
+                        if (_withoutInteropCode)
                         {
-                            RemoveNewLines = false
-                        };
-                        Generator generator = compiler.Compile(SkeletonTemplates.ClassStubTemplate);
+                            FormatCompiler compiler = new FormatCompiler
+                            {
+                                RemoveNewLines = false
+                            };
+                            Generator generator = compiler.Compile(SkeletonTemplates.ClassWithoutInteropStubTemplate);
 
-                        using (var headerFile = File.CreateText(Path.Combine(_path, $"{_project}_{className}.cpp")))
+                            using (var headerFile = File.CreateText(Path.Combine(_path, $"{_project}_{className}.cpp")))
+                            {
+                                var output = generator.Render(classStubs);
+                                headerFile.Write(output);
+                            }
+                        }
+                        else
                         {
-                            var output = generator.Render(classStubs);
-                            headerFile.Write(output);
+                            FormatCompiler compiler = new FormatCompiler
+                            {
+                                RemoveNewLines = false
+                            };
+
+                            // user code stub
+                            Generator generator = compiler.Compile(SkeletonTemplates.ClassStubTemplate);
+
+                            using (var headerFile = File.CreateText(Path.Combine(_path, $"{_assemblyName}_{_project}_{className}.cpp")))
+                            {
+                                var output = generator.Render(classStubs);
+                                headerFile.Write(output);
+                            }
+
+                            // marshal code
+                            generator = compiler.Compile(SkeletonTemplates.ClassMarshallingCodeTemplate);
+
+                            using (var headerFile = File.CreateText(Path.Combine(_path, $"{_assemblyName}_{_project}_{className}_mrsh.cpp")))
+                            {
+                                var output = generator.Render(classStubs);
+                                headerFile.Write(output);
+                            }
+
+                            // class header
+                            generator = compiler.Compile(SkeletonTemplates.ClassHeaderTemplate);
+
+                            using (var headerFile = File.CreateText(Path.Combine(_path, $"{_assemblyName}_{_project}_{className}.h")))
+                            {
+                                var output = generator.Render(classStubs);
+                                headerFile.Write(output);
+                            }
                         }
                     }
                 }
@@ -110,6 +266,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
             var assemblyLookup = new AssemblyLookupTable()
             {
+                IsCoreLib = _isCoreLib,
                 Name = _name,
                 AssemblyName = _assemblyName,
                 HeaderFileName = _project,
@@ -139,7 +296,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                                 if ((rva == 0xFFFF &&
                                      !m.IsAbstract))
                                 {
-                                    assemblyLookup.LookupTable.Add(new Method()
+                                    assemblyLookup.LookupTable.Add(new MethodStub()
                                     {
                                         Declaration = $"Library_{_project}_{className}::{NativeMethodsCrc.GetMethodName(m)}"
                                     });
@@ -152,7 +309,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
                                     if (!c.IsClassToExclude())
                                     {
-                                        assemblyLookup.LookupTable.Add(new Method()
+                                        assemblyLookup.LookupTable.Add(new MethodStub()
                                         {
                                             Declaration = "NULL"
                                             //Declaration = $"**Library_{_project}_{NativeMethodsCrc.GetClassName(c)}::{NativeMethodsCrc.GetMethodName(m)}"
@@ -172,7 +329,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                         {
                             foreach (var m in nanoTablesContext.GetOrderedMethods(c.Methods))
                             {
-                                assemblyLookup.LookupTable.Add(new Method()
+                                assemblyLookup.LookupTable.Add(new MethodStub()
                                 {
                                     Declaration = "NULL"
                                     //Declaration = $"**Library_{_project}_{NativeMethodsCrc.GetClassName(c)}::{NativeMethodsCrc.GetMethodName(m)}"
@@ -185,8 +342,20 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
             FormatCompiler compiler = new FormatCompiler();
             Generator generator = compiler.Compile(SkeletonTemplates.AssemblyLookupTemplate);
+            string filePath;
 
-            using (var headerFile = File.CreateText(Path.Combine(_path, $"{_project}.cpp")))
+            if (!_withoutInteropCode)
+            {
+                // Interop code needs to use the root namespace
+                filePath = Path.Combine(_path, $"{_assemblyName}_{_project}.cpp");
+            }
+            else
+            {
+                // projects with Interop can use a simplified naming
+                filePath = Path.Combine(_path, $"{_project}.cpp");
+            }
+
+            using (var headerFile = File.CreateText(filePath))
             {
                 var output = generator.Render(assemblyLookup);
                 headerFile.Write(output);
@@ -201,7 +370,8 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
             {
                 Name = _name.Replace('.', '_'), 
                 ShortName = _project, 
-                ShortNameUpper = _project.ToUpperInvariant()
+                ShortNameUpper = _project.ToUpperInvariant(),
+                IsCoreLib = _isCoreLib
             };
 
             foreach (var c in _tablesContext.TypeDefinitionTable.Items)
@@ -214,6 +384,15 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                         AssemblyName = _project,
                         Name = NativeMethodsCrc.GetClassName(c)
                     };
+
+                    // If class name starts from <PrivateImplementationDetails>,
+                    // then we need to exclude this class as actually this is static data object 
+                    // described in metadata.
+                    if (classData.Name.StartsWith("<PrivateImplementationDetails>"))
+                    {
+                        // Go to the next class. This metadata describes global variable, not a type
+                        continue;
+                    }
 
                     // static fields
                     int fieldCount = 0;
@@ -273,7 +452,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                             if( rva == 0xFFFF &&
                                 !m.IsAbstract)
                             {
-                                classData.Methods.Add(new Method()
+                                classData.Methods.Add(new MethodStub()
                                 {
                                     Declaration = NativeMethodsCrc.GetMethodName(m)
                                 });
@@ -296,8 +475,20 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
             Generator generator = compiler.Compile(SkeletonTemplates.AssemblyHeaderTemplate);
 
             Directory.CreateDirectory(_path);
+            string filePath;
 
-            using (var headerFile = File.CreateText(Path.Combine(_path, $"{_project}.h")))
+            if (!_withoutInteropCode)
+            {
+                // Interop code needs to use the root namespace
+                filePath = Path.Combine(_path, $"{_assemblyName}_{_project}.h");
+            }
+            else
+            {
+                // projects with Interop can use a simplified naming
+                filePath = Path.Combine(_path, $"{_project}.h");
+            }
+
+            using (var headerFile = File.CreateText(filePath))
             {
                 var output = generator.Render(assemblyData);
                 headerFile.Write(output);

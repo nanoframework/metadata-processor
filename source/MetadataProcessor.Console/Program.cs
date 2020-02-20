@@ -127,17 +127,11 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
                 string file,
                 string name,
                 string project,
-                bool withoutInteropCode)
+                bool withoutInteropCode,
+                bool isCoreLibrary)
             {
                 try
                 {
-                    if (!withoutInteropCode)
-                    {
-                        System.Console.Error.WriteLine("Generator for Interop stubs is not supported yet.");
-
-                        Environment.Exit(1);
-                    }
-
                     if (Verbose) System.Console.WriteLine("Generating skeleton files...");
 
                     var skeletonGenerator = new nanoSkeletonGenerator(
@@ -145,7 +139,8 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
                         file,
                         name,
                         project,
-                        withoutInteropCode);
+                        withoutInteropCode,
+                        isCoreLibrary);
 
                     skeletonGenerator.GenerateSkeleton();
                 }
@@ -185,6 +180,8 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
 		{
             FileVersionInfo fileVersion = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location);
 
+            bool isCoreLibrary = false;
+
             // output header to console
             System.Console.WriteLine($"nanoFramework MetadataProcessor Utility v{fileVersion.ToString()}");
             System.Console.WriteLine("Copyright (c) 2019 nanoFramework project contributors");
@@ -222,8 +219,6 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
                 }
                 else if (arg == "-compile" && i + 2 < args.Length)
                 {
-                    bool isCoreLibrary = false;
-
                     if (!bool.TryParse(args[i + 2], out isCoreLibrary))
                     {
                         System.Console.Error.WriteLine("Bad parameter for compile. IsCoreLib options has to be 'true' or 'false'.");
@@ -273,7 +268,8 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
                         file,
                         name,
                         project,
-                        withoutInteropCode);
+                        withoutInteropCode,
+                        isCoreLibrary);
 
                     i += 4;
                 }

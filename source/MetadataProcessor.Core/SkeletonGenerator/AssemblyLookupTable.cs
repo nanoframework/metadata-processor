@@ -10,6 +10,8 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 {
     public class AssemblyLookupTable
     {
+        public bool IsCoreLib;
+
         public string Name;
         public string AssemblyName;
         public string HeaderFileName;
@@ -17,6 +19,6 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
         public Version NativeVersion;
 
-        public List<Method> LookupTable = new List<Method>();
+        public List<MethodStub> LookupTable = new List<MethodStub>();
     }
 }

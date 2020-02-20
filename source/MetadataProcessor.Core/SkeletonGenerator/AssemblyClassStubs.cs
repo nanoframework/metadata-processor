@@ -11,6 +11,16 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
     {
         public string HeaderFileName;
 
-        public List<Method> Functions = new List<Method>();
+        public string ClassHeaderFileName;
+
+        public string ClassName;
+
+        public string ShortNameUpper;
+
+        public string RootNamespace;
+
+        public string ProjectName;
+
+        public List<MethodStub> Functions = new List<MethodStub>();
     }
 }
