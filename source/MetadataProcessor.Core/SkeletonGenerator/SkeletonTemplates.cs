@@ -99,9 +99,9 @@ static const CLR_RT_MethodHandler method_lookup[] ={{#newline}}
 };{{#newline}}
 {{#newline}}
 
-const CLR_RT_NativeAssemblyData g_CLR_AssemblyNative_{{AssemblyName}} ={{#newline}}
+const CLR_RT_NativeAssemblyData g_CLR_AssemblyNative_{{Name}} ={{#newline}}
 {{{#newline}}
-    ""{{Name}}"",{{#newline}}
+    ""{{AssemblyName}}"",{{#newline}}
     {{NativeCRC32}},{{#newline}}
     method_lookup,{{#newline}}
     { {{NativeVersion.Major}}, {{NativeVersion.Minor}}, {{NativeVersion.Build}}, {{NativeVersion.Revision}} }{{#newline}}
@@ -238,19 +238,21 @@ HRESULT {{Declaration}}( CLR_RT_StackFrame& stack )
 
         internal const string CMakeModuleTemplate =
 @"#
-# Copyright(c) 2018 The nanoFramework project contributors
+# Copyright(c) 2020 The nanoFramework project contributors
 # See LICENSE file in the project root for full license information.
 #
 
-#################################################################################################
-# make sure that a valid path is set bellow                                                     #
-# if this is for a class library it's OK to leave it as it is                                   #
-# if this is an Interop module the path has to be set where the build can find the source files #
-#################################################################################################
+{{#if IsInterop}}########################################################################################
+# make sure that a valid path is set bellow                                            #
+# this is an Interop module so this file should be placed in the CMakes module folder  #
+# usually CMake\Modules                                                                #
+########################################################################################
 
 # native code directory
+set(BASE_PATH_FOR_THIS_MODULE ${PROJECT_SOURCE_DIR}/InteropAssemblies/{{AssemblyName}})
+{{#else}}# native code directory
 set(BASE_PATH_FOR_THIS_MODULE ${BASE_PATH_FOR_CLASS_LIBRARIES_MODULES}/{{AssemblyName}})
-
+{{/if}}
 
 # set include directories
 list(APPEND {{AssemblyName}}_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/src/CLR/Core)
@@ -258,14 +260,20 @@ list(APPEND {{AssemblyName}}_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/src/CLR/Include)
 list(APPEND {{AssemblyName}}_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/src/HAL/Include)
 list(APPEND {{AssemblyName}}_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/src/PAL/Include)
 list(APPEND {{AssemblyName}}_INCLUDE_DIRS ${BASE_PATH_FOR_THIS_MODULE})
+{{#if IsInterop}}{{#else}}list(APPEND {{AssemblyName}}_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/src/{{AssemblyName}}){{/if}}
 
 # source files
 set({{AssemblyName}}_SRCS
-    {{HeaderFileName}}.cpp
+
+    {{ProjectName}}.cpp
+{{#if IsInterop}}
 {{#each Classes}}
     {{HeaderFileName}}_{{Name}}_mshl.cpp
     {{HeaderFileName}}_{{Name}}.cpp{{/each}}
-
+{{#else}}
+{{#each Classes}}
+    {{HeaderFileName}}_{{Name}}.cpp{{/each}}
+{{/if}}
 )
 
 foreach(SRC_FILE ${{{AssemblyName}}_SRCS})
