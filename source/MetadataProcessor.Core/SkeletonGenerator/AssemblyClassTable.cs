@@ -7,22 +7,12 @@ using System.Collections.Generic;
 
 namespace nanoFramework.Tools.MetadataProcessor.Core
 {
-    public class AssemblyClassStubs
+    public class AssemblyClassTable
     {
+        public string AssemblyName;
         public string HeaderFileName;
-
-        public string ClassHeaderFileName;
-
-        public string ClassName;
-
-        public string ShortNameUpper;
-
-        public string RootNamespace;
-
         public string ProjectName;
 
-        public string AssemblyName;
-
-        public List<MethodStub> Functions = new List<MethodStub>();
+        public List<Class> Classes = new List<Class>();
     }
 }

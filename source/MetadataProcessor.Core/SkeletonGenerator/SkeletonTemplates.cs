@@ -235,5 +235,56 @@ HRESULT {{Declaration}}( CLR_RT_StackFrame& stack )
     NANOCLR_NOCLEANUP();
 }
 {{/each}}";
+
+        internal const string CMakeModuleTemplate =
+@"#
+# Copyright(c) 2018 The nanoFramework project contributors
+# See LICENSE file in the project root for full license information.
+#
+
+#################################################################################################
+# make sure that a valid path is set bellow                                                     #
+# if this is for a class library it's OK to leave it as it is                                   #
+# if this is an Interop module the path has to be set where the build can find the source files #
+#################################################################################################
+
+# native code directory
+set(BASE_PATH_FOR_THIS_MODULE ${BASE_PATH_FOR_CLASS_LIBRARIES_MODULES}/{{AssemblyName}})
+
+
+# set include directories
+list(APPEND {{AssemblyName}}_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/src/CLR/Core)
+list(APPEND {{AssemblyName}}_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/src/CLR/Include)
+list(APPEND {{AssemblyName}}_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/src/HAL/Include)
+list(APPEND {{AssemblyName}}_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/src/PAL/Include)
+list(APPEND {{AssemblyName}}_INCLUDE_DIRS ${BASE_PATH_FOR_THIS_MODULE})
+
+# source files
+set({{AssemblyName}}_SRCS
+    {{HeaderFileName}}.cpp
+{{#each Classes}}
+    {{HeaderFileName}}_{{Name}}_mshl.cpp
+    {{HeaderFileName}}_{{Name}}.cpp{{/each}}
+
+)
+
+foreach(SRC_FILE ${{{AssemblyName}}_SRCS})
+
+    set({{AssemblyName}}_SRC_FILE SRC_FILE-NOTFOUND)
+    find_file({{AssemblyName}}_SRC_FILE ${ SRC_FILE}
+        PATHS
+	        ""${BASE_PATH_FOR_THIS_MODULE}""
+	        ""${TARGET_BASE_LOCATION}""
+
+	    CMAKE_FIND_ROOT_PATH_BOTH
+    )
+# message(""${SRC_FILE} >> ${{{AssemblyName}}_SRC_FILE}"") # debug helper
+list(APPEND {{AssemblyName}}_SOURCES ${{{AssemblyName}}_SRC_FILE})
+endforeach()
+
+include(FindPackageHandleStandardArgs)
+
+FIND_PACKAGE_HANDLE_STANDARD_ARGS({{AssemblyName}} DEFAULT_MSG {{AssemblyName}}_INCLUDE_DIRS {{AssemblyName}}_SOURCES)
+";
     }
 }
