@@ -90,6 +90,7 @@
     <Compile Include="nanoSkeletonGenerator.cs" />
     <Compile Include="SkeletonGenerator\AssemblyClass.cs" />
     <Compile Include="SkeletonGenerator\AssemblyClassStubs.cs" />
+    <Compile Include="SkeletonGenerator\AssemblyClassTable.cs" />
     <Compile Include="SkeletonGenerator\AssemblyLookupTable.cs" />
     <Compile Include="Tables\ICustomStringSorter.cs" />
     <Compile Include="Tables\nanoAssemblyReferenceTable.cs" />

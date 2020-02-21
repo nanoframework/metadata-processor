@@ -24,7 +24,9 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
         private readonly string _project;
         private readonly bool _withoutInteropCode;
         private readonly bool _isCoreLib;
-        private string _assemblyName;
+        private readonly string _assemblyName;
+
+        private string _safeProjectName => _project.Replace('.', '_');
 
         public nanoSkeletonGenerator(
             nanoTablesContext tablesContext,
@@ -40,13 +42,13 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
             _project = project;
             _withoutInteropCode = withoutInteropCode;
             _isCoreLib = isCoreLib;
+
+            // replaces "." with "_" so the assembly name can be part of C++ identifier name
+            _assemblyName = _name.Replace('.', '_');
         }
 
         public void GenerateSkeleton()
         {
-            // replaces "." with "_" so the assembly name can be part of C++ identifier name
-            _assemblyName = _name.Replace('.', '_');
-
             // create <assembly>.h with the structs declarations
             GenerateAssemblyHeader();
 
@@ -59,6 +61,12 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
         private void GenerateStubs()
         {
+            var classList = new AssemblyClassTable
+            {
+                AssemblyName = _tablesContext.AssemblyDefinition.Name.Name,
+                ProjectName = _safeProjectName
+            };
+
             foreach (var c in _tablesContext.TypeDefinitionTable.TypeDefinitions)
             {
                 if (c.IncludeInStub() && 
@@ -66,30 +74,34 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                 {
                     var className = NativeMethodsCrc.GetClassName(c);
 
-                    var classStubs = new AssemblyClassStubs();
+                    var classStubs = new AssemblyClassStubs
+                    {
+                        AssemblyName = _name,
+                        ClassHeaderFileName = className,
+                        ClassName = c.Name,
+                        ShortNameUpper = $"{_assemblyName}_{_safeProjectName}_{className}".ToUpper(),
+                        RootNamespace = _assemblyName,
+                        ProjectName = _safeProjectName
+                    };
 
                     if (!_withoutInteropCode)
                     {
                         // Interop code needs to use the root namespace
 
-                        classStubs.HeaderFileName = $"{_assemblyName}_{_project}";
-                        classStubs.ClassHeaderFileName = className;
-                        classStubs.ClassName = c.Name;
-                        classStubs.ShortNameUpper = $"{_assemblyName}_{_project}_{className}".ToUpper();
-                        classStubs.RootNamespace = _assemblyName;
-                        classStubs.ProjectName = _project;
+                        classStubs.HeaderFileName = $"{_assemblyName}_{_safeProjectName}";
                     }
                     else
                     {
                         // projects with Interop can use a simplified naming
 
-                        classStubs.HeaderFileName = _project;
-                        classStubs.ClassHeaderFileName = className;
-                        classStubs.ClassName = c.Name;
-                        classStubs.ShortNameUpper = $"{_assemblyName}_{_project}_{className}".ToUpper();
-                        classStubs.RootNamespace = _assemblyName;
-                        classStubs.ProjectName = _project;
+                        classStubs.HeaderFileName = _safeProjectName;
                     }
+
+                    classList.Classes.Add(new Class()
+                    {
+                        Name = className
+                    });
+                    classList.HeaderFileName = classStubs.HeaderFileName;
 
                     foreach (var m in nanoTablesContext.GetOrderedMethods(c.Methods))
                     {
@@ -101,7 +113,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                         {
                             var newMethod = new MethodStub()
                             {
-                                Declaration = $"Library_{_project}_{className}::{NativeMethodsCrc.GetMethodName(m)}"
+                                Declaration = $"Library_{_safeProjectName}_{className}::{NativeMethodsCrc.GetMethodName(m)}"
                             };
 
                             if(!_withoutInteropCode)
@@ -213,7 +225,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                             };
                             Generator generator = compiler.Compile(SkeletonTemplates.ClassWithoutInteropStubTemplate);
 
-                            using (var headerFile = File.CreateText(Path.Combine(_path, $"{_project}_{className}.cpp")))
+                            using (var headerFile = File.CreateText(Path.Combine(_path, $"{_safeProjectName}_{className}.cpp")))
                             {
                                 var output = generator.Render(classStubs);
                                 headerFile.Write(output);
@@ -229,7 +241,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                             // user code stub
                             Generator generator = compiler.Compile(SkeletonTemplates.ClassStubTemplate);
 
-                            using (var headerFile = File.CreateText(Path.Combine(_path, $"{_assemblyName}_{_project}_{className}.cpp")))
+                            using (var headerFile = File.CreateText(Path.Combine(_path, $"{_assemblyName}_{_safeProjectName}_{className}.cpp")))
                             {
                                 var output = generator.Render(classStubs);
                                 headerFile.Write(output);
@@ -238,7 +250,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                             // marshal code
                             generator = compiler.Compile(SkeletonTemplates.ClassMarshallingCodeTemplate);
 
-                            using (var headerFile = File.CreateText(Path.Combine(_path, $"{_assemblyName}_{_project}_{className}_mrsh.cpp")))
+                            using (var headerFile = File.CreateText(Path.Combine(_path, $"{_assemblyName}_{_safeProjectName}_{className}_mshl.cpp")))
                             {
                                 var output = generator.Render(classStubs);
                                 headerFile.Write(output);
@@ -247,13 +259,32 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                             // class header
                             generator = compiler.Compile(SkeletonTemplates.ClassHeaderTemplate);
 
-                            using (var headerFile = File.CreateText(Path.Combine(_path, $"{_assemblyName}_{_project}_{className}.h")))
+                            using (var headerFile = File.CreateText(Path.Combine(_path, $"{_assemblyName}_{_safeProjectName}_{className}.h")))
                             {
                                 var output = generator.Render(classStubs);
                                 headerFile.Write(output);
                             }
                         }
                     }
+                }
+            }
+
+            if (!_withoutInteropCode &&
+                classList.Classes.Count > 0)
+            {
+                FormatCompiler compiler = new FormatCompiler
+                {
+                    RemoveNewLines = false
+                };
+
+                // CMake module
+                Generator generator = compiler.Compile(SkeletonTemplates.CMakeModuleTemplate);
+
+                // FindINTEROP-NF.AwesomeLib
+                using (var headerFile = File.CreateText(Path.Combine(_path, $"FindINTEROP-{_safeProjectName}.cmake")))
+                {
+                    var output = generator.Render(classList);
+                    headerFile.Write(output);
                 }
             }
         }
@@ -269,7 +300,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                 IsCoreLib = _isCoreLib,
                 Name = _name,
                 AssemblyName = _assemblyName,
-                HeaderFileName = _project,
+                HeaderFileName = _safeProjectName,
                 NativeVersion = nativeVersion,
                 NativeCRC32 = "0x" + _tablesContext.NativeMethodsCrc.Current.ToString("X")
             };
@@ -298,7 +329,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                                 {
                                     assemblyLookup.LookupTable.Add(new MethodStub()
                                     {
-                                        Declaration = $"Library_{_project}_{className}::{NativeMethodsCrc.GetMethodName(m)}"
+                                        Declaration = $"Library_{_safeProjectName}_{className}::{NativeMethodsCrc.GetMethodName(m)}"
                                     });
                                 }
                                 else
@@ -312,7 +343,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                                         assemblyLookup.LookupTable.Add(new MethodStub()
                                         {
                                             Declaration = "NULL"
-                                            //Declaration = $"**Library_{_project}_{NativeMethodsCrc.GetClassName(c)}::{NativeMethodsCrc.GetMethodName(m)}"
+                                            //Declaration = $"**Library_{_safeProjectName}_{NativeMethodsCrc.GetClassName(c)}::{NativeMethodsCrc.GetMethodName(m)}"
                                         });
                                     }
                                 }
@@ -332,7 +363,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                                 assemblyLookup.LookupTable.Add(new MethodStub()
                                 {
                                     Declaration = "NULL"
-                                    //Declaration = $"**Library_{_project}_{NativeMethodsCrc.GetClassName(c)}::{NativeMethodsCrc.GetMethodName(m)}"
+                                    //Declaration = $"**Library_{_safeProjectName}_{NativeMethodsCrc.GetClassName(c)}::{NativeMethodsCrc.GetMethodName(m)}"
                                 });
                             }
                         }
@@ -347,12 +378,12 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
             if (!_withoutInteropCode)
             {
                 // Interop code needs to use the root namespace
-                filePath = Path.Combine(_path, $"{_assemblyName}_{_project}.cpp");
+                filePath = Path.Combine(_path, $"{_assemblyName}_{_safeProjectName}.cpp");
             }
             else
             {
                 // projects with Interop can use a simplified naming
-                filePath = Path.Combine(_path, $"{_project}.cpp");
+                filePath = Path.Combine(_path, $"{_safeProjectName}.cpp");
             }
 
             using (var headerFile = File.CreateText(filePath))
@@ -368,9 +399,9 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
             var assemblyData = new AssemblyDeclaration()
             {
-                Name = _name.Replace('.', '_'), 
-                ShortName = _project, 
-                ShortNameUpper = _project.ToUpperInvariant(),
+                Name = _assemblyName, 
+                ShortName = _safeProjectName, 
+                ShortNameUpper = _safeProjectName.ToUpperInvariant(),
                 IsCoreLib = _isCoreLib
             };
 
@@ -381,7 +412,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                 {
                     var classData = new Class()
                     {
-                        AssemblyName = _project,
+                        AssemblyName = _safeProjectName,
                         Name = NativeMethodsCrc.GetClassName(c)
                     };
 
@@ -480,12 +511,12 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
             if (!_withoutInteropCode)
             {
                 // Interop code needs to use the root namespace
-                filePath = Path.Combine(_path, $"{_assemblyName}_{_project}.h");
+                filePath = Path.Combine(_path, $"{_assemblyName}_{_safeProjectName}.h");
             }
             else
             {
                 // projects with Interop can use a simplified naming
-                filePath = Path.Combine(_path, $"{_project}.h");
+                filePath = Path.Combine(_path, $"{_safeProjectName}.h");
             }
 
             using (var headerFile = File.CreateText(filePath))
