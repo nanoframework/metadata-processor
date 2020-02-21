@@ -64,7 +64,8 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
             var classList = new AssemblyClassTable
             {
                 AssemblyName = _tablesContext.AssemblyDefinition.Name.Name,
-                ProjectName = _safeProjectName
+                ProjectName = _safeProjectName,
+                IsInterop = !_withoutInteropCode
             };
 
             foreach (var c in _tablesContext.TypeDefinitionTable.TypeDefinitions)
@@ -81,21 +82,9 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                         ClassName = c.Name,
                         ShortNameUpper = $"{_assemblyName}_{_safeProjectName}_{className}".ToUpper(),
                         RootNamespace = _assemblyName,
-                        ProjectName = _safeProjectName
+                        ProjectName = _safeProjectName,
+                        HeaderFileName = _safeProjectName
                     };
-
-                    if (!_withoutInteropCode)
-                    {
-                        // Interop code needs to use the root namespace
-
-                        classStubs.HeaderFileName = $"{_assemblyName}_{_safeProjectName}";
-                    }
-                    else
-                    {
-                        // projects with Interop can use a simplified naming
-
-                        classStubs.HeaderFileName = _safeProjectName;
-                    }
 
                     classList.Classes.Add(new Class()
                     {
@@ -241,7 +230,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                             // user code stub
                             Generator generator = compiler.Compile(SkeletonTemplates.ClassStubTemplate);
 
-                            using (var headerFile = File.CreateText(Path.Combine(_path, $"{_assemblyName}_{_safeProjectName}_{className}.cpp")))
+                            using (var headerFile = File.CreateText(Path.Combine(_path, $"{_safeProjectName}_{className}.cpp")))
                             {
                                 var output = generator.Render(classStubs);
                                 headerFile.Write(output);
@@ -250,7 +239,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                             // marshal code
                             generator = compiler.Compile(SkeletonTemplates.ClassMarshallingCodeTemplate);
 
-                            using (var headerFile = File.CreateText(Path.Combine(_path, $"{_assemblyName}_{_safeProjectName}_{className}_mshl.cpp")))
+                            using (var headerFile = File.CreateText(Path.Combine(_path, $"{_safeProjectName}_{className}_mshl.cpp")))
                             {
                                 var output = generator.Render(classStubs);
                                 headerFile.Write(output);
@@ -259,7 +248,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                             // class header
                             generator = compiler.Compile(SkeletonTemplates.ClassHeaderTemplate);
 
-                            using (var headerFile = File.CreateText(Path.Combine(_path, $"{_assemblyName}_{_safeProjectName}_{className}.h")))
+                            using (var headerFile = File.CreateText(Path.Combine(_path, $"{_safeProjectName}_{className}.h")))
                             {
                                 var output = generator.Render(classStubs);
                                 headerFile.Write(output);
@@ -269,8 +258,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                 }
             }
 
-            if (!_withoutInteropCode &&
-                classList.Classes.Count > 0)
+            if (classList.Classes.Count > 0)
             {
                 FormatCompiler compiler = new FormatCompiler
                 {
@@ -280,8 +268,20 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                 // CMake module
                 Generator generator = compiler.Compile(SkeletonTemplates.CMakeModuleTemplate);
 
-                // FindINTEROP-NF.AwesomeLib
-                using (var headerFile = File.CreateText(Path.Combine(_path, $"FindINTEROP-{_safeProjectName}.cmake")))
+                string fileName;
+
+                if (!_withoutInteropCode)
+                {
+                    // this is an Interop library: FindINTEROP-NF.AwesomeLib.cmake
+                    fileName = Path.Combine(_path, $"FindINTEROP-{classList.AssemblyName}.cmake");
+                }
+                else
+                {
+                    // this is a class library: FindWindows.Devices.Gpio.cmake
+                    fileName = Path.Combine(_path, $"Find{classList.AssemblyName}.cmake");
+                }
+
+                using (var headerFile = File.CreateText(fileName))
                 {
                     var output = generator.Render(classList);
                     headerFile.Write(output);
@@ -298,8 +298,8 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
             var assemblyLookup = new AssemblyLookupTable()
             {
                 IsCoreLib = _isCoreLib,
-                Name = _name,
-                AssemblyName = _assemblyName,
+                Name = _assemblyName,
+                AssemblyName = _tablesContext.AssemblyDefinition.Name.Name,
                 HeaderFileName = _safeProjectName,
                 NativeVersion = nativeVersion,
                 NativeCRC32 = "0x" + _tablesContext.NativeMethodsCrc.Current.ToString("X")
@@ -373,20 +373,8 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
             FormatCompiler compiler = new FormatCompiler();
             Generator generator = compiler.Compile(SkeletonTemplates.AssemblyLookupTemplate);
-            string filePath;
 
-            if (!_withoutInteropCode)
-            {
-                // Interop code needs to use the root namespace
-                filePath = Path.Combine(_path, $"{_assemblyName}_{_safeProjectName}.cpp");
-            }
-            else
-            {
-                // projects with Interop can use a simplified naming
-                filePath = Path.Combine(_path, $"{_safeProjectName}.cpp");
-            }
-
-            using (var headerFile = File.CreateText(filePath))
+            using (var headerFile = File.CreateText(Path.Combine(_path, $"{_safeProjectName}.cpp")))
             {
                 var output = generator.Render(assemblyLookup);
                 headerFile.Write(output);
@@ -505,21 +493,11 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
             FormatCompiler compiler = new FormatCompiler();
             Generator generator = compiler.Compile(SkeletonTemplates.AssemblyHeaderTemplate);
 
+            // create stubs directory
             Directory.CreateDirectory(_path);
-            string filePath;
 
-            if (!_withoutInteropCode)
-            {
-                // Interop code needs to use the root namespace
-                filePath = Path.Combine(_path, $"{_assemblyName}_{_safeProjectName}.h");
-            }
-            else
-            {
-                // projects with Interop can use a simplified naming
-                filePath = Path.Combine(_path, $"{_safeProjectName}.h");
-            }
-
-            using (var headerFile = File.CreateText(filePath))
+            // output header file
+            using (var headerFile = File.CreateText(Path.Combine(_path, $"{_safeProjectName}.h")))
             {
                 var output = generator.Render(assemblyData);
                 headerFile.Write(output);
