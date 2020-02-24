@@ -7,7 +7,7 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>nanoFramework.Tools.MetadataProcessor.Console</RootNamespace>
     <AssemblyName>nanoFramework.Tools.MetadataProcessor</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <TargetFrameworkProfile />
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
@@ -60,6 +60,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
