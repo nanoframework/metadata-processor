@@ -293,6 +293,15 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
         {
             // grab native version from assembly attribute
             var nativeVersionAttribute = _tablesContext.AssemblyDefinition.CustomAttributes.FirstOrDefault(a => a?.AttributeType?.Name == "AssemblyNativeVersionAttribute");
+
+            // check for existing AssemblyNativeVersionAttribute
+            if (nativeVersionAttribute == null)
+            {
+                throw new ArgumentException("Missing AssemblyNativeVersionAttribute." + Environment.NewLine +
+                    "Make sure that AssemblyNativeVersionAttribute is defined in AssemblyInfo.cs, like this:" + Environment.NewLine +
+                    "[assembly: AssemblyNativeVersion(\"1.0.0.0\")]");
+            }
+
             Version nativeVersion = new Version((string)nativeVersionAttribute.ConstructorArguments[0].Value);
 
             var assemblyLookup = new AssemblyLookupTable()
