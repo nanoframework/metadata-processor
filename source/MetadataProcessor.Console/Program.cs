@@ -146,10 +146,8 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
                 }
                 catch (Exception ex)
                 {
-                    System.Console.Error.WriteLine(
-                        "Unable to generate skeleton files");
-
-                    Environment.Exit(1);
+                    System.Console.Error.WriteLine("Unable to generate skeleton files.");
+                    throw;
                 }
             }
 
