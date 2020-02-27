@@ -335,7 +335,8 @@ namespace nanoFramework.Tools.MetadataProcessor
                         {
                             if (p.ParameterType.DeclaringType != null)
                             {
-                                if (p.ParameterType.Resolve().IsEnum)
+                                var resolvedType = p.ParameterType.Resolve();
+                                if (resolvedType != null && resolvedType.IsEnum)
                                 {
                                     set.Add(p.ParameterType.MetadataToken);
                                 }
@@ -344,12 +345,12 @@ namespace nanoFramework.Tools.MetadataProcessor
                                     set.Add(p.ParameterType.DeclaringType.MetadataToken);
                                 }
                             }
-                            else if (p.ParameterType.MetadataType == MetadataType.Class)
+                            if (p.ParameterType.MetadataType == MetadataType.Class)
                             {
                                 set.Add(p.ParameterType.MetadataToken);
                             }
-                            else if (p.ParameterType.IsValueType &&
-                                    !p.ParameterType.IsPrimitive)
+                            if (p.ParameterType.IsValueType &&
+                                !p.ParameterType.IsPrimitive)
                             {
                                 set.Add(p.ParameterType.MetadataToken);
                             }
