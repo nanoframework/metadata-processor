@@ -167,7 +167,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                                         else if (item.ParameterType.IsArray)
                                         {
                                             // declaration like
-                                            // CLR_RT_TypedArray_UINT8 param0;
+                                            // Interop_Marshal_INT8_ARRAY param0;
 
                                             parameterDeclaration.Type = parameterType;
                                             parameterDeclaration.Declaration = $"{parameterType} {parameterDeclaration.Name};";
@@ -176,11 +176,11 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                                         else
                                         {
                                             // declaration like
-                                            // INT8 param1;
+                                            // Interop_Marshal_INT8 param1;
 
                                             parameterDeclaration.Type = parameterType;
                                             parameterDeclaration.Declaration = $"{parameterType} {parameterDeclaration.Name};";
-                                            parameterDeclaration.MarshallingDeclaration = $"Interop_Marshal_{parameterType}( stack, {(parameterIndex + (m.IsStatic ? 0 : 1)).ToString()}, {parameterDeclaration.Name} )";
+                                            parameterDeclaration.MarshallingDeclaration = $"Interop_Marshal_{item.ParameterType.GetElementType().ToCLRTypeAsString()}( stack, {(parameterIndex + (m.IsStatic ? 0 : 1)).ToString()}, {parameterDeclaration.Name} )";
                                        }
                                         newMethod.ParameterDeclaration.Add(parameterDeclaration);
                                         parameterIndex++;
