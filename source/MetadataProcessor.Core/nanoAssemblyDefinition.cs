@@ -89,8 +89,8 @@ namespace nanoFramework.Tools.MetadataProcessor
             // keeping this here for now, just for compatibility
             writer.WriteUInt32(0);
 
-            // native methods CRC32, only for core libs
-            writer.WriteUInt32(_isCoreLibrary ? _context.NativeMethodsCrc.Current : 0);
+            // native methods CRC32
+            writer.WriteUInt32(_context.NativeMethodsCrc.Current);
 
             // Native methods offset
             writer.WriteUInt32(0xFFFFFFFF);
