@@ -135,6 +135,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                                     {
                                         // get the parameter type
                                         var parameterType = item.ParameterType.ToNativeTypeAsString();
+                                        var parameterTypeClr = item.ParameterType.ToCLRTypeAsString();
 
                                         // compose the function declaration
                                         declaration.Append($"{parameterType} param{parameterIndex.ToString()}, ");
@@ -161,26 +162,26 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                                                 $"{parameterType} {parameterDeclaration.Name};" + Environment.NewLine +
                                                 $"        UINT8 heapblock{parameterIndex.ToString()}[CLR_RT_HEAP_BLOCK_SIZE];";
 
-                                            parameterDeclaration.MarshallingDeclaration = $"Interop_Marshal_{parameterType}_ByRef( stack, heapblock{(parameterIndex + (m.IsStatic ? 0 : 1)).ToString()}, {parameterDeclaration.Name} )";
+                                            parameterDeclaration.MarshallingDeclaration = $"Interop_Marshal_{parameterTypeClr}_ByRef( stack, heapblock{(parameterIndex + (m.IsStatic ? 0 : 1)).ToString()}, {parameterDeclaration.Name} )";
 
                                         }
                                         else if (item.ParameterType.IsArray)
                                         {
                                             // declaration like
-                                            // Interop_Marshal_INT8_ARRAY param0;
+                                            // CLR_RT_TypedArray_UINT8 param0;
 
                                             parameterDeclaration.Type = parameterType;
                                             parameterDeclaration.Declaration = $"{parameterType} {parameterDeclaration.Name};";
-                                            parameterDeclaration.MarshallingDeclaration = $"Interop_Marshal_{item.ParameterType.GetElementType().ToCLRTypeAsString()}_ARRAY( stack, {(parameterIndex + (m.IsStatic ? 0 : 1)).ToString()}, {parameterDeclaration.Name} )";
+                                            parameterDeclaration.MarshallingDeclaration = $"Interop_Marshal_{parameterTypeClr}_ARRAY( stack, {(parameterIndex + (m.IsStatic ? 0 : 1)).ToString()}, {parameterDeclaration.Name} )";
                                         }
                                         else
                                         {
                                             // declaration like
-                                            // Interop_Marshal_INT8 param1;
+                                            // INT8 param1;
 
                                             parameterDeclaration.Type = parameterType;
                                             parameterDeclaration.Declaration = $"{parameterType} {parameterDeclaration.Name};";
-                                            parameterDeclaration.MarshallingDeclaration = $"Interop_Marshal_{item.ParameterType.ToCLRTypeAsString()}( stack, {(parameterIndex + (m.IsStatic ? 0 : 1)).ToString()}, {parameterDeclaration.Name} )";
+                                            parameterDeclaration.MarshallingDeclaration = $"Interop_Marshal_{parameterTypeClr}( stack, {(parameterIndex + (m.IsStatic ? 0 : 1)).ToString()}, {parameterDeclaration.Name} )";
                                        }
                                         newMethod.ParameterDeclaration.Add(parameterDeclaration);
                                         parameterIndex++;
