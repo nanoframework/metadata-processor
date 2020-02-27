@@ -182,8 +182,8 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                                             parameterDeclaration.Declaration = $"{parameterType} {parameterDeclaration.Name};";
                                             parameterDeclaration.MarshallingDeclaration = $"Interop_Marshal_{parameterType}( stack, {(parameterIndex + (m.IsStatic ? 0 : 1)).ToString()}, {parameterDeclaration.Name} )";
                                        }
-
                                         newMethod.ParameterDeclaration.Add(parameterDeclaration);
+                                        parameterIndex++;
                                     }
 
                                     declaration.Append("HRESULT &hr )");
