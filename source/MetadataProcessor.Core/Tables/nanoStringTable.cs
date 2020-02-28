@@ -204,7 +204,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                 GetOrCreateStringId(item.Namespace);
                 GetOrCreateStringId(item.Name);
 
-                foreach (var f in item.Fields)
+                foreach (var f in item.Fields.Where(i => !i.IsStatic))
                 {
                     GetOrCreateStringId(f.Name);
                 }

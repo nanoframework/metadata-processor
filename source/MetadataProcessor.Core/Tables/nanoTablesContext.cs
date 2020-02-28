@@ -422,5 +422,13 @@ namespace nanoFramework.Tools.MetadataProcessor
         {
             SignaturesTable = new nanoSignaturesTable(this);
         }
+
+        internal void ResetResourcesTables()
+        {
+            ResourcesTable = new nanoResourcesTable(
+               AssemblyDefinition.MainModule.Resources, this);
+            ResourceDataTable = new nanoResourceDataTable();
+            ResourceFileTable = new nanoResourceFileTable(this);
+        }
     }
 }
