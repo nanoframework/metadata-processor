@@ -271,12 +271,20 @@ namespace nanoFramework.Tools.MetadataProcessor
             {
                 case TokenType.TypeRef:
                     var tr = _tablesContext.TypeReferencesTable.Items.FirstOrDefault(i => i.MetadataToken == token);
-                    switch (tr.Scope.MetadataToken.TokenType)
+
+                    if (tr.IsNested)
                     {
-                        case TokenType.AssemblyRef: 
-                        case TokenType.TypeRef:
-                            set.Add(tr.Scope.MetadataToken);
-                            break;
+                        set.Add(tr.DeclaringType.MetadataToken);
+                    }
+                    else
+                    {
+                        switch (tr.Scope.MetadataToken.TokenType)
+                        {
+                            case TokenType.AssemblyRef:
+                            case TokenType.TypeRef:
+                                set.Add(tr.Scope.MetadataToken);
+                                break;
+                        }
                     }
                     break;
 
