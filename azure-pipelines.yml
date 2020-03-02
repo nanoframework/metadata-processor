@@ -152,6 +152,14 @@ jobs:
     condition: and( succeeded(), ne(variables['system.pullrequest.isfork'], true) )
     displayName: Push NuGet packages to Azure Artifacts
 
+  # update dependencies
+  - task: PowerShell@2
+    inputs:
+      targetType: filePath
+      filePath: source/azure-pipelines/update-dependencies.ps1
+    condition: or( and( succeeded(), contains(variables['Build.SourceVersionMessage'], '***UPDATE_DEPENDENTS***') ), eq(variables['UPDATE_DEPENDENTS'], 'true') )
+    displayName: Update dependent class libs
+
   # create or update GitHub release
   - task: GitHubReleasePublish@1
     inputs:
