@@ -2,7 +2,7 @@
 
 # compute authorization header in format "AUTHORIZATION: basic 'encoded token'"
 # 'encoded token' is the Base64 of the string "nfbot:personal-token"
-$auth = "basic $([System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes("nfbot:$(GitHubToken)"))))"
+$auth = "basic $([System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes("nfbot:$env:MY_GITHUB_TOKEN"))))"
 
 # because it can take sometime for the package to become available on the NuGet providers
 # need to hang here for 2 minutes (2 * 60)
@@ -38,24 +38,28 @@ Set-Location source | Out-Null
 ####################
 # VS 2017
 
+Write-Host "Restoring packages in VS2017 solution..."
+
 # restore NuGet packages, need to do this before anything else
-nuget restore nanoFramework.Tools.VisualStudio.sln -Source https://pkgs.dev.azure.com/nanoframework/feed/_packaging/sandbox/nuget/v3/index.json -Source https://api.nuget.org/v3/index.json
+nuget restore nanoFramework.Tools.VisualStudio.sln -ConfigFile NuGet.Config
 
-Write-Debug "Updating packages in VS2017 solution"
+Write-Host "Updating nanoFramework.Tools.MetadataProcessor.Core package in VS2017 solution..."
 
-nuget update -Id nanoFramework.Tools.MetadataProcessor.Core Tools.BuildTasks\Tools.BuildTasks.csproj -ConfigFile NuGet.Config
-nuget update -Id nanoFramework.Tools.MetadataProcessor.Core VisualStudio.Extension\VisualStudio.Extension.csproj -ConfigFile NuGet.Config
+nuget update -Id nanoFramework.Tools.MetadataProcessor.Core Tools.BuildTasks\Tools.BuildTasks.csproj -ConfigFile NuGet.Config -PreRelease
+nuget update -Id nanoFramework.Tools.MetadataProcessor.Core VisualStudio.Extension\VisualStudio.Extension.csproj -ConfigFile NuGet.Config -PreRelease
 
 ####################
 # VS 2019
 
+Write-Host "Restoring packages in VS2019 solution..."
+
 # restore NuGet packages, need to do this before anything else
-nuget restore nanoFramework.Tools.VisualStudio-2019.sln -Source https://pkgs.dev.azure.com/nanoframework/feed/_packaging/sandbox/nuget/v3/index.json -Source https://api.nuget.org/v3/index.json
+nuget restore nanoFramework.Tools.VisualStudio-2019.sln -ConfigFile NuGet.Config
 
-Write-Debug "Updating packages in VS2019 solution"
+Write-Host "Updating nanoFramework.Tools.MetadataProcessor.Core package in VS2019 solution..."
 
-nuget update -Id nanoFramework.Tools.MetadataProcessor.Core Tools.BuildTasks-2019\Tools.BuildTasks.csproj -ConfigFile NuGet.Config
-nuget update -Id nanoFramework.Tools.MetadataProcessor.Core VisualStudio.Extension-2019\VisualStudio.Extension.csproj -ConfigFile NuGet.Config
+nuget update -Id nanoFramework.Tools.MetadataProcessor.Core Tools.BuildTasks-2019\Tools.BuildTasks.csproj -ConfigFile NuGet.Config -PreRelease
+nuget update -Id nanoFramework.Tools.MetadataProcessor.Core VisualStudio.Extension-2019\VisualStudio.Extension.csproj -ConfigFile NuGet.Config -PreRelease
 
 #####################
 
