@@ -101,7 +101,18 @@ namespace nanoFramework.Tools.MetadataProcessor
             }
             else if (parameterType.IsByReference)
             {
-                typeName += nanoCLR_DataType.DATATYPE_BYREF + "_" + GetnanoClrTypeName(parameterType.GetElementType());
+                var elementType = ((TypeSpecification)parameterType).ElementType;
+
+                typeName += nanoCLR_DataType.DATATYPE_BYREF + "_";
+
+                if (elementType.IsArray)
+                {
+                    typeName += nanoCLR_DataType.DATATYPE_SZARRAY + "_" + GetnanoClrTypeName(elementType.GetElementType());
+                }
+                else
+                {
+                    typeName += GetnanoClrTypeName(elementType);
+                }
                 continueProcessing = false;
             }
             else if(!parameterType.IsPrimitive)
