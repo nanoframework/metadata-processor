@@ -67,7 +67,8 @@ namespace nanoFramework.Tools.MetadataProcessor
             var name = string.Concat(method.Name, (method.IsStatic ? "___STATIC__" : "___"),
                 string.Join("__", GetAllParameters(method)));
 
-            var originalName = name.Replace(".", "_");
+            var originalName = name.Replace(".", "_")
+                                .Replace("/", "");
 
             return originalName;
         }
