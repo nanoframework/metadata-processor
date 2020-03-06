@@ -133,7 +133,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
                                 newMethod.ReturnType = m.MethodReturnType.ReturnType.ToNativeTypeAsString();
 
-                                newMethod.MarshallingReturnType = newMethod.ReturnType;
+                                newMethod.MarshallingReturnType = m.MethodReturnType.ReturnType.ToCLRTypeAsString();
 
                                 declaration.Append($"{m.Name}");
                                 declaration.Append("( ");
