@@ -96,7 +96,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             // special processing for arrays
             if(parameterType.IsArray)
             {
-                typeName += nanoCLR_DataType.DATATYPE_SZARRAY + "_" + GetnanoClrTypeName(parameterType.GetElementType());
+                typeName += nanoCLR_DataType.DATATYPE_SZARRAY + "_" + GetParameterType(parameterType.GetElementType());
                 continueProcessing = false;
             }
             else if (parameterType.IsByReference)
@@ -107,7 +107,7 @@ namespace nanoFramework.Tools.MetadataProcessor
 
                 if (elementType.IsArray)
                 {
-                    typeName += nanoCLR_DataType.DATATYPE_SZARRAY + "_" + GetnanoClrTypeName(elementType.GetElementType());
+                    typeName += nanoCLR_DataType.DATATYPE_SZARRAY + "_" + GetParameterType(((TypeSpecification)elementType).ElementType);
                 }
                 else
                 {
