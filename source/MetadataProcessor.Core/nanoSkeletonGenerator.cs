@@ -49,14 +49,29 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
         public void GenerateSkeleton()
         {
-            // create <assembly>.h with the structs declarations
-            GenerateAssemblyHeader();
+            // check if there are any native methods
+            if(_tablesContext.MethodDefinitionTable.Items.Any(method => method.RVA == 0 && !method.IsAbstract))
+            {
+                // create <assembly>.h with the structs declarations
+                GenerateAssemblyHeader();
 
-            // generate <assembly>.cpp with the lookup definition
-            GenerateAssemblyLookup();
+                // generate <assembly>.cpp with the lookup definition
+                GenerateAssemblyLookup();
 
-            // generate stub files for classes, headers and marshalling code, if required
-            GenerateStubs();
+                // generate stub files for classes, headers and marshalling code, if required
+                GenerateStubs();
+
+                // output native checksum so it shows in build log
+                Console.WriteLine("++++++++++++++++++++++++++++++++++++++++++++");
+                Console.WriteLine($"+ Native declaration checksum: 0x{_tablesContext.NativeMethodsCrc.Current.ToString("X")} +");
+                Console.WriteLine("++++++++++++++++++++++++++++++++++++++++++++");
+            }
+            else
+            {
+                Console.WriteLine("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+                Console.WriteLine("+ Skipping skeleton generation because this class doesn't have native implementation +");
+                Console.WriteLine("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+            }
         }
 
         private void GenerateStubs()
