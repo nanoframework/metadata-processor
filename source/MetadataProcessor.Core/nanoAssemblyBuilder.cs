@@ -239,6 +239,34 @@ namespace nanoFramework.Tools.MetadataProcessor
             }
         }
 
+        /// <summary>
+        /// Returns the native checksum of the assembly.
+        /// </summary>
+        /// <returns>Native checksum of the assembly.</returns>
+        /// <remarks>
+        /// Need to call <see cref="Minimize()"/> before calling this method otherwise the checksum is not available.
+        /// </remarks>
+        public string GetNativeChecksum()
+        {
+            if(_tablesContext.MinimizeComplete)
+            {
+                // check if there are any native methods
+                if (_tablesContext.MethodDefinitionTable.Items.Any(method => method.RVA == 0 && !method.IsAbstract))
+                {
+                    return $"0x{_tablesContext.NativeMethodsCrc.Current.ToString("X")}";
+                }
+                else
+                {
+                    // this assembly doesn't have native implementation
+                    return "0x00000000";
+                }
+            }
+            else
+            {
+                throw new InvalidOperationException("Error: can't provide checksum without compiling the assembly first.");
+            }
+        }
+
         private void ShowDependencies(int token, HashSet<int> set, HashSet<int> setTmp)
         {
             var tokenFrom = TokenToString(token);
