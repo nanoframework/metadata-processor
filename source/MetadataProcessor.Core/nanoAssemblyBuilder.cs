@@ -346,7 +346,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                             }
                             else
                             {
-                                set.Add(mr.DeclaringType.MetadataToken);
+                                set.Add(mr.ReturnType.GetElementType().MetadataToken);
                             }
                         }
                         else
