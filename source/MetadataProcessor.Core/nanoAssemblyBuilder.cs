@@ -618,6 +618,15 @@ namespace nanoFramework.Tools.MetadataProcessor
                             {
                                 set.Add(v.VariableType.MetadataToken);
                             }
+                            else if (v.VariableType.MetadataType == MetadataType.Array)
+                            {
+                                if (v.VariableType.GetElementType().FullName != "System.Void" &&
+                                    v.VariableType.GetElementType().FullName != "System.String" &&
+                                    v.VariableType.GetElementType().FullName != "System.Object")
+                                {
+                                    set.Add(v.VariableType.GetElementType().MetadataToken);
+                                }
+                            }
                             else if (v.VariableType.IsValueType &&
                                     !v.VariableType.IsPrimitive)
                             {
