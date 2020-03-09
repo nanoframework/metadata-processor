@@ -128,12 +128,30 @@ namespace nanoFramework.Tools.MetadataProcessor
                         System.Console.WriteLine($"Including {typeDescription}");
                     }
 
-                    HashSet<MetadataToken> setTmp = BuildDependencyList(t);
+                    HashSet<MetadataToken> setTmp;
+
+                    try
+                    {
+                        setTmp = BuildDependencyList(t);
+                    }
+                    catch(Exception)
+                    {
+                        Console.WriteLine($"Exception processing token {t.ToInt32().ToString("x8")} {TokenToString(t)}");
+                        throw;
+                    }
 
                     // show dependencies
                     if (_verbose)
                     {
-                        ShowDependencies(t, set, setTmp);
+                        try
+                        {
+                            ShowDependencies(t, set, setTmp);
+                        }
+                        catch (Exception)
+                        {
+                            Console.WriteLine($"Exception listing dependencies of token {t.ToInt32().ToString("x8")} {TokenToString(t)}");
+                            throw;
+                        }
                     }
 
                     // copy type def
