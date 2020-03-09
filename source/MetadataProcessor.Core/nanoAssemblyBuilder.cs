@@ -369,7 +369,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                                     mr.ReturnType.GetElementType().FullName != "System.Object" &&
                                     !mr.ReturnType.GetElementType().IsPrimitive)
                                 {
-                                    set.Add(mr.ReturnType.MetadataToken);
+                                    set.Add(mr.ReturnType.GetElementType().MetadataToken);
                                 }
                             }
                         }
