@@ -364,7 +364,13 @@ namespace nanoFramework.Tools.MetadataProcessor
                             }
                             else
                             {
-                                set.Add(mr.ReturnType.GetElementType().MetadataToken);
+                                if (mr.ReturnType.GetElementType().FullName != "System.Void" &&
+                                    mr.ReturnType.GetElementType().FullName != "System.String" &&
+                                    mr.ReturnType.GetElementType().FullName != "System.Object" &&
+                                    !mr.ReturnType.GetElementType().IsPrimitive)
+                                {
+                                    set.Add(mr.ReturnType.MetadataToken);
+                                }
                             }
                         }
                         else
