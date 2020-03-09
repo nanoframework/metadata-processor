@@ -641,6 +641,10 @@ namespace nanoFramework.Tools.MetadataProcessor
             {
                 writer.WriteMetadataToken((uint)referenceId << 2);
             }
+            else
+            {
+                throw new ArgumentException($"Can't find entry in type reference table for {typeDefinition.FullName}.");
+            }
         }
     }
 }
