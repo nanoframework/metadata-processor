@@ -68,7 +68,16 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
                     {
                         _assemblyBuilder.Write(GetBinaryWriter(writer));
                     }
+                }
+                catch (Exception)
+                {
+                    System.Console.Error.WriteLine(
+                        $"Unable to compile output assembly file '{fileName}' - check parse command results.");
+                    throw;
+                }
 
+                try
+                {
                     // OK to delete tmp PE file
                     File.Delete(Path.ChangeExtension(fileName, "tmp"));
 
@@ -97,10 +106,13 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
                         dumper.DumpAll();
                     }
                 }
+                catch (ArgumentException ex)
+                {
+                    System.Console.Error.WriteLine($"Exception minimizing assembly: {ex.Message}.");
+                }
                 catch (Exception)
                 {
-                    System.Console.Error.WriteLine(
-                        $"Unable to compile output assembly file '{fileName}' - check parse command results.");
+                    System.Console.Error.WriteLine($"Exception minimizing assembly.");
                     throw;
                 }
             }
