@@ -12,7 +12,7 @@ Start-Sleep -Seconds 60
 # init/reset these
 $commitMessage = ""
 $prTitle = ""
-$newBranchName = "develop-nfbot/update-metadataprocessor"
+$newBranchName = "develop-nfbot/update-dependencies/" + [guid]::NewGuid().ToString()
 $packageTargetVersion = $env:NBGV_NuGetPackageVersion
 
 # working directory is agent temp directory
@@ -64,9 +64,6 @@ nuget update -Id nanoFramework.Tools.MetadataProcessor.Core VisualStudio.Extensi
 #####################
 
 "Bumping MetadataProcessor.Core to $packageTargetVersion." | Write-Host -ForegroundColor Cyan                
-
-#  update branch name
-$newBranchName += "/$packageTargetVersion"
 
 # build commit message
 $commitMessage += "Bumps MetadataProcessor.Core to $packageTargetVersion.`n"
