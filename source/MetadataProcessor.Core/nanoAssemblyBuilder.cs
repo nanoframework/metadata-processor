@@ -143,15 +143,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                     // show dependencies
                     if (_verbose)
                     {
-                        try
-                        {
-                            ShowDependencies(t, set, setTmp);
-                        }
-                        catch (Exception)
-                        {
-                            Console.WriteLine($"Exception listing dependencies of token {t.ToInt32().ToString("x8")} {TokenToString(t)}");
-                            throw;
-                        }
+                        ShowDependencies(t, set, setTmp);
                     }
 
                     // copy type def
@@ -252,7 +244,14 @@ namespace nanoFramework.Tools.MetadataProcessor
             {
                 if (!set.Contains(m))
                 {
-                    System.Console.WriteLine($"{tokenFrom} -> {TokenToString(m)}");
+                    try
+                    {
+                        Console.WriteLine($"{tokenFrom} -> {TokenToString(m)}");
+                    }
+                    catch (Exception)
+                    {
+                        throw new ArgumentException($"Exception listing token dependencies. Problematic token is 0x{m.ToInt32().ToString("x8")}.");
+                    }
                 }
             }
         }
@@ -364,9 +363,9 @@ namespace nanoFramework.Tools.MetadataProcessor
                             }
                             else
                             {
-                                if (mr.ReturnType.GetElementType().FullName != "System.Void" &&
-                                    mr.ReturnType.GetElementType().FullName != "System.String" &&
-                                    mr.ReturnType.GetElementType().FullName != "System.Object" &&
+                                if ( mr.ReturnType.GetElementType().FullName != "System.Void" &&
+                                     mr.ReturnType.GetElementType().FullName != "System.String" &&
+                                     mr.ReturnType.GetElementType().FullName != "System.Object" &&
                                     !mr.ReturnType.GetElementType().IsPrimitive)
                                 {
                                     set.Add(mr.ReturnType.GetElementType().MetadataToken);
@@ -377,9 +376,9 @@ namespace nanoFramework.Tools.MetadataProcessor
                         {
                             if (mr.ReturnType.MetadataType == MetadataType.ValueType)
                             {
-                                if (mr.ReturnType.FullName != "System.Void" &&
-                                    mr.ReturnType.FullName != "System.String" &&
-                                    mr.ReturnType.FullName != "System.Object" &&
+                                if ( mr.ReturnType.FullName != "System.Void" &&
+                                     mr.ReturnType.FullName != "System.String" &&
+                                     mr.ReturnType.FullName != "System.Object" &&
                                     !mr.ReturnType.IsPrimitive)
                                 {
                                     set.Add(mr.ReturnType.MetadataToken);
@@ -446,11 +445,11 @@ namespace nanoFramework.Tools.MetadataProcessor
                                     set.Add(fr.DeclaringType.MetadataToken);
                                 }
                             }
-                            else if (fr.FieldType.FullName != "System.Void" &&
-                                    fr.FieldType.FullName != "System.String" &&
-                                    fr.FieldType.FullName != "System.Object" &&
-                                    fr.FieldType.IsValueType &&
-                                    !fr.FieldType.IsPrimitive)
+                            else if (!fr.FieldType.IsPrimitive &&
+                                      fr.FieldType.IsValueType &&
+                                      fr.FieldType.FullName != "System.Void" &&
+                                      fr.FieldType.FullName != "System.String" &&
+                                      fr.FieldType.FullName != "System.Object")
                             {
                                 set.Add(fr.FieldType.MetadataToken);
                             }
@@ -551,12 +550,12 @@ namespace nanoFramework.Tools.MetadataProcessor
                         }
                     }
                     else if (!fd.FieldType.IsValueType &&
-                            !fd.FieldType.IsPrimitive &&
-                            fd.FieldType.FullName != "System.Void" &&
-                            fd.FieldType.FullName != "System.String" &&
-                            fd.FieldType.FullName != "System.Object")
+                             !fd.FieldType.IsPrimitive &&
+                              fd.FieldType.FullName != "System.Void" &&
+                              fd.FieldType.FullName != "System.String" &&
+                              fd.FieldType.FullName != "System.Object")
                     {
-                        set.Add(fd.FieldType.MetadataToken);
+                         set.Add(fd.FieldType.MetadataToken);
                     }
 
                     // attributes
@@ -575,8 +574,8 @@ namespace nanoFramework.Tools.MetadataProcessor
                     var md = _tablesContext.MethodDefinitionTable.Items.FirstOrDefault(i => i.MetadataToken == token);
 
                     // return value
-                    if (md.ReturnType.IsValueType &&
-                             !md.ReturnType.IsPrimitive)
+                    if ( md.ReturnType.IsValueType &&
+                        !md.ReturnType.IsPrimitive)
                     {
                         set.Add(md.ReturnType.MetadataToken);
                     }
@@ -592,10 +591,10 @@ namespace nanoFramework.Tools.MetadataProcessor
                         }
                     }
                     else if (!md.ReturnType.IsValueType &&
-                            !md.ReturnType.IsPrimitive &&
-                            md.ReturnType.FullName != "System.Void" &&
-                            md.ReturnType.FullName != "System.String" &&
-                            md.ReturnType.FullName != "System.Object")
+                             !md.ReturnType.IsPrimitive &&
+                              md.ReturnType.FullName != "System.Void" &&
+                              md.ReturnType.FullName != "System.String" &&
+                              md.ReturnType.FullName != "System.Object")
                     {
                         set.Add(md.ReturnType.MetadataToken);
                     }
@@ -646,7 +645,8 @@ namespace nanoFramework.Tools.MetadataProcessor
                             {
                                 if (v.VariableType.GetElementType().FullName != "System.Void" &&
                                     v.VariableType.GetElementType().FullName != "System.String" &&
-                                    v.VariableType.GetElementType().FullName != "System.Object")
+                                    v.VariableType.GetElementType().FullName != "System.Object" &&
+                                    !v.VariableType.GetElementType().IsPrimitive)
                                 {
                                     set.Add(v.VariableType.GetElementType().MetadataToken);
                                 }
