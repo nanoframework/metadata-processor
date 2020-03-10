@@ -25,6 +25,9 @@ namespace nanoFramework.Tools.MetadataProcessor
 
         private readonly List<string> _classNamesToExclude;
 
+        private int _methodsWithNativeImplementation = 0;
+        private uint _currentCrc = 0;
+
         public NativeMethodsCrc(
             AssemblyDefinition assembly,
             List<string> classNamesToExclude)
@@ -33,7 +36,24 @@ namespace nanoFramework.Tools.MetadataProcessor
             _classNamesToExclude = classNamesToExclude;
         }
 
-        public uint Current { get; private set; }
+        /// <summary>
+        /// Current CRC32 of the native methods.
+        /// Will return 0 if there are no methods with native implementation.
+        /// </summary>
+        public uint CurrentCrc
+        {
+            get
+            {
+                if(_methodsWithNativeImplementation > 0)
+                {
+                    return _currentCrc;
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+        }
 
         public void UpdateCrc(MethodDefinition method)
         {
@@ -42,13 +62,15 @@ namespace nanoFramework.Tools.MetadataProcessor
             if (type.IncludeInStub() &&
                 (method.RVA == 0 && !method.IsAbstract) )
             {
-                Current = Crc32.Compute(_name, Current);
-                Current = Crc32.Compute(Encoding.ASCII.GetBytes(GetClassName(type)), Current);
-                Current = Crc32.Compute(Encoding.ASCII.GetBytes(GetMethodName(method)), Current);
+                _currentCrc = Crc32.Compute(_name, CurrentCrc);
+                _currentCrc = Crc32.Compute(Encoding.ASCII.GetBytes(GetClassName(type)), CurrentCrc);
+                _currentCrc = Crc32.Compute(Encoding.ASCII.GetBytes(GetMethodName(method)), CurrentCrc);
+
+                _methodsWithNativeImplementation++;
             }
             else
             {
-                Current = Crc32.Compute(_null, Current);
+                _currentCrc = Crc32.Compute(_null, CurrentCrc);
             }
         }
 

@@ -89,21 +89,8 @@ namespace nanoFramework.Tools.MetadataProcessor
             // current builds are for little endian targets only
             // keeping this here for now, just for compatibility
             writer.WriteUInt32(0);
-
-            var nativeMethdodsCount = _context.MethodDefinitionTable.Items.Count(method => method.RVA == 0 && !method.IsAbstract);
-
-            // native methods CRC32
-            // this is used by other tools to check if the assembly has native implementation 
-            // (like the deployment provider in the VS extension)
-            if (nativeMethdodsCount > 0)
-            {
-                writer.WriteUInt32(_context.NativeMethodsCrc.Current);
-            }
-            else
-            {
-                // this assembly doesn't have any native methods implemented
-                writer.WriteUInt32(0);
-            }
+            
+            writer.WriteUInt32(_context.NativeMethodsCrc.CurrentCrc);
 
             // Native methods offset
             writer.WriteUInt32(0xFFFFFFFF);
