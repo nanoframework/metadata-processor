@@ -50,7 +50,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
         public void GenerateSkeleton()
         {
             // check if there are any native methods
-            if(_tablesContext.MethodDefinitionTable.Items.Any(method => method.RVA == 0 && !method.IsAbstract))
+            if(_tablesContext.NativeMethodsCrc.CurrentCrc > 0)
             {
                 // create <assembly>.h with the structs declarations
                 GenerateAssemblyHeader();
@@ -63,7 +63,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
                 // output native checksum so it shows in build log
                 Console.WriteLine("++++++++++++++++++++++++++++++++++++++++++++");
-                Console.WriteLine($"+ Native declaration checksum: 0x{_tablesContext.NativeMethodsCrc.Current.ToString("X")} +");
+                Console.WriteLine($"+ Native declaration checksum: 0x{_tablesContext.NativeMethodsCrc.CurrentCrc.ToString("X8")} +");
                 Console.WriteLine("++++++++++++++++++++++++++++++++++++++++++++");
             }
             else
@@ -327,7 +327,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                 AssemblyName = _tablesContext.AssemblyDefinition.Name.Name,
                 HeaderFileName = _safeProjectName,
                 NativeVersion = nativeVersion,
-                NativeCRC32 = "0x" + _tablesContext.NativeMethodsCrc.Current.ToString("X")
+                NativeCRC32 = "0x" + _tablesContext.NativeMethodsCrc.CurrentCrc.ToString("X8")
             };
 
 

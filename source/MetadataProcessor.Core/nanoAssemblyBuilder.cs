@@ -267,16 +267,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         {
             if(_tablesContext.MinimizeComplete)
             {
-                // check if there are any native methods
-                if (_tablesContext.MethodDefinitionTable.Items.Any(method => method.RVA == 0 && !method.IsAbstract))
-                {
-                    return $"0x{_tablesContext.NativeMethodsCrc.Current.ToString("X")}";
-                }
-                else
-                {
-                    // this assembly doesn't have native implementation
-                    return "0x00000000";
-                }
+                return $"0x{_tablesContext.NativeMethodsCrc.CurrentCrc.ToString("X8")}";
             }
             else
             {
