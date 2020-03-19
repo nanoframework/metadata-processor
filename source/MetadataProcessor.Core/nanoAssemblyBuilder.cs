@@ -433,7 +433,13 @@ namespace nanoFramework.Tools.MetadataProcessor
                                 }
                                 else
                                 {
-                                    set.Add(fr.DeclaringType.MetadataToken);
+                                    if ( fr.FieldType.FullName != "System.Void" &&
+                                         fr.FieldType.FullName != "System.String" &&
+                                         fr.FieldType.FullName != "System.Object" &&
+                                        !fr.FieldType.IsPrimitive)
+                                    {
+                                        set.Add(fr.FieldType.MetadataToken);
+                                    }
                                 }
                             }
                             else if (!fr.FieldType.IsPrimitive &&
@@ -537,7 +543,13 @@ namespace nanoFramework.Tools.MetadataProcessor
                         }
                         else
                         {
-                            set.Add(fd.DeclaringType.MetadataToken);
+                            if (fd.FieldType.GetElementType().FullName != "System.Void" &&
+                                fd.FieldType.GetElementType().FullName != "System.String" &&
+                                fd.FieldType.GetElementType().FullName != "System.Object" &&
+                                !fd.FieldType.GetElementType().IsPrimitive)
+                            {
+                                set.Add(fd.FieldType.GetElementType().MetadataToken);
+                            }
                         }
                     }
                     else if (!fd.FieldType.IsValueType &&
@@ -578,7 +590,13 @@ namespace nanoFramework.Tools.MetadataProcessor
                         }
                         else
                         {
-                            set.Add(md.DeclaringType.MetadataToken);
+                            if (md.ReturnType.GetElementType().FullName != "System.Void" &&
+                                md.ReturnType.GetElementType().FullName != "System.String" &&
+                                md.ReturnType.GetElementType().FullName != "System.Object" &&
+                                !md.ReturnType.GetElementType().IsPrimitive)
+                            {
+                                set.Add(md.ReturnType.GetElementType().MetadataToken);
+                            }
                         }
                     }
                     else if (!md.ReturnType.IsValueType &&
