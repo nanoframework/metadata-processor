@@ -420,8 +420,16 @@ namespace nanoFramework.Tools.MetadataProcessor
                                 set.Add(fr.DeclaringType.MetadataToken);
                             }
 
-                            if (fr.FieldType.IsValueType &&
-                                !fr.FieldType.IsPrimitive)
+
+                            if (fr.FieldType.MetadataType == MetadataType.Class)
+                            {
+                                set.Add(fr.FieldType.MetadataToken);
+                            }
+                            else if (!fr.FieldType.IsPrimitive &&
+                                      fr.FieldType.IsValueType &&
+                                      fr.FieldType.FullName != "System.Void" &&
+                                      fr.FieldType.FullName != "System.String" &&
+                                      fr.FieldType.FullName != "System.Object")
                             {
                                 set.Add(fr.FieldType.MetadataToken);
                             }
@@ -441,14 +449,6 @@ namespace nanoFramework.Tools.MetadataProcessor
                                         set.Add(fr.FieldType.MetadataToken);
                                     }
                                 }
-                            }
-                            else if (!fr.FieldType.IsPrimitive &&
-                                      fr.FieldType.IsValueType &&
-                                      fr.FieldType.FullName != "System.Void" &&
-                                      fr.FieldType.FullName != "System.String" &&
-                                      fr.FieldType.FullName != "System.Object")
-                            {
-                                set.Add(fr.FieldType.MetadataToken);
                             }
                             else if (fr.FieldType.DeclaringType != null)
                             {
