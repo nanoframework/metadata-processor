@@ -622,16 +622,15 @@ namespace nanoFramework.Tools.MetadataProcessor
                             parameterType = p.ParameterType;
                         }
 
-                        if (parameterType.DeclaringType != null)
-                        {
-                            set.Add(parameterType.DeclaringType.MetadataToken);
-                        }
-                        else if (parameterType.MetadataType == MetadataType.Class)
+                        if (parameterType.MetadataType == MetadataType.Class)
                         {
                             set.Add(parameterType.MetadataToken);
                         }
-                        else if (parameterType.IsValueType &&
-                                !parameterType.IsPrimitive)
+                        else if (!parameterType.IsValueType &&
+                                 !parameterType.IsPrimitive &&
+                                  parameterType.FullName != "System.Void" &&
+                                  parameterType.FullName != "System.String" &&
+                                  parameterType.FullName != "System.Object")
                         {
                             set.Add(parameterType.MetadataToken);
                         }
