@@ -19,9 +19,11 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
                 return false;
             }
 
+            typeDefFlags = typeDefFlags & nanoTypeDefinitionFlags.TD_Semantics;
+
             // Only generate a stub for classes and value types.
-            if ( typeDefFlags.HasFlag(nanoTypeDefinitionFlags.TD_Semantics_Class) ||
-                 typeDefFlags.HasFlag(nanoTypeDefinitionFlags.TD_Semantics_ValueType) )
+            if  (typeDefFlags == nanoTypeDefinitionFlags.TD_Semantics_Class ||
+                 typeDefFlags == nanoTypeDefinitionFlags.TD_Semantics_ValueType )
             { 
                 return true;
             }
