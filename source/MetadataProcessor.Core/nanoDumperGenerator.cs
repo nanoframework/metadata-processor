@@ -116,8 +116,16 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                 var typeDef = new TypeDef()
                 {
                    ReferenceId = t.MetadataToken.ToInt32().ToString("x8"),
-                   Name = t.FullName
                 };
+
+                if(t.IsNested)
+                {
+                    typeDef.Name = t.Name;
+                }
+                else
+                {
+                    typeDef.Name = t.FullName;
+                }
 
                 var typeFlags = (uint)nanoTypeDefinitionTable.GetFlags(t);
                 typeDef.Flags = typeFlags.ToString("x8");
