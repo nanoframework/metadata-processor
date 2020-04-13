@@ -449,8 +449,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             using (var buffer = new MemoryStream())
             using (var writer = new BinaryWriter(buffer))
             {
-                writer.Write((byte)defaultValue.Length);
-                writer.Write((byte)0x00); // TODO: investigate this temporary fix
+                writer.Write((ushort)defaultValue.Length);
                 writer.Write(defaultValue);
 
                 return buffer.ToArray();
