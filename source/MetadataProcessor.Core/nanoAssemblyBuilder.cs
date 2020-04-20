@@ -488,7 +488,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                         if (!nanoTablesContext.ClassNamesToExclude.Contains(c.AttributeType.FullName) && 
                             c.AttributeType.IsToInclude())
                         {
-                            set.Add(c.AttributeType.MetadataToken);
+                            set.Add(c.Constructor.MetadataToken);
                         }
                     }
 
