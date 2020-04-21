@@ -473,6 +473,8 @@ namespace nanoFramework.Tools.MetadataProcessor
             if(typeReference is TypeSpecification)
             {
                 referenceId = _context.TypeSpecificationsTable.GetOrCreateTypeSpecificationId(typeReference);
+
+                return (ushort)(0x8000 | referenceId);
             }
             else if (_context.TypeReferencesTable.TryGetTypeReferenceId(typeReference, out referenceId))
             {
