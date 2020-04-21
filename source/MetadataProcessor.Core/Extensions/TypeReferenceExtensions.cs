@@ -113,9 +113,9 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
                     case nanoCLR_DataType.DATATYPE_U2:
                         return "uint16_t";
                     case nanoCLR_DataType.DATATYPE_I4:
-                        return "int32_t";
+                        return "signed int";
                     case nanoCLR_DataType.DATATYPE_U4:
-                        return "uint32_t";
+                        return "unsigned int";
                     case nanoCLR_DataType.DATATYPE_I8:
                         return "int64_t";
                     case nanoCLR_DataType.DATATYPE_U8:
