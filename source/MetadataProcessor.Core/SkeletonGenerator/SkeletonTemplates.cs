@@ -161,10 +161,10 @@ using namespace {{RootNamespace}}::{{ProjectName}};
 {{#if HasReturnType}}    {{ReturnType}} retValue = 0;{{/if}}
 
     ////////////////////////////////
-    // implementation starts here //    
+    // implementation starts here //
 
 
-    // implementation ends here   //    
+    // implementation ends here   //
     ////////////////////////////////
 
 {{#if HasReturnType}}    return retValue;{{/if}}
