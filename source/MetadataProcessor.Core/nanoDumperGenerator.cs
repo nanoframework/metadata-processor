@@ -276,7 +276,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
                 if (_tablesContext.TypeReferencesTable.TryGetTypeReferenceId(t, out refId))
                 {
-                    typeRef.ReferenceId = new MetadataToken(TokenType.TypeRef, refId).ToInt32().ToString("x8");
+                    typeRef.ReferenceId = t.MetadataToken.ToInt32().ToString("x8");
                 }
 
                 // list member refs               
@@ -289,7 +289,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
                     if (_tablesContext.MethodReferencesTable.TryGetMethodReferenceId(m, out refId))
                     {
-                        memberRef.ReferenceId = new MetadataToken(TokenType.MemberRef, refId).ToInt32().ToString("x8");
+                        memberRef.ReferenceId = m.MetadataToken.ToInt32().ToString("x8");
                         memberRef.Signature = PrintSignatureForMethod(m);
                     }
 
