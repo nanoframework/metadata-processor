@@ -239,7 +239,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             {
                 // TODO
                 // parse special attributes: NativeProfiler, GloballySynchronized
-                //flag |= MD_HasAttributes; // ???
+                flag |= MD_HasAttributes;
             }
 
             if (method.Module != null &&

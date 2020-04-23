@@ -3,6 +3,8 @@
 // See LICENSE file in the project root for full license information.
 //
 
+using System.Collections.Generic;
+
 namespace nanoFramework.Tools.MetadataProcessor.Core
 {
     public class AttributeCustom
@@ -12,5 +14,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
         public string Name;
 
         public string TypeToken;
+
+        public List<AttFixedArgs> FixedArgs = new List<AttFixedArgs>();   
     }
 }

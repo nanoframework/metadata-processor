@@ -62,14 +62,63 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
             {
                 foreach (var ma in a.Methods)
                 {
-                    var attribute = new AttributeCustom()
+                    if (ma.HasCustomAttributes)
                     {
-                        Name = a.Module.Assembly.Name.Name,
-                        ReferenceId = ma.MetadataToken.ToInt32().ToString("x8"),
-                        TypeToken = a.CustomAttributes[0].Constructor.MetadataToken.ToInt32().ToString("x8")
-                    };
+                        var attribute = new AttributeCustom()
+                        {
+                            Name = a.Module.Assembly.Name.Name,
+                            ReferenceId = ma.MetadataToken.ToInt32().ToString("x8"),
+                            TypeToken = ma.CustomAttributes[0].Constructor.MetadataToken.ToInt32().ToString("x8")
+                        };
 
-                    dumpTable.Attributes.Add(attribute);
+                        if (ma.CustomAttributes[0].HasConstructorArguments)
+                        {
+                            foreach (var value in ma.CustomAttributes[0].ConstructorArguments)
+                            {
+                                var serializationType = value.Type.ToSerializationType();
+                                attribute.FixedArgs.Add(
+                                    new AttFixedArgs()
+                                    {
+                                        Options = ((byte)serializationType).ToString("X2"),
+                                        Numeric = serializationType == nanoSerializationType.ELEMENT_TYPE_STRING ? 0.ToString("X16") : ((int)value.Value).ToString("X16"),
+                                        Text = serializationType == nanoSerializationType.ELEMENT_TYPE_STRING ? (string)value.Value : "",
+                                    }
+                                );
+                            }
+                        }
+
+                        dumpTable.Attributes.Add(attribute);
+                    }
+                }
+
+                foreach (var fa in a.Fields)
+                {
+                    if(fa.HasCustomAttributes)
+                    {
+                        var attribute = new AttributeCustom()
+                        {
+                            Name = a.Module.Assembly.Name.Name,
+                            ReferenceId = fa.MetadataToken.ToInt32().ToString("x8"),
+                            TypeToken = fa.CustomAttributes[0].Constructor.MetadataToken.ToInt32().ToString("x8")
+                        };
+
+                        if (fa.CustomAttributes[0].HasConstructorArguments)
+                        {
+                            foreach (var value in fa.CustomAttributes[0].ConstructorArguments)
+                            {
+                                attribute.FixedArgs.Add(
+                                    new AttFixedArgs()
+                                    {
+                                        Options = ((byte)value.Type.ToSerializationType()).ToString("X2"),
+                                        Numeric = ((int)value.Value).ToString("X16"),
+                                        Text = ""
+                                    }
+                                );
+                            }
+                        }
+
+                        dumpTable.Attributes.Add(attribute);
+                    }
                 }
 
                 var attribute1 = new AttributeCustom()
@@ -78,6 +127,21 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                     ReferenceId = a.MetadataToken.ToInt32().ToString("x8"),
                     TypeToken = a.CustomAttributes[0].Constructor.MetadataToken.ToInt32().ToString("x8")
                 };
+
+                if (a.CustomAttributes[0].HasConstructorArguments)
+                {
+                    foreach (var value in a.CustomAttributes[0].ConstructorArguments)
+                    {
+                        attribute1.FixedArgs.Add(
+                            new AttFixedArgs()
+                            {
+                                Options = ((byte)value.Type.ToSerializationType()).ToString("X2"),
+                                Numeric = ((int)value.Value).ToString("X16"),
+                                Text = ""
+                            }
+                        );
+                    }
+                }
 
                 dumpTable.Attributes.Add(attribute1);
             }
