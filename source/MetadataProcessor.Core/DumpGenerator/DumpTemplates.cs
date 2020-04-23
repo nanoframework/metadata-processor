@@ -52,6 +52,11 @@ TypeDefProps [{{ReferenceId}}]: Flags: {{Flags}} Extends: {{ExtendsType}} Enclos
 
 {{#each Attributes}}
 Attribute: {{Name}}::[{{ReferenceId}} {{TypeToken}}]{{#newline}}
+{{#if FixedArgs}}Fixed Arguments:{{#newline}}{{/if}}
+{{#each FixedArgs}}
+{{Options}} {{Numeric}}{{Text}}{{#newline}}
+{{#newline}}
+{{/each}}
 {{/each}}
 {{#if Attributes}}{{#newline}}{{/if}}
 

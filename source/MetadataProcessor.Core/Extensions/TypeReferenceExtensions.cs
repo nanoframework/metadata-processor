@@ -227,5 +227,47 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
 
             return "";
         }
+
+        public static nanoSerializationType ToSerializationType(this TypeReference value)
+        {
+            nanoCLR_DataType dataType;
+            if (nanoSignaturesTable.PrimitiveTypes.TryGetValue(value.FullName, out dataType))
+            {
+                switch (dataType)
+                {
+                    case nanoCLR_DataType.DATATYPE_BOOLEAN:
+                        return nanoSerializationType.ELEMENT_TYPE_BOOLEAN;
+                    case nanoCLR_DataType.DATATYPE_I1:
+                        return nanoSerializationType.ELEMENT_TYPE_I1;
+                    case nanoCLR_DataType.DATATYPE_U1:
+                        return nanoSerializationType.ELEMENT_TYPE_U1;
+                    case nanoCLR_DataType.DATATYPE_I2:
+                        return nanoSerializationType.ELEMENT_TYPE_I2;
+                    case nanoCLR_DataType.DATATYPE_U2:
+                        return nanoSerializationType.ELEMENT_TYPE_U2;
+                    case nanoCLR_DataType.DATATYPE_I4:
+                        return nanoSerializationType.ELEMENT_TYPE_I4;
+                    case nanoCLR_DataType.DATATYPE_U4:
+                        return nanoSerializationType.ELEMENT_TYPE_U4;
+                    case nanoCLR_DataType.DATATYPE_I8:
+                        return nanoSerializationType.ELEMENT_TYPE_I8;
+                    case nanoCLR_DataType.DATATYPE_U8:
+                        return nanoSerializationType.ELEMENT_TYPE_U8;
+                    case nanoCLR_DataType.DATATYPE_R4:
+                        return nanoSerializationType.ELEMENT_TYPE_R4;
+                    case nanoCLR_DataType.DATATYPE_R8:
+                        return nanoSerializationType.ELEMENT_TYPE_R8;
+                    case nanoCLR_DataType.DATATYPE_CHAR:
+                        return nanoSerializationType.ELEMENT_TYPE_CHAR;
+                    case nanoCLR_DataType.DATATYPE_STRING:
+                        return nanoSerializationType.ELEMENT_TYPE_STRING;
+                    default:
+                        return 0;
+                }
+            }
+
+            return 0;
+        }
+
     }
 }

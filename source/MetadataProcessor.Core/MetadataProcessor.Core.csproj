@@ -64,6 +64,7 @@
   <ItemGroup>
     <Compile Include="DumpGenerator\ExceptionHandler.cs" />
     <Compile Include="DumpGenerator\AttributeCustom.cs" />
+    <Compile Include="DumpGenerator\AttFixedArgs.cs" />
     <Compile Include="DumpGenerator\UserString.cs" />
     <Compile Include="DumpGenerator\ILCode.cs" />
     <Compile Include="DumpGenerator\LocalDef.cs" />
