@@ -75,15 +75,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                         {
                             foreach (var value in ma.CustomAttributes[0].ConstructorArguments)
                             {
-                                var serializationType = value.Type.ToSerializationType();
-                                attribute.FixedArgs.Add(
-                                    new AttFixedArgs()
-                                    {
-                                        Options = ((byte)serializationType).ToString("X2"),
-                                        Numeric = serializationType == nanoSerializationType.ELEMENT_TYPE_STRING ? 0.ToString("X16") : ((int)value.Value).ToString("X16"),
-                                        Text = serializationType == nanoSerializationType.ELEMENT_TYPE_STRING ? (string)value.Value : "",
-                                    }
-                                );
+                                attribute.FixedArgs.Add(BuildFixedArgsAttribute(value));
                             }
                         }
 
@@ -106,14 +98,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                         {
                             foreach (var value in fa.CustomAttributes[0].ConstructorArguments)
                             {
-                                attribute.FixedArgs.Add(
-                                    new AttFixedArgs()
-                                    {
-                                        Options = ((byte)value.Type.ToSerializationType()).ToString("X2"),
-                                        Numeric = ((int)value.Value).ToString("X16"),
-                                        Text = ""
-                                    }
-                                );
+                                attribute.FixedArgs.Add(BuildFixedArgsAttribute(value));
                             }
                         }
 
@@ -132,19 +117,41 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                 {
                     foreach (var value in a.CustomAttributes[0].ConstructorArguments)
                     {
-                        attribute1.FixedArgs.Add(
-                            new AttFixedArgs()
-                            {
-                                Options = ((byte)value.Type.ToSerializationType()).ToString("X2"),
-                                Numeric = ((int)value.Value).ToString("X16"),
-                                Text = ""
-                            }
-                        );
+                        attribute1.FixedArgs.Add(BuildFixedArgsAttribute(value));
                     }
                 }
 
                 dumpTable.Attributes.Add(attribute1);
             }
+        }
+
+        private AttFixedArgs BuildFixedArgsAttribute(CustomAttributeArgument value)
+        {
+            var serializationType = value.Type.ToSerializationType();
+
+            var newArg = new AttFixedArgs()
+            {
+                Options = ((byte)serializationType).ToString("X2"),
+                Numeric = 0.ToString("X16"),
+                Text = "",
+            };
+
+            switch(serializationType)
+            {
+                case nanoSerializationType.ELEMENT_TYPE_BOOLEAN:
+                    newArg.Numeric = ((bool)value.Value) ? 1.ToString("X16") : 0.ToString("X16");
+                    break;
+
+                case nanoSerializationType.ELEMENT_TYPE_STRING:
+                    newArg.Text = (string)value.Value;
+                    break;
+
+                default:
+                    newArg.Numeric = ((int)value.Value).ToString("X16");
+                    break;
+            }
+
+            return newArg;
         }
 
         private void DumpUserStrings(DumpAllTable dumpTable)
