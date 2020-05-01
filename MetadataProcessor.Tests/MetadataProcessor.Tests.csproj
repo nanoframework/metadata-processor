@@ -62,9 +62,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Core\Utility\LoadHintsAssemblyResolverTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestPreprocessedFiles.cs" />
-    <Compile Include="Core\Utility\LoadHintsAssemblyResolverTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
