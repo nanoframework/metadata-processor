@@ -68,9 +68,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Core\Tables\nanoReferenceTableBaseTests.cs" />
     <Compile Include="Core\Utility\LoadHintsAssemblyResolverTests.cs" />
     <Compile Include="Core\Utility\Crc32Tests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestObjectHelper.cs" />
     <Compile Include="TestPreprocessedFiles.cs" />
   </ItemGroup>
   <ItemGroup>
