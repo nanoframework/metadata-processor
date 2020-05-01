@@ -4,12 +4,12 @@ using System.IO;
 using System.Linq;
 using System.Xml;
 using System.Xml.Xsl;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Mono.Cecil;
-using NUnit.Framework;
 
 namespace nanoFramework.Tools.MetadataProcessor.Tests
 {
-    [TestFixture]
+    [TestClass]
     public sealed class TestPreprocessedFiles
     {
         private sealed class MoveStringsBefore : ICustomStringSorter
@@ -61,14 +61,8 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
             _pdbxSorter.Load("PdbxSorter.xslt");
         }
 
-        [TearDown]
-        public void TestTearDown()
-        {
-            _typesOrder.Clear();
-            _stringSorter = null;
-        }
 
-        [Test]
+        [TestMethod]
         public void ClockSampleTest()
         {
             TestSingleAssembly("Clock",
@@ -76,14 +70,14 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
                  "Microsoft.SPOT.Net", "Microsoft.SPOT.Time", "Microsoft.SPOT.Graphics");
         }
 
-        [Test]
+        [TestMethod]
         public void ExtendedWeakReferencesTest()
         {
             TestSingleAssembly("ExtendedWeakReferences",
                 "Microsoft.SPOT.Native", "Microsoft.SPOT.TinyCore");
         }
 
-        [Test]
+        [TestMethod]
         public void FileSystemSampleTest()
         {
             _typesOrder.AddRange(new[]
@@ -104,7 +98,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
                 "Microsoft.SPOT.Graphics");
         }
 
-        [Test]
+        [TestMethod]
         public void FtpServerSampleTest()
         {
             _stringSorter = new MoveStringsAfter("anon");
@@ -112,7 +106,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
                 "System.Ftp", "Microsoft.SPOT.IO");
         }
 
-        [Test]
+        [TestMethod]
         public void HelloWorldClientSampleTest()
         {
             _typesOrder.AddRange(new[]
@@ -131,7 +125,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
                 "MFWsStack", "Microsoft.SPOT.Net", "System.Http");
         }
 
-        [Test]
+        [TestMethod]
         public void HelloWcfServerSampleTest()
         {
             _typesOrder.AddRange(new[]
@@ -150,7 +144,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
                 "Microsoft.SPOT.Net", "MFWsStack");
         }
 
-        [Test]
+        [TestMethod]
         public void HttpClientSampleTest()
         {
             _stringSorter = new MoveStringsBefore(".Resource");
@@ -158,7 +152,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
                 "System.Http", "Microsoft.SPOT.Native");
         }
 
-        [Test]
+        [TestMethod]
         public void HttpServerSampleTest()
         {
             _stringSorter = new MoveStringsBefore(".Resource");
@@ -175,7 +169,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
                 "MFUpdate", "Microsoft.SPOT.IO");
         }
 
-        [Test]
+        [TestMethod]
         public void Ieee802x15x4NetworkSampleTest()
         {
             _typesOrder.AddRange(new[]
@@ -198,7 +192,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
                 "Microsoft.SPOT.Hardware", "Microsoft.SPOT.Wireless.IEEE_802_15_4.Phy.CC2420");
         }
 
-        [Test]
+        [TestMethod]
         public void Ieee802x15x4PhySampleTest()
         {
             TestSingleAssembly("IEEE_802_15_4_PHY_Sample",
@@ -206,7 +200,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
                 "Microsoft.SPOT.Wireless.IEEE_802_15_4.Phy.CC2420");
         }
 
-        [Test]
+        [TestMethod]
         public void InkCanvasSampleTest()
         {
             _typesOrder.AddRange(new[]
@@ -228,7 +222,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
                 "Microsoft.SPOT.Graphics", "Microsoft.SPOT.Ink", "Microsoft.SPOT.Hardware");
         }
 
-        [Test]
+        [TestMethod]
         public void PuzzleSampleTest()
         {
             _stringSorter = new MoveStringsBefore(".Resource");
@@ -268,7 +262,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
             }
         }
 
-        [Test]
+        [TestMethod]
         [Ignore("Signatures indexes issue")]
         public void SimpleServiceTest()
         {
@@ -319,7 +313,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
                 "MFWsStack", "MFDpwsDevice");
         }
 
-        [Test]
+        [TestMethod]
         public void SimpleTouchInputTest()
         {
             _stringSorter = new MoveStringsBefore(".Resource");
@@ -348,7 +342,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
             }
         }
 
-        [Test]
+        [TestMethod]
         public void SimpleWpfApplicationTest()
         {
             _stringSorter = new MoveStringsForSimpleWpfApplicationTest();
@@ -380,19 +374,19 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
                 "Microsoft.SPOT.Native", "Microsoft.SPOT.TinyCore", "Microsoft.SPOT.Graphics", "Microsoft.SPOT.Hardware");
         }
 
-        [Test]
+        [TestMethod]
         public void SocketClientTest()
         {
             TestSingleAssembly("SocketClient");
         }
 
-        [Test]
+        [TestMethod]
         public void SocketServerTest()
         {
             TestSingleAssembly("SocketServer");
         }
 
-        [Test]
+        [TestMethod]
         public void StylusCaptureTest()
         {
             _stringSorter = new MoveStringsBefore(".Resource");
@@ -421,7 +415,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
             }
         }
 
-        [Test]
+        [TestMethod]
         public void TemperatureSampleTest()
         {
             _stringSorter = new MoveStringsForTemperatureSampleTest();
@@ -445,13 +439,13 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
                 "Microsoft.SPOT.Native");
         }
 
-        [Test]
+        [TestMethod]
         public void ThreadingTest()
         {
             TestSingleAssembly("Threading");
         }
 
-        [Test]
+        [TestMethod]
         public void TouchCalibrationTest()
         {
             _stringSorter = new MoveStringsBefore(".Resource");
@@ -471,7 +465,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
                 "Microsoft.SPOT.Graphics", "Microsoft.SPOT.Touch");
         }
 
-        [Test]
+        [TestMethod]
         public void TouchScreenTest()
         {
             _stringSorter = new MoveStringsBefore(".Resource");
@@ -489,7 +483,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
                 "Microsoft.SPOT.Native");
         }
 
-        [Test]
+        [TestMethod]
         public void UsbMouseSampleTest()
         {
             _typesOrder.AddRange(new[]
@@ -505,7 +499,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
                 "Microsoft.SPOT.Hardware");
         }
         
-        [Test]
+        [TestMethod]
         public void WeakDelegatesTest()
         {
             TestSingleAssembly("WeakDelegates");
@@ -546,7 +540,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
             var pdbxFileName = String.Format(@"Data\{0}\{1}\{0}.pdbx", name, subDirectoryName);
 
             var builder = new nanoAssemblyBuilder(
-                assemblyDefinition, _typesOrder, _stringSorter, true);
+                assemblyDefinition, _typesOrder, false, false, null, _stringSorter, true);
 
             using (var stream = File.Open(peFileName, FileMode.Create, FileAccess.ReadWrite))
             using (var writer = new BinaryWriter(stream))
