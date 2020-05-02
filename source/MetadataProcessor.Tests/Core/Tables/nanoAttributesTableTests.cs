@@ -31,10 +31,10 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
         {
             var assemblyDefinition = TestObjectHelper.GetTestAssemblyDefinition();
             var module = assemblyDefinition.Modules[0];
-            var attributeDecoratedClassTypeDefinition = module.Types.First(i => i.FullName == "TestNFApp.AttributeDecoratedClass");
-            Assert.IsTrue(attributeDecoratedClassTypeDefinition.CustomAttributes.Count > 1);
-            var customAttribute0 = attributeDecoratedClassTypeDefinition.CustomAttributes[0];
-            var customAttribute1 = attributeDecoratedClassTypeDefinition.CustomAttributes[1];
+            var testClassTypeDefinition = module.Types.First(i => i.FullName == "TestNFApp.OneClassOverAll");
+            Assert.IsTrue(testClassTypeDefinition.CustomAttributes.Count > 1);
+            var customAttribute0 = testClassTypeDefinition.CustomAttributes[0];
+            var customAttribute1 = testClassTypeDefinition.CustomAttributes[1];
 
             var referencedMetadataTokens = new HashSet<MetadataToken>();
             referencedMetadataTokens.Add(customAttribute1.Constructor.MetadataToken);
@@ -84,7 +84,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
         {
             var assemblyDefinition = TestObjectHelper.GetTestAssemblyDefinition();
             var module = assemblyDefinition.Modules[0];
-            var dummyFieldDefinition = module.Types.First(i => i.FullName == "TestNFApp.AttributeDecoratedClass").Fields.First(i=>i.Name == "dummyField");
+            var dummyFieldDefinition = module.Types.First(i => i.FullName == "TestNFApp.OneClassOverAll").Fields.First(i=>i.Name == "dummyField");
 
             Assert.IsTrue(dummyFieldDefinition.CustomAttributes.Count > 1);
             var customAttribute0 = dummyFieldDefinition.CustomAttributes[0];
@@ -138,7 +138,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
         {
             var assemblyDefinition = TestObjectHelper.GetTestAssemblyDefinition();
             var module = assemblyDefinition.Modules[0];
-            var methodDefinition = module.Types.First(i => i.FullName == "TestNFApp.AttributeDecoratedClass").Methods.First(i => i.Name == "DummyMethod");
+            var methodDefinition = module.Types.First(i => i.FullName == "TestNFApp.OneClassOverAll").Methods.First(i => i.Name == "DummyMethod");
             Assert.IsTrue(methodDefinition.CustomAttributes.Count > 1);
             var customAttribute0 = methodDefinition.CustomAttributes[0];
             var customAttribute1 = methodDefinition.CustomAttributes[1];

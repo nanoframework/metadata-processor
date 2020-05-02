@@ -97,9 +97,17 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\MetadataProcessor.Console\MetadataProcessor.Console.csproj">
+      <Project>{a9e02e14-7321-4b12-8ab5-9a0408ed8fd0}</Project>
+      <Name>MetadataProcessor.Console</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MetadataProcessor.Core\MetadataProcessor.Core.csproj">
       <Project>{e32f7d15-2499-440c-8026-4d5ee1c5ec3a}</Project>
       <Name>MetadataProcessor.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="TestNFApp\TestNFApp.nfproj">
+      <Project>{9e5e0766-701d-4266-9eba-7b3e4338ed21}</Project>
+      <Name>TestNFApp</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
