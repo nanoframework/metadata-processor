@@ -34,5 +34,42 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
             AssemblyDefinition ret = AssemblyDefinition.ReadAssembly(Assembly.GetExecutingAssembly().Location);
             return ret;
         }
+
+        public static Stream GetResourceStream(string resourceName)
+        {
+            if (String.IsNullOrWhiteSpace(resourceName))
+            {
+                throw new ArgumentNullException("resourceName");
+            }
+
+            Stream ret = null;
+
+            var thisAssembly = Assembly.GetExecutingAssembly();
+
+            ret = thisAssembly.GetManifestResourceStream(String.Concat(thisAssembly.GetName().Name, ".", resourceName));
+
+            return ret;
+        }
+
+        public static byte[] GetResourceStreamContent(string resourceName)
+        {
+            byte[] ret = null;
+
+            using (var resourceStream = GetResourceStream(resourceName))
+            {
+                if (resourceStream.Length > int.MaxValue)
+                {
+                    throw new NotImplementedException($"{resourceStream.Length} bytes");
+                }
+
+                using (var rdr = new BinaryReader(resourceStream))
+                {
+                    ret = rdr.ReadBytes((int)resourceStream.Length);
+                }
+            }
+
+            return ret;
+        }
+
     }
 }

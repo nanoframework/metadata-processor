@@ -65,6 +65,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
@@ -72,6 +73,7 @@
     <Compile Include="Core\Tables\nanoReferenceTableBaseTests.cs" />
     <Compile Include="Core\Utility\LoadHintsAssemblyResolverTests.cs" />
     <Compile Include="Core\Utility\Crc32Tests.cs" />
+    <Compile Include="Core\Utility\nanoBitmapProcessorTests.cs" />
     <Compile Include="DummyCustomAttribute1.cs" />
     <Compile Include="DummyCustomAttribute2.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -82,9 +84,15 @@
     <None Include="..\MetadataProcessor.Core\key.snk">
       <Link>key.snk</Link>
     </None>
+    <EmbeddedResource Include="bmp_expected_result.bin" />
+    <EmbeddedResource Include="gif_expected_result.bin" />
+    <EmbeddedResource Include="jpeg_expected_result.bin" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="bmp.bmp" />
+    <EmbeddedResource Include="gif.gif" />
+    <EmbeddedResource Include="jpeg.jpg" />
     <Content Include="PdbxSorter.xslt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
