@@ -9,8 +9,6 @@ using System.Text;
 
 namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
 {
-    [DummyCustomAttribute1]
-    [DummyCustomAttribute2]
     [TestClass]
     public class nanoAttributesTableTests
     {
@@ -33,10 +31,10 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
         {
             var assemblyDefinition = TestObjectHelper.GetTestAssemblyDefinition();
             var module = assemblyDefinition.Modules[0];
-            var thisTypeDefinition = module.Types.First(i => i.FullName == this.GetType().FullName);
-            Assert.IsTrue(thisTypeDefinition.CustomAttributes.Count > 1);
-            var customAttribute0 = thisTypeDefinition.CustomAttributes[0];
-            var customAttribute1 = thisTypeDefinition.CustomAttributes[1];
+            var attributeDecoratedClassTypeDefinition = module.Types.First(i => i.FullName == "TestNFApp.AttributeDecoratedClass");
+            Assert.IsTrue(attributeDecoratedClassTypeDefinition.CustomAttributes.Count > 1);
+            var customAttribute0 = attributeDecoratedClassTypeDefinition.CustomAttributes[0];
+            var customAttribute1 = attributeDecoratedClassTypeDefinition.CustomAttributes[1];
 
             var referencedMetadataTokens = new HashSet<MetadataToken>();
             referencedMetadataTokens.Add(customAttribute1.Constructor.MetadataToken);
@@ -81,17 +79,13 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
             }
         }
 
-
-        [DummyCustomAttribute1]
-        [DummyCustomAttribute2]
-        private readonly string dummyField = "dummy";
-
         [TestMethod]
         public void RemoveUnusedItems_FieldAttributesTest()
         {
             var assemblyDefinition = TestObjectHelper.GetTestAssemblyDefinition();
             var module = assemblyDefinition.Modules[0];
-            var dummyFieldDefinition = module.Types.First(i => i.FullName == this.GetType().FullName).Fields.First(i=>i.Name == nameof(dummyField));
+            var dummyFieldDefinition = module.Types.First(i => i.FullName == "TestNFApp.AttributeDecoratedClass").Fields.First(i=>i.Name == "dummyField");
+
             Assert.IsTrue(dummyFieldDefinition.CustomAttributes.Count > 1);
             var customAttribute0 = dummyFieldDefinition.CustomAttributes[0];
             var customAttribute1 = dummyFieldDefinition.CustomAttributes[1];
@@ -139,15 +133,12 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
             }
         }
 
-
-        [DummyCustomAttribute1]
-        [DummyCustomAttribute2]
         [TestMethod]
         public void RemoveUnusedItems_MethodAttributesTest()
         {
             var assemblyDefinition = TestObjectHelper.GetTestAssemblyDefinition();
             var module = assemblyDefinition.Modules[0];
-            var methodDefinition = module.Types.First(i => i.FullName == this.GetType().FullName).Methods.First(i => i.Name == nameof(RemoveUnusedItems_MethodAttributesTest));
+            var methodDefinition = module.Types.First(i => i.FullName == "TestNFApp.AttributeDecoratedClass").Methods.First(i => i.Name == "DummyMethod");
             Assert.IsTrue(methodDefinition.CustomAttributes.Count > 1);
             var customAttribute0 = methodDefinition.CustomAttributes[0];
             var customAttribute1 = methodDefinition.CustomAttributes[1];

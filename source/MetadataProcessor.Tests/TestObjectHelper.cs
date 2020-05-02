@@ -31,7 +31,14 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
 
         public static AssemblyDefinition GetTestAssemblyDefinition()
         {
-            AssemblyDefinition ret = AssemblyDefinition.ReadAssembly(Assembly.GetExecutingAssembly().Location);
+            AssemblyDefinition ret = null;
+
+            var thisAssemblyDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            var testNfAppDir = Path.Combine(thisAssemblyDir, "TestNFApp");
+            var testNfAppExePath = Path.Combine(testNfAppDir, "TestNFApp.exe");
+
+            ret = AssemblyDefinition.ReadAssembly(testNfAppExePath);
+
             return ret;
         }
 

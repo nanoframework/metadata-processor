@@ -27,44 +27,24 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
                 
                 var result = sw.ToString();
 
-                //<?xml version="1.0" encoding="utf-16"?>
-                //<AssemblyGraph>
-                //    <Assembly Name="nanoFramework.Tools.MetadataProcessor.Tests" Version="1.0.0.0" Hash="0x00000000" Flags="0x00000000">
-                //        <AssemblyRef Name="mscorlib" Version="4.0.0.0" Hash="0x00000000" Flags="0x00000000" />
-                //        <AssemblyRef Name="nanoFramework.Tools.MetadataProcessor.Core" Version="2.22.44.10207" Hash="0x00000000" Flags="0x00000000" />
-                //        <AssemblyRef Name="Mono.Cecil" Version="0.11.2.0" Hash="0x00000000" Flags="0x00000000" />
-                //        <AssemblyRef Name="Microsoft.VisualStudio.TestPlatform.TestFramework" Version="14.0.0.0" Hash="0x00000000" Flags="0x00000000" />
-                //        <AssemblyRef Name="System.Drawing" Version="4.0.0.0" Hash="0x00000000" Flags="0x00000000" />
-                //        <AssemblyRef Name="System.Xml" Version="4.0.0.0" Hash="0x00000000" Flags="0x00000000" />
-                //        <AssemblyRef Name="System.Core" Version="4.0.0.0" Hash="0x00000000" Flags="0x00000000" />
-                //        <Type Name="&lt;Module&gt;" Hash="0x00000000" />
-                //        <Type Name="nanoFramework.Tools.MetadataProcessor.Tests.DummyCustomAttribute1" Hash="0x00000000" />
-                //        <Type Name="nanoFramework.Tools.MetadataProcessor.Tests.DummyCustomAttribute2" Hash="0x00000000" />
-                //        <Type Name="nanoFramework.Tools.MetadataProcessor.Tests.TestObjectHelper" Hash="0x00000000" />
-                //        <Type Name="nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility.LoadHintsAssemblyResolverTests" Hash="0x00000000" />
-                //        <Type Name="nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility.Crc32Tests" Hash="0x00000000" />
-                //        <Type Name="nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility.nanoBitmapProcessorTests" Hash="0x00000000" />
-                //        <Type Name="nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility.nanoDependencyGeneratorWriterTests" Hash="0x00000000" />
-                //        <Type Name="nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables.nanoAttributesTableTests" Hash="0x00000000" />
-                //        <Type Name="nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables.nanoReferenceTableBaseTests" Hash="0x00000000" />
-                //        <Type Name="&lt;PrivateImplementationDetails&gt;" Hash="0x00000000" />
-                //    </Assembly>
-                //    <Assembly Name="mscorlib" Version="4.0.0.0" Hash="0x00000000" Flags="0x00000000" />
-                //    <Assembly Name="nanoFramework.Tools.MetadataProcessor.Core" Version="2.22.44.10207" Hash="0x00000000" Flags="0x00000000" />
-                //    <Assembly Name="Mono.Cecil" Version="0.11.2.0" Hash="0x00000000" Flags="0x00000000" />
-                //    <Assembly Name="Microsoft.VisualStudio.TestPlatform.TestFramework" Version="14.0.0.0" Hash="0x00000000" Flags="0x00000000" />
-                //    <Assembly Name="System.Drawing" Version="4.0.0.0" Hash="0x00000000" Flags="0x00000000" />
-                //    <Assembly Name="System.Xml" Version="4.0.0.0" Hash="0x00000000" Flags="0x00000000" />
-                //    <Assembly Name="System.Core" Version="4.0.0.0" Hash="0x00000000" Flags="0x00000000" />
-                //</AssemblyGraph>
+                // the minimum:
+                // <?xml version="1.0" encoding="utf-16"?>
+                // <AssemblyGraph>
+                //  <Assembly Name="TestNFApp" Version="1.0.0.0" Hash="0x00000000" Flags="0x00000000">
+                //      <AssemblyRef Name="mscorlib" Version="1.3.0.3" Hash="0x00000000" Flags="0x00000000" />
+                //      <Type Name="&lt;Module&gt;" Hash="0x00000000" />
+                //      <Type Name="TestNFApp.Program" Hash="0x00000000" />
+                //  </Assembly>
+                //  <Assembly Name="mscorlib" Version="1.3.0.3" Hash="0x00000000" Flags="0x00000000" />
+                // </AssemblyGraph>
 
                 var xd = new XmlDocument();
                 xd.LoadXml(result);
 
                 // test for some points
-                Assert.IsNotNull(xd.SelectSingleNode("//AssemblyGraph/Assembly[@Name='nanoFramework.Tools.MetadataProcessor.Tests']/AssemblyRef[@Name='nanoFramework.Tools.MetadataProcessor.Core']"));
-                Assert.IsNotNull(xd.SelectSingleNode("//AssemblyGraph/Assembly[@Name='nanoFramework.Tools.MetadataProcessor.Tests']/Type[@Name='nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility.nanoDependencyGeneratorWriterTests']"));
-                Assert.IsNotNull(xd.SelectSingleNode("//AssemblyGraph/Assembly[@Name='nanoFramework.Tools.MetadataProcessor.Core']"));
+                Assert.IsNotNull(xd.SelectSingleNode("//AssemblyGraph/Assembly[@Name='TestNFApp']/AssemblyRef[@Name='mscorlib']"));
+                Assert.IsNotNull(xd.SelectSingleNode("//AssemblyGraph/Assembly[@Name='TestNFApp']/Type[@Name='TestNFApp.Program']"));
+                Assert.IsNotNull(xd.SelectSingleNode("//AssemblyGraph/Assembly[@Name='mscorlib']"));
 
 
             }
