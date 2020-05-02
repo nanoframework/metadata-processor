@@ -11,11 +11,11 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
 {
     public static class TestObjectHelper
     {
-        public static nanoTablesContext GetInitializedNanoTablesContext()
+        public static nanoTablesContext GetTestNFAppNanoTablesContext()
         {
             nanoTablesContext ret = null;
 
-            var assemblyDefinition = GetTestAssemblyDefinition();
+            var assemblyDefinition = GetTestNFAppAssemblyDefinition();
 
             ret = new nanoTablesContext(
                 assemblyDefinition, 
@@ -29,7 +29,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
             return ret;
         }
 
-        public static AssemblyDefinition GetTestAssemblyDefinition()
+        public static AssemblyDefinition GetTestNFAppAssemblyDefinition()
         {
             AssemblyDefinition ret = null;
 

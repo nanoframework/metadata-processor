@@ -17,7 +17,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
             var items = new List<object>() { 1, 2, 3 };
 
             var comparer = new ObjectComparer();
-            var context = TestObjectHelper.GetInitializedNanoTablesContext();
+            var context = TestObjectHelper.GetTestNFAppNanoTablesContext();
 
             // test
             var iut = new TestNanoReferenceTable(items, comparer, context);
@@ -31,7 +31,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
             var items = new List<object>() { 1, 2, 3 };
 
             var comparer = new ObjectComparer();
-            var context = TestObjectHelper.GetInitializedNanoTablesContext();
+            var context = TestObjectHelper.GetTestNFAppNanoTablesContext();
             var iut = new TestNanoReferenceTable(items, comparer, context);
 
             // test
@@ -51,7 +51,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
             var items = new List<object>() { 3, 2, 1 };
 
             var comparer = new ObjectComparer();
-            var context = TestObjectHelper.GetInitializedNanoTablesContext();
+            var context = TestObjectHelper.GetTestNFAppNanoTablesContext();
             var iut = new TestNanoReferenceTable(items, comparer, context);
             using (var ms = new MemoryStream())
             {

@@ -18,7 +18,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
             var typesAttributes = new Tuple<CustomAttribute, ushort>[0];
             var fieldsAttributes = new Tuple<CustomAttribute, ushort>[0];
             var methodsAttributes = new Tuple<CustomAttribute, ushort>[0];
-            var context = TestObjectHelper.GetInitializedNanoTablesContext();
+            var context = TestObjectHelper.GetTestNFAppNanoTablesContext();
 
             // test
             var iut = new nanoAttributesTable(typesAttributes, fieldsAttributes, methodsAttributes, context);
@@ -29,7 +29,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
         [TestMethod]
         public void RemoveUnusedItems_TypesAttributesTest()
         {
-            var assemblyDefinition = TestObjectHelper.GetTestAssemblyDefinition();
+            var assemblyDefinition = TestObjectHelper.GetTestNFAppAssemblyDefinition();
             var module = assemblyDefinition.Modules[0];
             var testClassTypeDefinition = module.Types.First(i => i.FullName == "TestNFApp.OneClassOverAll");
             Assert.IsTrue(testClassTypeDefinition.CustomAttributes.Count > 1);
@@ -45,7 +45,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
             var typesAttributes = new Tuple<CustomAttribute, ushort>[] { tuple0, tuple1 };
             var fieldsAttributes = new Tuple<CustomAttribute, ushort>[0];
             var methodsAttributes = new Tuple<CustomAttribute, ushort>[0];
-            var context = TestObjectHelper.GetInitializedNanoTablesContext();
+            var context = TestObjectHelper.GetTestNFAppNanoTablesContext();
 
             var iut = new nanoAttributesTable(typesAttributes, fieldsAttributes, methodsAttributes, context);
 
@@ -82,7 +82,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
         [TestMethod]
         public void RemoveUnusedItems_FieldAttributesTest()
         {
-            var assemblyDefinition = TestObjectHelper.GetTestAssemblyDefinition();
+            var assemblyDefinition = TestObjectHelper.GetTestNFAppAssemblyDefinition();
             var module = assemblyDefinition.Modules[0];
             var dummyFieldDefinition = module.Types.First(i => i.FullName == "TestNFApp.OneClassOverAll").Fields.First(i=>i.Name == "dummyField");
 
@@ -99,7 +99,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
             var typesAttributes = new Tuple<CustomAttribute, ushort>[0];
             var fieldsAttributes = new Tuple<CustomAttribute, ushort>[] { tuple0, tuple1 };
             var methodsAttributes = new Tuple<CustomAttribute, ushort>[0];
-            var context = TestObjectHelper.GetInitializedNanoTablesContext();
+            var context = TestObjectHelper.GetTestNFAppNanoTablesContext();
 
             var iut = new nanoAttributesTable(typesAttributes, fieldsAttributes, methodsAttributes, context);
 
@@ -136,7 +136,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
         [TestMethod]
         public void RemoveUnusedItems_MethodAttributesTest()
         {
-            var assemblyDefinition = TestObjectHelper.GetTestAssemblyDefinition();
+            var assemblyDefinition = TestObjectHelper.GetTestNFAppAssemblyDefinition();
             var module = assemblyDefinition.Modules[0];
             var methodDefinition = module.Types.First(i => i.FullName == "TestNFApp.OneClassOverAll").Methods.First(i => i.Name == "DummyMethod");
             Assert.IsTrue(methodDefinition.CustomAttributes.Count > 1);
@@ -152,7 +152,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
             var typesAttributes = new Tuple<CustomAttribute, ushort>[0];
             var fieldsAttributes = new Tuple<CustomAttribute, ushort>[0];
             var methodsAttributes = new Tuple<CustomAttribute, ushort>[] { tuple0, tuple1 };
-            var context = TestObjectHelper.GetInitializedNanoTablesContext();
+            var context = TestObjectHelper.GetTestNFAppNanoTablesContext();
 
             var iut = new nanoAttributesTable(typesAttributes, fieldsAttributes, methodsAttributes, context);
 
