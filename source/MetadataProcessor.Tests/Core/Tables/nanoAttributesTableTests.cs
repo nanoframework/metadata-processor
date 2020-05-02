@@ -29,9 +29,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
         [TestMethod]
         public void RemoveUnusedItems_TypesAttributesTest()
         {
-            var assemblyDefinition = TestObjectHelper.GetTestNFAppAssemblyDefinition();
-            var module = assemblyDefinition.Modules[0];
-            var testClassTypeDefinition = module.Types.First(i => i.FullName == "TestNFApp.OneClassOverAll");
+            var testClassTypeDefinition = TestObjectHelper.GetTestNFAppOneClassOverAllTypeDefinition();
             Assert.IsTrue(testClassTypeDefinition.CustomAttributes.Count > 1);
             var customAttribute0 = testClassTypeDefinition.CustomAttributes[0];
             var customAttribute1 = testClassTypeDefinition.CustomAttributes[1];
@@ -82,9 +80,8 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
         [TestMethod]
         public void RemoveUnusedItems_FieldAttributesTest()
         {
-            var assemblyDefinition = TestObjectHelper.GetTestNFAppAssemblyDefinition();
-            var module = assemblyDefinition.Modules[0];
-            var dummyFieldDefinition = module.Types.First(i => i.FullName == "TestNFApp.OneClassOverAll").Fields.First(i=>i.Name == "dummyField");
+            var typeDefinition = TestObjectHelper.GetTestNFAppOneClassOverAllTypeDefinition();
+            var dummyFieldDefinition = typeDefinition.Fields.First(i=>i.Name == "dummyField");
 
             Assert.IsTrue(dummyFieldDefinition.CustomAttributes.Count > 1);
             var customAttribute0 = dummyFieldDefinition.CustomAttributes[0];
@@ -136,9 +133,8 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
         [TestMethod]
         public void RemoveUnusedItems_MethodAttributesTest()
         {
-            var assemblyDefinition = TestObjectHelper.GetTestNFAppAssemblyDefinition();
-            var module = assemblyDefinition.Modules[0];
-            var methodDefinition = module.Types.First(i => i.FullName == "TestNFApp.OneClassOverAll").Methods.First(i => i.Name == "DummyMethod");
+            var testClassTypeDefinition = TestObjectHelper.GetTestNFAppOneClassOverAllTypeDefinition();
+            var methodDefinition = testClassTypeDefinition.Methods.First(i => i.Name == "DummyMethod");
             Assert.IsTrue(methodDefinition.CustomAttributes.Count > 1);
             var customAttribute0 = methodDefinition.CustomAttributes[0];
             var customAttribute1 = methodDefinition.CustomAttributes[1];

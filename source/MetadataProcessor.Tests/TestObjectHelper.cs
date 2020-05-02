@@ -42,6 +42,17 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
             return ret;
         }
 
+        public static TypeDefinition GetTestNFAppOneClassOverAllTypeDefinition()
+        {
+            TypeDefinition ret = null;
+
+            var assemblyDefinition = GetTestNFAppAssemblyDefinition();
+            var module = assemblyDefinition.Modules[0];
+            ret = module.Types.First(i => i.FullName == "TestNFApp.OneClassOverAll");
+
+            return ret;
+        }
+
         public static Stream GetResourceStream(string resourceName)
         {
             if (String.IsNullOrWhiteSpace(resourceName))
