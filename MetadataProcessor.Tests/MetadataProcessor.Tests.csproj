@@ -74,6 +74,7 @@
     <Compile Include="Core\Utility\LoadHintsAssemblyResolverTests.cs" />
     <Compile Include="Core\Utility\Crc32Tests.cs" />
     <Compile Include="Core\Utility\nanoBitmapProcessorTests.cs" />
+    <Compile Include="Core\Utility\nanoDependencyGeneratorWriterTests.cs" />
     <Compile Include="DummyCustomAttribute1.cs" />
     <Compile Include="DummyCustomAttribute2.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
