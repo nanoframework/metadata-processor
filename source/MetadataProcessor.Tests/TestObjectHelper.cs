@@ -1,4 +1,5 @@
-﻿using Mono.Cecil;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Mono.Cecil;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -52,6 +53,51 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
 
             return ret;
         }
+
+        public static MethodDefinition GetTestNFAppOneClassOverAllDummyMethodDefinition()
+        {
+            MethodDefinition ret = GetTestNFAppOneClassOverAllMethodDefinition("DummyMethod");
+
+            return ret;
+        }
+
+        public static MethodDefinition GetTestNFAppOneClassOverAllDummyStaticMethodDefinition()
+        {
+            MethodDefinition ret = GetTestNFAppOneClassOverAllMethodDefinition("DummyStaticMethod");
+
+            return ret;
+        }
+
+        public static MethodDefinition GetTestNFAppOneClassOverAllDummyMethodWithParamsDefinition()
+        {
+            MethodDefinition ret = GetTestNFAppOneClassOverAllMethodDefinition("DummyMethodWithParams");
+
+            return ret;
+        }
+
+        public static MethodDefinition GetTestNFAppOneClassOverAllDummyStaticMethodWithParamsDefinition()
+        {
+            MethodDefinition ret = GetTestNFAppOneClassOverAllMethodDefinition("DummyStaticMethodWithParams");
+            return ret;
+        }
+
+        public static MethodDefinition GetTestNFAppOneClassOverAllDummyExternMethodDefinition()
+        {
+            MethodDefinition ret = GetTestNFAppOneClassOverAllMethodDefinition("DummyExternMethod");
+            return ret;
+        }
+
+        public static MethodDefinition GetTestNFAppOneClassOverAllMethodDefinition(string methodName)
+        {
+            MethodDefinition ret = null;
+
+            var testClassTypeDefinition = TestObjectHelper.GetTestNFAppOneClassOverAllTypeDefinition();
+            ret = testClassTypeDefinition.Methods.First(i => i.Name == methodName);
+
+            return ret;
+        }
+
+
 
         public static Stream GetResourceStream(string resourceName)
         {

@@ -76,6 +76,7 @@
     <Compile Include="Core\Utility\nanoBitmapProcessorTests.cs" />
     <Compile Include="Core\Utility\nanoDependencyGeneratorWriterTests.cs" />
     <Compile Include="Core\Utility\nanoStringsConstantsTests.cs" />
+    <Compile Include="Core\Utility\NativeMethodsCrcTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestObjectHelper.cs" />
     <Compile Include="TestPreprocessedFiles.cs" />
