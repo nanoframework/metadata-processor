@@ -11,8 +11,8 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
         [TestMethod]
         public void WriteTest()
         {
-            var assemblyDefinition = TestObjectHelper.GetTestNFAppAssemblyDefinition();
             var nanoTablesContext = TestObjectHelper.GetTestNFAppNanoTablesContext();
+            var assemblyDefinition = nanoTablesContext.AssemblyDefinition;
 
             var iut = new nanoDependencyGeneratorWriter(assemblyDefinition, nanoTablesContext);
 

@@ -133,8 +133,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
         [TestMethod]
         public void RemoveUnusedItems_MethodAttributesTest()
         {
-            var testClassTypeDefinition = TestObjectHelper.GetTestNFAppOneClassOverAllTypeDefinition();
-            var methodDefinition = testClassTypeDefinition.Methods.First(i => i.Name == "DummyMethod");
+            var methodDefinition = TestObjectHelper.GetTestNFAppOneClassOverAllDummyMethodDefinition();
             Assert.IsTrue(methodDefinition.CustomAttributes.Count > 1);
             var customAttribute0 = methodDefinition.CustomAttributes[0];
             var customAttribute1 = methodDefinition.CustomAttributes[1];
