@@ -13,8 +13,8 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Extensions
         {
             var mscorlibAssemblyDefinition = TestObjectHelper.GetmscorlibAssemblyDefinition();
 
-            var multicastDelegateTypeDefinition = mscorlibAssemblyDefinition.MainModule.Types.First(i => i.FullName == "System.Action");
-            Assert.AreEqual("MulticastDelegate", multicastDelegateTypeDefinition.BaseType.Name);
+            var multicastDelegateTypeDefinition = mscorlibAssemblyDefinition.MainModule.Types.First(i => i.FullName == typeof(System.Action).FullName);
+            Assert.AreEqual(typeof(MulticastDelegate).Name, multicastDelegateTypeDefinition.BaseType.Name);
 
             // test
             var r = multicastDelegateTypeDefinition.IncludeInStub();
@@ -23,7 +23,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Extensions
 
 
 
-            var classTypeDefinition = mscorlibAssemblyDefinition.MainModule.Types.First(i => i.FullName == "System.IO.Path");
+            var classTypeDefinition = mscorlibAssemblyDefinition.MainModule.Types.First(i => i.FullName == typeof(System.IO.Path).FullName);
 
             // test
             r = classTypeDefinition.IncludeInStub();
@@ -32,7 +32,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Extensions
 
 
             
-            var valueTypeDefinition = mscorlibAssemblyDefinition.MainModule.Types.First(i => i.FullName == "System.Int32");
+            var valueTypeDefinition = mscorlibAssemblyDefinition.MainModule.Types.First(i => i.FullName == typeof(System.Int32).FullName);
 
             // test
             r = valueTypeDefinition.IncludeInStub();
@@ -41,7 +41,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Extensions
 
             
 
-            var interfaceTypeDefinition = mscorlibAssemblyDefinition.MainModule.Types.First(i => i.FullName == "System.ICloneable");
+            var interfaceTypeDefinition = mscorlibAssemblyDefinition.MainModule.Types.First(i => i.FullName == typeof(System.ICloneable).FullName);
 
             // test
             r = interfaceTypeDefinition.IncludeInStub();
