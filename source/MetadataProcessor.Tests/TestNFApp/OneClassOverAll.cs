@@ -38,7 +38,12 @@ namespace TestNFApp
 #pragma warning disable CS0626
         public extern void DummyExternMethod();
 #pragma warning restore CS0626
-    }
 
+        public void DummyMethodWithUglyParams(ref int p5, byte[] p6, OneClassOverAll p7, OneClassOverAll[] p8, DateTime p9, double p10, ref OneClassOverAll p11, out OneClassOverAll p12, out long p13)
+        {
+            p12 = null;
+            p13 = 0;
+        }
+    }
 
 }

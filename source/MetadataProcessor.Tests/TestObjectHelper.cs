@@ -87,6 +87,12 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
             return ret;
         }
 
+        public static MethodDefinition GetTestNFAppOneClassOverAllDummyMethodWithUglyParamsMethodDefinition()
+        {
+            MethodDefinition ret = GetTestNFAppOneClassOverAllMethodDefinition("DummyMethodWithUglyParams");
+            return ret;
+        }
+
         public static MethodDefinition GetTestNFAppOneClassOverAllMethodDefinition(string methodName)
         {
             MethodDefinition ret = null;
