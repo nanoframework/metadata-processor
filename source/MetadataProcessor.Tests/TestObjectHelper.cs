@@ -43,6 +43,16 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
             return ret;
         }
 
+        public static AssemblyDefinition GetmscorlibAssemblyDefinition()
+        {
+            AssemblyDefinition ret = null;
+
+            var mscorlibAssembly = typeof(System.Object).Assembly;
+            ret = AssemblyDefinition.ReadAssembly(mscorlibAssembly.Location);
+
+            return ret;
+        }
+
         public static TypeDefinition GetTestNFAppOneClassOverAllTypeDefinition()
         {
             TypeDefinition ret = null;

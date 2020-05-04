@@ -44,6 +44,9 @@ namespace TestNFApp
             p12 = null;
             p13 = 0;
         }
+
+        public class SubClass
+        { }
     }
 
 }
