@@ -55,8 +55,8 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Extensions
             var nanoTablesContext = TestObjectHelper.GetTestNFAppNanoTablesContext();
             Assert.IsFalse(nanoTablesContext.ClassNamesToExclude.Any());
 
-            var oneClassOverAllTypeDefinition = nanoTablesContext.TypeDefinitionTable.Items.First(i => i.FullName == "TestNFApp.OneClassOverAll");
-            var oneClassOverAllSubClassTypeDefinition = nanoTablesContext.TypeDefinitionTable.Items.First(i => i.FullName == "TestNFApp.OneClassOverAll/SubClass");
+            var oneClassOverAllTypeDefinition = TestObjectHelper.GetTestNFAppOneClassOverAllTypeDefinition(nanoTablesContext.AssemblyDefinition);
+            var oneClassOverAllSubClassTypeDefinition = TestObjectHelper.GetTestNFAppOneClassOverAllSubClassTypeDefinition(nanoTablesContext.AssemblyDefinition);
 
             // test
             var r = oneClassOverAllTypeDefinition.IsClassToExclude();

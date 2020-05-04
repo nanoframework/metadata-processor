@@ -53,62 +53,76 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
             return ret;
         }
 
-        public static TypeDefinition GetTestNFAppOneClassOverAllTypeDefinition()
+        public static TypeDefinition GetTestNFAppOneClassOverAllTypeDefinition(AssemblyDefinition assemblyDefinition)
         {
             TypeDefinition ret = null;
 
-            var assemblyDefinition = GetTestNFAppAssemblyDefinition();
             var module = assemblyDefinition.Modules[0];
             ret = module.Types.First(i => i.FullName == "TestNFApp.OneClassOverAll");
 
             return ret;
         }
 
-        public static MethodDefinition GetTestNFAppOneClassOverAllDummyMethodDefinition()
+        public static TypeDefinition GetTestNFAppOneClassOverAllSubClassTypeDefinition(AssemblyDefinition assemblyDefinition)
         {
-            MethodDefinition ret = GetTestNFAppOneClassOverAllMethodDefinition("DummyMethod");
+            TypeDefinition ret = null;
+
+            var oneClassOverAllTypeDefinition = GetTestNFAppOneClassOverAllTypeDefinition(assemblyDefinition);
+            ret = oneClassOverAllTypeDefinition.NestedTypes.First(i => i.Name == "SubClass");
 
             return ret;
         }
 
-        public static MethodDefinition GetTestNFAppOneClassOverAllDummyStaticMethodDefinition()
+        public static MethodDefinition GetTestNFAppOneClassOverAllDummyMethodDefinition(TypeDefinition oneClassOverAllTypeDefinition)
         {
-            MethodDefinition ret = GetTestNFAppOneClassOverAllMethodDefinition("DummyStaticMethod");
+            MethodDefinition ret = GetTestNFAppOneClassOverAllMethodDefinition(oneClassOverAllTypeDefinition, "DummyMethod");
 
             return ret;
         }
 
-        public static MethodDefinition GetTestNFAppOneClassOverAllDummyMethodWithParamsDefinition()
+        public static MethodDefinition GetTestNFAppOneClassOverAllDummyStaticMethodDefinition(TypeDefinition oneClassOverAllTypeDefinition)
         {
-            MethodDefinition ret = GetTestNFAppOneClassOverAllMethodDefinition("DummyMethodWithParams");
+            MethodDefinition ret = GetTestNFAppOneClassOverAllMethodDefinition(oneClassOverAllTypeDefinition, "DummyStaticMethod");
 
             return ret;
         }
 
-        public static MethodDefinition GetTestNFAppOneClassOverAllDummyStaticMethodWithParamsDefinition()
+        public static MethodDefinition GetTestNFAppOneClassOverAllDummyMethodWithParamsDefinition(TypeDefinition oneClassOverAllTypeDefinition)
         {
-            MethodDefinition ret = GetTestNFAppOneClassOverAllMethodDefinition("DummyStaticMethodWithParams");
+            MethodDefinition ret = GetTestNFAppOneClassOverAllMethodDefinition(oneClassOverAllTypeDefinition, "DummyMethodWithParams");
+
             return ret;
         }
 
-        public static MethodDefinition GetTestNFAppOneClassOverAllDummyExternMethodDefinition()
+        public static MethodDefinition GetTestNFAppOneClassOverAllDummyStaticMethodWithParamsDefinition(TypeDefinition oneClassOverAllTypeDefinition)
         {
-            MethodDefinition ret = GetTestNFAppOneClassOverAllMethodDefinition("DummyExternMethod");
+            MethodDefinition ret = GetTestNFAppOneClassOverAllMethodDefinition(oneClassOverAllTypeDefinition, "DummyStaticMethodWithParams");
             return ret;
         }
 
-        public static MethodDefinition GetTestNFAppOneClassOverAllDummyMethodWithUglyParamsMethodDefinition()
+        public static MethodDefinition GetTestNFAppOneClassOverAllDummyExternMethodDefinition(TypeDefinition oneClassOverAllTypeDefinition)
         {
-            MethodDefinition ret = GetTestNFAppOneClassOverAllMethodDefinition("DummyMethodWithUglyParams");
+            MethodDefinition ret = GetTestNFAppOneClassOverAllMethodDefinition(oneClassOverAllTypeDefinition, "DummyExternMethod");
             return ret;
         }
 
-        public static MethodDefinition GetTestNFAppOneClassOverAllMethodDefinition(string methodName)
+        public static MethodDefinition GetTestNFAppOneClassOverAllDummyMethodWithUglyParamsMethodDefinition(TypeDefinition oneClassOverAllTypeDefinition)
+        {
+            MethodDefinition ret = GetTestNFAppOneClassOverAllMethodDefinition(oneClassOverAllTypeDefinition, "DummyMethodWithUglyParams");
+            return ret;
+        }
+
+        public static MethodDefinition GetTestNFAppOneClassOverAllUglyAddMethodDefinition(TypeDefinition oneClassOverAllTypeDefinition)
+        {
+            MethodDefinition ret = GetTestNFAppOneClassOverAllMethodDefinition(oneClassOverAllTypeDefinition, "UglyAdd");
+            return ret;
+        }
+
+        public static MethodDefinition GetTestNFAppOneClassOverAllMethodDefinition(TypeDefinition oneClassOverAllTypeDefinition, string methodName)
         {
             MethodDefinition ret = null;
 
-            var testClassTypeDefinition = TestObjectHelper.GetTestNFAppOneClassOverAllTypeDefinition();
-            ret = testClassTypeDefinition.Methods.First(i => i.Name == methodName);
+            ret = oneClassOverAllTypeDefinition.Methods.First(i => i.Name == methodName);
 
             return ret;
         }

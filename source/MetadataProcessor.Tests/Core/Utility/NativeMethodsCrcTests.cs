@@ -11,7 +11,8 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
         [TestMethod]
         public void GetClassNameTest()
         {
-            var typeDefinition = TestObjectHelper.GetTestNFAppOneClassOverAllTypeDefinition();
+            var nanoTablesContext = TestObjectHelper.GetTestNFAppNanoTablesContext();
+            var typeDefinition = TestObjectHelper.GetTestNFAppOneClassOverAllTypeDefinition(nanoTablesContext.AssemblyDefinition);
 
             // test
             var r = NativeMethodsCrc.GetClassName(typeDefinition);
@@ -27,7 +28,9 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
         [TestMethod]
         public void GetMethodNameTest()
         {
-            var methodDefinition = TestObjectHelper.GetTestNFAppOneClassOverAllDummyMethodDefinition();
+            var nanoTablesContext = TestObjectHelper.GetTestNFAppNanoTablesContext();
+            var typeDefinition = TestObjectHelper.GetTestNFAppOneClassOverAllTypeDefinition(nanoTablesContext.AssemblyDefinition);
+            var methodDefinition = TestObjectHelper.GetTestNFAppOneClassOverAllDummyMethodDefinition(typeDefinition);
 
             // test
             var r = NativeMethodsCrc.GetMethodName(methodDefinition);
@@ -36,7 +39,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
 
 
 
-            methodDefinition = TestObjectHelper.GetTestNFAppOneClassOverAllDummyMethodWithParamsDefinition();
+            methodDefinition = TestObjectHelper.GetTestNFAppOneClassOverAllDummyMethodWithParamsDefinition(typeDefinition);
 
             // test
             r = NativeMethodsCrc.GetMethodName(methodDefinition);
@@ -45,7 +48,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
 
 
 
-            methodDefinition = TestObjectHelper.GetTestNFAppOneClassOverAllDummyStaticMethodDefinition();
+            methodDefinition = TestObjectHelper.GetTestNFAppOneClassOverAllDummyStaticMethodDefinition(typeDefinition);
 
             // test
             r = NativeMethodsCrc.GetMethodName(methodDefinition);
@@ -54,7 +57,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
 
 
 
-            methodDefinition = TestObjectHelper.GetTestNFAppOneClassOverAllDummyStaticMethodWithParamsDefinition();
+            methodDefinition = TestObjectHelper.GetTestNFAppOneClassOverAllDummyStaticMethodWithParamsDefinition(typeDefinition);
 
             // test
             r = NativeMethodsCrc.GetMethodName(methodDefinition);
@@ -122,8 +125,9 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
         public void CrcWithMethodDefinitionTest()
         {
             var assemblyDefinition = TestObjectHelper.GetTestNFAppAssemblyDefinition();
-            var nonExternMethodDefinition = TestObjectHelper.GetTestNFAppOneClassOverAllDummyMethodDefinition();
-            var externMethodDefinition = TestObjectHelper.GetTestNFAppOneClassOverAllDummyExternMethodDefinition();
+            var typeDefinition = TestObjectHelper.GetTestNFAppOneClassOverAllTypeDefinition(assemblyDefinition);
+            var nonExternMethodDefinition = TestObjectHelper.GetTestNFAppOneClassOverAllDummyMethodDefinition(typeDefinition);
+            var externMethodDefinition = TestObjectHelper.GetTestNFAppOneClassOverAllDummyExternMethodDefinition(typeDefinition);
 
             var iut = new NativeMethodsCrc(assemblyDefinition, new List<string>());
 

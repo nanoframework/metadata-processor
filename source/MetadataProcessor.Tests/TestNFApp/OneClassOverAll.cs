@@ -45,6 +45,25 @@ namespace TestNFApp
             p13 = 0;
         }
 
+        public int UglyAdd(int left, int right)
+        {
+            int ret = 0;
+            
+            try
+            {
+                ret = left + right;
+            }
+            catch (Exception ex)
+            {
+                var wrapperException = new ApplicationException("blabla", ex);
+
+                // hehe
+                ret = wrapperException.GetHashCode();
+            }
+
+            return ret;
+        }
+
         public class SubClass
         { }
     }

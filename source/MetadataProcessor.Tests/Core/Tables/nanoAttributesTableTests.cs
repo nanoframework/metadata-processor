@@ -29,7 +29,9 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
         [TestMethod]
         public void RemoveUnusedItems_TypesAttributesTest()
         {
-            var testClassTypeDefinition = TestObjectHelper.GetTestNFAppOneClassOverAllTypeDefinition();
+            var nanoTablesContext = TestObjectHelper.GetTestNFAppNanoTablesContext();
+            var testClassTypeDefinition = TestObjectHelper.GetTestNFAppOneClassOverAllTypeDefinition(nanoTablesContext.AssemblyDefinition);
+
             Assert.IsTrue(testClassTypeDefinition.CustomAttributes.Count > 1);
             var customAttribute0 = testClassTypeDefinition.CustomAttributes[0];
             var customAttribute1 = testClassTypeDefinition.CustomAttributes[1];
@@ -80,7 +82,9 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
         [TestMethod]
         public void RemoveUnusedItems_FieldAttributesTest()
         {
-            var typeDefinition = TestObjectHelper.GetTestNFAppOneClassOverAllTypeDefinition();
+            var nanoTablesContext = TestObjectHelper.GetTestNFAppNanoTablesContext();
+            var typeDefinition = TestObjectHelper.GetTestNFAppOneClassOverAllTypeDefinition(nanoTablesContext.AssemblyDefinition);
+
             var dummyFieldDefinition = typeDefinition.Fields.First(i=>i.Name == "dummyField");
 
             Assert.IsTrue(dummyFieldDefinition.CustomAttributes.Count > 1);
@@ -133,7 +137,9 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
         [TestMethod]
         public void RemoveUnusedItems_MethodAttributesTest()
         {
-            var methodDefinition = TestObjectHelper.GetTestNFAppOneClassOverAllDummyMethodDefinition();
+            var nanoTablesContext = TestObjectHelper.GetTestNFAppNanoTablesContext();
+            var typeDefinition = TestObjectHelper.GetTestNFAppOneClassOverAllTypeDefinition(nanoTablesContext.AssemblyDefinition);
+            var methodDefinition = TestObjectHelper.GetTestNFAppOneClassOverAllDummyMethodDefinition(typeDefinition);
             Assert.IsTrue(methodDefinition.CustomAttributes.Count > 1);
             var customAttribute0 = methodDefinition.CustomAttributes[0];
             var customAttribute1 = methodDefinition.CustomAttributes[1];

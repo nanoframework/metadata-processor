@@ -11,7 +11,9 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Extensions
         [TestMethod]
         public void TypeToStringTest()
         {
-            var methodDefinition = TestObjectHelper.GetTestNFAppOneClassOverAllDummyMethodWithUglyParamsMethodDefinition();
+            var assemblyDefinition = TestObjectHelper.GetTestNFAppAssemblyDefinition();
+            var typeDefinition = TestObjectHelper.GetTestNFAppOneClassOverAllTypeDefinition(assemblyDefinition);
+            var methodDefinition = TestObjectHelper.GetTestNFAppOneClassOverAllDummyMethodWithUglyParamsMethodDefinition(typeDefinition);
 
             var refIntParameterDefinition = methodDefinition.Parameters.First(i => i.Name == "p5");
             Assert.IsInstanceOfType(refIntParameterDefinition.ParameterType, typeof(Mono.Cecil.ByReferenceType));
