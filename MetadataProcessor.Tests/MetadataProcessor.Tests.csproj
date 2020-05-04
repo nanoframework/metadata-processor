@@ -73,6 +73,7 @@
     <Compile Include="Core\Extensions\ByteArrayExtensionsTests.cs" />
     <Compile Include="Core\Extensions\ParameterDefintionExtensionsTests.cs" />
     <Compile Include="Core\Extensions\TypeDefinitionExtensionsTests.cs" />
+    <Compile Include="Core\Extensions\TypeReferenceExtensionsTests.cs" />
     <Compile Include="Core\Tables\nanoAttributesTableTests.cs" />
     <Compile Include="Core\Tables\nanoReferenceTableBaseTests.cs" />
     <Compile Include="Core\Utility\LoadHintsAssemblyResolverTests.cs" />
