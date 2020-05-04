@@ -70,6 +70,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Core\Endianness\nanoBinaryWriterTests.cs" />
+    <Compile Include="Core\Extensions\ByteArrayExtensionsTests.cs" />
     <Compile Include="Core\Tables\nanoAttributesTableTests.cs" />
     <Compile Include="Core\Tables\nanoReferenceTableBaseTests.cs" />
     <Compile Include="Core\Utility\LoadHintsAssemblyResolverTests.cs" />
