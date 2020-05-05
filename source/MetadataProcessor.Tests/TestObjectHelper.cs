@@ -165,5 +165,26 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
             return ret;
         }
 
+        public static byte[] DoWithNanoBinaryWriter(Func<BinaryWriter, nanoBinaryWriter> writerCreatorFunc, Action<MemoryStream, BinaryWriter, nanoBinaryWriter> actionToDo)
+        {
+            byte[] ret = null;
+
+            using (var ms = new MemoryStream())
+            {
+                using (var bw = new BinaryWriter(ms, Encoding.Default, true))
+                {
+                    var iut = writerCreatorFunc(bw);
+
+                    actionToDo(ms, bw, iut);
+
+                    bw.Flush();
+
+                    ret = ms.ToArray();
+                }
+            }
+
+            return ret;
+        }
+
     }
 }

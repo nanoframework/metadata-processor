@@ -52,31 +52,24 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
             // test
             iut.RemoveUnusedItems(referencedMetadataTokens);
 
-            using (var ms = new MemoryStream())
+            var bytesWritten = TestObjectHelper.DoWithNanoBinaryWriter((bw) => nanoBinaryWriter.CreateLittleEndianBinaryWriter(bw), (ms, bw, writer) =>
             {
-                using (var bw = new BinaryWriter(ms, Encoding.Default, true))
+                // test
+                iut.Write(writer);
+            });
+
+            var methodReferenceId = context.GetMethodReferenceId(customAttribute1.Constructor);
+            var signatureId = context.SignaturesTable.GetOrCreateSignatureId(customAttribute1);
+            CollectionAssert.AreEqual(
+                new byte[]
                 {
-                    var writer = nanoBinaryWriter.CreateLittleEndianBinaryWriter(bw);
-                    iut.Write(writer);
-
-                    bw.Flush();
-
-                    var bytesWritten = ms.ToArray();
-
-                    var methodReferenceId = context.GetMethodReferenceId(customAttribute1.Constructor);
-                    var signatureId = context.SignaturesTable.GetOrCreateSignatureId(customAttribute1);
-                    CollectionAssert.AreEqual(
-                        new byte[]
-                        {
-                            0x04, 0,
-                            (byte)(tuple1.Item2 & 0xff), (byte)(tuple1.Item2 >> 8),
-                            (byte)(methodReferenceId & 0xff), (byte)(methodReferenceId >> 8),
-                            (byte)(signatureId & 0xff), (byte)(signatureId >> 8),
-                        },
-                        bytesWritten,
-                        String.Join(", ", bytesWritten.Select(i => i.ToString("X"))));
-                }
-            }
+                    0x04, 0,
+                    (byte)(tuple1.Item2 & 0xff), (byte)(tuple1.Item2 >> 8),
+                    (byte)(methodReferenceId & 0xff), (byte)(methodReferenceId >> 8),
+                    (byte)(signatureId & 0xff), (byte)(signatureId >> 8),
+                },
+                bytesWritten,
+                String.Join(", ", bytesWritten.Select(i => i.ToString("X"))));
         }
 
         [TestMethod]
@@ -107,31 +100,24 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
             // test
             iut.RemoveUnusedItems(referencedMetadataTokens);
 
-            using (var ms = new MemoryStream())
+            var bytesWritten = TestObjectHelper.DoWithNanoBinaryWriter((bw) => nanoBinaryWriter.CreateLittleEndianBinaryWriter(bw), (ms, bw, writer) =>
             {
-                using (var bw = new BinaryWriter(ms, Encoding.Default, true))
+                // test
+                iut.Write(writer);
+            });
+
+            var methodReferenceId = context.GetMethodReferenceId(customAttribute1.Constructor);
+            var signatureId = context.SignaturesTable.GetOrCreateSignatureId(customAttribute1);
+            CollectionAssert.AreEqual(
+                new byte[]
                 {
-                    var writer = nanoBinaryWriter.CreateLittleEndianBinaryWriter(bw);
-                    iut.Write(writer);
-
-                    bw.Flush();
-
-                    var bytesWritten = ms.ToArray();
-
-                    var methodReferenceId = context.GetMethodReferenceId(customAttribute1.Constructor);
-                    var signatureId = context.SignaturesTable.GetOrCreateSignatureId(customAttribute1);
-                    CollectionAssert.AreEqual(
-                        new byte[]
-                        {
-                            0x05, 0,
-                            (byte)(tuple1.Item2 & 0xff), (byte)(tuple1.Item2 >> 8),
-                            (byte)(methodReferenceId & 0xff), (byte)(methodReferenceId >> 8),
-                            (byte)(signatureId & 0xff), (byte)(signatureId >> 8),
-                        },
-                        bytesWritten,
-                        String.Join(", ", bytesWritten.Select(i => i.ToString("X"))));
-                }
-            }
+                    0x05, 0,
+                    (byte)(tuple1.Item2 & 0xff), (byte)(tuple1.Item2 >> 8),
+                    (byte)(methodReferenceId & 0xff), (byte)(methodReferenceId >> 8),
+                    (byte)(signatureId & 0xff), (byte)(signatureId >> 8),
+                },
+                bytesWritten,
+                String.Join(", ", bytesWritten.Select(i => i.ToString("X"))));
         }
 
         [TestMethod]
@@ -160,31 +146,24 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
             // test
             iut.RemoveUnusedItems(referencedMetadataTokens);
 
-            using (var ms = new MemoryStream())
+            var bytesWritten = TestObjectHelper.DoWithNanoBinaryWriter((bw) => nanoBinaryWriter.CreateLittleEndianBinaryWriter(bw), (ms, bw, writer) =>
             {
-                using (var bw = new BinaryWriter(ms, Encoding.Default, true))
+                // test
+                iut.Write(writer);
+            });
+
+            var methodReferenceId = context.GetMethodReferenceId(customAttribute1.Constructor);
+            var signatureId = context.SignaturesTable.GetOrCreateSignatureId(customAttribute1);
+            CollectionAssert.AreEqual(
+                new byte[]
                 {
-                    var writer = nanoBinaryWriter.CreateLittleEndianBinaryWriter(bw);
-                    iut.Write(writer);
-
-                    bw.Flush();
-
-                    var bytesWritten = ms.ToArray();
-
-                    var methodReferenceId = context.GetMethodReferenceId(customAttribute1.Constructor);
-                    var signatureId = context.SignaturesTable.GetOrCreateSignatureId(customAttribute1);
-                    CollectionAssert.AreEqual(
-                        new byte[]
-                        {
-                            0x06, 0,
-                            (byte)(tuple1.Item2 & 0xff), (byte)(tuple1.Item2 >> 8),
-                            (byte)(methodReferenceId & 0xff), (byte)(methodReferenceId >> 8),
-                            (byte)(signatureId & 0xff), (byte)(signatureId >> 8),
-                        },
-                        bytesWritten,
-                        String.Join(", ", bytesWritten.Select(i => i.ToString("X"))));
-                }
-            }
+                    0x06, 0,
+                    (byte)(tuple1.Item2 & 0xff), (byte)(tuple1.Item2 >> 8),
+                    (byte)(methodReferenceId & 0xff), (byte)(methodReferenceId >> 8),
+                    (byte)(signatureId & 0xff), (byte)(signatureId >> 8),
+                },
+                bytesWritten,
+                String.Join(", ", bytesWritten.Select(i => i.ToString("X"))));
         }
     }
 

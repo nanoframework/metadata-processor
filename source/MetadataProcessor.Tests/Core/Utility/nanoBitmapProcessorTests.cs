@@ -38,23 +38,14 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
 
                 var iut = new nanoBitmapProcessor(bmp);
 
-                using (var ms = new MemoryStream())
+                var bytesWritten = TestObjectHelper.DoWithNanoBinaryWriter((bw) => nanoBinaryWriter.CreateLittleEndianBinaryWriter(bw), (ms, bw, writer) =>
                 {
-                    using (var bw = new BinaryWriter(ms, Encoding.Default, true))
-                    {
-                        var writer = nanoBinaryWriter.CreateLittleEndianBinaryWriter(bw);
+                    // test 
+                    iut.Process(writer);
+                });
 
-                        // test
-                        iut.Process(writer);
-
-                        bw.Flush();
-
-                        var bytesWritten = ms.ToArray();
-                        var expected = TestObjectHelper.GetResourceStreamContent(expectedResultResourceName);
-
-                        CollectionAssert.AreEqual(expected, bytesWritten);
-                    }
-                }
+                var expected = TestObjectHelper.GetResourceStreamContent(expectedResultResourceName);
+                CollectionAssert.AreEqual(expected, bytesWritten);
 
 
             }

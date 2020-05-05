@@ -279,15 +279,8 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Endianness
 
         private void DoWriterWriteTest(Func<BinaryWriter, nanoBinaryWriter> writerCreatorFunc, Action<nanoBinaryWriter> writerAction, byte[] expectedBytesWritten)
         {
-            DoWriterTest(writerCreatorFunc, (ms, bw, iut) =>
-            {
-                writerAction(iut);
-
-                bw.Flush();
-
-                var bytesWritten = ms.ToArray();
-                CollectionAssert.AreEqual(expectedBytesWritten, bytesWritten, BitConverter.ToString(bytesWritten));
-            });
+            var bytesWritten = TestObjectHelper.DoWithNanoBinaryWriter(writerCreatorFunc, (ms, bw, writer) => writerAction(writer));
+            CollectionAssert.AreEqual(expectedBytesWritten, bytesWritten, BitConverter.ToString(bytesWritten));
         }
 
         [TestMethod]
@@ -305,7 +298,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Endianness
 
         private void DoWriterGetMemoryBasedCloneTest(Func<BinaryWriter, nanoBinaryWriter> writerCreatorFunc)
         {
-            DoWriterTest(writerCreatorFunc, (ms, bw, iut) =>
+            TestObjectHelper.DoWithNanoBinaryWriter(writerCreatorFunc, (ms, bw, iut) =>
             {
                 using (var ms2 = new MemoryStream())
                 {
@@ -334,7 +327,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Endianness
 
         private void DoWriterBaseStreamTest(Func<BinaryWriter, nanoBinaryWriter> writerCreatorFunc)
         {
-            DoWriterTest(writerCreatorFunc, (ms, bw, iut) =>
+            TestObjectHelper.DoWithNanoBinaryWriter(writerCreatorFunc, (ms, bw, iut) =>
             {
                 // test
                 Assert.AreSame(ms, iut.BaseStream);
@@ -357,24 +350,12 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Endianness
 
         private void DoWriterIsBigEndianTest(Func<BinaryWriter, nanoBinaryWriter> writerCreatorFunc, bool expectedIsBigEndianValue)
         {
-            DoWriterTest(writerCreatorFunc, (ms, bw, iut) =>
+            TestObjectHelper.DoWithNanoBinaryWriter(writerCreatorFunc, (ms, bw, iut) =>
                 {
                     // test
                     Assert.AreEqual(expectedIsBigEndianValue, iut.IsBigEndian);
                 });
         }
 
-        private void DoWriterTest(Func<BinaryWriter, nanoBinaryWriter> writerCreatorFunc, Action<MemoryStream, BinaryWriter, nanoBinaryWriter> testAction)
-        {
-            using (var ms = new MemoryStream())
-            {
-                using (var bw = new BinaryWriter(ms, Encoding.Default, true))
-                {
-                    var iut = writerCreatorFunc(bw);
-
-                    testAction(ms, bw, iut);
-                }
-            }
-        }
     }
 }
