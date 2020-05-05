@@ -25,11 +25,23 @@ namespace TestNFApp
         public static void DummyStaticMethod()
         { }
 
+        public static int DummyStaticMethodWithRetval()
+        {
+            return 2;
+        }
+
         public void DummyMethodWithParams(int p1, string p2)
         {
             var tmp = dummyField;
             dummyField = tmp;
         }
+
+        public int DummyMethodWithRetval()
+        {
+            dummyField = "just keeping compiler happy";
+            return 2;
+        }
+
 
         public static void DummyStaticMethodWithParams(long p3, DateTime p4)
         { }
@@ -66,6 +78,18 @@ namespace TestNFApp
 
         public class SubClass
         { }
+
+        public OneClassOverAll()
+        {
+        }
+
+        public OneClassOverAll(int p1, int p2)
+        {
+        }
+
+        public OneClassOverAll(int p1, int p2, int p3)
+        {
+        }
     }
 
 }

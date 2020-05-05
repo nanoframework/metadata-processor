@@ -78,7 +78,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
             var nanoTablesContext = TestObjectHelper.GetTestNFAppNanoTablesContext();
             var typeDefinition = TestObjectHelper.GetTestNFAppOneClassOverAllTypeDefinition(nanoTablesContext.AssemblyDefinition);
 
-            var dummyFieldDefinition = typeDefinition.Fields.First(i=>i.Name == "dummyField");
+            var dummyFieldDefinition = TestObjectHelper.GetTestNFAppOneClassOverAllDummyFieldDefinition(typeDefinition);
 
             Assert.IsTrue(dummyFieldDefinition.CustomAttributes.Count > 1);
             var customAttribute0 = dummyFieldDefinition.CustomAttributes[0];

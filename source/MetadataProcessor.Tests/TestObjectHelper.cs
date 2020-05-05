@@ -80,9 +80,24 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
             return ret;
         }
 
+        public static MethodDefinition GetTestNFAppOneClassOverAllDummyMethodWithRetvalDefinition(TypeDefinition oneClassOverAllTypeDefinition)
+        {
+            MethodDefinition ret = GetTestNFAppOneClassOverAllMethodDefinition(oneClassOverAllTypeDefinition, "DummyMethodWithRetval");
+
+            return ret;
+        }
+        
+
         public static MethodDefinition GetTestNFAppOneClassOverAllDummyStaticMethodDefinition(TypeDefinition oneClassOverAllTypeDefinition)
         {
             MethodDefinition ret = GetTestNFAppOneClassOverAllMethodDefinition(oneClassOverAllTypeDefinition, "DummyStaticMethod");
+
+            return ret;
+        }
+
+        public static MethodDefinition GetTestNFAppOneClassOverAllDummyStaticMethodWithRetvalDefinition(TypeDefinition oneClassOverAllTypeDefinition)
+        {
+            MethodDefinition ret = GetTestNFAppOneClassOverAllMethodDefinition(oneClassOverAllTypeDefinition, "DummyStaticMethodWithRetval");
 
             return ret;
         }
@@ -124,6 +139,12 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
 
             ret = oneClassOverAllTypeDefinition.Methods.First(i => i.Name == methodName);
 
+            return ret;
+        }
+
+        public static FieldDefinition GetTestNFAppOneClassOverAllDummyFieldDefinition(TypeDefinition oneClassOverAllTypeDefinition)
+        {
+            FieldDefinition ret = oneClassOverAllTypeDefinition.Fields.First(i => i.Name == "dummyField");
             return ret;
         }
 
@@ -184,6 +205,16 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
             }
 
             return ret;
+        }
+
+        public static void AdjustMethodBodyOffsets(Mono.Cecil.Cil.MethodBody methodBody)
+        {
+            var offset = 0;
+            foreach (var instruction in methodBody.Instructions)
+            {
+                instruction.Offset = offset;
+                offset += instruction.GetSize();
+            }
         }
 
     }
