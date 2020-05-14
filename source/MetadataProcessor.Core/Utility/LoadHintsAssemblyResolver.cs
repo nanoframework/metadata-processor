@@ -12,9 +12,8 @@ using System.Reflection;
 namespace nanoFramework.Tools.MetadataProcessor
 {
     /// <summary>
-    /// Implements special external .NET nanoFramework assemblies resolution logic.
-    /// MetadataTransformer gets maps with pair assembly name and assebly path in command line,
-    /// if we unable to load assemlby using default resolver we will try to use this map.
+    /// Need to use .NET nanoFramework assemblies for resolution.
+    /// When calling MDP it's required to provide load hints with pairs of assembly name and assebly path.
     /// </summary>
     public sealed class LoadHintsAssemblyResolver : BaseAssemblyResolver
     {
@@ -38,36 +37,37 @@ namespace nanoFramework.Tools.MetadataProcessor
         {
             try
             {
-                return base.Resolve(name);
-            }
-            catch (Exception)
-            {
-                string assemblyFileName;
-                if (_loadHints.TryGetValue(name.Name, out assemblyFileName))
+                if (_loadHints.TryGetValue(name.Name, out string assemblyFileName))
                 {
                     return AssemblyDefinition.ReadAssembly(assemblyFileName);
                 }
-
+                else
+                {
+                    return null;
+                }
+            }
+            catch (Exception)
+            {
                 throw;
             }
         }
-
        
         /// <inheritdoc/>
         public override AssemblyDefinition Resolve(AssemblyNameReference name, ReaderParameters parameters)
         {
             try
             {
-                return base.Resolve(name, parameters);
-            }
-            catch (Exception)
-            {
-                string assemblyFileName;
-                if (_loadHints.TryGetValue(new AssemblyName(name.FullName).Name, out assemblyFileName))
+                if (_loadHints.TryGetValue(new AssemblyName(name.FullName).Name, out string assemblyFileName))
                 {
                     return AssemblyDefinition.ReadAssembly(assemblyFileName);
                 }
-
+                else
+                {
+                    return null;
+                }
+            }
+            catch (Exception)
+            {
                 throw;
             }
         }
