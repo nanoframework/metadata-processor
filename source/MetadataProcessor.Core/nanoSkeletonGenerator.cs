@@ -557,26 +557,14 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                 fieldCount = GetNestedFieldsCount(c.BaseType.Resolve());
 
                 // now add the fields count from this type
-                if (_tablesContext.TypeDefinitionTable.TryGetTypeReferenceId(c, out tt))
-                {
-                    fieldCount += c.Fields.Count(f => !f.IsStatic && !f.IsLiteral);
-                }
+                fieldCount += c.Fields.Count(f => !f.IsStatic && !f.IsLiteral);
 
                 return fieldCount;
             }
             else
             {
                 // get the fields count from this type
-
-                if (_tablesContext.TypeDefinitionTable.TryGetTypeReferenceId(c, out tt))
-                {
-                    return c.Fields.Count(f => !f.IsStatic && !f.IsLiteral);
-                }
-                else
-                {
-                    // can't find this type in the table
-                    return 0;
-                }
+                return c.Fields.Count(f => !f.IsStatic && !f.IsLiteral);
             }
         }
     }
