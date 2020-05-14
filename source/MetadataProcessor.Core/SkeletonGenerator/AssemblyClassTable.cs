@@ -15,5 +15,6 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
         public bool IsInterop;
 
         public List<Class> Classes = new List<Class>();
+        public List<ClassWithStubs> ClassesWithStubs = new List<ClassWithStubs>();
     }
 }
