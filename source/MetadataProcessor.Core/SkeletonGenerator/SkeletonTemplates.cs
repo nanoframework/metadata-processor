@@ -38,24 +38,23 @@ namespace nanoFramework.Tools.MetadataProcessor
 
 #include <nanoCLR_Interop.h>{{#newline}}
 #include <nanoCLR_Runtime.h>{{#newline}}
+#include <nanoPackStruct.h>{{#newline}}
 {{#if IsCoreLib}}
 #include <corlib_native.h>{{#newline}}
 {{#else}}
 {{/if}}
 {{#newline}}
 
-{{#each Classes}}
 {{#each Enums}}
-enum {{EnumName}}{{#newline}}
+typedef enum __nfpack {{EnumName}}{{#newline}}
 {
 {{#newline}}
 {{#each Items}}
     {{Name}} = {{Value}},{{#newline}}
 {{/each}}
 
-};{{#newline}}
+} {{EnumName}};{{#newline}}
 {{#newline}}
-{{/each}}
 {{/each}}
 
 {{#each Classes}}

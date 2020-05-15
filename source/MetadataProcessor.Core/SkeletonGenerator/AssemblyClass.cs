@@ -16,6 +16,8 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
         public bool IsCoreLib = false;
 
         public List<Class> Classes = new List<Class>();
+
+        public List<EnumDeclaration> Enums = new List<EnumDeclaration>();
     }
 
     public class Class
@@ -27,8 +29,6 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
         public List<StaticField> StaticFields = new List<StaticField>();
         public List<InstanceField> InstanceFields = new List<InstanceField>();
         public List<MethodStub> Methods = new List<MethodStub>();
-        public List<EnumDeclaration> Enums = new List<EnumDeclaration>();
-
     }
 
     public class StaticField
@@ -75,6 +75,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
     public class EnumDeclaration
     {
         public string EnumName;
+        public string FullName;
 
         public List<EnumItem> Items = new List<EnumItem>();
     }

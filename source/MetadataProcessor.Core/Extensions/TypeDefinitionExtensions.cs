@@ -46,9 +46,40 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
                 throw new ArgumentException("Can clone only TypeDefinition that are Enums.");
             }
 
+            // build enum name
+            string enumName = "";
+
+
+            // if there is a namespace remove it (as there can't be two enums with the same name)
+            if(!string.IsNullOrEmpty(source.Namespace))
+            {
+                enumName = source.FullName.Replace(source.Namespace, "");
+                
+                // remove trailing dot
+                enumName = enumName.Replace(".", "");
+            }
+            else
+            {
+                if(!string.IsNullOrEmpty(source.DeclaringType.Namespace))
+                {
+                    enumName = source.FullName.Replace(source.DeclaringType.Namespace, "");
+                    // remove trailing dot
+                    enumName = enumName.Replace(".", "");
+
+                    // replace '/' separator
+                    enumName = enumName.Replace("/", "_");
+                }
+                else
+                {
+                    // something very wrong here...
+                    throw new ArgumentException($"Can't process enum type {source.FullName}.");
+                }
+            }
+
             EnumDeclaration myEnum = new EnumDeclaration()
             {
-                EnumName = source.Name
+                EnumName = enumName,
+                FullName = source.FullName
             };
 
             foreach (var f in source.Fields)
@@ -64,7 +95,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
                     // pattern: nnnn_yyyyy
                     var emunItem = new EnumItem()
                         {
-                            Name = $"{source.Name}_{f.Name}",
+                            Name = $"{enumName}_{f.Name}",
                         };
 
                     emunItem.Value = f.Constant.ToString();
