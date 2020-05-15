@@ -64,4 +64,9 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
         public string MarshallingDeclaration;
         public string Declaration;
     }
+
+    public class ClassWithStubs
+    {
+        public string Name;
+    }
 }

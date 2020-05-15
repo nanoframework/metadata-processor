@@ -7,6 +7,7 @@ using Mono.Cecil;
 using Mustache;
 using nanoFramework.Tools.MetadataProcessor.Core.Extensions;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -76,6 +77,8 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
         private void GenerateStubs()
         {
+            var generatedFiles = new List<string>();
+
             var classList = new AssemblyClassTable
             {
                 AssemblyName = _tablesContext.AssemblyDefinition.Name.Name,
@@ -235,6 +238,12 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                                 var output = generator.Render(classStubs);
                                 headerFile.Write(output);
                             }
+
+                            // add class to list of classes with stubs
+                            classList.ClassesWithStubs.Add(new ClassWithStubs()
+                            {
+                                Name = className
+                            });
                         }
                         else
                         {
@@ -269,6 +278,12 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                                 var output = generator.Render(classStubs);
                                 headerFile.Write(output);
                             }
+
+                            // add class to list of classes with stubs
+                            classList.ClassesWithStubs.Add(new ClassWithStubs()
+                            {
+                                Name = className
+                            });
                         }
                     }
                 }

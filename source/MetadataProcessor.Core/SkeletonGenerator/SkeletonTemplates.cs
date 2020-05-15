@@ -267,11 +267,11 @@ set({{AssemblyName}}_SRCS
 
     {{ProjectName}}.cpp
 {{#if IsInterop}}
-{{#each Classes}}
+{{#each ClassesWithStubs}}
     {{HeaderFileName}}_{{Name}}_mshl.cpp
     {{HeaderFileName}}_{{Name}}.cpp{{/each}}
 {{#else}}
-{{#each Classes}}
+{{#each ClassesWithStubs}}
     {{HeaderFileName}}_{{Name}}.cpp{{/each}}
 {{/if}}
 )
