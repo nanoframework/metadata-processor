@@ -6,6 +6,8 @@
 
 using Mono.Cecil;
 using Mono.Collections.Generic;
+using nanoFramework.Tools.MetadataProcessor.Core;
+using nanoFramework.Tools.MetadataProcessor.Core.Extensions;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -44,6 +46,8 @@ namespace nanoFramework.Tools.MetadataProcessor
 
         public List<TypeDefinition> TypeDefinitions { get; private set; }
 
+        public List<EnumDeclaration> EnumDeclarations { get; }
+
         /// <summary>
         /// Creates new instance of <see cref="nanoTypeDefinitionTable"/> object.
         /// </summary>
@@ -58,6 +62,9 @@ namespace nanoFramework.Tools.MetadataProcessor
         {
             TypeDefinitions = items
                 .Select(t => t).OrderBy(t => t.FullName).ToList();
+
+            // need to build enum declarations here, because the fields with the enums will be removed during minimization
+            EnumDeclarations = TypeDefinitions.Where(t => t.IsEnum).Select(et => et.ToEnumDeclaration()).ToList();
         }
 
         /// <summary>

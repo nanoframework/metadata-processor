@@ -4,12 +4,14 @@
 //
 
 using Mono.Cecil;
+using Mono.Cecil.Rocks;
 using Mustache;
 using nanoFramework.Tools.MetadataProcessor.Core.Extensions;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 
 namespace nanoFramework.Tools.MetadataProcessor.Core
@@ -89,7 +91,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
             foreach (var c in _tablesContext.TypeDefinitionTable.TypeDefinitions)
             {
                 if (c.IncludeInStub() && 
-                    !c.IsClassToExclude())
+                    !c.IsToExclude())
                 {
                     var className = NativeMethodsCrc.GetClassName(c);
 
@@ -354,7 +356,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                     if (c.IncludeInStub())
                     {
                         // don't include if it's on the exclude list
-                        if (!c.IsClassToExclude())
+                        if (!c.IsToExclude())
                         {
                             var className = NativeMethodsCrc.GetClassName(c);
 
@@ -378,7 +380,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                                     // need to add a NULL entry for it
                                     // unless it's on the exclude list
 
-                                    if (!c.IsClassToExclude())
+                                    if (!c.IsToExclude())
                                     {
                                         assemblyLookup.LookupTable.Add(new MethodStub()
                                         {
@@ -396,7 +398,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                         // need to add a NULL entry for each method 
                         // unless it's on the exclude list
 
-                        if (!c.IsClassToExclude())
+                        if (!c.IsToExclude())
                         {
                             foreach (var m in nanoTablesContext.GetOrderedMethods(c.Methods))
                             {
@@ -436,7 +438,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
             foreach (var c in _tablesContext.TypeDefinitionTable.Items)
             {
                 if (c.IncludeInStub() && 
-                    !c.IsClassToExclude())
+                    !c.IsToExclude())
                 {
                     var classData = new Class()
                     {
@@ -520,10 +522,25 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
                     }
 
+                    // enums
+                    foreach (var t in c.NestedTypes.Where(nt => nt.IsEnum))
+                    {
+                        if(t.IsToExclude())
+                        {
+                            continue;
+                        }
+
+                        // get enum from backup 
+                        var enumDeclaration = _tablesContext.TypeDefinitionTable.EnumDeclarations.FirstOrDefault(td => td.EnumName == t.Name);
+
+                        classData.Enums.Add(enumDeclaration);
+                    }
+
                     // anything to add to the header?
-                    if( classData.StaticFields.Count > 0 ||
+                    if ( classData.StaticFields.Count > 0 ||
                         classData.InstanceFields.Count > 0 ||
-                        classData.Methods.Count > 0)
+                        classData.Methods.Count > 0 ||
+                        classData.Enums.Count > 0)
                     {
                         assemblyData.Classes.Add(classData);
                     }

@@ -4,6 +4,7 @@
 //
 
 using Mono.Cecil;
+using System;
 
 namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
 {
@@ -31,10 +32,48 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
             return false;
         }
 
-        public static bool IsClassToExclude(this TypeDefinition value)
+        public static bool IsToExclude(this TypeDefinition value)
         {
             return nanoTablesContext.ClassNamesToExclude.Contains(value.FullName) ||
                    nanoTablesContext.ClassNamesToExclude.Contains(value.DeclaringType?.FullName);
+        }
+
+        public static EnumDeclaration ToEnumDeclaration(this TypeDefinition source)
+        {
+            // sanity check (to prevent missuse)
+            if(!source.IsEnum)
+            {
+                throw new ArgumentException("Can clone only TypeDefinition that are Enums.");
+            }
+
+            EnumDeclaration myEnum = new EnumDeclaration()
+            {
+                EnumName = source.Name
+            };
+
+            foreach (var f in source.Fields)
+            {
+                if (f.Name == "value__")
+                {
+                    // skip value field
+                    continue;
+                }
+                else
+                {
+                    // enum items are named with the enum name followed by the enum item and respective value
+                    // pattern: nnnn_yyyyy
+                    var emunItem = new EnumItem()
+                        {
+                            Name = $"{source.Name}_{f.Name}",
+                        };
+
+                    emunItem.Value = f.Constant.ToString();
+
+                    myEnum.Items.Add(emunItem);
+                }
+            }
+
+            return myEnum;
         }
     }
 }

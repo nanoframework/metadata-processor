@@ -27,6 +27,8 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
         public List<StaticField> StaticFields = new List<StaticField>();
         public List<InstanceField> InstanceFields = new List<InstanceField>();
         public List<MethodStub> Methods = new List<MethodStub>();
+        public List<EnumDeclaration> Enums = new List<EnumDeclaration>();
+
     }
 
     public class StaticField
@@ -69,4 +71,18 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
     {
         public string Name;
     }
+
+    public class EnumDeclaration
+    {
+        public string EnumName;
+
+        public List<EnumItem> Items = new List<EnumItem>();
+    }
+
+    public class EnumItem
+    {
+        public string Name;
+        public string Value;
+    }
+
 }
