@@ -519,32 +519,28 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                                 });
                             }
                         }
-
-                    }
-
-                    // enums
-                    foreach (var t in c.NestedTypes.Where(nt => nt.IsEnum))
-                    {
-                        if(t.IsToExclude())
-                        {
-                            continue;
-                        }
-
-                        // get enum from backup 
-                        var enumDeclaration = _tablesContext.TypeDefinitionTable.EnumDeclarations.FirstOrDefault(td => td.EnumName == t.Name);
-
-                        classData.Enums.Add(enumDeclaration);
                     }
 
                     // anything to add to the header?
-                    if ( classData.StaticFields.Count > 0 ||
+                    if (classData.StaticFields.Count > 0 ||
                         classData.InstanceFields.Count > 0 ||
-                        classData.Methods.Count > 0 ||
-                        classData.Enums.Count > 0)
+                        classData.Methods.Count > 0)
                     {
                         assemblyData.Classes.Add(classData);
                     }
                 }
+            }
+
+            // enums have to be processed separatly
+            foreach (var e in _tablesContext.TypeDefinitionTable.EnumDeclarations)
+            {
+                // check if enum is to exclude
+                if(nanoTablesContext.ClassNamesToExclude.Contains(e.FullName))
+                {
+                    continue;
+                }
+
+                assemblyData.Enums.Add(e);
             }
 
             FormatCompiler compiler = new FormatCompiler();
