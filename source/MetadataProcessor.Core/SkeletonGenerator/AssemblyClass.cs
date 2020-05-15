@@ -76,6 +76,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
     {
         public string EnumName;
         public string FullName;
+        public string Name;
 
         public List<EnumItem> Items = new List<EnumItem>();
     }

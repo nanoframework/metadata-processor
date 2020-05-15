@@ -35,6 +35,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
         public static bool IsToExclude(this TypeDefinition value)
         {
             return nanoTablesContext.ClassNamesToExclude.Contains(value.FullName) ||
+                   nanoTablesContext.ClassNamesToExclude.Contains(value.Name) ||
                    nanoTablesContext.ClassNamesToExclude.Contains(value.DeclaringType?.FullName);
         }
 
@@ -79,7 +80,8 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
             EnumDeclaration myEnum = new EnumDeclaration()
             {
                 EnumName = enumName,
-                FullName = source.FullName
+                FullName = source.FullName,
+                Name = source.Name
             };
 
             foreach (var f in source.Fields)
