@@ -104,7 +104,7 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             foreach (var t in _tablesContext.TypeDefinitionTable.TypeDefinitions)
             {
-                if (!t.IsClassToExclude())
+                if (!t.IsToExclude())
                 {
                     setNew.Add(t.MetadataToken);
                 }

@@ -45,6 +45,20 @@ namespace nanoFramework.Tools.MetadataProcessor
 {{#newline}}
 
 {{#each Classes}}
+{{#each Enums}}
+enum {{EnumName}}{{#newline}}
+{
+{{#newline}}
+{{#each Items}}
+    {{Name}} = {{Value}},{{#newline}}
+{{/each}}
+
+};{{#newline}}
+{{#newline}}
+{{/each}}
+{{/each}}
+
+{{#each Classes}}
 struct Library_{{AssemblyName}}_{{Name}}{{#newline}}
 {{{#newline}}
 
