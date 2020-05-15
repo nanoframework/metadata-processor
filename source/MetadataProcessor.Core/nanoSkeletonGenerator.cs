@@ -535,7 +535,8 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
             foreach (var e in _tablesContext.TypeDefinitionTable.EnumDeclarations)
             {
                 // check if enum is to exclude
-                if(nanoTablesContext.ClassNamesToExclude.Contains(e.FullName))
+                if(nanoTablesContext.ClassNamesToExclude.Contains(e.FullName) ||
+                    nanoTablesContext.ClassNamesToExclude.Contains(e.Name))
                 {
                     continue;
                 }
