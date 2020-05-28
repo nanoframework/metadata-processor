@@ -72,8 +72,21 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
                 }
                 else
                 {
-                    // something very wrong here...
-                    throw new ArgumentException($"Can't process enum type {source.FullName}.");
+                    try
+                    {
+                        // namespace not showing up, remove everything before the last '.'
+                        enumName = source.FullName.Substring(
+                            source.DeclaringType.FullName.LastIndexOf('.'))
+                            .Replace(".", "");
+
+                        // replace '/' separator
+                        enumName = source.FullName.Replace("/", "_");
+                    }
+                    catch
+                    {
+                        // something very wrong here...
+                        throw new ArgumentException($"Can't process enum type {source.FullName}.");
+                    }
                 }
             }
 
