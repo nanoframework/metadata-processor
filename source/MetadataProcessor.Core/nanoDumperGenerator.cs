@@ -266,14 +266,10 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                         {
                             var h = new ExceptionHandler();
 
-                            if (eh.HandlerType == Mono.Cecil.Cil.ExceptionHandlerType.Filter)
-                            {
-                                h.Handler = "THIS IS AN EXCEPTION HANDLER";
-                            }
-                            else
-                            {
-                                h.Handler = "THIS IS ANoTHER EXCEPTION HANDLER";
-                            }
+                            h.Handler = $"{((int)eh.HandlerType).ToString("x2")} " +
+                                $"{eh.TryStart.Offset.ToString("x8")}->{eh.TryEnd.Offset.ToString("x8")} " +
+                                $"{eh.HandlerStart.Offset.ToString("x8")}->{eh.HandlerEnd.Offset.ToString("x8")} " +
+                                $"{eh.CatchType.MetadataToken.ToInt32().ToString("x8")}";
 
                             methodDef.ExceptionHandlers.Add(h);
                         }
@@ -342,7 +338,8 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                 var typeRef = new TypeRef()
                 {
                     Name = t.FullName,
-                    Scope = new MetadataToken(TokenType.AssemblyRef, _tablesContext.TypeReferencesTable.GetScope(t)).ToInt32().ToString("x8")
+                    // need to add 1 to match the index on the old MDP
+                    Scope = new MetadataToken(TokenType.AssemblyRef, _tablesContext.TypeReferencesTable.GetScope(t) + 1).ToInt32().ToString("x8")
                 };
 
                 if (_tablesContext.TypeReferencesTable.TryGetTypeReferenceId(t, out refId))
@@ -383,7 +380,8 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                 dumpTable.AssemblyReferences.Add(new AssemblyRef()
                 {
                     Name = a.Name,
-                    ReferenceId = new MetadataToken(TokenType.AssemblyRef, _tablesContext.AssemblyReferenceTable.GetReferenceId(a)).ToInt32().ToString("x8"),
+                    // need to add 1 to match the index on the old MDP
+                    ReferenceId = new MetadataToken(TokenType.AssemblyRef, _tablesContext.AssemblyReferenceTable.GetReferenceId(a) + 1).ToInt32().ToString("x8"),
                     Flags = "00000000"
                 });
             }

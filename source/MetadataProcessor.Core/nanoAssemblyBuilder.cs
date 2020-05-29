@@ -713,9 +713,9 @@ namespace nanoFramework.Tools.MetadataProcessor
                         // exceptions
                         foreach (var e in md.Body.ExceptionHandlers)
                         {
-                            if(e.HandlerType ==  Mono.Cecil.Cil.ExceptionHandlerType.Filter)
+                            if(e.HandlerType !=  Mono.Cecil.Cil.ExceptionHandlerType.Filter)
                             {
-                                set.Add(((IMetadataTokenProvider)e.FilterStart.Operand).MetadataToken);
+                                set.Add(((IMetadataTokenProvider)e.CatchType).MetadataToken);
                             }
                         }
                     }
