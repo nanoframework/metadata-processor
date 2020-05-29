@@ -268,8 +268,16 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
                             h.Handler = $"{((int)eh.HandlerType).ToString("x2")} " +
                                 $"{eh.TryStart.Offset.ToString("x8")}->{eh.TryEnd.Offset.ToString("x8")} " +
-                                $"{eh.HandlerStart.Offset.ToString("x8")}->{eh.HandlerEnd.Offset.ToString("x8")} " +
-                                $"{eh.CatchType.MetadataToken.ToInt32().ToString("x8")}";
+                                $"{eh.HandlerStart.Offset.ToString("x8")}->{eh.HandlerEnd.Offset.ToString("x8")} ";
+
+                            if(eh.CatchType != null)
+                            {
+                                h.Handler += $"{eh.CatchType.MetadataToken.ToInt32().ToString("x8")}";
+                            }
+                            else
+                            {
+                                h.Handler += "00000000";
+                            }
 
                             methodDef.ExceptionHandlers.Add(h);
                         }

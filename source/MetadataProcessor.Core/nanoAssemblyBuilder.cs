@@ -715,7 +715,10 @@ namespace nanoFramework.Tools.MetadataProcessor
                         {
                             if(e.HandlerType !=  Mono.Cecil.Cil.ExceptionHandlerType.Filter)
                             {
-                                set.Add(((IMetadataTokenProvider)e.CatchType).MetadataToken);
+                                if(e.CatchType != null)
+                                {
+                                    set.Add(((IMetadataTokenProvider)e.CatchType).MetadataToken);
+                                }
                             }
                         }
                     }
