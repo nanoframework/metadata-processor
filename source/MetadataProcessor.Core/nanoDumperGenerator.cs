@@ -267,8 +267,8 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                             var h = new ExceptionHandler();
 
                             h.Handler = $"{((int)eh.HandlerType).ToString("x2")} " +
-                                $"{eh.TryStart.Offset.ToString("x8")}->{eh.TryEnd.Offset.ToString("x8")} " +
-                                $"{eh.HandlerStart.Offset.ToString("x8")}->{eh.HandlerEnd.Offset.ToString("x8")} ";
+                                $"{eh.TryStart?.Offset.ToString("x8")}->{eh.TryEnd?.Offset.ToString("x8")} " +
+                                $"{eh.HandlerStart?.Offset.ToString("x8")}->{eh.HandlerEnd?.Offset.ToString("x8")} ";
 
                             if(eh.CatchType != null)
                             {
