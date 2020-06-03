@@ -61,7 +61,9 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
             }
             else
             {
-                if(!string.IsNullOrEmpty(source.DeclaringType.Namespace))
+                if( 
+                    source.DeclaringType != null &&
+                    !string.IsNullOrEmpty(source.DeclaringType.Namespace))
                 {
                     enumName = source.FullName.Replace(source.DeclaringType.Namespace, "");
                     // remove trailing dot
@@ -70,15 +72,18 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
                     // replace '/' separator
                     enumName = enumName.Replace("/", "_");
                 }
+                else if (source.DeclaringType != null)
+                {
+                    // namespace not showing up, remove everything before the last '.'
+                    // namespace not showing up, remove everything before the last '.'
+                    enumName = source.FullName.Substring(
+                        source.DeclaringType.FullName.LastIndexOf('.'))
+                        .Replace(".", "");
+                }
                 else
                 {
                     try
                     {
-                        // namespace not showing up, remove everything before the last '.'
-                        enumName = source.FullName.Substring(
-                            source.DeclaringType.FullName.LastIndexOf('.'))
-                            .Replace(".", "");
-
                         // replace '/' separator
                         enumName = source.FullName.Replace("/", "_");
                     }
