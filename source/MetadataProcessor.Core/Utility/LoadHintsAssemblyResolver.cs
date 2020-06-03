@@ -46,6 +46,13 @@ namespace nanoFramework.Tools.MetadataProcessor
                     return null;
                 }
             }
+            catch(System.IO.DirectoryNotFoundException)
+            {
+                Console.Error.WriteLine(
+                    $"Unable to find assembly '{name.Name}' in load hints collection.");
+
+                throw;
+            }
             catch (Exception)
             {
                 throw;
