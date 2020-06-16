@@ -1,21 +1,12 @@
 trigger:
   branches:
-    include:
-    - master
-    - develop
-    - release/*
+    include: [master, develop, "release-*" ]
   paths:
-    exclude:
-    - /*.md
-    - .gitignore
+    exclude: ["*.md", .gitignore]
+  tags:
+    include: ["v*"]
 
-pr:
-  branches:
-    include:
-    - master
-    - develop
-    - release/*
-  autoCancel: true
+# PR always trigger build
 
 # add nf-tools repo to resources (for Azure Pipelines templates)
 resources:
@@ -36,6 +27,7 @@ jobs:
     vmImage: 'VS2017-Win2016'
 
   variables:
+    DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
     buildPlatform: 'Any CPU'
     buildConfiguration: 'Release'
     solution: 'source\nanoFramework.Tools.MetadataProcessor.sln'
@@ -54,7 +46,7 @@ jobs:
 
   - task: NuGetToolInstaller@0
     inputs:
-      versionSpec: '4.9.3'
+      versionSpec: '5.4.0'
     condition: not(variables['StartReleaseCandidate'])
     displayName: 'Install specific version of NuGet'
 
@@ -123,7 +115,7 @@ jobs:
       nuGetFeedType: external
       packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
       publishFeedCredentials: 'AzureArtifacts'
-    continueOnError: true
+      allowPackageConflicts: true
     condition: and( succeeded(), ne(variables['Build.Reason'], 'PullRequest') )
     displayName: Push NuGet packages to Azure Artifacts
 

@@ -3,7 +3,7 @@
   "version": "2.23",
   "release": {
     "branchName" : "release-v{version}",
-    "versionIncrement" : "minor",
+    "versionIncrement" : "build",
     "firstUnstableTag" : "preview"
   },
   "assemblyVersion": {
