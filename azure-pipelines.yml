@@ -30,7 +30,7 @@ jobs:
     DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
     buildPlatform: 'Any CPU'
     buildConfiguration: 'Release'
-    solution: 'source\nanoFramework.Tools.MetadataProcessor.sln'
+    solution: 'nanoFramework.Tools.MetadataProcessor.sln'
 
   steps:
 
@@ -54,7 +54,7 @@ jobs:
     inputs:
       restoreSolution: '$(solution)'
       feedsToUse: config
-      nugetConfigPath: 'source/NuGet.config'
+      nugetConfigPath: 'NuGet.config'
     displayName: NuGet restore
 
   - task: VSBuild@1
@@ -85,7 +85,7 @@ jobs:
   - task: NuGetCommand@2
     inputs:
       command: 'custom' 
-      arguments: 'pack source\MetadataProcessor.Core\package.nuspec -Version $(NBGV_NuGetPackageVersion)'
+      arguments: 'pack MetadataProcessor.Core\package.nuspec -Version $(NBGV_NuGetPackageVersion)'
     condition: succeeded()
     displayName: Pack NuGet for MDP tool
 
