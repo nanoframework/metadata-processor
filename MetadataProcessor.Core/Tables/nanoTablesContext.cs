@@ -113,7 +113,9 @@ namespace nanoFramework.Tools.MetadataProcessor
                 StringComparer.Ordinal);
 
             var memberReferences = mainModule.GetMemberReferences()
-                .Where(item => typeReferencesNames.Contains(item.DeclaringType.FullName))
+                .Where(item => 
+                    (typeReferencesNames.Contains(item.DeclaringType.FullName) || 
+                    item.DeclaringType.GetElementType().IsPrimitive))
                 .ToList();
 
             FieldReferencesTable = new nanoFieldReferenceTable(
