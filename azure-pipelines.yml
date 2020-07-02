@@ -22,6 +22,7 @@ jobs:
 
 # build MDP
 - job: Build_MDP
+  condition: not( or( contains(variables['getCommitMessage.COMMIT_MESSAGE'], '***UPDATE_DEPENDENTS***'), eq(variables['UPDATE_DEPENDENTS'], 'true') ) )
 
   pool:
     vmImage: 'VS2017-Win2016'
@@ -110,24 +111,16 @@ jobs:
 
   # push NuGet packages to Azure Artifacts feed (always happens except on PR builds)
   - task: NuGetCommand@2
+    displayName: Push NuGet packages to Azure Artifacts
+    condition: and( succeeded(), ne(variables['Build.Reason'], 'PullRequest') )
+    continueOnError: true
     inputs:
       command: push
       nuGetFeedType: external
       packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
       publishFeedCredentials: 'AzureArtifacts'
       allowPackageConflicts: true
-    condition: and( succeeded(), ne(variables['Build.Reason'], 'PullRequest') )
-    displayName: Push NuGet packages to Azure Artifacts
 
-  # update dependencies
-  - task: PowerShell@2
-    inputs:
-      targetType: filePath
-      filePath: azure-pipelines/update-dependencies.ps1
-    env:
-      MY_GITHUB_TOKEN: $(GitHubToken)
-    condition: or( and( succeeded(), contains(variables['Build.SourceVersionMessage'], '***UPDATE_DEPENDENTS***') ), eq(variables['UPDATE_DEPENDENTS'], 'true') )
-    displayName: Update dependent class libs
 
   # create or update GitHub release
   - task: GitHubReleasePublish@1
@@ -141,12 +134,36 @@ jobs:
       githubTargetCommitsh: $(Build.SourceVersion)
       githubReleaseDraft: false
       githubReleasePrerelease: false
-      githubReuseDraftOnly: true
+      githubReuseDraftOnly: false
       githubReuseRelease: true
       githubEditRelease: true
       githubReleaseAsset: '$(Build.ArtifactStagingDirectory)/*.exe'
     condition: and( succeeded(), ne(variables['Build.Reason'], 'PullRequest'), not( startsWith(variables['Build.SourceBranch'], 'refs/tags/v') ) )
     displayName: Create/Update GitHub release
+
+##############################
+- job: Update_Dependents
+  condition: or( contains(variables['getCommitMessage.COMMIT_MESSAGE'], '***UPDATE_DEPENDENTS***'), eq(variables['UPDATE_DEPENDENTS'], 'true') )
+
+  dependsOn:
+  - Build_MDP
+
+  pool:
+    vmImage: 'VS2017-Win2016'
+
+  steps:
+  # need this here in order to persist GitHub credentials 
+  - checkout: self
+    fetchDepth: 1
+
+  # update dependencies
+  - task: PowerShell@2
+    displayName: Update dependent class libs
+    inputs:
+      targetType: filePath
+      filePath: azure-pipelines/update-dependencies.ps1
+    env:
+      MY_GITHUB_TOKEN: $(GitHubToken)
 
 ##################################
 # report build failure to Discord
