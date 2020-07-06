@@ -104,6 +104,8 @@ extern const CLR_RT_NativeAssemblyData g_CLR_AssemblyNative_{{Name}};{{#newline}
 #include ""{{HeaderFileName}}.h""{{#newline}}
 {{#newline}}
 
+// clang-format off
+
 static const CLR_RT_MethodHandler method_lookup[] ={{#newline}}
 {{{#newline}}
 {{#each LookupTable}}
@@ -119,6 +121,9 @@ const CLR_RT_NativeAssemblyData g_CLR_AssemblyNative_{{Name}} ={{#newline}}
     method_lookup,{{#newline}}
     { {{NativeVersion.Major}}, {{NativeVersion.Minor}}, {{NativeVersion.Build}}, {{NativeVersion.Revision}} }{{#newline}}
 };{{#newline}}
+
+// clang-format on
+
 ";
 
         internal const string ClassWithoutInteropStubTemplate =
