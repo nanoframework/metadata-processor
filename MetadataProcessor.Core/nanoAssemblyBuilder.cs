@@ -219,13 +219,24 @@ namespace nanoFramework.Tools.MetadataProcessor
                 foreach (var i in c.Interfaces)
                 {
                     // remove unused interfaces
+                    bool used = false;
+                    
                     // because we don't have an interface definition table
                     // have to do it the hard way: search the type definition that contains the interface type
-                    var ii = _tablesContext.TypeDefinitionTable.Items.FirstOrDefault(t => t.MetadataToken == i.InterfaceType.MetadataToken);
-                    if (ii == null)
+                    foreach (var t in _tablesContext.TypeDefinitionTable.Items)
+                    {
+                        var ii1 = t.Interfaces.FirstOrDefault(ii => ii.MetadataToken == i.MetadataToken);
+                        if (ii1 != null)
+                        {
+                            used = true;
+
+                            break;
+                        }
+                    }
+
+                    if (!used)
                     {
                         interfacesToRemove.Add(i);
-                        break;
                     }
                 }
 
