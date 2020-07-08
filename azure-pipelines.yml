@@ -22,7 +22,7 @@ jobs:
 
 # build MDP
 - job: Build_MDP
-  condition: not( or( contains(variables['getCommitMessage.COMMIT_MESSAGE'], '***UPDATE_DEPENDENTS***'), eq(variables['UPDATE_DEPENDENTS'], 'true') ) )
+  condition: not( or( contains(variables['Build.SourceVersionMessage'], '***UPDATE_DEPENDENTS***'), eq(variables['UPDATE_DEPENDENTS'], 'true') ) )
 
   pool:
     vmImage: 'VS2017-Win2016'
@@ -143,7 +143,7 @@ jobs:
 
 ##############################
 - job: Update_Dependents
-  condition: or( contains(variables['getCommitMessage.COMMIT_MESSAGE'], '***UPDATE_DEPENDENTS***'), eq(variables['UPDATE_DEPENDENTS'], 'true') )
+  condition: or( contains(variables['Build.SourceVersionMessage'], '***UPDATE_DEPENDENTS***'), eq(variables['UPDATE_DEPENDENTS'], 'true') )
 
   dependsOn:
   - Build_MDP
