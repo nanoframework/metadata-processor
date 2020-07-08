@@ -46,7 +46,6 @@ TypeDefProps [{{ReferenceId}}]: Flags: {{Flags}} Extends: {{ExtendsType}} Enclos
 {{#each InterfaceDefinitions}}
     InterfaceImplProps [{{ReferenceId}}]: Itf: {{Interface}}{{#newline}}
 {{/each}}
-{{#if InterfaceDefinitions}}{{#newline}}{{/if}}
 {{/each}}
 {{#if TypeDefinitions}}{{#newline}}{{/if}}
 
