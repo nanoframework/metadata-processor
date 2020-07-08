@@ -104,7 +104,8 @@ extern const CLR_RT_NativeAssemblyData g_CLR_AssemblyNative_{{Name}};{{#newline}
 #include ""{{HeaderFileName}}.h""{{#newline}}
 {{#newline}}
 
-// clang-format off
+// clang-format off{{#newline}}
+{{#newline}}
 
 static const CLR_RT_MethodHandler method_lookup[] ={{#newline}}
 {{{#newline}}
@@ -122,7 +123,8 @@ const CLR_RT_NativeAssemblyData g_CLR_AssemblyNative_{{Name}} ={{#newline}}
     { {{NativeVersion.Major}}, {{NativeVersion.Minor}}, {{NativeVersion.Build}}, {{NativeVersion.Revision}} }{{#newline}}
 };{{#newline}}
 
-// clang-format on
+{{#newline}}
+// clang-format on{{#newline}}
 
 ";
 
