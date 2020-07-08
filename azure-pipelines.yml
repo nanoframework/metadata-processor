@@ -155,6 +155,11 @@ jobs:
   # need this here in order to persist GitHub credentials 
   - checkout: self
     fetchDepth: 1
+  
+  - template: azure-pipelines-templates/install-nbgv-tool.yml@templates
+
+  - script: nbgv cloud -a -c
+    displayName: Set build number
 
   # update dependencies
   - task: PowerShell@2
