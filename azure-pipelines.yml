@@ -112,7 +112,7 @@ jobs:
   # push NuGet packages to Azure Artifacts feed (always happens except on PR builds)
   - task: NuGetCommand@2
     displayName: Push NuGet packages to Azure Artifacts
-    condition: and( succeeded(), ne(variables['Build.Reason'], 'PullRequest') )
+    condition: and( succeeded(), eq(variables['System.PullRequest.PullRequestId'], '') )
     continueOnError: true
     inputs:
       command: push
@@ -138,7 +138,7 @@ jobs:
       githubReuseRelease: true
       githubEditRelease: true
       githubReleaseAsset: '$(Build.ArtifactStagingDirectory)/*.exe'
-    condition: and( succeeded(), ne(variables['Build.Reason'], 'PullRequest'), not( startsWith(variables['Build.SourceBranch'], 'refs/tags/v') ) )
+    condition: and( succeeded(), eq(variables['System.PullRequest.PullRequestId'], ''), not( startsWith(variables['Build.SourceBranch'], 'refs/tags/v') ) )
     displayName: Create/Update GitHub release
 
 ##############################
