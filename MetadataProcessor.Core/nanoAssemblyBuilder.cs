@@ -612,6 +612,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                     }
                     else if (!md.ReturnType.IsValueType &&
                              !md.ReturnType.IsPrimitive &&
+                             !md.ReturnType.IsByReference &&
                               md.ReturnType.FullName != "System.Void" &&
                               md.ReturnType.FullName != "System.String" &&
                               md.ReturnType.FullName != "System.Object")
