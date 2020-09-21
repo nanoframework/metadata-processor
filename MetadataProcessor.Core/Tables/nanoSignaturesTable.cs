@@ -326,6 +326,20 @@ namespace nanoFramework.Tools.MetadataProcessor
                 return;
             }
 
+            if(typeDefinition.IsByReference)
+            {
+                writer.WriteByte((byte)nanoCLR_DataType.DATATYPE_BYREF);
+
+                if (alsoWriteSubType)
+                {
+                    var resolvedType = typeDefinition.Resolve();
+
+                    WriteDataType(resolvedType, writer, false, expandEnumType, isTypeDefinition);
+                }
+
+                return;
+            }
+
             writer.WriteByte(0x00);
         }
 
