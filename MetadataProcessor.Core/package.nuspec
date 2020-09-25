@@ -18,7 +18,7 @@
     <iconUrl>https://secure.gravatar.com/avatar/97d0e092247f0716db6d4b47b7d1d1ad</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <licenseUrl>https://github.com/nanoframework/metadata-processor/LICENSE</licenseUrl>
-    <copyright>Copyright (c) 2019 The nanoFramework project contributors</copyright>
+    <copyright>Copyright (c) .NET Foundation and Contributors</copyright>
     <references></references>
     <tags>nanoFramework, nano Framework, NETNF, NETMF, Micro Framework, .net</tags>
     <dependencies>

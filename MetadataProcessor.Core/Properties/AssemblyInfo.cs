@@ -8,4 +8,4 @@ using System.Runtime.CompilerServices;
 [assembly: AssemblyConfiguration ("")]
 [assembly: AssemblyCompany ("nanoFramework project contributors")]
 [assembly: AssemblyProduct ("")]
-[assembly: AssemblyCopyright ("Copyright (c) 2019 The nanoFramework project contributors")]
+[assembly: AssemblyCopyright ("Copyright (c) .NET Foundation and Contributors")]
