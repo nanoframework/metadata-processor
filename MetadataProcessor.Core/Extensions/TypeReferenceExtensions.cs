@@ -88,6 +88,14 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
                 return arraySig.ToString();
             }
 
+            if (type.IsByReference)
+            {
+                StringBuilder byrefSig = new StringBuilder("BYREF ");
+                byrefSig.Append(type.GetElementType().TypeSignatureAsString());
+
+                return byrefSig.ToString();
+            }
+
             return "";
         }
 
