@@ -120,8 +120,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             writer.WriteUInt16(methodSignature);
         }
 
-        public static uint GetFlags(
-            MethodDefinition method)
+        public static uint GetFlags(MethodDefinition method)
         {
             const uint MD_Scope_Private =           0x00000001; // Accessible only by the parent type.
             const uint MD_Scope_FamANDAssem =       0x00000002; // Accessible by sub-types only in this Assembly.
@@ -275,17 +274,6 @@ namespace nanoFramework.Tools.MetadataProcessor
                         flag |= MD_DelegateEndInvoke;
                     }
                 }
-            }
-
-            var methodName = method.Name;
-            if (methodName == "Finalize" &&
-                method.ReturnType.FullName == "System.Void" &&
-                !method.HasParameters)
-            {
-                flag |= MD_Finalizer;
-                
-                // TODO
-                // missing setting tdDst->flags |= CLR_RECORD_TYPEDEF::TD_HasFinalizer;
             }
 
             return flag;
