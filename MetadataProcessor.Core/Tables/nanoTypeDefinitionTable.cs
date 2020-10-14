@@ -151,7 +151,11 @@ namespace nanoFramework.Tools.MetadataProcessor
                 }
             }
 
-            writer.WriteUInt16((ushort)GetFlags(item)); // flags
+            // write flags
+            writer.WriteUInt16(
+                (ushort)GetFlags(
+                    item,
+                    _context.MethodDefinitionTable));
         }
 
         private void WriteClassFields(
@@ -295,8 +299,18 @@ namespace nanoFramework.Tools.MetadataProcessor
             return 0xFFFF;
         }
 
+        /// <summary>
+        /// Get flags for the Type definition.
+        /// </summary>
+        /// <param name="definition"><see cref="TypeDefinition"/> to get the flags</param>
+        /// <param name="methodDefinitioTable">List with type definitions that have finalizers, if this check is required.</param>
+        /// <returns></returns>
+        /// <remarks>
+        /// If the <paramref name="typesWithFinalizers"/> is null, the check for finalizer won't be checked.
+        /// </remarks>
         internal static nanoTypeDefinitionFlags GetFlags(
-            TypeDefinition definition)
+            TypeDefinition definition,
+            nanoMethodDefinitionTable methodDefinitioTable = null)
         {
             var flags = nanoTypeDefinitionFlags.TD_Scope_None;
 
@@ -387,6 +401,27 @@ namespace nanoFramework.Tools.MetadataProcessor
                 definition.FullName != "System.MulticastDelegate")
             {
                 flags |= nanoTypeDefinitionFlags.TD_Delegate;
+            }
+
+            // need to check for finalizers methods
+            if (methodDefinitioTable != null)
+            {
+                foreach (var m in definition.Methods)
+                {
+                    if (methodDefinitioTable.Items.Contains(m))
+                    {
+                        var methodName = m.Name;
+                        if (methodName == "Finalize" &&
+                            m.ReturnType.FullName == "System.Void" &&
+                            !m.HasParameters)
+                        {
+                            if (m.DeclaringType.FullName != "System.Object")
+                            {
+                                flags |= nanoTypeDefinitionFlags.TD_HasFinalizer;
+                            }
+                        }
+                    }
+                }
             }
 
             return flags;

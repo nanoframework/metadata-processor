@@ -198,7 +198,10 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                     typeDef.Name = t.FullName;
                 }
 
-                var typeFlags = (uint)nanoTypeDefinitionTable.GetFlags(t);
+                var typeFlags = (uint)nanoTypeDefinitionTable.GetFlags(
+                    t,
+                    _tablesContext.MethodDefinitionTable);
+
                 typeDef.Flags = typeFlags.ToString("x8");
 
                 if (t.BaseType != null)
