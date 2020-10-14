@@ -258,7 +258,7 @@ HRESULT {{Declaration}}( CLR_RT_StackFrame& stack )
 
         internal const string CMakeModuleTemplate =
 @"#
-# Copyright(c) 2020 The nanoFramework project contributors
+# Copyright (c) .NET Foundation and Contributors
 # See LICENSE file in the project root for full license information.
 #
 
@@ -300,8 +300,9 @@ foreach(SRC_FILE ${{{AssemblyName}}_SRCS})
     set({{AssemblyName}}_SRC_FILE SRC_FILE-NOTFOUND)
     find_file({{AssemblyName}}_SRC_FILE ${SRC_FILE}
         PATHS
-	        ""${BASE_PATH_FOR_THIS_MODULE}""
-	        ""${TARGET_BASE_LOCATION}""
+	        ${BASE_PATH_FOR_THIS_MODULE}
+	        ${TARGET_BASE_LOCATION}
+            ${PROJECT_SOURCE_DIR}/src/{{AssemblyName}}
 
 	    CMAKE_FIND_ROOT_PATH_BOTH
     )
