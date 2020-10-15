@@ -30,7 +30,7 @@ jobs:
   # get commit message
   - powershell: |
 
-      if($env:System_PullRequest_PullRequestId -ne '')
+      if($env:System_PullRequest_PullRequestId -ne $null)
       {
         # PR build, get PR message
 
@@ -200,9 +200,13 @@ jobs:
   steps:
   # need this here in order to persist GitHub credentials 
   - checkout: self
-    fetchDepth: 1
+    fetchDepth: 100
   
   - template: azure-pipelines-templates/install-nbgv-tool.yml@templates
+
+  - script: nbgv cloud -a -c
+    condition: succeeded()
+    displayName: Set build number
 
   # update dependencies
   - task: PowerShell@2
