@@ -355,40 +355,31 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                 {
                     if (c.IncludeInStub())
                     {
-                        // don't include if it's on the exclude list
-                        if (!c.IsToExclude())
+                        var className = NativeMethodsCrc.GetClassName(c);
+
+                        foreach (var m in nanoTablesContext.GetOrderedMethods(c.Methods))
                         {
-                            var className = NativeMethodsCrc.GetClassName(c);
+                            var rva = _tablesContext.ByteCodeTable.GetMethodRva(m);
 
-                            foreach (var m in nanoTablesContext.GetOrderedMethods(c.Methods))
+                            // check method inclusion
+                            // method is not a native implementation (RVA 0xFFFF) and is not abstract
+                            if ((rva == 0xFFFF &&
+                                    !m.IsAbstract))
                             {
-                                var rva = _tablesContext.ByteCodeTable.GetMethodRva(m);
-
-                                // check method inclusion
-                                // method is not a native implementation (RVA 0xFFFF) and is not abstract
-                                if ((rva == 0xFFFF &&
-                                     !m.IsAbstract))
+                                assemblyLookup.LookupTable.Add(new MethodStub()
                                 {
-                                    assemblyLookup.LookupTable.Add(new MethodStub()
-                                    {
-                                        Declaration = $"Library_{_safeProjectName}_{className}::{NativeMethodsCrc.GetMethodName(m)}"
-                                    });
-                                }
-                                else
+                                    Declaration = $"Library_{_safeProjectName}_{className}::{NativeMethodsCrc.GetMethodName(m)}"
+                                });
+                            }
+                            else
+                            {
+                                // method won't be included, still
+                                // need to add a NULL entry for it
+                                assemblyLookup.LookupTable.Add(new MethodStub()
                                 {
-                                    // method won't be included, still
-                                    // need to add a NULL entry for it
-                                    // unless it's on the exclude list
-
-                                    if (!c.IsToExclude())
-                                    {
-                                        assemblyLookup.LookupTable.Add(new MethodStub()
-                                        {
-                                            Declaration = "NULL"
-                                            //Declaration = $"**Library_{_safeProjectName}_{NativeMethodsCrc.GetClassName(c)}::{NativeMethodsCrc.GetMethodName(m)}"
-                                        });
-                                    }
-                                }
+                                    Declaration = "NULL"
+                                    //Declaration = $"**Library_{_safeProjectName}_{NativeMethodsCrc.GetClassName(c)}::{NativeMethodsCrc.GetMethodName(m)}"
+                                });
                             }
                         }
                     }
@@ -396,18 +387,13 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                     {
                         // type won't be included, still
                         // need to add a NULL entry for each method 
-                        // unless it's on the exclude list
-
-                        if (!c.IsToExclude())
+                        foreach (var m in nanoTablesContext.GetOrderedMethods(c.Methods))
                         {
-                            foreach (var m in nanoTablesContext.GetOrderedMethods(c.Methods))
+                            assemblyLookup.LookupTable.Add(new MethodStub()
                             {
-                                assemblyLookup.LookupTable.Add(new MethodStub()
-                                {
-                                    Declaration = "NULL"
-                                    //Declaration = $"**Library_{_safeProjectName}_{NativeMethodsCrc.GetClassName(c)}::{NativeMethodsCrc.GetMethodName(m)}"
-                                });
-                            }
+                                Declaration = "NULL"
+                                //Declaration = $"**Library_{_safeProjectName}_{NativeMethodsCrc.GetClassName(c)}::{NativeMethodsCrc.GetMethodName(m)}"
+                            });
                         }
                     }
                 }
