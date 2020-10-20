@@ -13,7 +13,7 @@ Start-Sleep -Seconds 60
 $commitMessage = ""
 $prTitle = ""
 $newBranchName = "develop-nfbot/update-dependencies/" + [guid]::NewGuid().ToString()
-$packageTargetVersion = $env:NBGV_NuGetPackageVersion
+$packageTargetVersion = $env:NBGV_SimpleVersion
 
 # working directory is agent temp directory
 Write-Debug "Changing working directory to $env:Agent_TempDirectory"
