@@ -68,12 +68,8 @@ namespace nanoFramework.Tools.MetadataProcessor
             PrimitiveTypes.Add(typeof(object).FullName, nanoCLR_DataType.DATATYPE_OBJECT);
             PrimitiveTypes.Add(typeof(IntPtr).FullName, nanoCLR_DataType.DATATYPE_I4);
             PrimitiveTypes.Add(typeof(UIntPtr).FullName, nanoCLR_DataType.DATATYPE_U4);
-            
-            PrimitiveTypes.Add(typeof(WeakReference).FullName, nanoCLR_DataType.DATATYPE_WEAKCLASS);
 
-            PrimitiveTypes.Add(typeof(RuntimeTypeHandle).FullName, nanoCLR_DataType.DATATYPE_REFLECTION);
-            PrimitiveTypes.Add(typeof(RuntimeFieldHandle).FullName, nanoCLR_DataType.DATATYPE_REFLECTION);
-            PrimitiveTypes.Add(typeof(RuntimeMethodHandle).FullName, nanoCLR_DataType.DATATYPE_REFLECTION);
+            PrimitiveTypes.Add(typeof(WeakReference).FullName, nanoCLR_DataType.DATATYPE_WEAKCLASS);
         }
 
         /// <summary>

@@ -1,6 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/AArnott/Nerdbank.GitVersioning/master/src/NerdBank.GitVersioning/version.schema.json",
-  "version": "2.27",
+  "version": "2.28",
   "release": {
     "branchName" : "release-v{version}",
     "versionIncrement" : "build",
@@ -14,6 +14,7 @@
   },
   "publicReleaseRefSpec": [
     "^refs/heads/master$",
+    "^refs/heads/develop$",
     "^refs/heads/v\\d+(?:\\.\\d+)?$"
   ],
   "cloudBuild": {
@@ -21,7 +22,7 @@
     "buildNumber": {
       "enabled": true,
       "includeCommitId": {
-        "when": "never"
+        "when": "nonPublicReleaseOnly"
       }
     }
   }
