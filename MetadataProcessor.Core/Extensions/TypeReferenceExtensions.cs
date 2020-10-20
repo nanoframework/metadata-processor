@@ -46,6 +46,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
                     case nanoCLR_DataType.DATATYPE_R4:
                     case nanoCLR_DataType.DATATYPE_BYREF:
                     case nanoCLR_DataType.DATATYPE_OBJECT:
+                    case nanoCLR_DataType.DATATYPE_WEAKCLASS:
                         return dataType.ToString().Replace("DATATYPE_", "");
 
                     case nanoCLR_DataType.DATATYPE_LAST_PRIMITIVE:
