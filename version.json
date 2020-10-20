@@ -7,7 +7,7 @@
     "firstUnstableTag" : "preview"
   },
   "assemblyVersion": {
-    "precision": "revision"
+    "precision": "minor"
   },
   "nuGetPackageVersion": {
     "semVer": 2.0
@@ -17,7 +17,12 @@
     "^refs/heads/v\\d+(?:\\.\\d+)?$"
   ],
   "cloudBuild": {
-    "setVersionVariables": true,
-    "setAllVariables": true
+    "setAllVariables": true,
+    "buildNumber": {
+      "enabled": true,
+      "includeCommitId": {
+        "when": "never"
+      }
+    }
   }
 }
