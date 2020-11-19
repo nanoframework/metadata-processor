@@ -144,7 +144,7 @@ const CLR_RT_NativeAssemblyData g_CLR_AssemblyNative_{{Name}} ={{#newline}}
 #include ""{{HeaderFileName}}.h""
 
 {{#each Functions}}
-HRESULT {{Declaration}}( CLR_RT_StackFrame& stack )
+HRESULT {{Declaration}}( CLR_RT_StackFrame &stack )
 {
     NANOCLR_HEADER();
 
