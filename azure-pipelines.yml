@@ -19,7 +19,7 @@ resources:
 jobs:
 
 ##############################
-- job: Get_Build_Options
+- job: Get_Build_Flags
   pool:
     vmImage: 'VS2017-Win2016'
 
@@ -30,44 +30,48 @@ jobs:
   # get commit message
   - powershell: |
 
-      if($env:System_PullRequest_PullRequestId -ne $null)
+      # default to false
+      $update = $false
+
+      if($env:Build_Reason -eq 'PullRequest')
       {
-        # PR build, get PR message
-
-        # need to get PR number from branch as the Azure Pipeline var can't be trusted
-        if($env:Build_SourceBranch -match '(?<=(pull\/))\w*(?=(\/))')
-        {
-          $prNumber = $matches[0]
-
-          $prUrl = "https://api.github.com/repos/$env:Build_Repository_Name/pulls/$prNumber"
-
-          $commit = Invoke-RestMethod -Uri $prUrl -ContentType "application/json" -Method GET
-
-          $commitMessage = $commit.body
-        }
+        # PR build, nothing interesting in commit message
       }
       else
       {
-        # not a PR, get subject and commit message for commit
-        $commitMessage = git log --format='%B' -1
+        # build is not from a PR
+
+        # get commit ID
+        $commitId = git rev-parse HEAD
+        
+        # get PR associate with commit
+        $prUrl = "https://api.github.com/repos/nanoframework/metadata-processor/commits/$commitId/pulls"
+        $commit = Invoke-RestMethod -Uri $prUrl -ContentType "application/json" -Headers @{"Accept"="application/vnd.github.groot-preview+json"} -Method GET
+
+        if($commit -ne $null)
+        {
+          # there is a PR, check labels
+          $updateDependents = $commit.labels | where {$_.Name -eq 'CI: Update Dependents'}
+          if($updateDependents -ne $null)
+          {
+            $update = $true
+          }
+        }
       }
 
-      # need to flatten message by removing new lines
-      $commitMessage = $commitMessage -replace "`r`n", " "
-
       # set variable to foward to jobs
-      echo "##vso[task.setvariable variable=COMMIT_MESSAGE;isOutput=true]$commitMessage"
+      echo "##vso[task.setvariable variable=RUN_UPDATE_DEPENDENTS;isOutput=true]$update"
     name: GetCommitMessage
-    displayName: grab commit message
+    displayName:  Check build labels
 
 ##############################
 
 # build MDP
 - job: Build_MDP
-  condition: not( or( contains(dependencies.Get_Build_Options.outputs['GetCommitMessage.COMMIT_MESSAGE'], '***UPDATE_DEPENDENTS***'), eq(variables['UPDATE_DEPENDENTS'], 'true') ) )
+  condition: not( or( eq(dependencies.Get_Build_Flags.outputs['RUN_UPDATE_DEPENDENTS'], 'true'), eq(variables['UPDATE_DEPENDENTS'], 'true') ) )
 
   dependsOn:
-    - Get_Build_Options
+    - Get_Build_Flags
 
   pool:
     vmImage: 'VS2017-Win2016'
@@ -91,17 +95,17 @@ jobs:
     displayName: Setup git identity
 
   - task: NuGetToolInstaller@0
-    inputs:
-      versionSpec: '5.4.0'
     condition: not(variables['StartReleaseCandidate'])
     displayName: 'Install specific version of NuGet'
+    inputs:
+      versionSpec: '5.4.0'
 
   - task: NuGetCommand@2
+    displayName: NuGet restore
     inputs:
       restoreSolution: '$(solution)'
       feedsToUse: config
       nugetConfigPath: 'NuGet.config'
-    displayName: NuGet restore
 
   - task: VSBuild@1
     inputs:
@@ -111,48 +115,48 @@ jobs:
       configuration: '$(buildConfiguration)'
 
   - task: CopyFiles@1
+    condition: succeeded()
+    displayName: Collecting deployable artifacts
     inputs:
       sourceFolder: $(Build.SourcesDirectory)
       Contents: |
         **\bin\Release\nanoFramework.Tools.MetaDataProcessor.exe
       TargetFolder: '$(Build.ArtifactStagingDirectory)'
       flattenFolders: true
-    condition: succeeded()
-    displayName: Collecting deployable artifacts
 
   # update could build number (only possible if this is not a PR from a fork)
   - task: PowerShell@2
+    condition: and( succeeded(), ne(variables['system.pullrequest.isfork'], true) )
+    displayName: Update cloud build number
     inputs:
         targetType: 'inline'
         script: Write-Host "$("##vso[build.updatebuildnumber]")$env:NBGV_NuGetPackageVersion"
-    condition: and( succeeded(), ne(variables['system.pullrequest.isfork'], true) )
-    displayName: Update cloud build number
 
   - task: NuGetCommand@2
+    condition: succeeded()
+    displayName: Pack NuGet witj MDP tool
     inputs:
       command: 'custom' 
-      arguments: 'pack MetadataProcessor.Core\package.nuspec -Version $(NBGV_NuGetPackageVersion)'
-    condition: succeeded()
-    displayName: Pack NuGet for MDP tool
+      arguments: 'pack MetadataProcessor.Core\package.nuspec -Version $(NBGV_NuGetPackageVersion) -properties commit="$(Build.SourceVersion)"'
 
   - task: CopyFiles@1
+    condition: succeeded()
+    displayName: Collecting NuGet package artifact
     inputs:
       sourceFolder: $(Build.SourcesDirectory)
       Contents: |
         **\nanoFramework*.nupkg
       TargetFolder: '$(Build.ArtifactStagingDirectory)'
       flattenFolders: true
-    condition: succeeded()
-    displayName: Collecting NuGet package artifact
 
   # publish artifacts (only possible if this is not a PR originated on a fork)
   - task: PublishBuildArtifacts@1
+    condition: and( succeeded(), ne(variables['system.pullrequest.isfork'], true) )
+    displayName: Publish deployables artifacts
     inputs:
       PathtoPublish: '$(Build.ArtifactStagingDirectory)'
       ArtifactName: deployables
       ArtifactType: Container
-    condition: and( succeeded(), ne(variables['system.pullrequest.isfork'], true) )
-    displayName: Publish deployables artifacts
 
   # push NuGet packages to Azure Artifacts feed (always happens except on PR builds)
   - task: NuGetCommand@2
@@ -188,10 +192,10 @@ jobs:
 
 ##############################
 - job: Update_Dependents
-  condition: or( contains(dependencies.Get_Build_Options.outputs['GetCommitMessage.COMMIT_MESSAGE'], '***UPDATE_DEPENDENTS***'), eq(variables['UPDATE_DEPENDENTS'], 'true') )
+  condition: or( eq(dependencies.Get_Build_Flags.outputs['RUN_UPDATE_DEPENDENTS'], 'true'), eq(variables['UPDATE_DEPENDENTS'], 'true') )
 
   dependsOn:
-    - Get_Build_Options
+    - Get_Build_Flags
     - Build_MDP
 
   pool:

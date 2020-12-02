@@ -13,7 +13,7 @@ Start-Sleep -Seconds 60
 $commitMessage = ""
 $prTitle = ""
 $newBranchName = "develop-nfbot/update-dependencies/" + [guid]::NewGuid().ToString()
-$packageTargetVersion = $env:NBGV_SimpleVersion
+$packageTargetVersion = $env:NBGV_NuGetPackageVersion
 
 # working directory is agent temp directory
 Write-Debug "Changing working directory to $env:Agent_TempDirectory"
@@ -35,28 +35,22 @@ git checkout --quiet develop | Out-Null
 ####################
 # VS 2017
 
-Write-Host "Restoring packages in VS2017 solution..."
-
-# restore NuGet packages, need to do this before anything else
-nuget restore nanoFramework.Tools.VisualStudio.sln -ConfigFile NuGet.Config
-
 Write-Host "Updating nanoFramework.Tools.MetadataProcessor.Core package in VS2017 solution..."
 
-nuget update -Id nanoFramework.Tools.MetadataProcessor.Core Tools.BuildTasks\Tools.BuildTasks.csproj -ConfigFile NuGet.Config -PreRelease
-nuget update -Id nanoFramework.Tools.MetadataProcessor.Core VisualStudio.Extension\VisualStudio.Extension.csproj -ConfigFile NuGet.Config -PreRelease
+dotnet remove Tools.BuildTasks\Tools.BuildTasks.csproj package nanoFramework.Tools.MetadataProcessor.Core
+dotnet add Tools.BuildTasks\Tools.BuildTasks.csproj package nanoFramework.Tools.MetadataProcessor.Core --prerelease
+dotnet remove VisualStudio.Extension\VisualStudio.Extension.csproj package nanoFramework.Tools.MetadataProcessor.Core
+dotnet add VisualStudio.Extension\VisualStudio.Extension.csproj package nanoFramework.Tools.MetadataProcessor.Core --prerelease
 
 ####################
 # VS 2019
 
-Write-Host "Restoring packages in VS2019 solution..."
-
-# restore NuGet packages, need to do this before anything else
-nuget restore nanoFramework.Tools.VisualStudio-2019.sln -ConfigFile NuGet.Config
-
 Write-Host "Updating nanoFramework.Tools.MetadataProcessor.Core package in VS2019 solution..."
 
-nuget update -Id nanoFramework.Tools.MetadataProcessor.Core Tools.BuildTasks-2019\Tools.BuildTasks.csproj -ConfigFile NuGet.Config -PreRelease
-nuget update -Id nanoFramework.Tools.MetadataProcessor.Core VisualStudio.Extension-2019\VisualStudio.Extension.csproj -ConfigFile NuGet.Config -PreRelease
+dotnet remove Tools.BuildTasks-2019\Tools.BuildTasks.csproj package nanoFramework.Tools.MetadataProcessor.Core
+dotnet add Tools.BuildTasks-2019\Tools.BuildTasks.csproj package nanoFramework.Tools.MetadataProcessor.Core --prerelease
+dotnet remove VisualStudio.Extension-2019\VisualStudio.Extension.csproj package nanoFramework.Tools.MetadataProcessor.Core
+dotnet add VisualStudio.Extension-2019\VisualStudio.Extension.csproj package nanoFramework.Tools.MetadataProcessor.Core --prerelease
 
 #####################
 
