@@ -342,6 +342,12 @@ namespace nanoFramework.Tools.MetadataProcessor
                 return;
             }
 
+            if (typeDefinition.IsGenericParameter || typeDefinition.IsGenericInstance)
+            {
+                writer.WriteByte((byte)nanoCLR_DataType.DATATYPE_GENERIC);
+                return;
+            }
+
             writer.WriteByte(0x00);
         }
 

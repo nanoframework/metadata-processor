@@ -97,6 +97,14 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
                 return byrefSig.ToString();
             }
 
+            if (type.IsGenericParameter)
+            {
+                StringBuilder genericSig = new StringBuilder(type.Name);
+                genericSig.Append(type.GetElementType().TypeSignatureAsString());
+
+                return genericSig.ToString();
+            }
+
             return "";
         }
 
@@ -165,6 +173,10 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
                 return arraySig.ToString();
             }
 
+            if (type.IsGenericParameter)
+            {
+                return "TGeneric";
+            }
             return "";
         }
 
@@ -232,6 +244,11 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
                 arraySig.Append("_ARRAY");
 
                 return arraySig.ToString();
+            }
+
+            if (type.IsGenericParameter)
+            {
+                return "TGeneric";
             }
 
             return "";
