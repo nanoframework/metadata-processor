@@ -247,7 +247,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                     var methodDef = new MethodDef()
                     {
                         ReferenceId = m.MetadataToken.ToInt32().ToString("x8"),
-                        Name = m.Name,
+                        Name = m.FullName(),
                         RVA = m.RVA.ToString("x8"),
                         Implementation = "00000000",
                         Signature = PrintSignatureForMethod(m)

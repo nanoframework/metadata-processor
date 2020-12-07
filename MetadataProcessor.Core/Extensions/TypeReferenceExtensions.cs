@@ -97,6 +97,11 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
                 return byrefSig.ToString();
             }
 
+            if (type.IsGenericParameter)
+            {
+                return $"!!{type.Name}";
+            }
+
             return "";
         }
 
@@ -165,6 +170,10 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
                 return arraySig.ToString();
             }
 
+            if (type.IsGenericParameter)
+            {
+                return "UNSUPPORTED";
+            }
             return "";
         }
 
@@ -232,6 +241,11 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
                 arraySig.Append("_ARRAY");
 
                 return arraySig.ToString();
+            }
+
+            if (type.IsGenericParameter)
+            {
+                return "UNSUPPORTED";
             }
 
             return "";

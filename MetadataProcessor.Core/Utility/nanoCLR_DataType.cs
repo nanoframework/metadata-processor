@@ -47,6 +47,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         DATATYPE_LAST_PRIMITIVE = DATATYPE_STRING,
 
         DATATYPE_OBJECT, // Shortcut for System.Object
+        DATATYPE_GENERIC = DATATYPE_OBJECT,
         DATATYPE_CLASS, // CLASS <class Token>
         DATATYPE_VALUETYPE, // VALUETYPE <class Token>
         DATATYPE_SZARRAY, // Shortcut for single dimension zero lower bound array SZARRAY <type>
