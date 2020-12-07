@@ -175,7 +175,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
 
             if (type.IsGenericParameter)
             {
-                return "TGeneric";
+                return "UNSUPPORTED";
             }
             return "";
         }
@@ -248,7 +248,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
 
             if (type.IsGenericParameter)
             {
-                return "TGeneric";
+                return "UNSUPPORTED";
             }
 
             return "";
