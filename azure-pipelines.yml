@@ -68,7 +68,7 @@ jobs:
 
 # build MDP
 - job: Build_MDP
-  condition: not( or( eq(dependencies.Get_Build_Flags.outputs['GetPRLabels.RUN_UPDATE_DEPENDENTS'], 'true'), eq(variables['UPDATE_DEPENDENTS'], 'true') ) )
+  condition: eq(variables['UPDATE_DEPENDENTS'], 'false')
 
   dependsOn:
     - Get_Build_Flags
