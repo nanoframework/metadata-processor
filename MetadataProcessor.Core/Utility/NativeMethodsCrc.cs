@@ -183,8 +183,18 @@ namespace nanoFramework.Tools.MetadataProcessor
             }
             else
             {
-                // type is not primitive, get full qualified type name
-                return parameterType.FullName.Replace(".", String.Empty);
+                // type is not primitive
+                
+                if (parameterType.IsGenericParameter)
+                {
+                    // check if it's generic
+                    return "DATATYPE_GENERICTYPE";
+                }
+                else
+                { 
+                    // this is not a generic, get full qualified type name
+                    return parameterType.FullName.Replace(".", String.Empty);
+                }
             }
         }
 
