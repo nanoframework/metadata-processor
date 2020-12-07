@@ -342,7 +342,14 @@ namespace nanoFramework.Tools.MetadataProcessor
                 return;
             }
 
-            if (typeDefinition.IsGenericParameter || typeDefinition.IsGenericInstance)
+            if (typeDefinition.IsGenericInstance)
+            {
+                var genericType = (GenericInstanceType)typeDefinition;
+                WriteDataType(genericType.ElementType, writer, alsoWriteSubType, expandEnumType, isTypeDefinition);
+                return;
+            }
+
+            if (typeDefinition.IsGenericParameter|| typeDefinition.IsGenericInstance)
             {
                 writer.WriteByte((byte)nanoCLR_DataType.DATATYPE_GENERIC);
                 return;
