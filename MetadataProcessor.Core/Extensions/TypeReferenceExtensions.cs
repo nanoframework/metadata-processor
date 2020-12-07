@@ -99,10 +99,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
 
             if (type.IsGenericParameter)
             {
-                StringBuilder genericSig = new StringBuilder(type.Name);
-                genericSig.Append(type.GetElementType().TypeSignatureAsString());
-
-                return genericSig.ToString();
+                return $"!!{type.Name}";
             }
 
             return "";
