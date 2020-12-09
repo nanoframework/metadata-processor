@@ -207,6 +207,11 @@ jobs:
     fetchDepth: 100
   
   - template: azure-pipelines-templates/install-nbgv-tool.yml@templates
+  
+  - task: NuGetToolInstaller@0
+    displayName: 'Install specific version of NuGet'
+    inputs:
+      versionSpec: '5.8.0'
 
   - script: nbgv cloud -a -c
     condition: succeeded()
