@@ -38,8 +38,11 @@ git checkout --quiet develop | Out-Null
 Write-Host "Updating nanoFramework.Tools.MetadataProcessor.Core package in VS2017 solution..."
 
 dotnet remove Tools.BuildTasks\Tools.BuildTasks.csproj package nanoFramework.Tools.MetadataProcessor.Core
+
 dotnet add Tools.BuildTasks\Tools.BuildTasks.csproj package nanoFramework.Tools.MetadataProcessor.Core --prerelease -s https://pkgs.dev.azure.com/nanoframework/feed/_packaging/sandbox/nuget/v3/index.json
+
 dotnet remove VisualStudio.Extension\VisualStudio.Extension.csproj package nanoFramework.Tools.MetadataProcessor.Core
+
 dotnet add VisualStudio.Extension\VisualStudio.Extension.csproj package nanoFramework.Tools.MetadataProcessor.Core --prerelease -s https://pkgs.dev.azure.com/nanoframework/feed/_packaging/sandbox/nuget/v3/index.json
 
 ####################
@@ -48,8 +51,11 @@ dotnet add VisualStudio.Extension\VisualStudio.Extension.csproj package nanoFram
 Write-Host "Updating nanoFramework.Tools.MetadataProcessor.Core package in VS2019 solution..."
 
 dotnet remove Tools.BuildTasks-2019\Tools.BuildTasks.csproj package nanoFramework.Tools.MetadataProcessor.Core
+
 dotnet add Tools.BuildTasks-2019\Tools.BuildTasks.csproj package nanoFramework.Tools.MetadataProcessor.Core --prerelease -s https://pkgs.dev.azure.com/nanoframework/feed/_packaging/sandbox/nuget/v3/index.json
+
 dotnet remove VisualStudio.Extension-2019\VisualStudio.Extension.csproj package nanoFramework.Tools.MetadataProcessor.Core
+
 dotnet add VisualStudio.Extension-2019\VisualStudio.Extension.csproj package nanoFramework.Tools.MetadataProcessor.Core --prerelease -s https://pkgs.dev.azure.com/nanoframework/feed/_packaging/sandbox/nuget/v3/index.json
 
 #####################
