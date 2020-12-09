@@ -5,6 +5,7 @@
 //
 
 using Mono.Cecil;
+using Mono.Cecil.Cil;
 using Mono.Collections.Generic;
 using nanoFramework.Tools.MetadataProcessor.Core.Extensions;
 using System;
@@ -514,6 +515,15 @@ namespace nanoFramework.Tools.MetadataProcessor
                         }
                     }
 
+                    // generic parameters
+                    foreach (var g in td.GenericParameters)
+                    {
+                        if (!nanoTablesContext.ClassNamesToExclude.Contains(g.DeclaringType.FullName))
+                        {
+                            set.Add(g.MetadataToken);
+                        }
+                    }
+
                     // methods
                     foreach (var m in td.Methods)
                     {
@@ -620,6 +630,15 @@ namespace nanoFramework.Tools.MetadataProcessor
                         set.Add(md.ReturnType.MetadataToken);
                     }
 
+                    // generic parameters
+                    if(md.HasGenericParameters)
+                    {
+                        foreach (var gp in md.GenericParameters)
+                        {
+                            set.Add(gp.MetadataToken);
+                        }
+                    }
+
                     // parameters
                     foreach (var p in md.Parameters)
                     {
@@ -707,7 +726,9 @@ namespace nanoFramework.Tools.MetadataProcessor
                                 i.Operand is FieldReference ||
                                 i.Operand is TypeDefinition ||
                                 i.Operand is TypeSpecification ||
-                                i.Operand is TypeReference)
+                                i.Operand is TypeReference ||
+                                i.Operand is GenericInstanceType ||
+                                i.Operand is GenericParameter)
                             {
                                 set.Add(((IMetadataTokenProvider)i.Operand).MetadataToken);
                             }
@@ -762,6 +783,16 @@ namespace nanoFramework.Tools.MetadataProcessor
                         }
                     }
 
+                    break;
+
+                case TokenType.GenericParam:
+                case TokenType.AssemblyRef:
+                case TokenType.String:
+                    // we are good with these, nothing to do here
+                    break;
+
+                default:
+                    Debug.Fail($"Unable to process token {token}.");
                     break;
             }
 
@@ -823,6 +854,26 @@ namespace nanoFramework.Tools.MetadataProcessor
                     output.Append(fd.Name);
                     break;
 
+                case TokenType.GenericParam:
+                    var gp = _tablesContext.GenericParamsTable.Items.FirstOrDefault(g => g.MetadataToken == token);
+
+                    output.Append($"[GenericParam 0x{token.ToUInt32().ToString("X8")}]");
+
+                    if (gp.DeclaringType != null)
+                    {
+                        output.Append(TokenToString(gp.DeclaringType.MetadataToken));
+                        output.Append("::");
+                    }
+                    else if(gp.DeclaringMethod != null)
+                    {
+                        output.Append(TokenToString(gp.DeclaringMethod.MetadataToken));
+                        output.Append("::");
+                    }
+
+                    output.Append(gp.Name);
+                    
+                    break;
+
                 case TokenType.Method:
                     var md = _tablesContext.MethodDefinitionTable.Items.FirstOrDefault(i => i.MetadataToken == token);
 
@@ -879,6 +930,17 @@ namespace nanoFramework.Tools.MetadataProcessor
                             typeRef = fr.DeclaringType;
                             typeName = fr.Name;
                         }
+                        else
+                        {
+                            // try now with generic parameters
+                            var gr = _tablesContext.GenericParamsTable.Items.FirstOrDefault(g => g.MetadataToken == token);
+
+                            if (gr != null)
+                            {
+                                typeRef = gr.DeclaringType;
+                                typeName = gr.Name;
+                            }
+                        }
                     }
 
                     Debug.Assert(typeRef != null);
@@ -915,6 +977,10 @@ namespace nanoFramework.Tools.MetadataProcessor
                     {
                         output.Append($"'{sr}'");
                     }
+                    break;
+
+                default:
+                    Debug.Fail($"Unable to process token {token}.");
                     break;
             }
 

@@ -23,6 +23,10 @@ TypeRefProps [{{ReferenceId}}]: Scope: {{Scope}} '{{Name}}'{{#newline}}
 
 {{#each TypeDefinitions}}
 TypeDefProps [{{ReferenceId}}]: Flags: {{Flags}} Extends: {{ExtendsType}} Enclosed: {{EnclosedType}} '{{Name}}'{{#newline}}
+{{#each GenericParameters}}
+    GenericParam [{{GenericParamToken}}]: Position: ({{Position}}) '{{Name}}' Owner: {{Owner}} [{{Signature}}]{{#newline}}
+{{/each}}
+
 {{#each FieldDefinitions}}
     FieldDefProps [{{ReferenceId}}]: Attr: {{Attributes}} Flags: {{Flags}} '{{Name}}' [{{Signature}}]{{#newline}}
 {{/each}}
