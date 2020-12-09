@@ -665,8 +665,17 @@ namespace nanoFramework.Tools.MetadataProcessor
                 writer.WriteMetadataToken(((uint)referenceId << 2) | 0x01);
             }
             else if (_context.TypeDefinitionTable.TryGetTypeReferenceId(
-                typeDefinition.Resolve(), out referenceId))
+                typeDefinition.Resolve(),
+                out referenceId))
             {
+                writer.WriteMetadataToken((uint)referenceId << 2);
+            }
+            else if (typeDefinition.Resolve().HasGenericParameters &&
+                _context.GenericParamsTable.TryGetParameterId(
+                typeDefinition.Resolve().GenericParameters.FirstOrDefault(),
+                out referenceId))
+            {
+                // TODO
                 writer.WriteMetadataToken((uint)referenceId << 2);
             }
             else

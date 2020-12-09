@@ -97,7 +97,8 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
                 return byrefSig.ToString();
             }
 
-            if (type.IsGenericParameter)
+            if (type.IsGenericParameter ||
+                type.IsGenericInstance)
             {
                 return $"!!{type.Name}";
             }

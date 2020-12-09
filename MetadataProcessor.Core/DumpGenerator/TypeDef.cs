@@ -19,6 +19,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
         public string Name;
 
+        public List<GenericParam> GenericParameters = new List<GenericParam>();
         public List<FieldDef> FieldDefinitions = new List<FieldDef>();
         public List<MethodDef> MethodDefinitions = new List<MethodDef>();
         public List<InterfaceDef> InterfaceDefinitions = new List<InterfaceDef>();

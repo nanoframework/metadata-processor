@@ -55,6 +55,7 @@
     <Compile Include="DumpGenerator\ExceptionHandler.cs" />
     <Compile Include="DumpGenerator\AttributeCustom.cs" />
     <Compile Include="DumpGenerator\AttFixedArgs.cs" />
+    <Compile Include="DumpGenerator\GenericParam.cs" />
     <Compile Include="DumpGenerator\UserString.cs" />
     <Compile Include="DumpGenerator\ILCode.cs" />
     <Compile Include="DumpGenerator\LocalDef.cs" />
@@ -92,6 +93,7 @@
     <Compile Include="Tables\nanoFieldDefinitionTable.cs" />
     <Compile Include="Tables\nanoFieldReferenceTable.cs" />
     <Compile Include="Tables\nanoMethodDefinitionTable.cs" />
+    <Compile Include="Tables\nanoGenericParamTable.cs" />
     <Compile Include="Tables\nanoMethodReferenceTable.cs" />
     <Compile Include="Tables\nanoReferenceTableBase.cs" />
     <Compile Include="Tables\nanoResourceDataTable.cs" />

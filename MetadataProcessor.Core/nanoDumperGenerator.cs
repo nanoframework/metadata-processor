@@ -224,6 +224,21 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                     typeDef.EnclosedType = token.ToInt32().ToString("x8");
                 }
 
+                // list generic parameters
+                foreach (var gp in t.GenericParameters)
+                {
+                    var genericParam = new GenericParam()
+                    {
+                        Position = gp.Position.ToString(),
+                        GenericParamToken = gp.MetadataToken.ToInt32().ToString("x8"),
+                        Name = gp.FullName,
+                        Owner = gp.Owner.MetadataToken.ToInt32().ToString("x8"),
+                        Signature = gp.DeclaringType.Name
+                    };
+
+                    typeDef.GenericParameters.Add(genericParam);
+                }
+
                 // list type fields
                 foreach (var f in t.Fields)
                 {

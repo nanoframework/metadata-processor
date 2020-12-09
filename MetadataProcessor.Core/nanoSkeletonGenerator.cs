@@ -4,7 +4,6 @@
 //
 
 using Mono.Cecil;
-using Mono.Cecil.Rocks;
 using Mustache;
 using nanoFramework.Tools.MetadataProcessor.Core.Extensions;
 using System;

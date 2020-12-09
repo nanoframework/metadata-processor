@@ -115,14 +115,17 @@ namespace nanoFramework.Tools.MetadataProcessor
             var memberReferences = mainModule.GetMemberReferences()
                 .Where(item => 
                     (typeReferencesNames.Contains(item.DeclaringType.FullName) || 
-                    item.DeclaringType.GetElementType().IsPrimitive))
+                    item.DeclaringType.GetElementType().IsPrimitive ||
+                    item.ContainsGenericParameter ||
+                    item.DeclaringType.IsGenericInstance))
+
                 .ToList();
 
             FieldReferencesTable = new nanoFieldReferenceTable(
                 memberReferences.OfType<FieldReference>(), this);
             MethodReferencesTable = new nanoMethodReferenceTable(
                 memberReferences.OfType<MethodReference>(), this);
-
+           
             // Internal types definitions
 
             var types = GetOrderedTypes(mainModule, explicitTypesOrder);
@@ -133,7 +136,6 @@ namespace nanoFramework.Tools.MetadataProcessor
                 .SelectMany(item => GetOrderedFields(item.Fields.Where(field => !field.HasConstant)))
                 .ToList();
             FieldsTable = new nanoFieldDefinitionTable(fields, this);
-
             var methods = types.SelectMany(item => GetOrderedMethods(item.Methods)).ToList();
 
             MethodDefinitionTable = new nanoMethodDefinitionTable(methods, this);
@@ -171,6 +173,24 @@ namespace nanoFramework.Tools.MetadataProcessor
             // Additional information
 
             ResourceFileTable = new nanoResourceFileTable(this);
+
+            // build list of generic parameters belonging to method defs
+            List<GenericParameter> methodDefsGenericParameters = new List<GenericParameter>();
+
+            foreach (var m in methods)
+            {
+                if (m.HasGenericParameters)
+                {
+                    methodDefsGenericParameters.AddRange(m.GenericParameters);
+                }
+            }
+
+            var generics = types
+                            .SelectMany(t => t.GenericParameters)
+                            .Concat(methodDefsGenericParameters)
+                            .ToList();
+
+            GenericParamsTable = new nanoGenericParamTable(generics, this);
 
             // Pre-allocate strings from some tables
             AssemblyReferenceTable.AllocateStrings();
@@ -222,6 +242,8 @@ namespace nanoFramework.Tools.MetadataProcessor
         public nanoTypeReferenceTable TypeReferencesTable { get; private set; }
 
         public nanoFieldReferenceTable FieldReferencesTable { get; private set; }
+
+        public nanoGenericParamTable GenericParamsTable { get; private set; }
 
         public nanoMethodReferenceTable MethodReferencesTable { get; private set; }
 
