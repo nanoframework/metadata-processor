@@ -349,9 +349,11 @@ namespace nanoFramework.Tools.MetadataProcessor
                 return;
             }
 
-            if (typeDefinition.IsGenericParameter|| typeDefinition.IsGenericInstance)
+            if (typeDefinition.IsGenericParameter)
             {
-                writer.WriteByte((byte)nanoCLR_DataType.DATATYPE_GENERIC);
+                // generic parameter should be declared as object
+                // the CLR is able to resolve to the correct type
+                writer.WriteByte((byte)nanoCLR_DataType.DATATYPE_OBJECT);
                 return;
             }
 
