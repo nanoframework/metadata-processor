@@ -52,6 +52,21 @@ namespace nanoFramework.Tools.MetadataProcessor
         DATATYPE_SZARRAY, // Shortcut for single dimension zero lower bound array SZARRAY <type>
         DATATYPE_BYREF, // BYREF <type>
 
+        /// <summary>
+        /// Generic parameter in a generic type definition, represented as number
+        /// </summary>
+        DATATYPE_VAR,
+
+        /// <summary>
+        /// Generic type instantiation
+        /// </summary>
+        DATATYPE_GENERICINST,
+
+        /// <summary>
+        /// Generic parameter in a generic method definition, represented as number
+        /// </summary>
+        DATATYPE_MVAR,
+
         ////////////////////////////////////////
 
         DATATYPE_FREEBLOCK,

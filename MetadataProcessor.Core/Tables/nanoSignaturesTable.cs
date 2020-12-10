@@ -320,11 +320,21 @@ namespace nanoFramework.Tools.MetadataProcessor
             {
                 writer.WriteByte((byte)nanoCLR_DataType.DATATYPE_SZARRAY);
 
-                if (alsoWriteSubType)
+                var array = (ArrayType)typeDefinition;
+
+                if (array.ElementType.IsGenericParameter)
                 {
-                    var array = (ArrayType)typeDefinition;
+                    // ECMA 335 VI.B.4.3 Metadata
+                    writer.WriteByte((byte)nanoCLR_DataType.DATATYPE_VAR);
+
+                    writer.WriteByte((byte)(array.ElementType as GenericParameter).Position);
+                }
+                else if (alsoWriteSubType)
+                {
+                    
                     WriteDataType(array.ElementType, writer, true, expandEnumType, isTypeDefinition);
                 }
+
                 return;
             }
 
@@ -344,16 +354,29 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             if (typeDefinition.IsGenericInstance)
             {
+                // following ECMA-335 VI.B.4.3 Metadata
+                writer.WriteByte((byte)nanoCLR_DataType.DATATYPE_GENERICINST);
+
                 var genericType = (GenericInstanceType)typeDefinition;
-                WriteDataType(genericType.ElementType, writer, alsoWriteSubType, expandEnumType, isTypeDefinition);
+
+                WriteDataType(genericType.ElementType, writer, false, expandEnumType, isTypeDefinition);
+
+                writer.WriteByte((byte)genericType.GenericArguments.Count);
+
+                foreach(var a in genericType.GenericArguments)
+                {
+                    WriteDataType(a, writer, true, expandEnumType, isTypeDefinition);
+                }
+
                 return;
             }
 
             if (typeDefinition.IsGenericParameter)
             {
-                // generic parameter should be declared as object
-                // the CLR is able to resolve to the correct type
-                writer.WriteByte((byte)nanoCLR_DataType.DATATYPE_OBJECT);
+                // following ECMA-335 VI.B.4.3 Metadata
+
+                writer.WriteByte((byte)nanoCLR_DataType.DATATYPE_MVAR);
+                writer.WriteByte((byte)(typeDefinition as GenericParameter).Position);
                 return;
             }
 
@@ -380,7 +403,8 @@ namespace nanoFramework.Tools.MetadataProcessor
             {
                 var binaryWriter = nanoBinaryWriter.CreateBigEndianBinaryWriter(writer);
 
-                binaryWriter.WriteByte(0x06); // Field reference calling convention
+                // Field reference calling convention
+                binaryWriter.WriteByte(0x06);
                 WriteTypeInfo(fieldReference.FieldType, binaryWriter);
 
                 return buffer.ToArray();
@@ -394,8 +418,25 @@ namespace nanoFramework.Tools.MetadataProcessor
             using (var writer = new BinaryWriter(buffer)) // Only Write(Byte) will be used
             {
                 var binaryWriter = nanoBinaryWriter.CreateLittleEndianBinaryWriter(writer);
-                writer.Write((byte)(methodReference.HasThis ? 0x20 : 0x00));
 
+                // method calling convention
+
+                // IMAGE_CEE_CS_CALLCONV_DEFAULT: 0x00
+                // IMAGE_CEE_CS_CALLCONV_HASTHIS: 0x20
+                // IMAGE_CEE_CS_CALLCONV_GENERIC: 0x10
+
+                byte callingConvention = methodReference.HasThis ? (byte)0x20 : (byte)0x00;
+                callingConvention |= (byte)methodReference.CallingConvention;
+
+                writer.Write(callingConvention);
+
+                // generic parameters count, if any
+                if (methodReference.CallingConvention == MethodCallingConvention.Generic)
+                {
+                    writer.Write((byte)(methodReference as MethodReference).GenericParameters.Count);
+                }
+
+                // regular parameter count
                 writer.Write((byte)(methodReference.Parameters.Count));
 
                 WriteTypeInfo(methodReference.ReturnType, binaryWriter);
@@ -668,14 +709,6 @@ namespace nanoFramework.Tools.MetadataProcessor
                 typeDefinition.Resolve(),
                 out referenceId))
             {
-                writer.WriteMetadataToken((uint)referenceId << 2);
-            }
-            else if (typeDefinition.Resolve().HasGenericParameters &&
-                _context.GenericParamsTable.TryGetParameterId(
-                typeDefinition.Resolve().GenericParameters.FirstOrDefault(),
-                out referenceId))
-            {
-                // TODO
                 writer.WriteMetadataToken((uint)referenceId << 2);
             }
             else
