@@ -170,6 +170,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             _tablesContext.AssemblyReferenceTable.RemoveUnusedItems(set);
             _tablesContext.TypeReferencesTable.RemoveUnusedItems(set);
             _tablesContext.FieldsTable.RemoveUnusedItems(set);
+            _tablesContext.GenericParamsTable.RemoveUnusedItems(set);
             _tablesContext.FieldReferencesTable.RemoveUnusedItems(set);
             _tablesContext.MethodDefinitionTable.RemoveUnusedItems(set);
             _tablesContext.MethodReferencesTable.RemoveUnusedItems(set);
