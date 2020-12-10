@@ -21,7 +21,7 @@ jobs:
 ##############################
 - job: Get_Build_Flags
   pool:
-    vmImage: 'VS2017-Win2016'
+    vmImage: 'windows-2019'
 
   steps:
   - checkout: self
@@ -74,7 +74,7 @@ jobs:
     - Get_Build_Flags
 
   pool:
-    vmImage: 'VS2017-Win2016'
+    vmImage: 'windows-2019'
 
   variables:
     DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
@@ -192,14 +192,14 @@ jobs:
 
 ##############################
 - job: Update_Dependents
-  condition: or( eq(dependencies.Get_Build_Flags.outputs['GetPRLabels.RUN_UPDATE_DEPENDENTS'], 'true'), eq(variables['UPDATE_DEPENDENTS'], 'true') )
+  condition: and( or( eq(dependencies.Get_Build_Flags.outputs['GetPRLabels.RUN_UPDATE_DEPENDENTS'], 'true'), eq(variables['UPDATE_DEPENDENTS'], 'true') ), not( startsWith(variables['Build.SourceBranch'], 'refs/tags/v') ) )
 
   dependsOn:
     - Get_Build_Flags
     - Build_MDP
 
   pool:
-    vmImage: 'VS2017-Win2016'
+    vmImage: 'windows-2019'
 
   steps:
   # need this here in order to persist GitHub credentials 
@@ -234,7 +234,7 @@ jobs:
   condition: failed('Build_MDP')
 
   pool:
-    vmImage: 'VS2017-Win2016'
+    vmImage: 'windows-2019'
 
   steps:
 
