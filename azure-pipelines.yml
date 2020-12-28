@@ -121,6 +121,7 @@ jobs:
       sourceFolder: $(Build.SourcesDirectory)
       Contents: |
         **\bin\Release\nanoFramework.Tools.MetaDataProcessor.exe
+        **\bin\Release\nanoFramework.Tools.MetadataProcessor.MsBuildTask.dll
       TargetFolder: '$(Build.ArtifactStagingDirectory)'
       flattenFolders: true
 
@@ -134,10 +135,10 @@ jobs:
 
   - task: NuGetCommand@2
     condition: succeeded()
-    displayName: Pack NuGet witj MDP tool
+    displayName: Pack NuGet with MDP MSBuild task
     inputs:
       command: 'custom' 
-      arguments: 'pack MetadataProcessor.Core\package.nuspec -Version $(NBGV_NuGetPackageVersion) -properties commit="$(Build.SourceVersion)"'
+      arguments: 'pack MetadataProcessor.MsBuildTask\package.nuspec -Version $(NBGV_NuGetPackageVersion) -properties commit="$(Build.SourceVersion)"'
 
   - task: CopyFiles@1
     condition: succeeded()
