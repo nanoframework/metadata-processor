@@ -418,6 +418,11 @@ namespace nanoFramework.Tools.MetadataProcessor
                             {
                                 set.Add(p.ParameterType.MetadataToken);
                             }
+                            if (p.ParameterType is GenericInstanceType)
+                            {
+                                set.Add(p.ParameterType.MetadataToken);
+                                set.Add(p.ParameterType.GetElementType().MetadataToken);
+                            }
                         }
                     }
 
@@ -557,6 +562,11 @@ namespace nanoFramework.Tools.MetadataProcessor
                     {
                         set.Add(fd.FieldType.MetadataToken);
                     }
+                    else if (fd.FieldType is GenericInstanceType)
+                    {
+                        set.Add(fd.FieldType.MetadataToken);
+                        set.Add(fd.FieldType.GetElementType().MetadataToken);
+                    }
                     else if (fd.FieldType.IsArray)
                     {
                         if (fd.FieldType.DeclaringType != null)
@@ -680,6 +690,11 @@ namespace nanoFramework.Tools.MetadataProcessor
                         {
                             set.Add(parameterType.MetadataToken);
                         }
+                        else if(parameterType is GenericInstanceType)
+                        {
+                            set.Add(parameterType.MetadataToken);
+                            set.Add(parameterType.GetElementType().MetadataToken);
+                        }
                         else if (!parameterType.IsValueType &&
                                  !parameterType.IsPrimitive &&
                                   parameterType.FullName != "System.Void" &&
@@ -717,6 +732,11 @@ namespace nanoFramework.Tools.MetadataProcessor
                                     !v.VariableType.IsPrimitive)
                             {
                                 set.Add(v.VariableType.MetadataToken);
+                            }
+                            else if (v.VariableType is GenericInstanceType)
+                            {
+                                set.Add(v.VariableType.MetadataToken);
+                                set.Add(v.VariableType.GetElementType().MetadataToken);
                             }
                         }
 
