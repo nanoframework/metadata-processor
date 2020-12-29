@@ -316,6 +316,19 @@ namespace nanoFramework.Tools.MetadataProcessor
                 return;
             }
 
+            if (typeDefinition.MetadataType == MetadataType.Var)
+            {
+                writer.WriteByte((byte)nanoCLR_DataType.DATATYPE_MVAR);
+
+                if (alsoWriteSubType)
+                {
+                    // following ECMA-335 VI.B.4.3 Metadata
+                    writer.WriteByte((byte)(typeDefinition as GenericParameter).Position);
+                }
+
+                return;
+            }
+
             if (typeDefinition.IsArray)
             {
                 writer.WriteByte((byte)nanoCLR_DataType.DATATYPE_SZARRAY);
@@ -368,15 +381,6 @@ namespace nanoFramework.Tools.MetadataProcessor
                     WriteDataType(a, writer, true, expandEnumType, isTypeDefinition);
                 }
 
-                return;
-            }
-
-            if (typeDefinition.IsGenericParameter)
-            {
-                // following ECMA-335 VI.B.4.3 Metadata
-
-                writer.WriteByte((byte)nanoCLR_DataType.DATATYPE_MVAR);
-                writer.WriteByte((byte)(typeDefinition as GenericParameter).Position);
                 return;
             }
 

@@ -1,6 +1,7 @@
 using Mono.Cecil;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace nanoFramework.Tools.MetadataProcessor
 {
@@ -11,6 +12,8 @@ namespace nanoFramework.Tools.MetadataProcessor
     public sealed class nanoMethodDefinitionTable :
         nanoReferenceTableBase<MethodDefinition>
     {
+        private const int sizeOf_CLR_RECORD_METHODDEF = 16;
+
         /// <summary>
         /// Helper class for comparing two instances of <see cref="MethodDefinition"/> objects
         /// using <see cref="MethodDefinition.FullName"/> property as unique key for comparison.
@@ -62,6 +65,8 @@ namespace nanoFramework.Tools.MetadataProcessor
             nanoBinaryWriter writer,
             MethodDefinition item)
         {
+            var writerStartPosition = writer.BaseStream.Position;
+
             if (!_context.MinimizeComplete)
             {
                 return;
@@ -118,6 +123,10 @@ namespace nanoFramework.Tools.MetadataProcessor
             }
 
             writer.WriteUInt16(methodSignature);
+
+            var writerEndPosition = writer.BaseStream.Position;
+
+            Debug.Assert((writerEndPosition - writerStartPosition) == sizeOf_CLR_RECORD_METHODDEF);
         }
 
         public static uint GetFlags(MethodDefinition method)
@@ -148,6 +157,9 @@ namespace nanoFramework.Tools.MetadataProcessor
             const uint MD_DelegateInvoke =          0x00020000;
             const uint MD_DelegateBeginInvoke =     0x00040000;
             const uint MD_DelegateEndInvoke =       0x00080000;
+
+            const uint MD_ContainsGenericParameter =    0x00100000;
+            const uint MD_HasGenericParameter =         0x00200000;
 
             const uint MD_Synchronized =            0x01000000;
             const uint MD_GloballySynchronized =    0x02000000;
@@ -274,6 +286,16 @@ namespace nanoFramework.Tools.MetadataProcessor
                         flag |= MD_DelegateEndInvoke;
                     }
                 }
+            }
+
+            if (method.ContainsGenericParameter)
+            {
+                flag |= MD_ContainsGenericParameter;
+            }
+
+            if (method.HasGenericParameters)
+            {
+                flag |= MD_HasGenericParameter;
             }
 
             return flag;
