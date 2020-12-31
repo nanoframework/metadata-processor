@@ -4,6 +4,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 16.0.30002.166
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MetadataProcessor.Core", "MetadataProcessor.Core\MetadataProcessor.Core.csproj", "{E32F7D15-2499-440C-8026-4D5EE1C5EC3A}"
+	ProjectSection(ProjectDependencies) = postProject
+		{9E5E0766-701D-4266-9EBA-7B3E4338ED21} = {9E5E0766-701D-4266-9EBA-7B3E4338ED21}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MetadataProcessor.Console", "MetadataProcessor.Console\MetadataProcessor.Console.csproj", "{A9E02E14-7321-4B12-8AB5-9A0408ED8FD0}"
 EndProject
