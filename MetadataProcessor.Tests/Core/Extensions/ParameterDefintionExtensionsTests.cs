@@ -21,8 +21,8 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Extensions
             // test
             var r = refIntParameterDefinition.TypeToString();
 
-            Assert.AreEqual(" *", r);
-
+            // TODO need to investigate if this is the correct pointer
+            Assert.AreEqual(" *BYREF I4", r);
 
             var arrayParameterDefinition = methodDefinition.Parameters.First(i => i.Name == "p6");
             Assert.IsInstanceOfType(arrayParameterDefinition.ParameterType, typeof(Mono.Cecil.ArrayType));

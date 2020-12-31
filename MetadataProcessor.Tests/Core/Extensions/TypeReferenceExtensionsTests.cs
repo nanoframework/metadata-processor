@@ -61,7 +61,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Extensions
             DoTypeSignatureAsStringTest(mscorlibAssemblyDefinition, typeof(object), tr => "OBJECT");
             DoTypeSignatureAsStringTest(mscorlibAssemblyDefinition, typeof(System.IO.Path), tr => $"CLASS [{tr.MetadataToken.ToInt32().ToString("x8")}]");
             DoTypeSignatureAsStringTest(mscorlibAssemblyDefinition, typeof(int[]), tr => $"SZARRAY {tr.GetElementType().TypeSignatureAsString()}");
-            DoTypeSignatureAsStringTest(mscorlibAssemblyDefinition, typeof(WeakReference), tr => $"CLASS [{tr.MetadataToken.ToInt32().ToString("x8")}]");
+            DoTypeSignatureAsStringTest(mscorlibAssemblyDefinition, typeof(WeakReference), tr => $"WEAKCLASS");
             DoTypeSignatureAsStringTest(mscorlibAssemblyDefinition, typeof(ICloneable), tr => $"CLASS [{tr.MetadataToken.ToInt32().ToString("x8")}]");
         }
 
@@ -82,8 +82,8 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Extensions
         {
             var mscorlibAssemblyDefinition = TestObjectHelper.GetmscorlibAssemblyDefinition();
 
-            DoToNativeTypeAsStringTest(mscorlibAssemblyDefinition, typeof(IntPtr), tr => "int32_t");
-            DoToNativeTypeAsStringTest(mscorlibAssemblyDefinition, typeof(UIntPtr), tr => "uint32_t");
+            DoToNativeTypeAsStringTest(mscorlibAssemblyDefinition, typeof(IntPtr), tr => "signed int");
+            DoToNativeTypeAsStringTest(mscorlibAssemblyDefinition, typeof(UIntPtr), tr => "unsigned int");
             DoToNativeTypeAsStringTest(mscorlibAssemblyDefinition, typeof(void), tr => "void");
             DoToNativeTypeAsStringTest(mscorlibAssemblyDefinition, typeof(bool), tr => "bool");
             DoToNativeTypeAsStringTest(mscorlibAssemblyDefinition, typeof(char), tr => "char");
@@ -91,8 +91,8 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Extensions
             DoToNativeTypeAsStringTest(mscorlibAssemblyDefinition, typeof(sbyte), tr => "int8_t");
             DoToNativeTypeAsStringTest(mscorlibAssemblyDefinition, typeof(ushort), tr => "uint16_t");
             DoToNativeTypeAsStringTest(mscorlibAssemblyDefinition, typeof(short), tr => "int16_t");
-            DoToNativeTypeAsStringTest(mscorlibAssemblyDefinition, typeof(uint), tr => "uint32_t");
-            DoToNativeTypeAsStringTest(mscorlibAssemblyDefinition, typeof(int), tr => "int32_t");
+            DoToNativeTypeAsStringTest(mscorlibAssemblyDefinition, typeof(uint), tr => "unsigned int");
+            DoToNativeTypeAsStringTest(mscorlibAssemblyDefinition, typeof(int), tr => "signed int");
             DoToNativeTypeAsStringTest(mscorlibAssemblyDefinition, typeof(ulong), tr => "uint64_t");
             DoToNativeTypeAsStringTest(mscorlibAssemblyDefinition, typeof(long), tr => "int64_t");
             DoToNativeTypeAsStringTest(mscorlibAssemblyDefinition, typeof(float), tr => "float");

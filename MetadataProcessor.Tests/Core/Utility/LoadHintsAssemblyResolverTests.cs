@@ -50,8 +50,11 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
         {
             var thisAssemblyName = this.GetType().Assembly.GetName();
             var assemblyNameReference = new Mono.Cecil.AssemblyNameReference(thisAssemblyName.Name, thisAssemblyName.Version);
+            
+            var loadHints = new Dictionary<string, string>();
+            loadHints.Add(thisAssemblyName.Name, this.GetType().Assembly.Location);
 
-            using (var iut = new LoadHintsAssemblyResolver(new Dictionary<string, string>()))
+            using (var iut = new LoadHintsAssemblyResolver(loadHints))
             {
                 var r = resolveFuncToTest(iut, assemblyNameReference);
 
