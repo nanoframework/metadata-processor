@@ -139,13 +139,7 @@ jobs:
       configuration: '$(BuildConfiguration)'
       diagnosticsEnabled: true
       vsTestVersion: toolsInstaller
-
-  - task: PublishTestResults@2
-    condition: succeeded()
-    displayName: 'Publish test results'
-    inputs:
-      testRunner: VSTest
-      testResultsFiles: '**/*.trx'
+      codeCoverageEnabled: true
 
   - task: CopyFiles@1
     condition: succeeded()
