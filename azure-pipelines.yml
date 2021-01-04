@@ -100,6 +100,10 @@ jobs:
     inputs:
       versionSpec: '5.8.0'
 
+  - task: InstallnFBuildComponents@1
+    condition: ne( variables['StartReleaseCandidate'], true )
+    displayName: Install nanoFramework MSBuild components
+    
   - task: NuGetCommand@2
     displayName: NuGet restore
     inputs:
@@ -113,6 +117,29 @@ jobs:
       platform: '$(buildPlatform)'
       msbuildArgs: '/p:PublicRelease=true'
       configuration: '$(buildConfiguration)'
+
+  - task: VisualStudioTestPlatformInstaller@1
+    condition: succeeded()
+    displayName: 'Visual Studio Test Platform Installer'
+    inputs:
+      versionSelector: latestStable
+
+  - task: VSTest@2
+    condition: succeeded()
+    displayName: 'Running tests'
+    inputs:
+      testSelector: 'testAssemblies'
+      testAssemblyVer2: |
+        **\*Tests*.dll
+        !**\*TestAdapter*.dll
+        !**\*TestFramework*.dll
+        !**\obj\**
+      searchFolder: '$(System.DefaultWorkingDirectory)'
+      platform: '$(BuildPlatform)'
+      configuration: '$(BuildConfiguration)'
+      diagnosticsEnabled: true
+      vsTestVersion: toolsInstaller
+      codeCoverageEnabled: true
 
   - task: CopyFiles@1
     condition: succeeded()
