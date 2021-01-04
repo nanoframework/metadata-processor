@@ -43,6 +43,19 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
             return ret;
         }
 
+        public static AssemblyDefinition GetTestNFClassLibraryDefinition()
+        {
+            AssemblyDefinition ret = null;
+
+            var thisAssemblyDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            var testNfClassDir = Path.Combine(thisAssemblyDir, "TestNFClassLibrary");
+            var testNfAppDllPath = Path.Combine(testNfClassDir, "TestNFClassLibrary.dll");
+
+            ret = AssemblyDefinition.ReadAssembly(testNfAppDllPath);
+
+            return ret;
+        }
+
         public static AssemblyDefinition GetmscorlibAssemblyDefinition()
         {
             AssemblyDefinition ret = null;

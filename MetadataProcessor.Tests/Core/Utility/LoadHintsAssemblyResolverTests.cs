@@ -90,6 +90,22 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
             });
         }
 
+        [TestMethod]
+        public void ResolveSomethingInReferencedClassTest()
+        {
+            DoResolveSomethingInReferencedClassTest((iut, assemblyNameReference) =>
+            {
+                Mono.Cecil.AssemblyDefinition ret = null;
+
+                var readerParameters = new Mono.Cecil.ReaderParameters();
+
+                // test
+                ret = iut.Resolve(assemblyNameReference, readerParameters);
+
+                return ret;
+            });
+        }
+
         private void DoResolveSomethingWeirdTest(Func<LoadHintsAssemblyResolver, Mono.Cecil.AssemblyNameReference, Mono.Cecil.AssemblyDefinition> resolveFuncToTest)
         {
             var weirdAssemblyName = Guid.NewGuid().ToString("N");
@@ -111,7 +127,6 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
                 }
             }
 
-
             loadHints.Add(weirdAssemblyName, thisAssembly.Location);
 
             using (var iut = new LoadHintsAssemblyResolver(loadHints))
@@ -124,6 +139,39 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
             }
         }
 
+
+        private void DoResolveSomethingInReferencedClassTest(Func<LoadHintsAssemblyResolver, Mono.Cecil.AssemblyNameReference, Mono.Cecil.AssemblyDefinition> resolveFuncToTest)
+        {
+            var referencedClassAssemblyName = "TestNFClassLibrary";
+            var thisAssembly = this.GetType().Assembly;
+            var loadHints = new Dictionary<string, string>();
+
+            var assemblyNameReference = new Mono.Cecil.AssemblyNameReference(referencedClassAssemblyName, new Version(999, 999));
+
+            using (var iut = new LoadHintsAssemblyResolver(loadHints))
+            {
+                try
+                {
+                    var r = resolveFuncToTest(iut, assemblyNameReference);
+                    Assert.Fail("no exception thrown");
+                }
+                catch
+                {
+                    // no op
+                }
+            }
+
+            loadHints.Add(referencedClassAssemblyName, thisAssembly.Location);
+
+            using (var iut = new LoadHintsAssemblyResolver(loadHints))
+            {
+                // test
+                var r = resolveFuncToTest(iut, assemblyNameReference);
+
+                Assert.IsNotNull(r);
+                Assert.AreEqual(r.FullName, thisAssembly.FullName);
+            }
+        }
 
     }
 }
