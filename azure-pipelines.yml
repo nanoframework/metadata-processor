@@ -111,6 +111,13 @@ jobs:
       feedsToUse: config
       nugetConfigPath: 'NuGet.config'
 
+  - task: NuGetCommand@2
+    displayName: NuGet restore mscorlib
+    inputs:
+      restoreSolution: 'MetadataProcessor.Tests\mscorlib\nanoFramework.CoreLibrary.sln'
+      feedsToUse: config
+      nugetConfigPath: 'NuGet.config'
+  
   - task: VSBuild@1
     inputs:
       solution: '$(solution)'

@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading;
+using TestNFClassLibrary;
 
 namespace TestNFApp
 {
@@ -7,13 +9,21 @@ namespace TestNFApp
     {
         public static void Main()
         {
-            Console.WriteLine("Hello world!");
+            Debug.WriteLine("Hello world!");
 
             Thread.Sleep(Timeout.Infinite);
 
-            // Browse our samples repository: https://github.com/nanoframework/samples
-            // Check our documentation online: https://docs.nanoframework.net/
-            // Join our lively Discord community: https://discord.gg/gCyBu8T
+            // instantiating a class on another assembly
+            ClassOnAnotherAssembly anotherClass = new ClassOnAnotherAssembly();
+
+            // accessing property on class
+            var dummyMirror1 = anotherClass.DummyProperty;
+
+            // instantiating a class on another assembly with a constructor parameter
+            anotherClass = new ClassOnAnotherAssembly(99);
+
+            // accessing property on class
+            dummyMirror1 = anotherClass.DummyProperty;
         }
     }
 }

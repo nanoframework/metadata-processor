@@ -8,26 +8,21 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectTypeGuids>{11A8DD76-328B-46DF-9F39-F559912D0360};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <ProjectGuid>9e5e0766-701d-4266-9eba-7b3e4338ed21</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <ProjectGuid>4dfb8601-824b-4e4c-8d95-e292cb53760e</ProjectGuid>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <FileAlignment>512</FileAlignment>
-    <RootNamespace>TestNFApp</RootNamespace>
-    <AssemblyName>TestNFApp</AssemblyName>
+    <RootNamespace>TestNFClassLibrary</RootNamespace>
+    <AssemblyName>TestNFClassLibrary</AssemblyName>
     <TargetFrameworkVersion>v1.0</TargetFrameworkVersion>
   </PropertyGroup>
   <Import Project="$(NanoFrameworkProjectSystemPath)NFProjectSystem.props" Condition="Exists('$(NanoFrameworkProjectSystemPath)NFProjectSystem.props')" />
   <ItemGroup>
-    <Compile Include="DummyCustomAttribute1.cs" />
-    <Compile Include="DummyCustomAttribute2.cs" />
-    <Compile Include="IOneClassOverAll.cs" />
-    <Compile Include="OneClassOverAll.cs" />
-    <Compile Include="Program.cs" />
+    <Compile Include="ClassOnAnotherAssembly.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\mscorlib\nanoFramework.CoreLibrary\CoreLibrary.nfproj" />
-    <ProjectReference Include="..\TestNFClassLibrary\TestNFClassLibrary\TestNFClassLibrary.nfproj" />
+    <ProjectReference Include="..\..\mscorlib\nanoFramework.CoreLibrary\CoreLibrary.nfproj" />
   </ItemGroup>
   <Import Project="$(NanoFrameworkProjectSystemPath)NFProjectSystem.CSharp.targets" Condition="Exists('$(NanoFrameworkProjectSystemPath)NFProjectSystem.CSharp.targets')" />
   <ProjectExtensions>
