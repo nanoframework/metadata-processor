@@ -81,4 +81,9 @@
     </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <!-- Need to set this environment variable to use the DLL from the build -->
+    <!-- Make sure to remove the environment variable after testing -->
+    <!-- <PreBuildEvent>SETX NF_MDP_MSBUILDTASK_PATH $(TargetDir)</PreBuildEvent> -->
+  </PropertyGroup>
 </Project>

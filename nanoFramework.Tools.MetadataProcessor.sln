@@ -4,9 +4,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 16.0.30002.166
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MetadataProcessor.Core", "MetadataProcessor.Core\MetadataProcessor.Core.csproj", "{E32F7D15-2499-440C-8026-4D5EE1C5EC3A}"
-	ProjectSection(ProjectDependencies) = postProject
-		{9E5E0766-701D-4266-9EBA-7B3E4338ED21} = {9E5E0766-701D-4266-9EBA-7B3E4338ED21}
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MetadataProcessor.Console", "MetadataProcessor.Console\MetadataProcessor.Console.csproj", "{A9E02E14-7321-4B12-8AB5-9A0408ED8FD0}"
 EndProject
@@ -17,6 +14,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MetadataProcessor.Tests", "MetadataProcessor.Tests\MetadataProcessor.Tests.csproj", "{C57A07D9-3293-46ED-9EB7-E05B7965B016}"
+	ProjectSection(ProjectDependencies) = postProject
+		{9B18784E-1BF2-47D1-BDD1-85B678F883F9} = {9B18784E-1BF2-47D1-BDD1-85B678F883F9}
+	EndProjectSection
 EndProject
 Project("{11A8DD76-328B-46DF-9F39-F559912D0360}") = "TestNFApp", "MetadataProcessor.Tests\TestNFApp\TestNFApp.nfproj", "{9E5E0766-701D-4266-9EBA-7B3E4338ED21}"
 EndProject
@@ -25,6 +25,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TestProjects", "TestProjects", "{65BB4122-2D2E-4CC2-9C28-42845B1A496B}"
 EndProject
 Project("{11A8DD76-328B-46DF-9F39-F559912D0360}") = "CoreLibrary", "MetadataProcessor.Tests\mscorlib\nanoFramework.CoreLibrary\CoreLibrary.nfproj", "{BE7B95D5-087C-45F8-8197-4B438BEDFE11}"
+	ProjectSection(ProjectDependencies) = postProject
+		{9B18784E-1BF2-47D1-BDD1-85B678F883F9} = {9B18784E-1BF2-47D1-BDD1-85B678F883F9}
+	EndProjectSection
 EndProject
 Project("{11A8DD76-328B-46DF-9F39-F559912D0360}") = "TestNFClassLibrary", "MetadataProcessor.Tests\TestNFClassLibrary\TestNFClassLibrary\TestNFClassLibrary.nfproj", "{4DFB8601-824B-4E4C-8D95-E292CB53760E}"
 EndProject

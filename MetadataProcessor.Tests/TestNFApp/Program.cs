@@ -1,6 +1,4 @@
-﻿using System;
-using System.Diagnostics;
-using System.Threading;
+﻿using System.Diagnostics;
 using TestNFClassLibrary;
 
 namespace TestNFApp
@@ -9,9 +7,7 @@ namespace TestNFApp
     {
         public static void Main()
         {
-            Debug.WriteLine("Hello world!");
-
-            Thread.Sleep(Timeout.Infinite);
+            Debug.WriteLine("Starting TestNFApp");
 
             // instantiating a class on another assembly
             ClassOnAnotherAssembly anotherClass = new ClassOnAnotherAssembly();
@@ -24,6 +20,8 @@ namespace TestNFApp
 
             // accessing property on class
             dummyMirror1 = anotherClass.DummyProperty;
+
+            Debug.WriteLine("Exiting TestNFApp");
         }
     }
 }
