@@ -29,29 +29,47 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
 
             return ret;
         }
+        public static string GetTestNFAppLocation()
+        {
+            var thisAssemblyDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            var testNfAppDir = Path.Combine(thisAssemblyDir, "TestNFApp");
+            var testNfAppExePath = Path.Combine(testNfAppDir, "TestNFApp.exe");
+
+            return testNfAppExePath;
+        }
+
+        public static string GetTestNFClassLibLocation()
+        {
+            var thisAssemblyDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            var testNfAppDir = Path.Combine(thisAssemblyDir, "TestNFApp");
+            var testNfClassLibPath = Path.Combine(testNfAppDir, "TestNFClassLibrary.dll");
+
+            return testNfClassLibPath;
+        }
+
+        public static string GetNanoClrLocation()
+        {
+            var thisAssemblyDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            var nanoClrDir = Path.Combine(thisAssemblyDir, "nanoClr");
+            var nanoClrFullPath = Path.Combine(nanoClrDir, "nanoFramework.nanoCLR.exe");
+
+            return nanoClrFullPath;
+        }
 
         public static AssemblyDefinition GetTestNFAppAssemblyDefinition()
         {
             AssemblyDefinition ret = null;
 
-            var thisAssemblyDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            var testNfAppDir = Path.Combine(thisAssemblyDir, "TestNFApp");
-            var testNfAppExePath = Path.Combine(testNfAppDir, "TestNFApp.exe");
 
-            ret = AssemblyDefinition.ReadAssembly(testNfAppExePath);
+            ret = AssemblyDefinition.ReadAssembly(GetTestNFAppLocation());
 
             return ret;
         }
-
         public static AssemblyDefinition GetTestNFClassLibraryDefinition()
         {
             AssemblyDefinition ret = null;
 
-            var thisAssemblyDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            var testNfClassDir = Path.Combine(thisAssemblyDir, "TestNFClassLibrary");
-            var testNfAppDllPath = Path.Combine(testNfClassDir, "TestNFClassLibrary.dll");
-
-            ret = AssemblyDefinition.ReadAssembly(testNfAppDllPath);
+            ret = AssemblyDefinition.ReadAssembly(GetTestNFClassLibLocation());
 
             return ret;
         }

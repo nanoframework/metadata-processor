@@ -81,6 +81,7 @@ jobs:
     buildPlatform: 'Any CPU'
     buildConfiguration: 'Release'
     solution: 'nanoFramework.Tools.MetadataProcessor.sln'
+    NF_MDP_MSBUILDTASK_PATH: '$(System.DefaultWorkingDirectory)/MetadataProcessor.MsBuildTask/bin/Release'
 
   steps:
 
@@ -204,7 +205,6 @@ jobs:
       packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
       publishFeedCredentials: 'AzureArtifacts'
       allowPackageConflicts: true
-
 
   # create or update GitHub release
   - task: GitHubReleasePublish@1
