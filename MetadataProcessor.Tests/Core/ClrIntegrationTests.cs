@@ -121,15 +121,13 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
                 nanoClr.WaitForExit(runTimeout);
 
 
-                // look for READY message
-                Assert.IsTrue(output.ToString().Contains("Ready."));
-
-                // look for APP start and exit messages
-                Assert.IsTrue(output.ToString().Contains("Starting TestNFApp"));
-                Assert.IsTrue(output.ToString().Contains("Exiting TestNFApp"));
+                // look for standard messages
+                Assert.IsTrue(output.ToString().Contains("Ready."), "Failed to find READY message.");
+                Assert.IsTrue(output.ToString().Contains("Done."), "Failed to find DONE message.");
+                Assert.IsTrue(output.ToString().Contains("Exiting."), "Failed to find EXITING message.");
 
                 // look for any exceptions
-                Assert.IsFalse(output.ToString().Contains("++++ Exception System.Exception"));
+                Assert.IsFalse(output.ToString().Contains("++++ Exception System.Exception"), "Exception thrown by TestNFApp application.");
             }
             finally
             {
