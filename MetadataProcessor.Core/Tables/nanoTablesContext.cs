@@ -192,6 +192,14 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             GenericParamsTable = new nanoGenericParamTable(generics, this);
 
+            List<GenericParameterConstraint> paramConstraints = GetGenericParamsConstraints(generics);
+
+            GenericParamsConstraintTable = new nanoGenericParameterConstraintTable(paramConstraints, this);
+
+            List<MethodSpecification> methodSpecifications = GetMethodSpecifications(methods);
+
+            MethodSpecificationTable = new nanoMethodSpecificationTable(methodSpecifications, this);
+
             // Pre-allocate strings from some tables
             AssemblyReferenceTable.AllocateStrings();
             TypeReferencesTable.AllocateStrings();
@@ -211,6 +219,39 @@ namespace nanoFramework.Tools.MetadataProcessor
                     SignaturesTable.GetOrCreateSignatureId(methodReference);
                 }
             }
+        }
+
+        private List<MethodSpecification> GetMethodSpecifications(List<MethodDefinition> methods)
+        {
+            List<MethodSpecification> methodSpecs = new List<MethodSpecification>();
+
+            // need to find MethodSpecs in method body
+            foreach (var m in methods.Where(i => i.HasBody))
+            {
+                foreach (var i in m.Body.Instructions)
+                {
+                    if (i.Operand is GenericInstanceMethod)
+                    {
+                        methodSpecs.Add(i.Operand as MethodSpecification);
+                    }
+                }
+            }
+
+            return methodSpecs;
+        }
+
+        private List<GenericParameterConstraint> GetGenericParamsConstraints(List<GenericParameter> generics)
+        {
+            var genericsWithConstraints = generics.Where(g => g.HasConstraints);
+
+            List<GenericParameterConstraint> constraints = new List<GenericParameterConstraint>();
+
+            foreach(var g in genericsWithConstraints)
+            {
+                constraints.AddRange(g.Constraints);
+            }
+
+            return constraints;
         }
 
         /// <summary>
@@ -244,6 +285,10 @@ namespace nanoFramework.Tools.MetadataProcessor
         public nanoFieldReferenceTable FieldReferencesTable { get; private set; }
 
         public nanoGenericParamTable GenericParamsTable { get; private set; }
+
+        public nanoGenericParameterConstraintTable GenericParamsConstraintTable { get; private set; }
+
+        public nanoMethodSpecificationTable MethodSpecificationTable { get; private set; }
 
         public nanoMethodReferenceTable MethodReferencesTable { get; private set; }
 
