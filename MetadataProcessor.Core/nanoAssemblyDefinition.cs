@@ -143,6 +143,9 @@ namespace nanoFramework.Tools.MetadataProcessor
 
                 // store the header size which is required to compute the CRC32 ahead
                 _headerSize = (writer.BaseStream.Position + 3) & 0xFFFFFFFC;
+
+                // check if we need to write any padding bytes
+                writer.WriteBytes(new byte[_headerSize - writer.BaseStream.Position]);
             }
             else
             {
