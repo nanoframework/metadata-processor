@@ -171,6 +171,8 @@ namespace nanoFramework.Tools.MetadataProcessor
             _tablesContext.TypeReferencesTable.RemoveUnusedItems(set);
             _tablesContext.FieldsTable.RemoveUnusedItems(set);
             _tablesContext.GenericParamsTable.RemoveUnusedItems(set);
+            _tablesContext.GenericParamsConstraintTable.RemoveUnusedItems(set);
+            _tablesContext.MethodSpecificationTable.RemoveUnusedItems(set);
             _tablesContext.FieldReferencesTable.RemoveUnusedItems(set);
             _tablesContext.MethodDefinitionTable.RemoveUnusedItems(set);
             _tablesContext.MethodReferencesTable.RemoveUnusedItems(set);
@@ -752,13 +754,34 @@ namespace nanoFramework.Tools.MetadataProcessor
                         {
                             if (i.Operand is MethodReference ||
                                 i.Operand is FieldReference ||
-                                i.Operand is TypeDefinition ||
-                                i.Operand is TypeSpecification ||
-                                i.Operand is TypeReference ||
-                                i.Operand is GenericInstanceType ||
+                                i.Operand is MethodSpecification ||
+                                i.Operand is GenericInstanceMethod ||
                                 i.Operand is GenericParameter)
                             {
                                 set.Add(((IMetadataTokenProvider)i.Operand).MetadataToken);
+                            }
+                            else if (i.OpCode.OperandType is OperandType.InlineType ||
+                                i.Operand is GenericInstanceType)
+                            {
+                                var opType = (TypeReference)i.Operand;
+                                set.Add(((IMetadataTokenProvider)i.Operand).MetadataToken);
+
+                                ushort referenceId;
+                                if (opType is TypeSpecification)
+                                {
+                                    _tablesContext.TypeSpecificationsTable.GetOrCreateTypeSpecificationId(opType);
+                                }
+                                else if (_tablesContext.TypeReferencesTable.TryGetTypeReferenceId(opType, out referenceId))
+                                {
+                                    //referenceId |= typeReferenceMask; // External type reference
+                                }
+                                else
+                                {
+                                    if (!_tablesContext.TypeDefinitionTable.TryGetTypeReferenceId(opType.Resolve(), out referenceId))
+                                    {
+                                    }
+
+                                }
                             }
                             else if (i.Operand is string)
                             {
@@ -811,6 +834,15 @@ namespace nanoFramework.Tools.MetadataProcessor
                         }
                     }
 
+                    break;
+
+                case TokenType.MethodSpec:
+                    var ms = _tablesContext.MethodSpecificationTable.Items.FirstOrDefault(i => i.MetadataToken == token);
+
+                    if (ms != null)
+                    {
+                        set.Add(token);
+                    }
                     break;
 
                 case TokenType.GenericParam:
@@ -1005,6 +1037,10 @@ namespace nanoFramework.Tools.MetadataProcessor
                     {
                         output.Append($"'{sr}'");
                     }
+                    break;
+
+                case TokenType.MethodSpec:
+                    output.Append($"[MethodSpec 0x{token.ToUInt32().ToString("X8")}]");
                     break;
 
                 default:
