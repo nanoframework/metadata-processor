@@ -1024,6 +1024,10 @@ namespace nanoFramework.Tools.MetadataProcessor
         private static IEnumerable<InanoTable> GetTables(
             nanoTablesContext context)
         {
+            //////////////////////////////////////////////////
+            // order matters and must follow CLR_TABLESENUM //
+            //////////////////////////////////////////////////
+
             yield return context.AssemblyReferenceTable;
 
             yield return context.TypeReferencesTable;
@@ -1037,6 +1041,12 @@ namespace nanoFramework.Tools.MetadataProcessor
             yield return context.FieldsTable;
 
             yield return context.MethodDefinitionTable;
+
+            yield return context.GenericParamsTable;
+
+            yield return context.GenericParamsConstraintTable;
+
+            yield return context.MethodSpecificationTable;
 
             yield return context.AttributesTable;
 
