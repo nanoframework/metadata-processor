@@ -82,7 +82,50 @@ namespace nanoFramework.Tools.MetadataProcessor
                 return;
             }
 
-            // TODO
+            // number
+            writer.WriteUInt16((ushort)item.Position);
+
+            // flags
+            writer.WriteUInt16((ushort)item.Attributes);
+
+            // owner
+            ushort owner;
+
+            if(item.Owner is TypeDefinition &&
+                _context.TypeDefinitionTable.TryGetTypeReferenceId(item.Owner as TypeDefinition, out owner))
+            {
+                // TypeOrMethodDef tag is 0 (TypeDef)
+                owner |= 0x0000;
+            }
+            else if (_context.MethodDefinitionTable.TryGetMethodReferenceId(item.Owner as MethodDefinition, out owner))
+            {
+                // TypeOrMethodDef tag is 1 (MethodDef)
+                owner |= 0x8000;
+            }
+            else
+            {
+                throw new ArgumentException($"Can't find entry in type or method definition tables for generic parameter '{item.FullName}' [0x{item.Owner.MetadataToken.ToInt32():x8}].");
+            }
+
+            writer.WriteUInt16(owner);
+
+            // name
+            WriteStringReference(writer, item.Name);
+
+            // link to constrains table
+            if (item.HasConstraints)
+            {
+                ushort paramId;
+
+                if (TryGetParameterId(item, out paramId))
+                {
+                    _context.GenericParamsConstraintTable.SetIdOfParamConstraintOwner(item.Constraints, paramId);
+                }
+                else
+                {
+
+                }
+            }
         }
     }
 }
