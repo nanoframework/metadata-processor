@@ -1066,12 +1066,21 @@ namespace nanoFramework.Tools.MetadataProcessor
             pdbxWriter.Write(xmlWriter);
         }
 
-        private static IEnumerable<InanoTable> GetTables(
+        /// <summary>
+        /// Count of tables in the assembly
+        /// </summary>
+        static public int TablesCount => 0x0013;
+
+        internal static IEnumerable<InanoTable> GetTables(
             nanoTablesContext context)
         {
             //////////////////////////////////////////////////
             // order matters and must follow CLR_TABLESENUM //
             //////////////////////////////////////////////////
+
+            ////////////////////////////////////////////////////////
+            // update count property above when adding new tables //
+            ////////////////////////////////////////////////////////
 
             yield return context.AssemblyReferenceTable;
 
