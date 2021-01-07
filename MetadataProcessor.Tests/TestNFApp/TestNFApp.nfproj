@@ -28,6 +28,7 @@
     <Compile Include="MaxAttribute.cs" />
     <Compile Include="MyAttribute.cs" />
     <Compile Include="MyClass1.cs" />
+    <Compile Include="GenericClass.cs" />
     <Compile Include="OneClassOverAll.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

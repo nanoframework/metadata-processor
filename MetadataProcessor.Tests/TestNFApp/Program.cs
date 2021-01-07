@@ -16,7 +16,10 @@ namespace TestNFApp
         {
             Debug.WriteLine("Starting TestNFApp");
 
-            ////////////////////////////////////////////
+            ///////////////////////////////////////////////////////////////////
+            // referenced class
+            Debug.WriteLine("Referenced class");
+
             // instantiating a class on another assembly
             ClassOnAnotherAssembly anotherClass = new ClassOnAnotherAssembly();
 
@@ -35,6 +38,12 @@ namespace TestNFApp
             /////////////////////////////
             // Reflection Tests
             ReflectionTests();
+            
+            ///////////////////////////////////////////////////////////////////
+            // Generics 
+            Debug.WriteLine("Generics");
+
+            var cut = new GenericClassTests();
 
             Debug.WriteLine("Exiting TestNFApp");
         }
