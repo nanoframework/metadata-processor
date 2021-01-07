@@ -58,6 +58,11 @@ namespace nanoFramework.Tools.MetadataProcessor
         private long _paddingsOffset;
 
         /// <summary>
+        /// Size of the PE file header
+        /// </summary>
+        private long _headerSize;
+
+        /// <summary>
         /// Creates new instance of <see cref="nanoAssemblyDefinition"/> object.
         /// </summary>
         /// <param name="context">
@@ -92,16 +97,24 @@ namespace nanoFramework.Tools.MetadataProcessor
             writer.WriteUInt32(0);
 
             // assembly CRC32
-            writer.WriteUInt32(0); 
-            
+            writer.WriteUInt32(0);
+
+            // flags
+            writer.WriteUInt32(0);
+
+            // nativeMethodsChecksum
             writer.WriteUInt32(_context.NativeMethodsCrc.CurrentCrc);
 
+            // version
             writer.WriteVersion(_context.AssemblyDefinition.Name.Version);
 
+            // assemblyName
             writer.WriteUInt16(isPreAllocationCall
                 ? (ushort) 0x0000
                 : _context.StringTable.GetOrCreateStringId(_context.AssemblyDefinition.Name.Name));
-            writer.WriteUInt16(1); // String table version
+
+            // string table version
+            writer.WriteUInt16(1);
 
             //For every table, a number of bytes that were padded to the end of the table
             //to align to unsigned long.  Each table starts at a unsigned long boundary, and ends 
@@ -110,19 +123,26 @@ namespace nanoFramework.Tools.MetadataProcessor
             //compact form to hold this information, but it only costs 16 bytes/assembly.
             //Trying to only align some of the tables is just much more hassle than it's worth.
             //And, of course, this field also has to be unsigned long-aligned.
+
+            // startOfTables
+            // paddingOfTables
+
             if (isPreAllocationCall)
             {
                 _tablesOffset = writer.BaseStream.Position;
-                for (var i = 0; i < 16; ++i)
+                for (var i = 0; i < nanoAssemblyBuilder.TablesCount; ++i)
                 {
                     writer.WriteUInt32(0);
                 }
 
                 _paddingsOffset = writer.BaseStream.Position;
-                for (var i = 0; i < 16; ++i)
+                for (var i = 0; i < nanoAssemblyBuilder.TablesCount; ++i)
                 {
                     writer.WriteByte(0);
                 }
+
+                // store the header size which is required to compute the CRC32 ahead
+                _headerSize = (writer.BaseStream.Position + 3) & 0xFFFFFFFC;
             }
             else
             {
@@ -134,8 +154,8 @@ namespace nanoFramework.Tools.MetadataProcessor
 
                 var assemblyCrc32 = ComputeCrc32(
                     writer.BaseStream,
-                    _paddingsOffset, 
-                    writer.BaseStream.Length - _paddingsOffset);
+                    _headerSize, 
+                    writer.BaseStream.Length - _headerSize);
                 writer.WriteUInt32(assemblyCrc32);
 
                 // set writer position at Header CRC32 position
@@ -143,8 +163,8 @@ namespace nanoFramework.Tools.MetadataProcessor
 
                 var headerCrc32 = ComputeCrc32(
                     writer.BaseStream, 
-                    0, 
-                    _paddingsOffset);
+                    0,
+                    _headerSize);
                 writer.WriteUInt32(headerCrc32);
             }
         }
