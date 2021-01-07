@@ -84,34 +84,35 @@ namespace nanoFramework.Tools.MetadataProcessor
                 // EXPERIMENTAL CODE FOR GENERICS //
                 ////////////////////////////////////
 
-                if (_context.TypeReferencesTable.TryGetTypeReferenceId(item.DeclaringType, out referenceId))
+                if ((item.DeclaringType is TypeSpecification) &&
+                    _context.TypeSpecificationsTable.TryGetTypeReferenceId(item.DeclaringType, out referenceId))
                 {
-                    WriteStringReference(writer, item.Name);
-                    writer.WriteUInt16(referenceId);
-
-                    writer.WriteUInt16(_context.SignaturesTable.GetOrCreateSignatureId(item));
-                    writer.WriteUInt16(0); // padding
+                    // MemberRefParent tag is 4 (TypeSpec)
+                    referenceId |= 0x8000;
                 }
-                else if (_context.TypeReferencesTable.TryGetTypeReferenceId(item.DeclaringType.Resolve(), out referenceId))
+                else if (_context.TypeReferencesTable.TryGetTypeReferenceId(item.DeclaringType, out referenceId))
                 {
-                    WriteStringReference(writer, item.Name);
-                    writer.WriteUInt16((ushort)(referenceId | 0x8000));
-
-                    writer.WriteUInt16(_context.SignaturesTable.GetOrCreateSignatureId(item));
-                    writer.WriteUInt16(0); // padding
+                    // MemberRefParent tag is 1 (TypeRef)
+                    referenceId |= 0x2000;
                 }
                 else if (_context.TypeDefinitionTable.TryGetTypeReferenceId(item.DeclaringType.Resolve(), out referenceId))
                 {
-                    WriteStringReference(writer, item.Name);
-                    writer.WriteUInt16((ushort)(referenceId | 0x8000));
-
-                    writer.WriteUInt16(_context.SignaturesTable.GetOrCreateSignatureId(item));
-                    writer.WriteUInt16(0); // padding
+                    // MemberRefParent tag is 0 (TypeDef)
+                    referenceId |= 0x0;
                 }
                 else
                 {
+                    // developer note:
+                    // The current implementation is lacking support for: ModuleRef and MethodDef
+
                     throw new ArgumentException($"Can't find entry in type reference table for {item.DeclaringType.FullName} for Method {item.FullName}.");
                 }
+
+                WriteStringReference(writer, item.Name);
+                writer.WriteUInt16(referenceId);
+
+                writer.WriteUInt16(_context.SignaturesTable.GetOrCreateSignatureId(item));
+                writer.WriteUInt16(0); // padding
             }
             else
             {
