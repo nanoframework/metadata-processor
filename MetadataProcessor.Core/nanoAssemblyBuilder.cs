@@ -839,8 +839,21 @@ namespace nanoFramework.Tools.MetadataProcessor
                     break;
 
                 case TokenType.GenericParam:
+                    var gpar = _tablesContext.GenericParamsTable.Items.FirstOrDefault(i => i.MetadataToken == token);
+
+                    if (gpar != null)
+                    {
+                        // need to add their constraints if, any
+                        foreach (var c in gpar.Constraints)
+                        {
+                            set.Add(c.MetadataToken);
+                        }
+                    }
+                    break;
+
                 case TokenType.AssemblyRef:
                 case TokenType.String:
+                case TokenType.GenericParamConstraint:
                     // we are good with these, nothing to do here
                     break;
 
@@ -1034,6 +1047,10 @@ namespace nanoFramework.Tools.MetadataProcessor
 
                 case TokenType.MethodSpec:
                     output.Append($"[MethodSpec 0x{token.ToUInt32().ToString("X8")}]");
+                    break;
+
+                case TokenType.GenericParamConstraint:
+                    output.Append($"[GenericParamConstraint 0x{token.ToUInt32().ToString("X8")}]");
                     break;
 
                 default:
