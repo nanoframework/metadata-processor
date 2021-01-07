@@ -5,7 +5,6 @@
 //
 
 using System.IO;
-using System.Linq;
 
 namespace nanoFramework.Tools.MetadataProcessor
 {
@@ -15,9 +14,18 @@ namespace nanoFramework.Tools.MetadataProcessor
     public sealed class nanoAssemblyDefinition
     {
         /// <summary>
-        /// nanoFramework assembly marker V1.
+        /// .NET nanoFramework assembly marker V1.
         /// </summary>
+        /// <remarks>
+        /// Not to be used. Kept for historical reasons.
+        /// </remarks>
+        [System.Obsolete("Not to be used. Kept for historical reasons. Use V2 instead.")]
         private const string c_NFAssemblyMarker_v1 = "NFMRK1";
+
+        /// <summary>
+        /// .NET nanoFramework assembly marker V2.
+        /// </summary>
+        private const string c_NFAssemblyMarker_v2 = "NFMRK2";
 
         /// <summary>
         /// Position of Assembly CRC32 in the PE file.
@@ -72,10 +80,10 @@ namespace nanoFramework.Tools.MetadataProcessor
             nanoBinaryWriter writer,
             bool isPreAllocationCall)
         {
-            // this replicates the original struct CLR_RECORD_ASSEMBLY
+            // this follows the struct CLR_RECORD_ASSEMBLY
 
             // marker
-            writer.WriteString(c_NFAssemblyMarker_v1);
+            writer.WriteString(c_NFAssemblyMarker_v2);
 
             // need to set position because marker could be shorter
             writer.BaseStream.Seek(c_HeaderCrc32Position, SeekOrigin.Begin);
@@ -85,15 +93,8 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             // assembly CRC32
             writer.WriteUInt32(0); 
-
-            // current builds are for little endian targets only
-            // keeping this here for now, just for compatibility
-            writer.WriteUInt32(0);
             
             writer.WriteUInt32(_context.NativeMethodsCrc.CurrentCrc);
-
-            // Native methods offset
-            writer.WriteUInt32(0xFFFFFFFF);
 
             writer.WriteVersion(_context.AssemblyDefinition.Name.Version);
 
@@ -116,8 +117,6 @@ namespace nanoFramework.Tools.MetadataProcessor
                 {
                     writer.WriteUInt32(0);
                 }
-
-                writer.WriteUInt32(0); // Number of patched methods
 
                 _paddingsOffset = writer.BaseStream.Position;
                 for (var i = 0; i < 16; ++i)
