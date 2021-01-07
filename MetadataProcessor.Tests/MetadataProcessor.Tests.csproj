@@ -50,6 +50,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Core\nanoAssemblyBuilderTests.cs" />
     <Compile Include="Core\Endianness\nanoBinaryWriterTests.cs" />
     <Compile Include="Core\Extensions\ByteArrayExtensionsTests.cs" />
     <Compile Include="Core\Extensions\ParameterDefintionExtensionsTests.cs" />
