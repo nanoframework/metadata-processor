@@ -61,9 +61,10 @@ namespace nanoFramework.Tools.MetadataProcessor
             }
 
             WriteStringReference(writer, item.Name);
-            writer.WriteUInt16(0); // padding
-
             writer.WriteVersion(item.Version);
+
+            // alignment padding
+            writer.WriteUInt16(0);
         }
 
         /// <inheritdoc/>
