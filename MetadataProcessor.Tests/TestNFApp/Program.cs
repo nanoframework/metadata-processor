@@ -9,6 +9,10 @@ namespace TestNFApp
         {
             Debug.WriteLine("Starting TestNFApp");
 
+            ///////////////////////////////////////////////////////////////////
+            // referenced class
+            Debug.WriteLine("Referenced class");
+
             // instantiating a class on another assembly
             ClassOnAnotherAssembly anotherClass = new ClassOnAnotherAssembly();
 
@@ -20,6 +24,12 @@ namespace TestNFApp
 
             // accessing property on class
             dummyMirror1 = anotherClass.DummyProperty;
+
+            ///////////////////////////////////////////////////////////////////
+            // Generics 
+            Debug.WriteLine("Generics");
+
+            var cut = new GenericClassTests();
 
             Debug.WriteLine("Exiting TestNFApp");
         }

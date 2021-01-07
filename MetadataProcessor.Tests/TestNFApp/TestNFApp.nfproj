@@ -21,6 +21,7 @@
     <Compile Include="DummyCustomAttribute1.cs" />
     <Compile Include="DummyCustomAttribute2.cs" />
     <Compile Include="IOneClassOverAll.cs" />
+    <Compile Include="GenericClass.cs" />
     <Compile Include="OneClassOverAll.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
