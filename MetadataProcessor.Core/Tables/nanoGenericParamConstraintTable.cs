@@ -90,34 +90,39 @@ namespace nanoFramework.Tools.MetadataProcessor
             }
 
             // owner
-            ushort constraint;
-            ushort paramConstId;
+            ushort tag;
 
-            if (TryGetIdByValue(item, out paramConstId))
+            if (TryGetIdByValue(item, out ushort paramConstId))
             {
                 writer.WriteUInt16(_parameterOwnerId[paramConstId]);
             }
 
             if (item.ConstraintType is TypeDefinition &&
-                _context.TypeDefinitionTable.TryGetTypeReferenceId(item.ConstraintType as TypeDefinition, out constraint))
+                _context.TypeDefinitionTable.TryGetTypeReferenceId(item.ConstraintType as TypeDefinition, out ushort constraint))
             {
                 // TypeDefOrRef tag is 0 (TypeDef)
-                constraint |= 0x0000;
+                tag = 0;
             }
             else if (_context.TypeSpecificationsTable.TryGetTypeReferenceId(item.ConstraintType as TypeSpecification, out constraint))
             {
                 // TypeDefOrRef tag is 2 (TypeSpec)
-                constraint |= 0x8000;
+                tag = 2;
             }
             else if (_context.TypeReferencesTable.TryGetTypeReferenceId(item.ConstraintType, out constraint))
             {
                 // TypeDefOrRef tag is 1 (TypeRef)
-                constraint |= 0x4000;
+                tag = 1;
             }
             else
             {
                 throw new ArgumentException($"Can't find entry in the type definition, reference or specification tables for constraint [0x{item.MetadataToken.ToInt32():x8}].");
             }
+
+            // TypeDefOrRef tag is 2 bits
+            constraint = (ushort)(constraint << 2);
+
+            // OR with tag to form coded index
+            constraint |= tag;
 
             writer.WriteUInt16(constraint);
         }

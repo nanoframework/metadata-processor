@@ -82,20 +82,20 @@ namespace nanoFramework.Tools.MetadataProcessor
                 return;
             }
 
-            ushort method = 0;
-            ushort instantiation = 0;
+            ushort instantiation;
+            ushort tag;
 
-            if (_context.MethodDefinitionTable.TryGetMethodReferenceId(item.Resolve(), out method))
+            if (_context.MethodDefinitionTable.TryGetMethodReferenceId(item.Resolve(), out ushort method))
             {
                 // MethodDefOrRef tag is 0 (MethodDef)
-                method |= 0x0000;
+                tag = 0;
 
                 instantiation = _context.SignaturesTable.GetOrCreateSignatureId(item.Resolve());
             }
             else if (_context.MethodReferencesTable.TryGetMethodReferenceId(item, out method))
             {
                 // MethodDefOrRef tag is 1 (MemberRef)
-                method |= 0x8000;
+                tag = 1;
 
                 instantiation = _context.SignaturesTable.GetOrCreateSignatureId(item);
             }
@@ -103,6 +103,12 @@ namespace nanoFramework.Tools.MetadataProcessor
             {
                 throw new ArgumentException($"Can't find entry in method definition or reference tables for method '{item.FullName}' [0x{item.MetadataToken.ToInt32():x8}].");
             }
+
+            // MethodDefOrRef tag is 1 bit
+            method = (ushort)(method << 1);
+
+            // OR with tag to form coded index
+            method |= tag;
 
             writer.WriteUInt16(method);
 
