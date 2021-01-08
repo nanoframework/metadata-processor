@@ -95,6 +95,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         internal ushort GetScope(
             TypeReference typeReference)
         {
+            // TODO need to review this to use TypeRefOrAssemblyRef
             if (typeReference.DeclaringType == null)
             {
                 return _context.AssemblyReferenceTable.GetReferenceId(typeReference.Scope as AssemblyNameReference);
