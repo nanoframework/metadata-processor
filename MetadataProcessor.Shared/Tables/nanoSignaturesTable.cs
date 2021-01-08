@@ -374,6 +374,55 @@ namespace nanoFramework.Tools.MetadataProcessor
 
                 WriteDataType(genericType.ElementType, writer, false, expandEnumType, isTypeDefinition);
 
+                ushort tag;
+
+                if (typeDefinition is TypeSpecification &&
+                    _context.TypeSpecificationsTable.TryGetTypeReferenceId(typeDefinition, out ushort referenceId))
+                {
+                    // TypeDefOrRef tag is 1 (TypeSpec)
+                    tag = 2;
+
+                    // TypeDefOrRef tag is 2 bits
+                    referenceId = (ushort)(referenceId << 2);
+
+                    // OR with tag to form coded index
+                    referenceId |= tag;
+
+                    writer.WriteUInt16(referenceId);
+                }
+                else if (_context.TypeReferencesTable.TryGetTypeReferenceId(typeDefinition, out referenceId))
+                {
+                    // TypeDefOrRef tag is 1 (TypeRef)
+                    tag = 1;
+
+                    // TypeDefOrRef tag is 2 bits
+                    referenceId = (ushort)(referenceId << 2);
+
+                    // OR with tag to form coded index
+                    referenceId |= tag;
+
+                    writer.WriteUInt16(referenceId);
+                }
+                else if (_context.TypeDefinitionTable.TryGetTypeReferenceId(
+                    typeDefinition.Resolve(),
+                    out referenceId))
+                {
+                    // TypeDefOrRef tag is 1 (TypeDef)
+                    tag = 0;
+
+                    // TypeDefOrRef tag is 2 bits
+                    referenceId = (ushort)(referenceId << 2);
+
+                    // OR with tag to form coded index
+                    referenceId |= tag;
+
+                    writer.WriteUInt16(referenceId);
+                }
+                else
+                {
+                    throw new ArgumentException($"Can't find entry in type reference table for {typeDefinition.FullName}.");
+                }
+
                 writer.WriteByte((byte)genericType.GenericArguments.Count);
 
                 foreach (var a in genericType.GenericArguments)
