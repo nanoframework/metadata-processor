@@ -284,16 +284,42 @@ namespace nanoFramework.Tools.MetadataProcessor
         private ushort GetTypeReferenceOrDefinitionId(
             TypeReference typeReference)
         {
-            ushort referenceId;
-            if (_context.TypeReferencesTable.TryGetTypeReferenceId(typeReference, out referenceId))
+            ushort tag;
+
+            if (_context.TypeReferencesTable.TryGetTypeReferenceId(typeReference, out ushort referenceId))
             {
-                return (ushort)(0x8000 | referenceId);
+                // check "nested inside" case
+                if (referenceId != 0xFFFF)
+                {
+                    // TypeDefOrRef tag is 1 (TypeRef)
+                    tag = 1;
+
+                    // TypeDefOrRef tag is 2 bits
+                    referenceId = (ushort)(referenceId << 2);
+
+                    // OR with tag to form coded index
+                    referenceId |= tag;
+
+                    return referenceId;
+                }
             }
 
-            ushort typeId;
-            if (TryGetTypeReferenceId(typeReference.Resolve(), out typeId))
+            if (TryGetTypeReferenceId(typeReference?.Resolve(), out ushort typeId))
             {
-                return typeId;
+                // check "nested inside" case
+                if (referenceId != 0xFFFF)
+                {
+                    // TypeDefOrRef tag is 0 (TypeDef)
+                    tag = 0;
+
+                    // TypeDefOrRef tag is 2 bits
+                    typeId = (ushort)(typeId << 2);
+
+                    // OR with tag to form coded index
+                    typeId |= tag;
+
+                    return typeId;
+                }
             }
 
             return 0xFFFF;
