@@ -73,57 +73,43 @@ namespace nanoFramework.Tools.MetadataProcessor
                 return;
             }
 
-            bool experimentalCode = true;
+            ushort tag;
 
-            ushort referenceId;
-
-
-            if (experimentalCode)
+            if ((item.DeclaringType is TypeSpecification) &&
+                _context.TypeSpecificationsTable.TryGetTypeReferenceId(item.DeclaringType, out ushort referenceId))
             {
-                ////////////////////////////////////
-                // EXPERIMENTAL CODE FOR GENERICS //
-                ////////////////////////////////////
-
-                if ((item.DeclaringType is TypeSpecification) &&
-                    _context.TypeSpecificationsTable.TryGetTypeReferenceId(item.DeclaringType, out referenceId))
-                {
-                    // MemberRefParent tag is 4 (TypeSpec)
-                    referenceId |= 0x8000;
-                }
-                else if (_context.TypeReferencesTable.TryGetTypeReferenceId(item.DeclaringType, out referenceId))
-                {
-                    // MemberRefParent tag is 1 (TypeRef)
-                    referenceId |= 0x2000;
-                }
-                else if (_context.TypeDefinitionTable.TryGetTypeReferenceId(item.DeclaringType.Resolve(), out referenceId))
-                {
-                    // MemberRefParent tag is 0 (TypeDef)
-                    referenceId |= 0x0;
-                }
-                else
-                {
-                    // developer note:
-                    // The current implementation is lacking support for: ModuleRef and MethodDef
-
-                    throw new ArgumentException($"Can't find entry in type reference table for {item.DeclaringType.FullName} for Method {item.FullName}.");
-                }
-
-                WriteStringReference(writer, item.Name);
-                writer.WriteUInt16(referenceId);
-
-                writer.WriteUInt16(_context.SignaturesTable.GetOrCreateSignatureId(item));
-                writer.WriteUInt16(0); // padding
+                // MemberRefParent tag is 4 (TypeSpec)
+                tag = 4;
+            }
+            else if (_context.TypeReferencesTable.TryGetTypeReferenceId(item.DeclaringType, out referenceId))
+            {
+                // MemberRefParent tag is 1 (TypeRef)
+                tag = 1;
+            }
+            else if (_context.TypeDefinitionTable.TryGetTypeReferenceId(item.DeclaringType.Resolve(), out referenceId))
+            {
+                // MemberRefParent tag is 0 (TypeDef)
+                tag = 0;
             }
             else
             {
-                _context.TypeReferencesTable.TryGetTypeReferenceId(item.DeclaringType, out referenceId);
+                // developer note:
+                // The current implementation is lacking support for: ModuleRef and MethodDef
 
-                WriteStringReference(writer, item.Name);
-                writer.WriteUInt16(referenceId);
-
-                writer.WriteUInt16(_context.SignaturesTable.GetOrCreateSignatureId(item));
-                writer.WriteUInt16(0); // padding
+                throw new ArgumentException($"Can't find entry in type reference table for {item.DeclaringType.FullName} for Method {item.FullName}.");
             }
+
+            // MemberRefParent tag is 3 bits
+            referenceId = (ushort)(referenceId << 3);
+
+            // OR with tag to form coded index
+            referenceId |= tag;
+
+            WriteStringReference(writer, item.Name);
+            writer.WriteUInt16(referenceId);
+
+            writer.WriteUInt16(_context.SignaturesTable.GetOrCreateSignatureId(item));
+            writer.WriteUInt16(0); // padding
         }
     }
 }

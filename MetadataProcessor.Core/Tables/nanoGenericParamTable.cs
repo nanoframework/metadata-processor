@@ -89,23 +89,29 @@ namespace nanoFramework.Tools.MetadataProcessor
             writer.WriteUInt16((ushort)item.Attributes);
 
             // owner
-            ushort owner;
+            ushort tag;
 
-            if(item.Owner is TypeDefinition &&
-                _context.TypeDefinitionTable.TryGetTypeReferenceId(item.Owner as TypeDefinition, out owner))
+            if (item.Owner is TypeDefinition &&
+                _context.TypeDefinitionTable.TryGetTypeReferenceId(item.Owner as TypeDefinition, out ushort owner))
             {
                 // TypeOrMethodDef tag is 0 (TypeDef)
-                owner |= 0x0000;
+                tag = 0;
             }
             else if (_context.MethodDefinitionTable.TryGetMethodReferenceId(item.Owner as MethodDefinition, out owner))
             {
                 // TypeOrMethodDef tag is 1 (MethodDef)
-                owner |= 0x8000;
+                tag = 1;
             }
             else
             {
                 throw new ArgumentException($"Can't find entry in type or method definition tables for generic parameter '{item.FullName}' [0x{item.Owner.MetadataToken.ToInt32():x8}].");
             }
+
+            // TypeOrMethodDef tag is 1 bit
+            owner = (ushort)(owner << 1);
+
+            // OR with tag to form coded index
+            owner |= tag;
 
             writer.WriteUInt16(owner);
 
