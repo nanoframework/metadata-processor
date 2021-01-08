@@ -159,7 +159,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
             // start at 1, because 0 is the empty string entry
             int tokenId = 1;
 
-            foreach (var s in _tablesContext.StringTable.GetItems().OrderBy(i => i.Value).Where(i => i.Value > _tablesContext.StringTable.LastPreAllocatedId))
+            foreach (var s in _tablesContext.StringTable.GetItems().OrderBy(i => i.Value))
             {
                 // don't output the empty string
                 if(s.Value == 0)
