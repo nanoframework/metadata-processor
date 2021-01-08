@@ -763,20 +763,48 @@ namespace nanoFramework.Tools.MetadataProcessor
 
         private void WriteSubTypeInfo(TypeReference typeDefinition, nanoBinaryWriter writer)
         {
-            ushort referenceId;
+            ushort tag;
+
             if (typeDefinition is TypeSpecification &&
-                _context.TypeSpecificationsTable.TryGetTypeReferenceId(typeDefinition, out referenceId))
+                _context.TypeSpecificationsTable.TryGetTypeReferenceId(typeDefinition, out ushort referenceId))
             {
-                writer.WriteMetadataToken(((uint)referenceId << 2) | 0x02);
+                // TypeDefOrRef tag is 2 (TypeSpec)
+                tag = 2;
+
+                // TypeDefOrRef tag is 2 bits
+                referenceId = (ushort)(referenceId << 2);
+
+                // OR with tag to form coded index
+                referenceId |= tag;
+
+                writer.WriteMetadataToken(referenceId);
             }
             else if (_context.TypeReferencesTable.TryGetTypeReferenceId(typeDefinition, out referenceId))
             {
-                writer.WriteMetadataToken(((uint)referenceId << 2) | 0x01);
+                // TypeDefOrRef tag is 1 (TypeRef)
+                tag = 1;
+
+                // TypeDefOrRef tag is 2 bits
+                referenceId = (ushort)(referenceId << 2);
+
+                // OR with tag to form coded index
+                referenceId |= tag;
+
+                writer.WriteMetadataToken(referenceId);
             }
             else if (_context.TypeDefinitionTable.TryGetTypeReferenceId(
                 typeDefinition.Resolve(),
                 out referenceId))
             {
+                // TypeDefOrRef tag is 0 (TypeDef)
+                tag = 0;
+
+                // TypeDefOrRef tag is 2 bits
+                referenceId = (ushort)(referenceId << 2);
+
+                // OR with tag to form coded index
+                referenceId |= tag;
+
                 writer.WriteMetadataToken((uint)referenceId << 2);
             }
             else
