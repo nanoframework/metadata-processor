@@ -102,10 +102,16 @@ namespace nanoFramework.Tools.MetadataProcessor
         {
             _context.StringTable.GetOrCreateStringId(item.Namespace);
 
+            // Name
             WriteStringReference(writer, item.Name);
+
+            // NameSpace
             WriteStringReference(writer, item.Namespace);
 
+            // Extends
             writer.WriteUInt16(GetTypeReferenceOrDefinitionId(item.BaseType));
+
+            // EnclosingType
             writer.WriteUInt16(GetTypeReferenceOrDefinitionId(item.DeclaringType));
 
             var fieldsList = item.Fields
@@ -151,7 +157,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                 }
             }
 
-            // write flags
+            // Flags
             writer.WriteUInt16(
                 (ushort)GetFlags(
                     item,
@@ -219,10 +225,16 @@ namespace nanoFramework.Tools.MetadataProcessor
                 }
             }
 
+            // FirstStaticField
             writer.WriteUInt16(firstStaticFieldId);
+
+            // FirstInstanceField
             writer.WriteUInt16(firstInstanceFieldId);
 
+            // StaticFieldsCount
             writer.WriteByte((byte) staticFieldsCount);
+
+            // InstanceFieldsCount
             writer.WriteByte((byte) instanceFieldsCount);
         }
 
@@ -261,12 +273,17 @@ namespace nanoFramework.Tools.MetadataProcessor
                 firstMethodId = _context.ByteCodeTable.NextMethodId;
             }
 
+            // Interfaces
             writer.WriteUInt16(_context.SignaturesTable.GetOrCreateSignatureId(iInterfaces));
 
+            // FirstMethod
             writer.WriteUInt16(firstMethodId);
 
+            // VirtualMethodCount
             writer.WriteByte((byte)virtualMethodsCount);
+            // InstanceMethodCount
             writer.WriteByte((byte)instanceMethodsCount);
+            // StaticMethodCount
             writer.WriteByte((byte)staticMethodsCount);
         }
 
