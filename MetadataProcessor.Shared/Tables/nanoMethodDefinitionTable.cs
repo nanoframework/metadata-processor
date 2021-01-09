@@ -72,9 +72,13 @@ namespace nanoFramework.Tools.MetadataProcessor
                 return;
             }
 
+            // Name
             WriteStringReference(writer, item.Name);
+
+            // RVA
             writer.WriteUInt16(_context.ByteCodeTable.GetMethodRva(item));
 
+            // Flags
             writer.WriteUInt32(GetFlags(item));
 
             var parametersCount = (byte)item.Parameters.Count;
@@ -83,7 +87,9 @@ namespace nanoFramework.Tools.MetadataProcessor
                 ++parametersCount; // add implicit 'this' pointer into non-static methods
             }
 
+            // RetVal
             _context.SignaturesTable.WriteDataType(item.ReturnType, writer, false, false, false);
+
             if (item.ReturnType is TypeSpecification)
             {
                 // developer note
@@ -97,14 +103,19 @@ namespace nanoFramework.Tools.MetadataProcessor
                 //}
             }
 
+            // ArgumentsCount
             writer.WriteByte(parametersCount);
+
+            // LocalsCount
             writer.WriteByte((byte)(item.HasBody ? item.Body.Variables.Count : 0));
+
+            // LengthEvalStack
             writer.WriteByte(CodeWriter.CalculateStackSize(item.Body));
 
             var methodSignature = _context.SignaturesTable.GetOrCreateSignatureId(item);
 
-            // locals signature
-            if(item.HasBody)
+            // Locals signature
+            if (item.HasBody)
             {
                 writer.WriteUInt16(_context.SignaturesTable.GetOrCreateSignatureId(item.Body.Variables));
             }
@@ -122,6 +133,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                 }
             }
 
+            // Signature
             writer.WriteUInt16(methodSignature);
 
             var writerEndPosition = writer.BaseStream.Position;
