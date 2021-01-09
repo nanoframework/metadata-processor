@@ -157,6 +157,19 @@ namespace nanoFramework.Tools.MetadataProcessor
                 }
             }
 
+            ushort genericParamRefId = 0;
+            
+            if (item.HasGenericParameters)
+            {
+                _context.GenericParamsTable.TryGetParameterId(item.GenericParameters.FirstOrDefault(), out genericParamRefId);
+            }
+
+            // FirstGenericParam
+            writer.WriteUInt16(genericParamRefId);
+
+            // GenericParamCount
+            writer.WriteByte((byte)item.GenericParameters.Count);
+
             // Flags
             writer.WriteUInt16(
                 (ushort)GetFlags(
