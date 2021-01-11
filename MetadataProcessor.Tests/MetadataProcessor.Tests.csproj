@@ -108,7 +108,7 @@
       <Version>2.1.2</Version>
     </PackageReference>
     <PackageReference Include="nanoFramework.nanoCLR.Win32" GeneratePathProperty="true">
-      <Version>1.6.1-preview.44</Version>
+      <Version>1.6.1-preview.68</Version>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
