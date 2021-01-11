@@ -7,6 +7,7 @@
 using Mono.Cecil;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace nanoFramework.Tools.MetadataProcessor
 {
@@ -17,6 +18,8 @@ namespace nanoFramework.Tools.MetadataProcessor
     public sealed class nanoMethodReferenceTable :
         nanoReferenceTableBase<MethodReference>
     {
+        private const int sizeOf_CLR_RECORD_METHODREF = 6;
+
         /// <summary>
         /// Helper class for comparing two instances of <see cref="MethodReference"/> objects
         /// using <see cref="MethodReference.FullName"/> property as unique key for comparison.
@@ -73,6 +76,8 @@ namespace nanoFramework.Tools.MetadataProcessor
                 return;
             }
 
+            var writerStartPosition = writer.BaseStream.Position;
+
             ushort tag;
 
             if ((item.DeclaringType is TypeSpecification) &&
@@ -109,7 +114,11 @@ namespace nanoFramework.Tools.MetadataProcessor
             writer.WriteUInt16(referenceId);
 
             writer.WriteUInt16(_context.SignaturesTable.GetOrCreateSignatureId(item));
-            writer.WriteUInt16(0); // padding
+
+            var writerEndPosition = writer.BaseStream.Position;
+
+            Debug.Assert((writerEndPosition - writerStartPosition) == sizeOf_CLR_RECORD_METHODREF);
+
         }
     }
 }

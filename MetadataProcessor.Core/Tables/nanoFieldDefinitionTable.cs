@@ -7,6 +7,7 @@
 using Mono.Cecil;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace nanoFramework.Tools.MetadataProcessor
@@ -18,6 +19,8 @@ namespace nanoFramework.Tools.MetadataProcessor
     public sealed class nanoFieldDefinitionTable :
         nanoReferenceTableBase<FieldDefinition>
     {
+        private const int sizeOf_CLR_RECORD_FIELDDEF = 8;
+
         /// <summary>
         /// Helper class for comparing two instances of <see cref="FieldDefinition"/> objects
         /// using <see cref="FieldDefinition.FullName"/> property as unique key for comparison.
@@ -71,11 +74,17 @@ namespace nanoFramework.Tools.MetadataProcessor
                 return;
             }
 
+            var writerStartPosition = writer.BaseStream.Position;
+
             WriteStringReference(writer, item.Name);
             writer.WriteUInt16(_context.SignaturesTable.GetOrCreateSignatureId(item));
 
             writer.WriteUInt16(_context.SignaturesTable.GetOrCreateSignatureId(item.InitialValue));
             writer.WriteUInt16(GetFlags(item));
+
+            var writerEndPosition = writer.BaseStream.Position;
+
+            Debug.Assert((writerEndPosition - writerStartPosition) == sizeOf_CLR_RECORD_FIELDDEF);
         }
 
         /// <summary>
