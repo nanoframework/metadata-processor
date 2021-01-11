@@ -192,10 +192,6 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             GenericParamsTable = new nanoGenericParamTable(generics, this);
 
-            List<GenericParameterConstraint> paramConstraints = GetGenericParamsConstraints(generics);
-
-            GenericParamsConstraintTable = new nanoGenericParameterConstraintTable(paramConstraints, this);
-
             List<MethodSpecification> methodSpecifications = GetMethodSpecifications(methods);
 
             MethodSpecificationTable = new nanoMethodSpecificationTable(methodSpecifications, this);
@@ -285,8 +281,6 @@ namespace nanoFramework.Tools.MetadataProcessor
         public nanoFieldReferenceTable FieldReferencesTable { get; private set; }
 
         public nanoGenericParamTable GenericParamsTable { get; private set; }
-
-        public nanoGenericParameterConstraintTable GenericParamsConstraintTable { get; private set; }
 
         public nanoMethodSpecificationTable MethodSpecificationTable { get; private set; }
 
