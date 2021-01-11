@@ -123,21 +123,6 @@ namespace nanoFramework.Tools.MetadataProcessor
             // name
             WriteStringReference(writer, item.Name);
 
-            // link to constrains table
-            if (item.HasConstraints)
-            {
-                ushort paramId;
-
-                if (TryGetParameterId(item, out paramId))
-                {
-                    _context.GenericParamsConstraintTable.SetIdOfParamConstraintOwner(item.Constraints, paramId);
-                }
-                else
-                {
-
-                }
-            }
-
             var writerEndPosition = writer.BaseStream.Position;
 
             Debug.Assert((writerEndPosition - writerStartPosition) == sizeOf_CLR_RECORD_GENERICPARAM);
