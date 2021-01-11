@@ -23,7 +23,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
 
             // test
             var iut = new nanoAssemblyReferenceTable(
-                mainModule.AssemblyReferences,
+                mainModule.AssemblyReferences, 
                 context);
 
             // no op
@@ -86,13 +86,10 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
                 var streamOutput = new MemoryStream();
                 var writerTestOutput = new BinaryWriter(streamOutput, Encoding.Default, true);
 
-                foreach (var a in iut.Items)
+                foreach(var a in iut.Items)
                 {
                     writerTestOutput.Write(context.StringTable.GetOrCreateStringId(a.Name));
-
-                    // padding
-                    writerTestOutput.Write((ushort)0x0);
-
+                    
                     // version
                     writerTestOutput.Write((ushort)a.Version.Major);
                     writerTestOutput.Write((ushort)a.Version.Minor);

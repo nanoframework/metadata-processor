@@ -48,6 +48,9 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
 
             // read standard output
             var output = nanoClr.StandardOutput.ReadToEnd();
+            
+            // look for any error message 
+            Assert.IsFalse(output.Contains("Error:"), "Unexpected error message in output of nanoClr");
 
             // look for the error message reporting that there is no entry point
             Assert.IsTrue(output.Contains("Cannot find any entrypoint!"));
