@@ -171,7 +171,6 @@ namespace nanoFramework.Tools.MetadataProcessor
             _tablesContext.TypeReferencesTable.RemoveUnusedItems(set);
             _tablesContext.FieldsTable.RemoveUnusedItems(set);
             _tablesContext.GenericParamsTable.RemoveUnusedItems(set);
-            _tablesContext.GenericParamsConstraintTable.RemoveUnusedItems(set);
             _tablesContext.MethodSpecificationTable.RemoveUnusedItems(set);
             _tablesContext.FieldReferencesTable.RemoveUnusedItems(set);
             _tablesContext.MethodDefinitionTable.RemoveUnusedItems(set);
@@ -1084,7 +1083,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// <summary>
         /// Count of tables in the assembly
         /// </summary>
-        static public int TablesCount => 0x0013;
+        static public int TablesCount => 0x0012;
 
         internal static IEnumerable<InanoTable> GetTables(
             nanoTablesContext context)
@@ -1112,8 +1111,6 @@ namespace nanoFramework.Tools.MetadataProcessor
             yield return context.MethodDefinitionTable;
 
             yield return context.GenericParamsTable;
-
-            yield return context.GenericParamsConstraintTable;
 
             yield return context.MethodSpecificationTable;
 
