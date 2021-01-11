@@ -7,6 +7,7 @@
 using Mono.Cecil;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace nanoFramework.Tools.MetadataProcessor
 {
@@ -17,6 +18,8 @@ namespace nanoFramework.Tools.MetadataProcessor
     public sealed class nanoAssemblyReferenceTable :
         nanoReferenceTableBase<AssemblyNameReference>
     {
+        private const int sizeOf_CLR_RECORD_ASSEMBLYREF = 10;
+
         /// <summary>
         /// Helper class for comparing two instances of <see cref="AssemblyNameReference"/> objects
         /// using <see cref="AssemblyNameReference.FullName"/> property as unique key for comparison.
@@ -60,11 +63,14 @@ namespace nanoFramework.Tools.MetadataProcessor
                 return;
             }
 
+            var writerStartPosition = writer.BaseStream.Position;
+
             WriteStringReference(writer, item.Name);
             writer.WriteVersion(item.Version);
 
-            // alignment padding
-            writer.WriteUInt16(0);
+            var writerEndPosition = writer.BaseStream.Position;
+
+            Debug.Assert((writerEndPosition - writerStartPosition) == sizeOf_CLR_RECORD_ASSEMBLYREF);
         }
 
         /// <inheritdoc/>

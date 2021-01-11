@@ -6,6 +6,7 @@
 using Mono.Cecil;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace nanoFramework.Tools.MetadataProcessor
 {
@@ -16,6 +17,8 @@ namespace nanoFramework.Tools.MetadataProcessor
     public sealed class nanoGenericParamTable :
         nanoReferenceTableBase<GenericParameter>
     {
+        private const int sizeOf_CLR_RECORD_GENERICPARAM = 8;
+
         /// <summary>
         /// Helper class for comparing two instances of <see cref="GenericParameter"/> objects
         /// using <see cref="MetadataToken"/> property as unique key for comparison.
@@ -82,6 +85,8 @@ namespace nanoFramework.Tools.MetadataProcessor
                 return;
             }
 
+            var writerStartPosition = writer.BaseStream.Position;
+
             // number
             writer.WriteUInt16((ushort)item.Position);
 
@@ -132,6 +137,10 @@ namespace nanoFramework.Tools.MetadataProcessor
 
                 }
             }
+
+            var writerEndPosition = writer.BaseStream.Position;
+
+            Debug.Assert((writerEndPosition - writerStartPosition) == sizeOf_CLR_RECORD_GENERICPARAM);
         }
     }
 }

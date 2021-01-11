@@ -10,6 +10,7 @@ using nanoFramework.Tools.MetadataProcessor.Core;
 using nanoFramework.Tools.MetadataProcessor.Core.Extensions;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 
@@ -22,6 +23,8 @@ namespace nanoFramework.Tools.MetadataProcessor
     public sealed class nanoTypeDefinitionTable :
         nanoReferenceTableBase<TypeDefinition>
     {
+        private const int sizeOf_CLR_RECORD_TYPEDEF = 27;
+
         /// <summary>
         /// Helper class for comparing two instances of <see cref="TypeDefinition"/> objects
         /// using <see cref="TypeDefinition.FullName"/> property as unique key for comparison.
@@ -100,6 +103,8 @@ namespace nanoFramework.Tools.MetadataProcessor
             nanoBinaryWriter writer,
             TypeDefinition item)
         {
+            var writerStartPosition = writer.BaseStream.Position;
+
             _context.StringTable.GetOrCreateStringId(item.Namespace);
 
             // Name
@@ -151,6 +156,7 @@ namespace nanoFramework.Tools.MetadataProcessor
 
                     WriteMethodBodies(item.Methods, item.Interfaces, writer);
 
+                    // Interfaces
                     _context.SignaturesTable.WriteDataType(item, writer, false, true, true);
 
                     writer.WriteBytes(stream.ToArray());
@@ -175,6 +181,14 @@ namespace nanoFramework.Tools.MetadataProcessor
                 (ushort)GetFlags(
                     item,
                     _context.MethodDefinitionTable));
+
+            var writerEndPosition = writer.BaseStream.Position;
+
+            // ignore assert when not minimize
+            if (_context.MinimizeComplete)
+            {
+                Debug.Assert((writerEndPosition - writerStartPosition) == sizeOf_CLR_RECORD_TYPEDEF);
+            }
         }
 
         private void WriteClassFields(

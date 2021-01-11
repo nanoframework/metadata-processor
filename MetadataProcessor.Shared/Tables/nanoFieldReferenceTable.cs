@@ -7,6 +7,7 @@
 using Mono.Cecil;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace nanoFramework.Tools.MetadataProcessor
 {
@@ -17,6 +18,8 @@ namespace nanoFramework.Tools.MetadataProcessor
     public sealed class nanoFieldReferenceTable :
         nanoReferenceTableBase<FieldReference>
     {
+        private const int sizeOf_CLR_RECORD_FIELDREF = 6;
+
         /// <summary>
         /// Helper class for comparing two instances of <see cref="FieldReference"/> objects
         /// using <see cref="FieldReference.FullName"/> property as unique key for comparison.
@@ -73,6 +76,8 @@ namespace nanoFramework.Tools.MetadataProcessor
                 return;
             }
 
+            var writerStartPosition = writer.BaseStream.Position;
+
             if (_context.TypeReferencesTable.TryGetTypeReferenceId(item.DeclaringType, out ushort referenceId))
             {
                 WriteStringReference(writer, item.Name);
@@ -87,6 +92,10 @@ namespace nanoFramework.Tools.MetadataProcessor
             {
                 throw new ArgumentException($"Can't find entry in type reference table for Field {item.FullName}.");
             }
+
+            var writerEndPosition = writer.BaseStream.Position;
+
+            Debug.Assert((writerEndPosition - writerStartPosition) == sizeOf_CLR_RECORD_FIELDREF);
         }
     }
 }

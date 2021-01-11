@@ -7,6 +7,7 @@
 using Mono.Cecil;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace nanoFramework.Tools.MetadataProcessor
 {
@@ -17,6 +18,8 @@ namespace nanoFramework.Tools.MetadataProcessor
     public sealed class nanoTypeReferenceTable :
         nanoReferenceTableBase<TypeReference>
     {
+        private const int sizeOf_CLR_RECORD_TYPEREF = 6;
+
         /// <summary>
         /// Helper class for comparing two instances of <see cref="TypeReference"/> objects
         /// using <see cref="TypeReference.FullName"/> property as unique key for comparison.
@@ -77,11 +80,16 @@ namespace nanoFramework.Tools.MetadataProcessor
             nanoBinaryWriter writer,
             TypeReference item)
         {
+            var writerStartPosition = writer.BaseStream.Position;
+
             WriteStringReference(writer, item.Name);
             WriteStringReference(writer, item.Namespace);
 
             writer.WriteUInt16(GetScope(item)); // scope - TBL_AssemblyRef | TBL_TypeRef // 0x8000
-            writer.WriteUInt16(0); // padding
+
+            var writerEndPosition = writer.BaseStream.Position;
+
+            Debug.Assert((writerEndPosition - writerStartPosition) == sizeOf_CLR_RECORD_TYPEREF);
         }
 
         /// <inheritdoc/>
