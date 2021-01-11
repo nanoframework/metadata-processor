@@ -90,9 +90,6 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
                 {
                     writerTestOutput.Write(context.StringTable.GetOrCreateStringId(a.Name));
                     
-                    // padding
-                    writerTestOutput.Write((ushort)0x0);
-                    
                     // version
                     writerTestOutput.Write((ushort)a.Version.Major);
                     writerTestOutput.Write((ushort)a.Version.Minor);
