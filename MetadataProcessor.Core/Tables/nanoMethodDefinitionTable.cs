@@ -12,7 +12,7 @@ namespace nanoFramework.Tools.MetadataProcessor
     public sealed class nanoMethodDefinitionTable :
         nanoReferenceTableBase<MethodDefinition>
     {
-        private const int sizeOf_CLR_RECORD_METHODDEF = 16;
+        private const int sizeOf_CLR_RECORD_METHODDEF = 19;
 
         /// <summary>
         /// Helper class for comparing two instances of <see cref="MethodDefinition"/> objects
@@ -65,12 +65,13 @@ namespace nanoFramework.Tools.MetadataProcessor
             nanoBinaryWriter writer,
             MethodDefinition item)
         {
-            var writerStartPosition = writer.BaseStream.Position;
 
             if (!_context.MinimizeComplete)
             {
                 return;
             }
+
+            var writerStartPosition = writer.BaseStream.Position;
 
             // Name
             WriteStringReference(writer, item.Name);
@@ -109,6 +110,9 @@ namespace nanoFramework.Tools.MetadataProcessor
             // LocalsCount
             writer.WriteByte((byte)(item.HasBody ? item.Body.Variables.Count : 0));
 
+            // GenericParamCount
+            writer.WriteByte((byte)item.GenericParameters.Count);
+
             // LengthEvalStack
             writer.WriteByte(CodeWriter.CalculateStackSize(item.Body));
 
@@ -132,6 +136,9 @@ namespace nanoFramework.Tools.MetadataProcessor
                     writer.WriteUInt16(0xFFFF);
                 }
             }
+
+            // GenericParam signature
+            writer.WriteUInt16(_context.SignaturesTable.GetOrCreateSignatureId(item.GenericParameters));
 
             // Signature
             writer.WriteUInt16(methodSignature);

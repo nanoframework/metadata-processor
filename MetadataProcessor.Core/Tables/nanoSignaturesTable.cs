@@ -134,6 +134,20 @@ namespace nanoFramework.Tools.MetadataProcessor
         }
 
         /// <summary>
+        /// Gets existing or creates new signature identifier for the list of generic parameters.
+        /// </summary>
+        /// <param name="genericParameters">List of parameters information in Mono.Cecil format.</param>
+        public ushort GetOrCreateSignatureId(Collection<GenericParameter> genericParameters)
+        {
+            if (genericParameters == null || genericParameters.Count == 0)
+            {
+                return 0xFFFF; // No generic parameters
+            }
+
+            return GetOrCreateSignatureIdImpl(GetSignature(genericParameters));
+        }
+
+        /// <summary>
         /// Gets existing or creates new singature identifier for field reference.
         /// </summary>
         /// <param name="fieldReference">Field reference in Mono.Cecil format.</param>
@@ -514,6 +528,20 @@ namespace nanoFramework.Tools.MetadataProcessor
             }
         }
 
+        private byte[] GetSignature(Collection<GenericParameter> genericParameters)
+        {
+            using (var buffer = new MemoryStream())
+            using (var writer = new BinaryWriter(buffer)) // Only Write(Byte) will be used
+            {
+                foreach (var parameter in genericParameters)
+                {
+                    WriteGenericParameterValue(writer, parameter);
+                }
+
+                return buffer.ToArray();
+            }
+        }
+
         private byte[] GetSignature(
             InterfaceImplementation typeReference,
             bool isFieldSignature)
@@ -636,6 +664,21 @@ namespace nanoFramework.Tools.MetadataProcessor
             {
                 writer.Write((byte)nanoSerializationType.ELEMENT_TYPE_STRING);
                 writer.Write(_context.StringTable.GetOrCreateStringId(((TypeReference)argument.Value).FullName));
+            }
+        }
+
+        private void WriteGenericParameterValue(BinaryWriter writer, GenericParameter parameter)
+        {
+            if (_context.GenericParamsTable.TryGetParameterId(parameter, out ushort referenceId))
+            {
+                writer.Write((byte)nanoSerializationType.ELEMENT_TYPE_GENERICINST);
+                
+                // OK to use byte because we are not supporting more than 0x7F generic parameters
+                writer.Write((byte)referenceId);
+            }
+            else
+            {
+                // TODO
             }
         }
 

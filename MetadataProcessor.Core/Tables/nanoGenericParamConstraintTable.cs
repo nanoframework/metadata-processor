@@ -7,6 +7,7 @@ using Mono.Cecil;
 using Mono.Collections.Generic;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace nanoFramework.Tools.MetadataProcessor
 {
@@ -17,6 +18,8 @@ namespace nanoFramework.Tools.MetadataProcessor
     public sealed class nanoGenericParameterConstraintTable :
         nanoReferenceTableBase<GenericParameterConstraint>
     {
+        private const int sizeOf_CLR_RECORD_GENERICPARAMCONSTRAINT = 4;
+
         /// <summary>
         /// Helper class for comparing two instances of <see cref="GenericParameterConstraint"/> objects
         /// using <see cref="MetadataToken"/> property as unique key for comparison.
@@ -89,6 +92,8 @@ namespace nanoFramework.Tools.MetadataProcessor
                 return;
             }
 
+            var writerStartPosition = writer.BaseStream.Position;
+
             // owner
             ushort tag;
 
@@ -125,6 +130,10 @@ namespace nanoFramework.Tools.MetadataProcessor
             constraint |= tag;
 
             writer.WriteUInt16(constraint);
+
+            var writerEndPosition = writer.BaseStream.Position;
+
+            Debug.Assert((writerEndPosition - writerStartPosition) == sizeOf_CLR_RECORD_GENERICPARAMCONSTRAINT);
         }
 
         public void SetIdOfParamConstraintOwner(Collection<GenericParameterConstraint> constraints, ushort paramId)
