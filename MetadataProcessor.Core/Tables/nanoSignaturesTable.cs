@@ -332,6 +332,19 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             if (typeDefinition.MetadataType == MetadataType.Var)
             {
+                writer.WriteByte((byte)nanoCLR_DataType.DATATYPE_VAR);
+
+                if (alsoWriteSubType)
+                {
+                    // following ECMA-335 VI.B.4.3 Metadata
+                    writer.WriteByte((byte)(typeDefinition as GenericParameter).Position);
+                }
+
+                return;
+            }
+
+            if (typeDefinition.MetadataType == MetadataType.MVar)
+            {
                 writer.WriteByte((byte)nanoCLR_DataType.DATATYPE_MVAR);
 
                 if (alsoWriteSubType)
