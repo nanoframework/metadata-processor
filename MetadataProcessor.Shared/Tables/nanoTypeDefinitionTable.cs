@@ -163,10 +163,11 @@ namespace nanoFramework.Tools.MetadataProcessor
                 }
             }
 
-            ushort genericParamRefId = 0;
-            
+            ushort genericParamRefId = 0xFFFF;
+
             if (item.HasGenericParameters)
             {
+                // no need to check if it's found
                 _context.GenericParamsTable.TryGetParameterId(item.GenericParameters.FirstOrDefault(), out genericParamRefId);
             }
 
