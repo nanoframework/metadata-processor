@@ -156,7 +156,7 @@ namespace nanoFramework.Tools.MetadataProcessor
 
                     WriteMethodBodies(item.Methods, item.Interfaces, writer);
 
-                    // Interfaces
+                    // Signature
                     _context.SignaturesTable.WriteDataType(item, writer, false, true, true);
 
                     writer.WriteBytes(stream.ToArray());
