@@ -5,11 +5,9 @@
 
 namespace nanoFramework.Tools.MetadataProcessor.Core
 {
-    public class UserString
+    public class HeapString
     {
         public string ReferenceId;
-        
-        public string Length;
 
         public string Content;
     }

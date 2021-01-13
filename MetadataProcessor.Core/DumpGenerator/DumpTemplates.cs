@@ -62,9 +62,17 @@ Attribute: {{Name}}::[{{ReferenceId}} {{TypeToken}}]{{#newline}}
 {{/each}}
 {{/each}}
 {{#if Attributes}}{{#newline}}{{/if}}
+String Heap{{#newline}}
+-----------{{#newline}}
+{{#each StringHeap}}
+{{ReferenceId}}: {{Content}}{{#newline}}
+{{/each}}
+{{#newline}}
 
+User Strings{{#newline}}
+------------{{#newline}}
 {{#each UserStrings}}
-UserString [{{ReferenceId}}]: '{{Content}}'{{#newline}}
+{{ReferenceId}} : ({{Length}}) ""{{Content}}""{{#newline}}
 {{/each}}
 ";
     }
