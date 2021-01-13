@@ -15,6 +15,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
         public List<MethodDef> MethodDefinitions = new List<MethodDef>();
         public List<InterfaceDef> InterfaceDefinitions = new List<InterfaceDef>();
         public List<AttributeCustom> Attributes = new List<AttributeCustom>();
+        public List<HeapString> StringHeap = new List<HeapString>();
         public List<UserString> UserStrings = new List<UserString>();
     }
 }

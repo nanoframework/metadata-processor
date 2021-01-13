@@ -43,6 +43,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
             DumpTypeDefinitions(dumpTable);
             DumpCustomAttributes(dumpTable);
+            DumpStringHeap(dumpTable);
             DumpUserStrings(dumpTable);
 
 
@@ -184,11 +185,28 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
             return new List<AttFixedArgs>() { newArg };
         }
 
+        private void DumpStringHeap(DumpAllTable dumpTable)
+        {
+            foreach (var s in _tablesContext.StringTable.GetItems().OrderBy(i => i.Value))
+            {
+                // don't output the empty string
+                if (s.Value == 0)
+                {
+                    continue;
+                }
+
+                dumpTable.StringHeap.Add(
+                    new HeapString()
+                    {
+                        ReferenceId = s.Value.ToString("x8"),
+                        Content = s.Key
+                    });
+            }
+        }
+
+
         private void DumpUserStrings(DumpAllTable dumpTable)
         {
-            // start at 1, because 0 is the empty string entry
-            int tokenId = 1;
-
             foreach (var s in _tablesContext.StringTable.GetItems().OrderBy(i => i.Value).Where(i => i.Value > _tablesContext.StringTable.LastPreAllocatedId))
             {
                 // don't output the empty string
@@ -198,12 +216,13 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                 }
 
                 // fake the metadata token from the ID
-                var stringMetadataToken = new MetadataToken(TokenType.String, tokenId++);
+                var stringMetadataToken = new MetadataToken(TokenType.String, _tablesContext.StringTable.GetOrCreateStringId(s.Key, true) - _tablesContext.StringTable.LastPreAllocatedId);
 
                 dumpTable.UserStrings.Add(
                     new UserString()
                     {
                         ReferenceId = stringMetadataToken.ToInt32().ToString("x8"),
+                        Length = s.Key.Length.ToString("x2"),
                         Content = s.Key
                 });
             }
