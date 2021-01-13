@@ -186,7 +186,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                 }
 
                 // fake the metadata token from the ID
-                var stringMetadataToken = new MetadataToken(TokenType.String, _tablesContext.StringTable.GetOrCreateStringId(s.Key, true) - _tablesContext.StringTable.LastPreAllocatedId);
+                var stringMetadataToken = new MetadataToken(TokenType.String, _tablesContext.StringTable.GetOrCreateStringId(s.Key, true));
 
                 dumpTable.UserStrings.Add(
                     new UserString()
