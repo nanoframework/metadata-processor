@@ -15,7 +15,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
             return !nanoTablesContext.IgnoringAttributes.Contains(value.FullName);
         }
 
-        public static string TypeSignatureAsString(this TypeReference type)
+        public static string TypeSignatureAsString(this TypeReference type, int position = 0)
         {
             if (type.MetadataType == MetadataType.IntPtr)
             {
@@ -97,10 +97,18 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
                 return byrefSig.ToString();
             }
 
-            if (type.IsGenericParameter ||
-                type.IsGenericInstance)
+            if (type.IsGenericInstance ||
+                type.IsGenericParameter)
             {
-                return $"!!{type.Name}";
+                StringBuilder genericParamTypeSig = new StringBuilder();
+                position++;
+
+                genericParamTypeSig.Append(new string('!', position));
+
+                genericParamTypeSig.Append($"{type.Name}");
+
+
+                return genericParamTypeSig.ToString();
             }
 
             return "";

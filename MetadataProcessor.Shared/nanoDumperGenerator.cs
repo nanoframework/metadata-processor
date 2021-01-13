@@ -280,9 +280,9 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                     {
                         Position = gp.Position.ToString(),
                         GenericParamToken = gp.MetadataToken.ToInt32().ToString("x8"),
-                        Name = gp.FullName,
+                        Name = new string('!', gp.Position + 1) + gp.FullName,
                         Owner = gp.Owner.MetadataToken.ToInt32().ToString("x8"),
-                        Signature = gp.DeclaringType.Name
+                        Signature =  gp.DeclaringType.Name
                     };
 
                     typeDef.GenericParameters.Add(genericParam);
@@ -470,7 +470,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
             foreach(var p in method.Parameters)
             {
-                sig.Append(p.ParameterType.TypeSignatureAsString());
+                sig.Append(p.ParameterType.TypeSignatureAsString(p.Index));
                 sig.Append(", ");
             }
 
@@ -497,7 +497,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
             foreach (var l in variables)
             {
-                sig.Append(l.VariableType.TypeSignatureAsString());
+                sig.Append(l.VariableType.TypeSignatureAsString(l.Index));
                 sig.Append(", ");
             }
 
