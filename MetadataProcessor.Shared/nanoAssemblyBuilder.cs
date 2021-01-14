@@ -650,6 +650,10 @@ namespace nanoFramework.Tools.MetadataProcessor
                         foreach (var gp in md.GenericParameters)
                         {
                             set.Add(gp.MetadataToken);
+                            if(!_tablesContext.TypeReferencesTable.TryGetTypeReferenceId(gp.GetElementType() as TypeReference, out ushort referenceId))
+                            {
+                                _tablesContext.TypeSpecificationsTable.GetOrCreateTypeSpecificationId(gp.GetElementType());
+                            }
                         }
                     }
 
@@ -753,26 +757,44 @@ namespace nanoFramework.Tools.MetadataProcessor
                         // op codes
                         foreach (var i in md.Body.Instructions)
                         {
-                            if (i.Operand is MethodReference ||
-                                i.Operand is FieldReference ||
-                                i.Operand is MethodSpecification ||
-                                i.Operand is GenericInstanceMethod ||
-                                i.Operand is GenericParameter)
+                            if (i.Operand is MethodReference)
+                            {
+                                if (_tablesContext.MethodReferencesTable.TryGetMethodReferenceId(i.Operand as MethodReference, out ushort referenceId))
+                                {
+                                    set.Add(((IMetadataTokenProvider)i.Operand).MetadataToken);
+                                }
+                                else
+                                {
+                                    if (_tablesContext.MethodDefinitionTable.TryGetMethodReferenceId((i.Operand as MethodReference).Resolve(), out referenceId))
+                                    {
+                                        set.Add((i.Operand as MethodReference).Resolve().MetadataToken);
+                                    }
+                                    else
+                                    {
+                                        Debug.Fail("Can't find method in any table.");
+                                    }
+                                }
+                            }
+                            else if (i.Operand is FieldReference ||
+                                     i.Operand is MethodSpecification)
                             {
                                 set.Add(((IMetadataTokenProvider)i.Operand).MetadataToken);
                             }
-                            else if (i.OpCode.OperandType is OperandType.InlineType ||
-                                i.Operand is GenericInstanceType)
+                            else if (
+                                i.OpCode.OperandType is OperandType.InlineType ||
+                                i.Operand is GenericInstanceType ||
+                                i.Operand is GenericInstanceMethod ||
+                                i.Operand is GenericParameter)
                             {
                                 var opType = (TypeReference)i.Operand;
                                 set.Add(((IMetadataTokenProvider)i.Operand).MetadataToken);
 
-                                ushort referenceId;
-                                if (opType is TypeSpecification)
+                                if (opType is TypeSpecification ||
+                                    opType is GenericParameter)
                                 {
                                     _tablesContext.TypeSpecificationsTable.GetOrCreateTypeSpecificationId(opType);
                                 }
-                                else if (_tablesContext.TypeReferencesTable.TryGetTypeReferenceId(opType, out referenceId))
+                                else if (_tablesContext.TypeReferencesTable.TryGetTypeReferenceId(opType, out ushort referenceId))
                                 {
                                     //referenceId |= typeReferenceMask; // External type reference
                                 }
