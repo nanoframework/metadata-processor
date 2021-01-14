@@ -126,7 +126,6 @@ namespace nanoFramework.Tools.MetadataProcessor
                 .Select(item => item.Key))
             {
                 writer.WriteUInt16(_context.SignaturesTable.GetOrCreateSignatureId(item));
-                writer.WriteUInt16(0x0000); // padding
             }
         }
     }
