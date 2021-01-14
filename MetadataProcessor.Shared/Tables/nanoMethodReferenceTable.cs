@@ -80,7 +80,8 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             ushort tag;
 
-            if ((item.DeclaringType is TypeSpecification) &&
+            if ((item.DeclaringType is TypeSpecification ||
+                 item.DeclaringType is GenericParameter) &&
                 _context.TypeSpecificationsTable.TryGetTypeReferenceId(item.DeclaringType, out ushort referenceId))
             {
                 // MemberRefParent tag is 4 (TypeSpec)

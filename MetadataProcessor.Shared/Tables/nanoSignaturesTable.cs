@@ -776,7 +776,8 @@ namespace nanoFramework.Tools.MetadataProcessor
         {
             ushort tag;
 
-            if (typeDefinition is TypeSpecification &&
+            if ((typeDefinition is TypeSpecification ||
+                 typeDefinition is GenericParameter) &&
                 _context.TypeSpecificationsTable.TryGetTypeReferenceId(typeDefinition, out ushort referenceId))
             {
                 // TypeDefOrRef tag is 2 (TypeSpec)
