@@ -440,7 +440,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
             foreach(var p in method.Parameters)
             {
-                sig.Append(p.ParameterType.TypeSignatureAsString(p.Index));
+                sig.Append(p.ParameterType.TypeSignatureAsString());
                 sig.Append(", ");
             }
 
