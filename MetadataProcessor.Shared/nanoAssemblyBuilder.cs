@@ -650,10 +650,6 @@ namespace nanoFramework.Tools.MetadataProcessor
                         foreach (var gp in md.GenericParameters)
                         {
                             set.Add(gp.MetadataToken);
-                            if(!_tablesContext.TypeReferencesTable.TryGetTypeReferenceId(gp.GetElementType() as TypeReference, out ushort referenceId))
-                            {
-                                _tablesContext.TypeSpecificationsTable.GetOrCreateTypeSpecificationId(gp.GetElementType());
-                            }
                         }
                     }
 
@@ -744,6 +740,11 @@ namespace nanoFramework.Tools.MetadataProcessor
                             {
                                 set.Add(v.VariableType.MetadataToken);
                                 set.Add(v.VariableType.GetElementType().MetadataToken);
+
+                                if (v.VariableType is TypeSpecification)
+                                {
+                                    _tablesContext.TypeSpecificationsTable.GetOrCreateTypeSpecificationId(v.VariableType);
+                                }
                             }
                             else if(v.VariableType.IsPointer)
                             {
@@ -789,21 +790,20 @@ namespace nanoFramework.Tools.MetadataProcessor
                                 var opType = (TypeReference)i.Operand;
                                 set.Add(((IMetadataTokenProvider)i.Operand).MetadataToken);
 
-                                if (opType is TypeSpecification ||
-                                    opType is GenericParameter)
+                                if (opType is GenericParameter)
                                 {
-                                    _tablesContext.TypeSpecificationsTable.GetOrCreateTypeSpecificationId(opType);
-                                }
-                                else if (_tablesContext.TypeReferencesTable.TryGetTypeReferenceId(opType, out ushort referenceId))
-                                {
-                                    //referenceId |= typeReferenceMask; // External type reference
-                                }
-                                else
-                                {
-                                    if (!_tablesContext.TypeDefinitionTable.TryGetTypeReferenceId(opType.Resolve(), out referenceId))
+                                    if (opType.DeclaringType != null)
                                     {
+                                        _tablesContext.TypeSpecificationsTable.GetOrCreateTypeSpecificationId(opType);
                                     }
 
+                                    if ((opType as GenericParameter).DeclaringMethod != null)
+                                    {
+                                        if (_tablesContext.GenericParamsTable.TryGetParameterId((opType as GenericParameter), out ushort referenceIf))
+                                        {
+
+                                        }
+                                    }
                                 }
                             }
                             else if (i.Operand is string)
@@ -814,7 +814,6 @@ namespace nanoFramework.Tools.MetadataProcessor
 
                                 set.Add(newToken);
                             }
-
                         }
                    
                         // exceptions

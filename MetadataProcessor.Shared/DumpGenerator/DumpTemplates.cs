@@ -27,6 +27,19 @@ TypeDefProps [{{ReferenceId}}]: Flags: {{Flags}} Extends: {{ExtendsType}} Enclos
     GenericParam [{{GenericParamToken}}]: Position: ({{Position}}) '{{Name}}' Owner: {{Owner}} [{{Signature}}]{{#newline}}
 {{/each}}
 
+{{#each TypeSpecifications}}
+TypeSpec [{{ReferenceId}}]: '{{Name}}'{{#newline}}
+{{#each MemberReferences}}
+    MemberRef [{{ReferenceId}}]: '{{Name}}'{{#newline}}
+{{#if Arguments}}
+        Argument: {{Arguments}}{{#newline}}
+{{/else}}
+    No arguments
+{{/if}}
+{{/each}}
+{{/each}}
+{{#if TypeSpecifications}}{{#newline}}{{/if}}
+
 {{#each FieldDefinitions}}
     FieldDefProps [{{ReferenceId}}]: Attr: {{Attributes}} Flags: {{Flags}} '{{Name}}' [{{Signature}}]{{#newline}}
 {{/each}}
