@@ -493,11 +493,12 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
         private string PrintSignatureForLocalVar(Collection<VariableDefinition> variables)
         {
             StringBuilder sig = new StringBuilder();
-            sig.Append("{ ");
+            sig.Append("( ");
 
             foreach (var l in variables)
             {
-                sig.Append(l.VariableType.TypeSignatureAsString(l.Index));
+                sig.Append($"[{l.Index}] ");
+                sig.Append(l.VariableType.TypeSignatureAsString());
                 sig.Append(", ");
             }
 
@@ -511,7 +512,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                 sig.Append(" ");
             }
 
-            sig.Append(" }");
+            sig.Append(" )");
 
             return sig.ToString();
         }
