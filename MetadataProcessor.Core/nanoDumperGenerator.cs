@@ -324,7 +324,12 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                         // IL code
                         foreach (var instruction in m.Body.Instructions)
                         {
+                            MetadataToken fakeToken = new MetadataToken();
+                            string typeName = string.Empty;
+
                             ILCode ilCode = new ILCode();
+                            
+                            ilCode.IL += $"IL_{instruction.Offset:x4}:  ";
 
                             ilCode.IL += instruction.OpCode.Name.PadRight(12);
 
