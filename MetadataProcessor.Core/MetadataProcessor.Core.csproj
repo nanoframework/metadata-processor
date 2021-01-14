@@ -57,6 +57,7 @@
     <Compile Include="DumpGenerator\AttFixedArgs.cs" />
     <Compile Include="DumpGenerator\GenericParam.cs" />
     <Compile Include="DumpGenerator\HeapString.cs" />
+    <Compile Include="DumpGenerator\TypeSpec.cs" />
     <Compile Include="DumpGenerator\UserString.cs" />
     <Compile Include="DumpGenerator\ILCode.cs" />
     <Compile Include="DumpGenerator\LocalDef.cs" />

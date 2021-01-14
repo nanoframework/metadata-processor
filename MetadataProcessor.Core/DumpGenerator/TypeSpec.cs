@@ -7,14 +7,12 @@ using System.Collections.Generic;
 
 namespace nanoFramework.Tools.MetadataProcessor.Core
 {
-    public class MemberRef
+    public class TypeSpec
     {
         public string ReferenceId;
 
         public string Name;
 
-        public string Signature;
-
-        public List<string> Arguments;
+        public List<MemberRef> MemberReferences = new List<MemberRef>();
     }
 }

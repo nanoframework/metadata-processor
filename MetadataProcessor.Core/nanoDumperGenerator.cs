@@ -41,8 +41,8 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
             DumpAssemblyReferences(dumpTable);
             //DumpModuleReferences(dumpTable);
             DumpTypeReferences(dumpTable);
-
             DumpTypeDefinitions(dumpTable);
+            DumpTypeSpecifications(dumpTable);
             DumpCustomAttributes(dumpTable);
             DumpStringHeap(dumpTable);
             DumpUserStrings(dumpTable);
@@ -514,6 +514,81 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                     ReferenceId = new MetadataToken(TokenType.AssemblyRef, _tablesContext.AssemblyReferenceTable.GetReferenceId(a) + 1).ToInt32().ToString("x8"),
                     Flags = "00000000"
                 });
+            }
+        }
+
+        private void DumpTypeSpecifications(DumpAllTable dumpTable)
+        {
+            foreach (var t in _tablesContext.TypeSpecificationsTable.GetItems().OrderBy(ts => ts.Value))
+            {
+                var typeSpec = new TypeSpec();
+
+                // build name
+                StringBuilder typeSpecName = new StringBuilder();
+
+                if(t.Key is GenericParameter)
+                {
+                    var genericParam = t.Key as GenericParameter;
+
+                    typeSpecName.Append(t.Key.MetadataType);
+
+                    if (genericParam.Owner is TypeDefinition)
+                    {
+                        typeSpecName.Append("!");
+                    }
+                    if (genericParam.Owner is MethodDefinition)
+                    {
+                        typeSpecName.Append("!!");
+                    }
+
+                    typeSpecName.Append(genericParam.Owner.GenericParameters.IndexOf(genericParam));
+
+                    typeSpecName.Append($" ({genericParam.FullName})");
+
+                    typeSpec.Name = typeSpecName.ToString();
+
+                    // get token
+                    if (_tablesContext.TypeSpecificationsTable.TryGetTypeReferenceId(t.Key, out ushort refId))
+                    {
+                        typeSpec.ReferenceId = new MetadataToken(TokenType.TypeSpec, refId).ToInt32().ToString("x8");
+                    }
+                }
+                else
+                {
+                    // type is a GenericInstance
+                    // can't compare with Cecil MetadataToken because the tables have been cleaned-up and re-indexed
+
+                    typeSpec.Name = t.Key.FullName;
+
+                    // get token
+                    if (_tablesContext.TypeSpecificationsTable.TryGetTypeReferenceId(t.Key, out ushort typeSpecId))
+                    {
+                        typeSpec.ReferenceId = new MetadataToken(TokenType.TypeSpec, typeSpecId).ToInt32().ToString("x8");
+                    }
+
+                    foreach (var mr in _tablesContext.MethodReferencesTable.Items)
+                    {
+                        if (_tablesContext.TypeSpecificationsTable.TryGetTypeReferenceId(mr.DeclaringType, out ushort referenceId) &&
+                            referenceId == t.Value)
+                        {
+                            var memberRef = new MemberRef()
+                            {
+                                Name = mr.Name
+                            };
+
+                            if (_tablesContext.MethodReferencesTable.TryGetMethodReferenceId(mr, out ushort methodRefId))
+                            {
+                                memberRef.ReferenceId = new MetadataToken(TokenType.TypeSpec, methodRefId).ToInt32().ToString("x8");
+                            }
+
+                            typeSpec.MemberReferences.Add(memberRef);
+                        }
+                    }
+
+                    Debug.Assert(typeSpec.MemberReferences.Count > 0, $"Couldn't find any MethodRef for TypeSpec[{t.Value}] {t.Key.FullName}");
+                }
+
+                dumpTable.TypeSpecifications.Add(typeSpec);
             }
         }
 
