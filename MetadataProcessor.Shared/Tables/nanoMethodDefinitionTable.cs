@@ -2,6 +2,7 @@ using Mono.Cecil;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 namespace nanoFramework.Tools.MetadataProcessor
 {
@@ -110,9 +111,6 @@ namespace nanoFramework.Tools.MetadataProcessor
             // LocalsCount
             writer.WriteByte((byte)(item.HasBody ? item.Body.Variables.Count : 0));
 
-            // GenericParamCount
-            writer.WriteByte((byte)item.GenericParameters.Count);
-
             // LengthEvalStack
             writer.WriteByte(CodeWriter.CalculateStackSize(item.Body));
 
@@ -137,8 +135,19 @@ namespace nanoFramework.Tools.MetadataProcessor
                 }
             }
 
-            // GenericParam signature
-            writer.WriteUInt16(_context.SignaturesTable.GetOrCreateSignatureId(item.GenericParameters));
+            ushort genericParamRefId = 0xFFFF;
+
+            if (item.HasGenericParameters)
+            {
+                // no need to check if it's found
+                _context.GenericParamsTable.TryGetParameterId(item.GenericParameters.FirstOrDefault(), out genericParamRefId);
+            }
+
+            // FirstGenericParam
+            writer.WriteUInt16(genericParamRefId);
+
+            // GenericParamCount
+            writer.WriteByte((byte)item.GenericParameters.Count);
 
             // Signature
             writer.WriteUInt16(methodSignature);
