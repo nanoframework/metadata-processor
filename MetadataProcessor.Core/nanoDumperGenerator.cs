@@ -10,6 +10,7 @@ using Mustache;
 using nanoFramework.Tools.MetadataProcessor.Core.Extensions;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -295,21 +296,22 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                         // locals
                         if (m.Body.HasVariables)
                         {
-                            methodDef.Locals = $"{m.Body.Variables.Count.ToString()}: {PrintSignatureForLocalVar(m.Body.Variables)}";
+                            methodDef.Locals = $"{m.Body.Variables.Count}: {PrintSignatureForLocalVar(m.Body.Variables)}";
                         }
 
                         // exceptions
                         foreach (var eh in m.Body.ExceptionHandlers)
                         {
-                            var h = new ExceptionHandler();
-
-                            h.Handler = $"{((int)eh.HandlerType).ToString("x2")} " +
-                                $"{eh.TryStart?.Offset.ToString("x8")}->{eh.TryEnd?.Offset.ToString("x8")} " +
-                                $"{eh.HandlerStart?.Offset.ToString("x8")}->{eh.HandlerEnd?.Offset.ToString("x8")} ";
-
-                            if(eh.CatchType != null)
+                            var h = new ExceptionHandler
                             {
-                                h.Handler += $"{eh.CatchType.MetadataToken.ToInt32().ToString("x8")}";
+                                Handler = $"{(int)eh.HandlerType:x2} " +
+                                $"{eh.TryStart?.Offset.ToString("x8")}->{eh.TryEnd?.Offset.ToString("x8")} " +
+                                $"{eh.HandlerStart?.Offset.ToString("x8")}->{eh.HandlerEnd?.Offset.ToString("x8")} "
+                            };
+
+                            if (eh.CatchType != null)
+                            {
+                                h.Handler += $"{eh.CatchType.MetadataToken.ToInt32():x8}";
                             }
                             else
                             {
@@ -335,15 +337,91 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
                             if (instruction.Operand != null)
                             {
-                                if (instruction.OpCode.OperandType == Mono.Cecil.Cil.OperandType.InlineField ||
-                                    instruction.OpCode.OperandType == Mono.Cecil.Cil.OperandType.InlineMethod ||
-                                    instruction.OpCode.OperandType == Mono.Cecil.Cil.OperandType.InlineType ||
-                                    instruction.OpCode.OperandType == Mono.Cecil.Cil.OperandType.InlineTok ||
-                                    instruction.OpCode.OperandType == Mono.Cecil.Cil.OperandType.InlineSig)
+                                if (instruction.OpCode.OperandType == OperandType.InlineMethod)
                                 {
-                                    ilCode.IL += $"[{((IMetadataTokenProvider)instruction.Operand).MetadataToken.ToInt32().ToString("x8")}]";
+                                    typeName = (instruction.Operand as MethodReference).FullName;
+
+                                    MethodReference methodReference = (MethodReference)instruction.Operand;
+
+                                    if (!_tablesContext.MethodReferencesTable.TryGetMethodReferenceId(methodReference, out ushort referenceId))
+                                    {
+                                        if(!_tablesContext.MethodDefinitionTable.TryGetMethodReferenceId(methodReference.Resolve(), out referenceId))
+                                        {
+                                            Debug.Fail("Can't find method in any table.");
+                                        }
+                                    }
+
+                                    fakeToken = new MetadataToken(TokenType.Method, referenceId);
+
+                                    ilCode.IL += $"{typeName}[{fakeToken.ToInt32():x8}]";
                                 }
-                                else if (instruction.OpCode.OperandType == Mono.Cecil.Cil.OperandType.InlineString)
+                                else if (instruction.OpCode.OperandType == OperandType.InlineField ||
+                                    instruction.OpCode.OperandType == OperandType.InlineTok ||
+                                    instruction.OpCode.OperandType == OperandType.InlineSig)
+                                {
+                                    ilCode.IL += $"[{((IMetadataTokenProvider)instruction.Operand).MetadataToken.ToInt32():x8}]";
+                                }
+                                else if (instruction.OpCode.OperandType == OperandType.InlineType)
+                                {
+
+                                    if (instruction.Operand is TypeSpecification &&
+                                        _tablesContext.TypeSpecificationsTable.TryGetTypeReferenceId(instruction.Operand as TypeSpecification, out ushort referenceId))
+                                    {
+                                        typeName = (instruction.Operand as TypeSpecification).FullName;
+
+                                        fakeToken = new MetadataToken(TokenType.TypeSpec, referenceId);
+                                    }
+                                    else if (_tablesContext.TypeReferencesTable.TryGetTypeReferenceId(instruction.Operand as TypeReference, out referenceId))
+                                    {
+                                        typeName = (instruction.Operand as TypeReference).FullName;
+
+                                        fakeToken = new MetadataToken(TokenType.TypeRef, referenceId);
+                                    }
+                                    else if (instruction.Operand is TypeDefinition &&
+                                             _tablesContext.TypeDefinitionTable.TryGetTypeReferenceId(instruction.Operand as TypeDefinition, out referenceId))
+                                    {
+                                        typeName = (instruction.Operand as TypeDefinition).FullName;
+
+                                        fakeToken = new MetadataToken(TokenType.TypeDef, referenceId);
+                                    }
+                                    else if(instruction.Operand is GenericParameter &&
+                                            _tablesContext.GenericParamsTable.TryGetParameterId(instruction.Operand as GenericParameter, out referenceId))
+                                    {
+                                        typeName = (instruction.Operand as GenericParameter).TypeSignatureAsString();
+
+                                        TypeReference typeReference = (TypeReference)instruction.Operand;
+
+                                        if (typeReference is TypeSpecification ||
+                                            typeReference is GenericParameter)
+                                        {
+                                            referenceId = _tablesContext.TypeSpecificationsTable.GetOrCreateTypeSpecificationId(typeReference);
+                                            
+                                            fakeToken = new MetadataToken(TokenType.TypeSpec, referenceId);
+                                        }
+                                        else if (_tablesContext.TypeReferencesTable.TryGetTypeReferenceId(typeReference, out referenceId))
+                                        {
+                                            fakeToken = new MetadataToken(TokenType.TypeRef, referenceId);
+                                        }
+                                        else
+                                        {
+                                            if (!_tablesContext.TypeDefinitionTable.TryGetTypeReferenceId(typeReference.Resolve(), out referenceId))
+                                            {
+                                                fakeToken = new MetadataToken(TokenType.TypeDef, referenceId);
+                                            }
+                                            else
+                                            {
+                                                Debug.Fail("Can't find generic parameter type in any table.");
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        Debug.Fail("Can't find operand type in any table.");
+                                    }
+
+                                    ilCode.IL += $"{typeName}[{fakeToken.ToInt32():x8}]";
+                                }
+                                else if (instruction.OpCode.OperandType == OperandType.InlineString)
                                 {
                                     // strings need a different processing
                                     // get string ID from table
@@ -352,10 +430,12 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                                     // fake the metadata token from the ID
                                     var stringMetadataToken = new MetadataToken(TokenType.String, stringReferenceId);
 
-                                    ilCode.IL += $"[{stringMetadataToken.ToInt32().ToString("x8")}]";
+                                    ilCode.IL += $"\"{instruction.Operand}\" [{stringMetadataToken.ToInt32():x8}]";
                                 }
 
                             }
+
+                            ilCode.IL = ilCode.IL.TrimEnd();
 
                             methodDef.ILCode.Add(ilCode);
                         }
