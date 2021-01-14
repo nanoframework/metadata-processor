@@ -43,7 +43,7 @@ TypeDefProps [{{ReferenceId}}]: Flags: {{Flags}} Extends: {{ExtendsType}} Enclos
         IL count: {{ILCodeInstructionsCount}}{{#newline}}
 {{/if}}
 {{#each ILCode}}
-           {{IL}}{{#newline}}
+        {{IL}}{{#newline}}
 {{/each}}
 {{/each}}
 
