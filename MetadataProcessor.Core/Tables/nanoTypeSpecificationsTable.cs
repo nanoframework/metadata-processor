@@ -39,7 +39,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// <summary>
         /// Maps for each unique type specification and related identifier.
         /// </summary>
-        private readonly IDictionary<TypeReference, ushort> _idByTypeSpecifications =
+        private readonly Dictionary<TypeReference, ushort> _idByTypeSpecifications =
             new Dictionary<TypeReference, ushort>(new TypeReferenceComparer());
 
         /// <summary>
@@ -127,6 +127,10 @@ namespace nanoFramework.Tools.MetadataProcessor
             {
                 writer.WriteUInt16(_context.SignaturesTable.GetOrCreateSignatureId(item));
             }
+        }
+        public IDictionary<TypeReference, ushort> GetItems()
+        {
+            return _idByTypeSpecifications;
         }
     }
 }
