@@ -7,6 +7,7 @@
 using Mono.Cecil;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace nanoFramework.Tools.MetadataProcessor
@@ -222,6 +223,120 @@ namespace nanoFramework.Tools.MetadataProcessor
             }
         }
 
+        /// <summary>
+        /// Gets method reference identifier (external or internal) encoded with appropriate prefix.
+        /// </summary>
+        /// <param name="methodReference">Method reference in Mono.Cecil format.</param>
+        /// <returns>Reference identifier for passed <paramref name="methodReference"/> value.</returns>
+        public ushort GetMethodReferenceId(
+            MethodReference methodReference)
+        {
+            ushort referenceId;
+            if (MethodReferencesTable.TryGetMethodReferenceId(methodReference, out referenceId))
+            {
+                referenceId |= 0x8000; // External method reference
+            }
+            else
+            {
+                MethodDefinitionTable.TryGetMethodReferenceId(methodReference.Resolve(), out referenceId);
+            }
+            return referenceId;
+        }
+
+        /// <summary>
+        /// Gets field reference identifier (external or internal) encoded with appropriate prefix.
+        /// </summary>
+        /// <param name="fieldReference">Field reference in Mono.Cecil format.</param>
+        /// <returns>Reference identifier for passed <paramref name="fieldReference"/> value.</returns>
+        public ushort GetFieldReferenceId(
+            FieldReference fieldReference)
+        {
+            ushort referenceId;
+            if (FieldReferencesTable.TryGetFieldReferenceId(fieldReference, out referenceId))
+            {
+                referenceId |= 0x8000; // External field reference
+            }
+            else
+            {
+                FieldsTable.TryGetFieldReferenceId(fieldReference.Resolve(), false, out referenceId);
+            }
+            return referenceId;
+        }
+
+        /// <summary>
+        /// Gets metadata token encoded with appropriate prefix.
+        /// </summary>
+        /// <param name="token">Metadata token in Mono.Cecil format.</param>
+        /// <returns>The .NET nanoFramework encoded token for passed <paramref name="token"/> value.</returns>
+        public uint GetMetadataToken(
+            IMetadataTokenProvider token)
+        {
+            switch (token.MetadataToken.TokenType)
+            {
+                case TokenType.TypeRef:
+                    TypeReferencesTable.TryGetTypeReferenceId((TypeReference)token, out ushort referenceId);
+                    return (uint)0x01000000 | referenceId;
+                case TokenType.TypeDef:
+                    TypeDefinitionTable.TryGetTypeReferenceId((TypeDefinition)token, out referenceId);
+                    return (uint)0x04000000 | referenceId;
+                case TokenType.TypeSpec:
+                    TypeSpecificationsTable.TryGetTypeReferenceId((TypeReference)token, out referenceId);
+                    return (uint)0x08000000 | referenceId;
+                case TokenType.Field:
+                    FieldsTable.TryGetFieldReferenceId((FieldDefinition)token, false, out referenceId);
+                    return (uint)0x05000000 | referenceId;
+
+                default:
+                    System.Diagnostics.Debug.Fail("Unsupported TokenType");
+                    break;
+            }
+            return 0U;
+        }
+
+        /// <summary>
+        /// Gets an (.NET nanoFramework encoded) type reference identifier (all kinds). It's encoded with appropriate mask.
+        /// </summary>
+        /// <param name="typeReference">Type reference in Mono.Cecil format.</param>
+        /// <param name="typeReferenceMask">The mask type to add to the encoded type reference Id. TypeRef mask will be added if none is specified.</param>
+        /// <returns>Encoded type reference identifier for passed <paramref name="typeReference"/> value.</returns>
+        public ushort GetTypeReferenceId(
+            TypeReference typeReference,
+            nanoEncodedInlineType typeReferenceMask = nanoEncodedInlineType.TypeRef)
+        {
+            ushort referenceId;
+
+            if (typeReference is GenericParameter)
+            {
+                if(!GenericParamsTable.TryGetParameterId(typeReference, out referenceId))
+                {
+                    Debug.Fail($"Couldn't find {typeReference} in generic parameters table");
+                }
+
+                return (ushort)((ushort)nanoEncodedInlineType.GenericParam | referenceId);
+            }
+            else if (typeReference is TypeSpecification)
+            {
+                referenceId = TypeSpecificationsTable.GetOrCreateTypeSpecificationId(typeReference);
+
+                return (ushort)((ushort)nanoEncodedInlineType.TypeSpec | referenceId);
+            }
+            else if (TypeReferencesTable.TryGetTypeReferenceId(typeReference, out referenceId))
+            {
+                // External type reference
+                referenceId |= (ushort)typeReferenceMask;
+            }
+            else
+            {
+                if (!TypeDefinitionTable.TryGetTypeReferenceId(typeReference.Resolve(), out referenceId))
+                {
+                    // encode with 
+                    return (ushort)nanoEncodedInlineType.TypeSpec;
+                }
+            }
+
+            return referenceId;
+        }
+
         private List<MethodSpecification> GetMethodSpecifications(List<MethodDefinition> methods)
         {
             List<MethodSpecification> methodSpecs = new List<MethodSpecification>();
@@ -253,26 +368,6 @@ namespace nanoFramework.Tools.MetadataProcessor
             }
 
             return constraints;
-        }
-
-        /// <summary>
-        /// Gets method reference identifier (external or internal) encoded with appropriate prefix.
-        /// </summary>
-        /// <param name="methodReference">Method reference in Mono.Cecil format.</param>
-        /// <returns>Reference identifier for passed <paramref name="methodReference"/> value.</returns>
-        public ushort GetMethodReferenceId(
-            MethodReference methodReference)
-        {
-            ushort referenceId;
-            if (MethodReferencesTable.TryGetMethodReferenceId(methodReference, out referenceId))
-            {
-                referenceId |= 0x8000; // External method reference
-            }
-            else
-            {
-                MethodDefinitionTable.TryGetMethodReferenceId(methodReference.Resolve(), out referenceId);
-            }
-            return referenceId;
         }
 
         public AssemblyDefinition AssemblyDefinition { get; private set; }
