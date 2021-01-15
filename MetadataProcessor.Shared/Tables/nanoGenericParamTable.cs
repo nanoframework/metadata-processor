@@ -63,16 +63,16 @@ namespace nanoFramework.Tools.MetadataProcessor
         }
 
         /// <summary>
-        /// Gets method reference ID if possible (if method is external and stored in this table).
+        /// Gets generic parameter ID if possible (if generic parameter is stored in this table).
         /// </summary>
-        /// <param name="genericParameter">Method reference metadata in Mono.Cecil format.</param>
-        /// <param name="referenceId">Method reference ID in .NET nanoFramework format.</param>
-        /// <returns>Returns <c>true</c> if reference found, otherwise returns <c>false</c>.</returns>
+        /// <param name="genericParameter">Generic parameter TypeReference in Mono.Cecil format.</param>
+        /// <param name="referenceId">Generic parameter identifier for filling.</param>
+        /// <returns>Returns <c>true</c> the parameter was found, otherwise returns <c>false</c>.</returns>
         public bool TryGetParameterId(
-            GenericParameter genericParameter,
+            TypeReference genericParameter,
             out ushort referenceId)
         {
-            return TryGetIdByValue(genericParameter, out referenceId);
+            return TryGetIdByValue(genericParameter as GenericParameter, out referenceId);
         }
 
         /// <inheritdoc/>

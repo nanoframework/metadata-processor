@@ -698,6 +698,24 @@ namespace nanoFramework.Tools.MetadataProcessor
                             set.Add(parameterType.MetadataToken);
                             set.Add(parameterType.GetElementType().MetadataToken);
                         }
+                        else if (parameterType is GenericParameter)
+                        {
+                            set.Add(parameterType.MetadataToken);
+                            
+                            foreach(var gp in parameterType.GenericParameters)
+                            {
+                                set.Add(gp.MetadataToken);
+                                if (parameterType.DeclaringType != null)
+                                {
+                                    set.Add(parameterType.DeclaringType.MetadataToken);
+                                }
+                            }
+
+                            if (parameterType.DeclaringType != null)
+                            {
+                                set.Add(parameterType.DeclaringType.MetadataToken);
+                            }
+                        }
                         else if (!parameterType.IsValueType &&
                                  !parameterType.IsPrimitive &&
                                   parameterType.FullName != "System.Void" &&
@@ -769,6 +787,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                                     if (_tablesContext.MethodDefinitionTable.TryGetMethodReferenceId((i.Operand as MethodReference).Resolve(), out referenceId))
                                     {
                                         set.Add((i.Operand as MethodReference).Resolve().MetadataToken);
+                                        set.Add((i.Operand as MethodReference).MetadataToken);
                                     }
                                     else
                                     {
@@ -792,18 +811,14 @@ namespace nanoFramework.Tools.MetadataProcessor
 
                                 if (opType is GenericParameter)
                                 {
-                                    if (opType.DeclaringType != null)
-                                    {
-                                        _tablesContext.TypeSpecificationsTable.GetOrCreateTypeSpecificationId(opType);
-                                    }
-
-                                    if ((opType as GenericParameter).DeclaringMethod != null)
-                                    {
-                                        if (_tablesContext.GenericParamsTable.TryGetParameterId((opType as GenericParameter), out ushort referenceIf))
-                                        {
-
-                                        }
-                                    }
+                                    _tablesContext.TypeSpecificationsTable.GetOrCreateTypeSpecificationId(opType);
+                                    //if (opType.DeclaringType != null)
+                                    //{
+                                    //    _tablesContext.TypeSpecificationsTable.GetOrCreateTypeSpecificationId(opType.DeclaringType);
+                                    //}
+                                    //else
+                                    //{
+                                    //}
                                 }
                             }
                             else if (i.Operand is string)
