@@ -278,7 +278,8 @@ namespace nanoFramework.Tools.MetadataProcessor
                 {
                     case ExceptionHandlerType.Catch:
                         _writer.WriteUInt16(0x0000);
-                        _writer.WriteUInt16(GetTypeReferenceId(handler.CatchType, 0x8000));
+                        // force encoding with TypeSpec mask
+                        _writer.WriteUInt16(_context.GetTypeReferenceId(handler.CatchType, nanoEncodedInlineType.TypeSpec));
                         break;
                     case ExceptionHandlerType.Fault:
                         _writer.WriteUInt16(0x0001);
@@ -414,83 +415,18 @@ namespace nanoFramework.Tools.MetadataProcessor
                     _writer.WriteUInt16(_context.GetMethodReferenceId((MethodReference)operand));
                     break;
                 case OperandType.InlineType:
-                    _writer.WriteUInt16(GetTypeReferenceId((TypeReference)operand));
+                    _writer.WriteUInt16(_context.GetTypeReferenceId((TypeReference)operand));
                     break;
 		        case OperandType.InlineField:
-                    _writer.WriteUInt16(GetFieldReferenceId((FieldReference)operand));
+                    _writer.WriteUInt16(_context.GetFieldReferenceId((FieldReference)operand));
                     break;
                 case OperandType.InlineTok:
-                    _writer.WriteUInt32(GetMetadataToken((IMetadataTokenProvider)operand));
+                    _writer.WriteUInt32(_context.GetMetadataToken((IMetadataTokenProvider)operand));
                     break;
                 default:
 		            throw new ArgumentException();
 		    }
 		}
-
-        private uint GetMetadataToken(
-            IMetadataTokenProvider token)
-        {
-            ushort referenceId;
-            switch (token.MetadataToken.TokenType)
-            {
-                case TokenType.TypeRef:
-                    _context.TypeReferencesTable.TryGetTypeReferenceId((TypeReference)token, out referenceId);
-                    return (uint)0x01000000 | referenceId;
-                case TokenType.TypeDef:
-                    _context.TypeDefinitionTable.TryGetTypeReferenceId((TypeDefinition)token, out referenceId);
-                    return (uint)0x04000000 | referenceId;
-                case TokenType.TypeSpec:
-                    _context.TypeSpecificationsTable.TryGetTypeReferenceId((TypeReference) token, out referenceId);
-                    return (uint)0x08000000 | referenceId;
-                case TokenType.Field:
-                    _context.FieldsTable.TryGetFieldReferenceId((FieldDefinition) token, false, out referenceId);
-                    return (uint)0x05000000 | referenceId;
-            }
-            return 0U;
-        }
-
-        private ushort GetFieldReferenceId(
-            FieldReference fieldReference)
-        {
-            ushort referenceId;
-            if (_context.FieldReferencesTable.TryGetFieldReferenceId(fieldReference, out referenceId))
-            {
-                referenceId |= 0x8000; // External field reference
-            }
-            else
-            {
-                _context.FieldsTable.TryGetFieldReferenceId(fieldReference.Resolve(), false, out referenceId);
-            }
-            return referenceId;
-        }
-
-        private ushort GetTypeReferenceId(
-            TypeReference typeReference,
-            ushort typeReferenceMask = 0x4000)
-        {
-            ushort referenceId;
-
-            if (typeReference is TypeSpecification ||
-                typeReference is GenericParameter)
-            {
-                referenceId = _context.TypeSpecificationsTable.GetOrCreateTypeSpecificationId(typeReference);
-
-                return (ushort)(0x8000 | referenceId);
-            }
-            else if (_context.TypeReferencesTable.TryGetTypeReferenceId(typeReference, out referenceId))
-            {
-                referenceId |= typeReferenceMask; // External type reference
-            }
-            else
-            {
-                if (!_context.TypeDefinitionTable.TryGetTypeReferenceId(typeReference.Resolve(), out referenceId))
-                {
-                    return 0x8000;
-                }
-
-            }
-            return referenceId;
-        }
 
         private int GetTargetOffset (
             Instruction instruction)
