@@ -493,6 +493,8 @@ namespace nanoFramework.Tools.MetadataProcessor
                         set.Add(token);
                     }
 
+                    Debug.Assert(ts != null);
+
                     break;
 
                 case TokenType.TypeDef:
