@@ -39,6 +39,8 @@ namespace nanoFramework.Tools.MetadataProcessor
             }
         }
 
+        public ClrTable TableIndex => ClrTable.MethodRef;
+
         /// <summary>
         /// Creates new instance of <see cref="nanoMethodReferenceTable"/> object.
         /// </summary>
