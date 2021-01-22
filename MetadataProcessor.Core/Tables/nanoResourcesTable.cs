@@ -42,6 +42,8 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// </summary>
         private readonly nanoTablesContext _context;
 
+        public ClrTable TableIndex => ClrTable.Resources;
+
         /// <summary>
         /// Creates new instance of <see cref="nanoResourcesTable"/> object.
         /// </summary>

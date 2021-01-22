@@ -44,6 +44,8 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// </summary>
         private ushort _lastAvailableRva;
 
+        public ClrTable TableIndex => ClrTable.ByteCode;
+
         /// <summary>
         /// Creates new instance of <see cref="nanoByteCodeTable"/> object.
         /// </summary>

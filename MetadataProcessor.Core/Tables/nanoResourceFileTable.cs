@@ -27,6 +27,8 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// </summary>
         private readonly IList<Tuple<ushort, uint>> _resouces = new List<Tuple<ushort, uint>>();
 
+        public ClrTable TableIndex => ClrTable.ResourcesFiles;
+
         /// <summary>
         /// Creates new instance of <see cref="nanoResourceFileTable"/> object.
         /// </summary>
