@@ -9,6 +9,7 @@ using Mono.Collections.Generic;
 using Mustache;
 using nanoFramework.Tools.MetadataProcessor.Core.Extensions;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -397,13 +398,16 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
                                     referenceId = _tablesContext.GetMethodReferenceId((MethodReference)instruction.Operand);
 
+                                    // find table
+                                    var tableIndex = referenceId >> 12;
+
                                     // need to clear the encoded method mask
                                     unchecked
                                     {
-                                        referenceId &= 0x7FFF;
+                                        referenceId &= 0x0FFF;
                                     }
 
-                                    ilDescription.Append($"{typeName} [{new nanoMetadataToken((instruction.Operand as MethodReference).MetadataToken, referenceId)}] /*{realToken}*/");
+                                    ilDescription.Append($"{typeName} [{new nanoMetadataToken((ClrTable)tableIndex, referenceId)}] /*{realToken}*/");
                                 }
                                 else if (instruction.OpCode.OperandType == OperandType.InlineField)
                                 {
@@ -581,20 +585,27 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
         {
             foreach (var t in _tablesContext.TypeSpecificationsTable.GetItems())
             {
-                string realToken = t.Key.MetadataToken.ToInt32().ToString("x8");
+                // get real token for the TypeSpec
+                string realToken = string.Empty;
 
-                _tablesContext.TypeSpecificationsTable.TryGetTypeReferenceId(t.Key, out ushort referenceId);
+                _tablesContext.TypeSpecificationsTable.TryGetTypeReferenceId(t.Value, out ushort referenceId);
 
                 var typeSpec = new TypeSpec();
+
+                // assume that real token index is the same as ours
+                // need to add one because this is not 0 indexed
+                realToken = new MetadataToken(TokenType.TypeSpec, t.Key + 1).ToUInt32().ToString("x8");
+
+                typeSpec.ReferenceId = $"[{new nanoMetadataToken(ClrTable.TypeSpec, referenceId)}] /*{realToken}*/";
 
                 // build name
                 StringBuilder typeSpecName = new StringBuilder();
 
-                if(t.Key is GenericParameter)
+                if (t.Value is GenericParameter)
                 {
-                    var genericParam = t.Key as GenericParameter;
+                    var genericParam = t.Value as GenericParameter;
 
-                    typeSpecName.Append(t.Key.MetadataType);
+                    typeSpecName.Append(t.Value.MetadataType);
 
                     if (genericParam.Owner is TypeDefinition)
                     {
@@ -607,46 +618,31 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
                     typeSpecName.Append(genericParam.Owner.GenericParameters.IndexOf(genericParam));
 
-                    typeSpecName.Append($" ({genericParam.FullName})");
-
                     typeSpec.Name = typeSpecName.ToString();
-
-                    // get token
-                    if (_tablesContext.TypeSpecificationsTable.TryGetTypeReferenceId(t.Key, out ushort refId))
-                    {
-                        typeSpec.ReferenceId = $"[{new nanoMetadataToken(t.Key.MetadataToken, referenceId)}] /*{realToken}*/";
-                    }
                 }
-                else if (t.Key is GenericInstanceType)
+                else if (t.Value is GenericInstanceType)
                 {
                     // type is a GenericInstance
                     // can't compare with Cecil MetadataToken because the tables have been cleaned-up and re-indexed
 
-                    typeSpec.Name = t.Key.FullName;
+                    typeSpec.Name = t.Value.FullName;
 
-                    foreach (var mr in _tablesContext.MethodReferencesTable.Items)
+                    foreach (var mr in _tablesContext.MemberReferencesTable.Items)
                     {
                         if (_tablesContext.TypeSpecificationsTable.TryGetTypeReferenceId(mr.DeclaringType, out referenceId) &&
-                            referenceId == t.Value)
+                            referenceId == t.Key)
                         {
-                            // update typeSpec, if needed
-                            if (string.IsNullOrEmpty(typeSpec.ReferenceId))
-                            {
-                                realToken = mr.DeclaringType.MetadataToken.ToInt32().ToString("x8");
-                                typeSpec.ReferenceId = $"[{new nanoMetadataToken(mr.DeclaringType.MetadataToken, referenceId)}] /*{realToken}*/";
-                            }
-
                             var memberRef = new MemberRef()
                             {
                                 Name = mr.Name
                             };
 
-                            if (_tablesContext.MethodReferencesTable.TryGetMethodReferenceId(mr, out ushort methodRefId))
+                            if (_tablesContext.MemberReferencesTable.TryGetMemberReferenceId(mr, out ushort memberRefId))
                             {
                                 realToken = mr.MetadataToken.ToInt32().ToString("x8");
 
-                                memberRef.ReferenceId = $"[{new nanoMetadataToken(ClrTable.MethodRef, referenceId)}] /*{realToken}*/";
-                                memberRef.Signature = PrintSignatureForMethod(mr);
+                                memberRef.ReferenceId = $"[{new nanoMetadataToken(ClrTable.MemberRef, memberRefId)}] /*{realToken}*/";
+                                memberRef.Signature = PrintSignatureForMethod(mr as MethodReference);
                             }
 
                             typeSpec.MemberReferences.Add(memberRef);
@@ -656,15 +652,8 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                     foreach (var ms in _tablesContext.MethodSpecificationTable.Items)
                     {
                         if (_tablesContext.TypeSpecificationsTable.TryGetTypeReferenceId(ms.DeclaringType, out referenceId) &&
-                            referenceId == t.Value)
+                            referenceId == t.Key)
                         {
-                            // update typeSpec, if needed
-                            if (string.IsNullOrEmpty(typeSpec.ReferenceId))
-                            {
-                                realToken = ms.DeclaringType.MetadataToken.ToInt32().ToString("x8");
-                                typeSpec.ReferenceId = $"[{new nanoMetadataToken(ms.DeclaringType.MetadataToken, referenceId)}] /*{realToken}*/";
-                            }
-
                             var memberRef = new MemberRef()
                             {
                                 Name = ms.Name
@@ -674,7 +663,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                             {
                                 realToken = ms.MetadataToken.ToInt32().ToString("x8");
 
-                                memberRef.ReferenceId = $"[{new nanoMetadataToken(ms.MetadataToken, referenceId)}] /*{realToken}*/"; ;
+                                memberRef.ReferenceId = $"[{new nanoMetadataToken(ClrTable.MethodSpec, methodSpecId)}] /*{realToken}*/";
                                 memberRef.Signature = PrintSignatureForMethod(ms);
                             }
 
@@ -682,12 +671,13 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                         }
                     }
 
-                    Debug.Assert(typeSpec.MemberReferences.Count > 0, $"Couldn't find any MethodRef for TypeSpec[{t.Value}] {t.Key.FullName}");
+                    Debug.Assert(typeSpec.MemberReferences.Count > 0, $"Couldn't find any MethodRef for TypeSpec[{t.Value}] {t.Value.FullName}");
                 }
 
                 dumpTable.TypeSpecifications.Add(typeSpec);
             }
         }
+
 
         private string PrintSignatureForMethod(MethodReference method)
         {
