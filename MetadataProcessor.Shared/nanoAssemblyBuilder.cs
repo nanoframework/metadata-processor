@@ -345,6 +345,8 @@ namespace nanoFramework.Tools.MetadataProcessor
 
                     Collection<ParameterDefinition> parameters = null;
 
+                    FieldReference fr = null;
+
                     // try to find a method reference
                     var mr = _tablesContext.MethodReferencesTable.Items.FirstOrDefault(i => i.MetadataToken == token);
 
@@ -433,7 +435,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                     if (mr == null)
                     {
                         // try now with field references
-                        var fr = _tablesContext.FieldReferencesTable.Items.FirstOrDefault(i => i.MetadataToken == token);
+                        fr = _tablesContext.FieldReferencesTable.Items.FirstOrDefault(i => i.MetadataToken == token);
 
                         if (fr != null)
                         {
@@ -480,6 +482,8 @@ namespace nanoFramework.Tools.MetadataProcessor
                             }
                         }
                     }
+
+                    Debug.Assert(mr != null || fr != null);
 
                     break;
 
