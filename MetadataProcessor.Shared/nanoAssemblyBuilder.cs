@@ -787,22 +787,30 @@ namespace nanoFramework.Tools.MetadataProcessor
                         {
                             if (i.Operand is MethodReference)
                             {
-                                if (_tablesContext.MethodReferencesTable.TryGetMethodReferenceId(i.Operand as MethodReference, out ushort referenceId))
+                                var methodReferenceType = i.Operand as MethodReference;
+
+                                set.Add(methodReferenceType.MetadataToken);
+
+                                if (_tablesContext.MethodReferencesTable.TryGetMethodReferenceId(methodReferenceType, out ushort referenceId))
                                 {
-                                    set.Add(((IMetadataTokenProvider)i.Operand).MetadataToken);
-                                }
-                                else
-                                {
-                                    if (_tablesContext.MethodDefinitionTable.TryGetMethodReferenceId((i.Operand as MethodReference).Resolve(), out referenceId))
+                                    if(methodReferenceType.DeclaringType != null &&
+                                       methodReferenceType.DeclaringType.IsGenericInstance)
                                     {
-                                        set.Add((i.Operand as MethodReference).Resolve().MetadataToken);
-                                        set.Add((i.Operand as MethodReference).MetadataToken);
-                                    }
-                                    else
-                                    {
-                                        Debug.Fail("Can't find method in any table.");
+                                        set.Add(methodReferenceType.DeclaringType.MetadataToken);
+                                    _tablesContext.TypeSpecificationsTable.GetOrCreateTypeSpecificationId(methodReferenceType.DeclaringType);
                                     }
                                 }
+                                //else
+                                //{
+                                //    if (_tablesContext.MethodDefinitionTable.TryGetMethodReferenceId(methodReferenceType.Resolve(), out referenceId))
+                                //    {
+                                //        set.Add(methodReferenceType.MetadataToken);
+                                //    }
+                                //    else
+                                //    {
+                                //        Debug.Fail("Can't find method in any table.");
+                                //    }
+                                //}
                             }
                             else if (i.Operand is FieldReference ||
                                      i.Operand is MethodSpecification)
@@ -816,18 +824,14 @@ namespace nanoFramework.Tools.MetadataProcessor
                                 i.Operand is GenericParameter)
                             {
                                 var opType = (TypeReference)i.Operand;
-                                set.Add(((IMetadataTokenProvider)i.Operand).MetadataToken);
 
-                                if (opType is GenericParameter)
+                                var opToken = ((IMetadataTokenProvider)i.Operand).MetadataToken;
+                                set.Add(opToken);
+
+                                if (opToken.TokenType == TokenType.TypeSpec ||
+                                    opType is GenericParameter)
                                 {
                                     _tablesContext.TypeSpecificationsTable.GetOrCreateTypeSpecificationId(opType);
-                                    //if (opType.DeclaringType != null)
-                                    //{
-                                    //    _tablesContext.TypeSpecificationsTable.GetOrCreateTypeSpecificationId(opType.DeclaringType);
-                                    //}
-                                    //else
-                                    //{
-                                    //}
                                 }
                             }
                             else if (i.Operand is string)
