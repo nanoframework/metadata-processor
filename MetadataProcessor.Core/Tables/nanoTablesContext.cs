@@ -362,7 +362,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             {
                 foreach (var i in m.Body.Instructions)
                 {
-                    if (i.Operand is GenericInstanceMethod)
+                    if (i.Operand is MethodSpecification)
                     {
                         methodSpecs.Add(i.Operand as MethodSpecification);
                     }
