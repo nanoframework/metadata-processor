@@ -1124,7 +1124,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// <summary>
         /// Count of tables in the assembly
         /// </summary>
-        static public int TablesCount => 0x0012;
+        static public int TablesCount => 0x0013;
 
         internal static IEnumerable<InanoTable> GetTables(
             nanoTablesContext context)
@@ -1151,13 +1151,15 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             yield return context.MethodDefinitionTable;
 
+            yield return context.MemberReferencesTable;
+
             yield return context.GenericParamsTable;
 
             yield return context.MethodSpecificationTable;
 
-            yield return context.AttributesTable;
-
             yield return context.TypeSpecificationsTable;
+
+            yield return context.AttributesTable;
 
             yield return context.ResourcesTable;
 
