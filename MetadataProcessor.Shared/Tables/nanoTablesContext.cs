@@ -124,14 +124,15 @@ namespace nanoFramework.Tools.MetadataProcessor
                     item.DeclaringType.GetElementType().IsPrimitive ||
                     item.ContainsGenericParameter ||
                     item.DeclaringType.IsGenericInstance))
-
                 .ToList();
 
             FieldReferencesTable = new nanoFieldReferenceTable(
                 memberReferences.OfType<FieldReference>(), this);
             MethodReferencesTable = new nanoMethodReferenceTable(
                 memberReferences.OfType<MethodReference>(), this);
-           
+
+            MemberReferencesTable = new nanoMemberReferenceTable(memberReferences, this);
+
             // Internal types definitions
 
             var types = GetOrderedTypes(mainModule, explicitTypesOrder);
@@ -231,15 +232,42 @@ namespace nanoFramework.Tools.MetadataProcessor
         public ushort GetMethodReferenceId(
             MethodReference methodReference)
         {
-            ushort referenceId;
-            if (MethodReferencesTable.TryGetMethodReferenceId(methodReference, out referenceId))
+            if (MethodReferencesTable.TryGetMethodReferenceId(methodReference, out ushort referenceId))
             {
-                referenceId |= 0x8000; // External method reference
+                // referenceId |= 0x8000; // External method reference
+                referenceId |= (ushort)((ushort)MethodReferencesTable.TableIndex << 12);
             }
             else
             {
-                MethodDefinitionTable.TryGetMethodReferenceId(methodReference.Resolve(), out referenceId);
+                if (methodReference is MethodSpecification &&
+                    MethodSpecificationTable.TryGetMethodSpecificationId(methodReference as MethodSpecification, out referenceId))
+                {
+                    if(MemberReferencesTable.TryGetMemberReferenceId(methodReference, out referenceId))
+                    {
+                        referenceId |= (ushort)((ushort)MemberReferencesTable.TableIndex << 12);
+                    }
+                    else if (MethodDefinitionTable.TryGetMethodReferenceId(methodReference.Resolve(), out referenceId))
+                    {
+                        referenceId |= (ushort)((ushort)MethodDefinitionTable.TableIndex << 12);
+                    }
+                    else
+                    {
+                        Debug.Fail("Can't find method reference on any table");
+                    }
+                }
+                else
+                {
+                    if (MethodDefinitionTable.TryGetMethodReferenceId(methodReference.Resolve(), out referenceId))
+                    {
+                        referenceId |= (ushort)((ushort)MethodDefinitionTable.TableIndex << 12);
+                    }
+                    else
+                    {
+                        Debug.Fail("Can't find method reference on method definition table");
+                    }
+                }
             }
+
             return referenceId;
         }
 
@@ -305,17 +333,11 @@ namespace nanoFramework.Tools.MetadataProcessor
         {
             ushort referenceId;
 
-            if (typeReference is GenericParameter)
+            if ((typeReference is TypeSpecification ||
+                 typeReference is GenericParameter) &&
+                TypeSpecificationsTable.TryGetTypeReferenceId(typeReference, out referenceId))
             {
-                if(!GenericParamsTable.TryGetParameterId(typeReference, out referenceId))
-                {
-                    Debug.Fail($"Couldn't find {typeReference} in generic parameters table");
-                }
-
-                return (ushort)((ushort)nanoEncodedInlineType.GenericParam | referenceId);
-            }
-            else if (typeReference is TypeSpecification)
-            {
+                // get TypeSpec index
                 referenceId = TypeSpecificationsTable.GetOrCreateTypeSpecificationId(typeReference);
 
                 return (ushort)((ushort)nanoEncodedInlineType.TypeSpec | referenceId);
@@ -329,8 +351,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             {
                 if (!TypeDefinitionTable.TryGetTypeReferenceId(typeReference.Resolve(), out referenceId))
                 {
-                    // encode with 
-                    return (ushort)nanoEncodedInlineType.TypeSpec;
+                    Debug.Fail("Can't find type reference.");
                 }
             }
 
@@ -383,6 +404,8 @@ namespace nanoFramework.Tools.MetadataProcessor
         public nanoGenericParamTable GenericParamsTable { get; private set; }
 
         public nanoMethodSpecificationTable MethodSpecificationTable { get; private set; }
+
+        public nanoMemberReferenceTable MemberReferencesTable { get; private set; }
 
         public nanoMethodReferenceTable MethodReferencesTable { get; private set; }
 
