@@ -88,6 +88,9 @@ namespace nanoFramework.Tools.MetadataProcessor
             {
                 // MemberRefParent tag is 4 (TypeSpec)
                 tag = 4;
+
+                // get TypeSpec index
+                referenceId = _context.TypeSpecificationsTable.GetOrCreateTypeSpecificationId(item.DeclaringType);
             }
             else if (_context.TypeReferencesTable.TryGetTypeReferenceId(item.DeclaringType, out referenceId))
             {
