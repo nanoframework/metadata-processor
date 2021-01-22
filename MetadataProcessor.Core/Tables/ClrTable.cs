@@ -21,16 +21,17 @@ namespace nanoFramework.Tools.MetadataProcessor
         TypeDef = 0x00000004,
         FieldDef = 0x00000005,
         MethodDef = 0x00000006,
-        GenericParam = 0x00000007,
-        MethodSpec = 0x00000008,
-        Attributes = 0x00000009,
-        TypeSpec = 0x0000000A,
-        Resources = 0x0000000B,
-        ResourcesData = 0x0000000C,
-        Strings = 0x0000000D,
-        Signatures = 0x0000000E,
-        ByteCode = 0x0000000F,
-        ResourcesFiles = 0x00000010,
-        EndOfAssembly = 0x000000011
+        MemberRef = 0x00000007,
+        GenericParam = 0x00000008,
+        MethodSpec = 0x00000009,
+        Attributes = 0x0000000A,
+        TypeSpec = 0x0000000B,
+        Resources = 0x0000000C,
+        ResourcesData = 0x0000000D,
+        Strings = 0x0000000E,
+        Signatures = 0x0000000F,
+        ByteCode = 0x00000010,
+        ResourcesFiles = 0x00000011,
+        EndOfAssembly = 0x000000012
     }
 }
