@@ -99,13 +99,20 @@ namespace nanoFramework.Tools.MetadataProcessor
 
                 instantiation = _context.SignaturesTable.GetOrCreateSignatureId(item.Resolve());
             }
-            else if (_context.MethodReferencesTable.TryGetMethodReferenceId(item, out method))
+            else if (_context.TypeReferencesTable.TryGetTypeReferenceId(item.DeclaringType, out method))
             {
                 // MethodDefOrRef tag is 1 (MemberRef)
                 tag = 1;
 
                 instantiation = _context.SignaturesTable.GetOrCreateSignatureId(item);
             }
+            //else if (_context.FieldReferencesTable.TryGetFieldReferenceId(item.Resolve(), out method))
+            //{
+            //    // MethodDefOrRef tag is 1 (MemberRef)
+            //    tag = 1;
+
+            //    instantiation = _context.SignaturesTable.GetOrCreateSignatureId(item);
+            //}
             else
             {
                 throw new ArgumentException($"Can't find entry in method definition or reference tables for method '{item.FullName}' [0x{item.MetadataToken.ToInt32():x8}].");
