@@ -167,6 +167,9 @@ namespace nanoFramework.Tools.MetadataProcessor
             }
 
             // need to reset several tables so they are recreated only with the used items
+            _tablesContext.ResetByteCodeTable();
+            _tablesContext.ResetSignaturesTable();
+            _tablesContext.ResetResourcesTables();
             _tablesContext.AssemblyReferenceTable.RemoveUnusedItems(set);
             _tablesContext.TypeReferencesTable.RemoveUnusedItems(set);
             _tablesContext.FieldsTable.RemoveUnusedItems(set);
@@ -175,14 +178,14 @@ namespace nanoFramework.Tools.MetadataProcessor
             _tablesContext.FieldReferencesTable.RemoveUnusedItems(set);
             _tablesContext.MethodDefinitionTable.RemoveUnusedItems(set);
             _tablesContext.MethodReferencesTable.RemoveUnusedItems(set);
+            _tablesContext.MemberReferencesTable.RemoveUnusedItems(set);
+            _tablesContext.TypeSpecificationsTable.RemoveUnusedItems(set);
             _tablesContext.TypeDefinitionTable.RemoveUnusedItems(set);
             _tablesContext.TypeDefinitionTable.ResetByteCodeOffsets();
             _tablesContext.AttributesTable.RemoveUnusedItems(set);
             _tablesContext.StringTable.RemoveUnusedItems(set);
-            _tablesContext.ResetByteCodeTable();
-            _tablesContext.ResetSignaturesTable();
-            _tablesContext.ResetResourcesTables();
-            
+
+
             // renormalise type definitions look-up tables
             // by removing items that are not used
 
