@@ -138,6 +138,30 @@ namespace nanoFramework.Tools.MetadataProcessor
         public IDictionary<TypeReference, ushort> GetItems()
         {
             return _idByTypeSpecifications;
+
+        internal void RemoveUnusedItems(HashSet<MetadataToken> set)
+        {
+            // build a collection of the current items that are present in the used items set
+            List<TypeReference> usedItems = new List<TypeReference>();
+
+            foreach (var item in _idByTypeSpecifications
+                                    .Where(item => set.Contains(item.Key.MetadataToken)))
+            {
+                usedItems.Add(item.Key);
+            }
+
+            // reset dictionary
+            _idByTypeSpecifications = new Dictionary<TypeReference, ushort>(
+                new TypeReferenceComparer());
+
+            // reset list
+            _idSignatures = new List<ushort>();
+
+            // rebuild
+            foreach (var item in usedItems)
+            {
+                GetOrCreateTypeSpecificationId(item);
+            }
         }
     }
 }
