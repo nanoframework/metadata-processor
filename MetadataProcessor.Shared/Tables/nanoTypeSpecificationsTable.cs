@@ -54,6 +54,8 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// </summary>
         private ushort _lastAvailableId;
 
+        public ClrTable TableIndex => ClrTable.TypeSpec;
+
         /// <summary>
         /// Creates new instance of <see cref="nanoTypeSpecificationsTable"/> object.
         /// </summary>
