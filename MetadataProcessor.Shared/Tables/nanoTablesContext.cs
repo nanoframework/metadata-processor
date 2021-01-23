@@ -184,13 +184,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             // build list of generic parameters belonging to method defs
             List<GenericParameter> methodDefsGenericParameters = new List<GenericParameter>();
 
-            foreach (var m in methods)
-            {
-                if (m.HasGenericParameters)
-                {
-                    methodDefsGenericParameters.AddRange(m.GenericParameters);
-                }
-            }
+            methodDefsGenericParameters.AddRange(methods.Where(m => m.HasGenericParameters).SelectMany(mm => mm.GenericParameters));
 
             var generics = types
                             .SelectMany(t => t.GenericParameters)
