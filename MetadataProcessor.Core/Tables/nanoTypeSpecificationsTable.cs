@@ -135,9 +135,14 @@ namespace nanoFramework.Tools.MetadataProcessor
                 Debug.Assert((writerEndPosition - writerStartPosition) == sizeOf_CLR_RECORD_TYPESPEC);
             }
         }
-        public IDictionary<TypeReference, ushort> GetItems()
+
+        public IEnumerable<KeyValuePair<ushort, TypeReference>> GetItems()
         {
-            return _idByTypeSpecifications;
+            return _idByTypeSpecifications.Select(
+                i => new KeyValuePair<ushort, TypeReference>(
+                    (ushort)_idSignatures.IndexOf(i.Value),
+                    i.Key)).Distinct(new TypeSpecBySignatureComparer());
+        }
 
         internal void RemoveUnusedItems(HashSet<MetadataToken> set)
         {
