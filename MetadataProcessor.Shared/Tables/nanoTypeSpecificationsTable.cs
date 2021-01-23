@@ -101,8 +101,10 @@ namespace nanoFramework.Tools.MetadataProcessor
         public ushort GetOrCreateTypeSpecificationId(
             TypeReference typeReference)
         {
-            ushort referenceId;
-            if (!_idByTypeSpecifications.TryGetValue(typeReference, out referenceId))
+            // get index of signature for the TypeSpecification 
+            ushort signatureId = _context.SignaturesTable.GetOrCreateSignatureId(typeReference);
+            
+            if (!_idByTypeSpecifications.TryGetValue(typeReference, out ushort referenceId))
             {
                 // check for array in TypeSpec because we don't support for multidimensional arrays
                 if (typeReference.IsArray &&
@@ -113,11 +115,13 @@ namespace nanoFramework.Tools.MetadataProcessor
 
                 _idByTypeSpecifications.Add(typeReference, _lastAvailableId);
 
-                referenceId = _lastAvailableId;
-                ++_lastAvailableId;
+                if(!_idSignatures.Contains(signatureId))
+                {
+                    _idSignatures.Add(signatureId);
+                }
             }
 
-            return referenceId;
+            return (ushort)_idSignatures.IndexOf(signatureId);
         }
 
         /// <summary>
