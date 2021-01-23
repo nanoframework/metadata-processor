@@ -18,7 +18,7 @@ namespace nanoFramework.Tools.MetadataProcessor
     public sealed class nanoGenericParamTable :
         nanoReferenceTableBase<GenericParameter>
     {
-        private const int sizeOf_CLR_RECORD_GENERICPARAM = 8;
+        private const int sizeOf_CLR_RECORD_GENERICPARAM = 10;
 
         /// <summary>
         /// Helper class for comparing two instances of <see cref="GenericParameter"/> objects
@@ -74,9 +74,11 @@ namespace nanoFramework.Tools.MetadataProcessor
                 if(methodWithGenericParam != null)
                 {
                     // get the first method specification that matches this type AND name
-                    var instanceMethod = _context.MethodSpecificationTable.Items.SingleOrDefault(
+                    var instanceMethod = _context.MethodSpecificationTable.Items.FirstOrDefault(
                         mr => mr.DeclaringType.GetElementType() == methodWithGenericParam.DeclaringType &&
                         mr.Name == methodWithGenericParam.Name) as GenericInstanceMethod;
+
+                    Debug.Assert(instanceMethod != null, $"Couldn't find a method specification for type {methodWithGenericParam.DeclaringType} when processing generic parameter {gp}.");
 
                     _typeForGenericParam.Add(gp, instanceMethod.GenericArguments.ElementAt(gp.Position));
                 }
@@ -86,16 +88,26 @@ namespace nanoFramework.Tools.MetadataProcessor
 
                     if(typeWithGenericParam != null)
                     {
-                        // get the first member that matches this type
-                        var genericInstance = _context.MemberReferencesTable.Items.First(
-                            mr => mr.DeclaringType.GetElementType() == typeWithGenericParam)
-                            .DeclaringType as GenericInstanceType;
+                        if (_context.MemberReferencesTable.Items.Any())
+                        {
+                            // get the first member that matches this type
+                            var genericInstance = _context.MemberReferencesTable.Items.FirstOrDefault(
+                                mr => mr.DeclaringType.GetElementType() == typeWithGenericParam)
+                                .DeclaringType as GenericInstanceType;
 
-                        _typeForGenericParam.Add(gp, genericInstance.GenericArguments.ElementAt(gp.Position));
+
+                            Debug.Assert(genericInstance != null, $"Couldn't find a member reference for type {typeWithGenericParam} when processing generic parameter {gp}.");
+
+                            _typeForGenericParam.Add(gp, genericInstance.GenericArguments.ElementAt(gp.Position));
+                        }
+                        else
+                        {
+                            _typeForGenericParam.Add(gp, null);
+                        }
                     }
                     else
                     {
-                        Debug.Fail("Can't find generic parameter in either methods or type definitions");
+                        _typeForGenericParam.Add(gp, null);
                     }
                 }
             }
@@ -161,7 +173,15 @@ namespace nanoFramework.Tools.MetadataProcessor
             writer.WriteUInt16(owner);
 
             // Signature
-            writer.WriteUInt16(_context.SignaturesTable.GetOrCreateSignatureId(_typeForGenericParam[item]));
+            if (_typeForGenericParam[item] != null)
+            {
+                writer.WriteUInt16(_context.SignaturesTable.GetOrCreateSignatureId(_typeForGenericParam[item]));
+            }
+            else
+            {
+                // no type for this generic parameter
+                writer.WriteUInt16(0xFFFF);
+            }
 
             // name
             WriteStringReference(writer, item.Name);
