@@ -7,6 +7,7 @@
 using Mono.Cecil;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace nanoFramework.Tools.MetadataProcessor
@@ -134,7 +135,14 @@ namespace nanoFramework.Tools.MetadataProcessor
             TypeReference typeReference,
             out ushort referenceId)
         {
-            return _idByTypeSpecifications.TryGetValue(typeReference, out referenceId);
+            if(_idByTypeSpecifications.TryGetValue(typeReference, out referenceId))
+            {
+                referenceId = (ushort)_idSignatures.IndexOf(referenceId);
+
+                return true;
+            }
+
+            return false;
         }
 
         public TypeReference TryGetTypeSpecification(MetadataToken token)
