@@ -23,7 +23,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// Helper class for comparing two instances of <see cref="GenericParameter"/> objects
         /// using <see cref="MetadataToken"/> property as unique key for comparison.
         /// </summary>
-        private sealed class MemberReferenceComparer : IEqualityComparer<GenericParameter>
+        private sealed class GenericParameterComparer : IEqualityComparer<GenericParameter>
         {
             /// <inheritdoc/>
             public bool Equals(GenericParameter x, GenericParameter y)
@@ -58,7 +58,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         public nanoGenericParamTable(
             IEnumerable<GenericParameter> items,
             nanoTablesContext context)
-            : base(items, new MemberReferenceComparer(), context)
+            : base(items, new GenericParameterComparer(), context)
         {
         }
 
