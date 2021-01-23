@@ -47,6 +47,18 @@ namespace nanoFramework.Tools.MetadataProcessor
                 return that.MetadataToken.GetHashCode();
             }
         }
+
+        private sealed class TypeSpecBySignatureComparer : IEqualityComparer<KeyValuePair<ushort, TypeReference>>
+        {
+            public bool Equals(KeyValuePair<ushort, TypeReference> x, KeyValuePair<ushort, TypeReference> y)
+            {
+                return x.Key == y.Key;
+            }
+
+            /// <inheritdoc/>
+            public int GetHashCode(KeyValuePair<ushort, TypeReference> that)
+            {
+                return that.Key;
             }
         }
 
