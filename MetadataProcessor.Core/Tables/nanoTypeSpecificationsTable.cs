@@ -17,6 +17,8 @@ namespace nanoFramework.Tools.MetadataProcessor
     /// </summary>
     public sealed class nanoTypeSpecificationsTable : InanoTable
     {
+        private const int sizeOf_CLR_RECORD_TYPESPEC = 2;
+
         /// <summary>
         /// Helper class for comparing two instances of <see cref="TypeReference"/> objects
         /// using <see cref="TypeReference.FullName"/> property as unique key for comparison.
@@ -121,11 +123,16 @@ namespace nanoFramework.Tools.MetadataProcessor
         public void Write(
             nanoBinaryWriter writer)
         {
-            foreach (var item in _idByTypeSpecifications
-                .OrderBy(item => item.Value)
-                .Select(item => item.Key))
+
+            foreach (var item in GetItems())
             {
-                writer.WriteUInt16(_context.SignaturesTable.GetOrCreateSignatureId(item));
+                var writerStartPosition = writer.BaseStream.Position;
+
+                writer.WriteUInt16(item.Key);
+
+                var writerEndPosition = writer.BaseStream.Position;
+
+                Debug.Assert((writerEndPosition - writerStartPosition) == sizeOf_CLR_RECORD_TYPESPEC);
             }
         }
         public IDictionary<TypeReference, ushort> GetItems()
