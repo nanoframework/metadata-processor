@@ -26,15 +26,27 @@ namespace nanoFramework.Tools.MetadataProcessor
         private sealed class TypeReferenceComparer : IEqualityComparer<TypeReference>
         {
             /// <inheritdoc/>
-            public bool Equals(TypeReference lhs, TypeReference rhs)
+            public bool Equals(TypeReference x, TypeReference y)
             {
-                return string.Equals(lhs.FullName, rhs.FullName, StringComparison.Ordinal);
+                if (x is null)
+                {
+                    throw new ArgumentNullException(nameof(x));
+                }
+
+                if (y is null)
+                {
+                    throw new ArgumentNullException(nameof(y));
+                }
+
+                return x.MetadataToken == y.MetadataToken;
             }
 
             /// <inheritdoc/>
             public int GetHashCode(TypeReference that)
             {
-                return that.FullName.GetHashCode();
+                return that.MetadataToken.GetHashCode();
+            }
+        }
             }
         }
 
