@@ -65,18 +65,19 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// <summary>
         /// Maps for each unique type specification and related identifier.
         /// </summary>
-        private readonly Dictionary<TypeReference, ushort> _idByTypeSpecifications =
+        private Dictionary<TypeReference, ushort> _idByTypeSpecifications =
             new Dictionary<TypeReference, ushort>(new TypeReferenceComparer());
+
+
+        /// <summary>
+        /// Maps for each unique type specification and related identifier.
+        /// </summary>
+        private List<ushort> _idSignatures = new List<ushort>();
 
         /// <summary>
         /// Assembly tables context - contains all tables used for building target assembly.
         /// </summary>
         private readonly nanoTablesContext _context;
-
-        /// <summary>
-        /// Last available type specifier identificator.
-        /// </summary>
-        private ushort _lastAvailableId;
 
         public ClrTable TableIndex => ClrTable.TypeSpec;
 
