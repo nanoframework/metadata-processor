@@ -398,11 +398,19 @@ namespace nanoFramework.Tools.MetadataProcessor
             if (typeDefinition.IsGenericInstance)
             {
                 // following ECMA-335 VI.B.4.3 Metadata
+                // II.23.2.12 Type
                 writer.WriteByte((byte)nanoCLR_DataType.DATATYPE_GENERICINST);
 
                 var genericType = (GenericInstanceType)typeDefinition;
 
-                WriteDataType(genericType.ElementType, writer, false, expandEnumType, isTypeDefinition);
+                if(genericType.IsValueType)
+                {
+                    writer.WriteByte((byte)nanoCLR_DataType.DATATYPE_VALUETYPE);
+                }
+                else
+                {
+                    writer.WriteByte((byte)nanoCLR_DataType.DATATYPE_CLASS);
+                }
 
                 WriteSubTypeInfo(genericType.ElementType, writer);
 
