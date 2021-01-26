@@ -784,6 +784,8 @@ namespace nanoFramework.Tools.MetadataProcessor
 
         private void WriteSubTypeInfo(TypeReference typeDefinition, nanoBinaryWriter writer)
         {
+            // decoded at target with CLR_TkFromStream
+
             ushort tag;
 
             if ((typeDefinition is TypeSpecification ||
@@ -795,11 +797,6 @@ namespace nanoFramework.Tools.MetadataProcessor
 
                 // TypeDefOrRef tag is 2 bits
                 referenceId = (ushort)(referenceId << 2);
-
-                // OR with tag to form coded index
-                referenceId |= tag;
-
-                writer.WriteMetadataToken(referenceId);
             }
             else if (_context.TypeReferencesTable.TryGetTypeReferenceId(typeDefinition, out referenceId))
             {
@@ -808,11 +805,6 @@ namespace nanoFramework.Tools.MetadataProcessor
 
                 // TypeDefOrRef tag is 2 bits
                 referenceId = (ushort)(referenceId << 2);
-
-                // OR with tag to form coded index
-                referenceId |= tag;
-
-                writer.WriteMetadataToken(referenceId);
             }
             else if (_context.TypeDefinitionTable.TryGetTypeReferenceId(
                 typeDefinition.Resolve(),
@@ -823,16 +815,16 @@ namespace nanoFramework.Tools.MetadataProcessor
 
                 // TypeDefOrRef tag is 2 bits
                 referenceId = (ushort)(referenceId << 2);
-
-                // OR with tag to form coded index
-                referenceId |= tag;
-
-                writer.WriteMetadataToken(referenceId);
             }
             else
             {
                 throw new ArgumentException($"Can't find entry in type reference table for {typeDefinition.FullName}.");
             }
+
+            // OR with tag to form coded index
+            referenceId |= tag;
+
+            writer.WriteMetadataToken(referenceId);
         }
     }
 }
