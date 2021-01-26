@@ -412,7 +412,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                     writer.WriteByte((byte)nanoCLR_DataType.DATATYPE_CLASS);
                 }
 
-                WriteSubTypeInfo(genericType.ElementType, writer);
+                WriteSubTypeInfo(genericType.Resolve(), writer);
 
                 // OK to use byte here as we won't support more than 0x7F arguments
                 writer.WriteByte((byte)genericType.GenericArguments.Count);
