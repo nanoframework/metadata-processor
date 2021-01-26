@@ -4,6 +4,8 @@
 //
 
 using Mono.Cecil;
+using System;
+using System.Collections.Generic;
 using System.Text;
 
 namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
@@ -311,5 +313,43 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
             return 0;
         }
 
+        public static ushort ToEncodedNanoTypeToken(this TypeReference value)
+        {
+            // implements .NET nanoFramework encoding for TypeToken
+            // encodes TypeReference to be decoded with CLR_UncompressTypeToken
+            // CLR tables are
+            // 0: TBL_TypeDef
+            // 1: TBL_TypeRef
+            // 2: TBL_TypeSpec
+            // 3: TBL_GenericParam
+
+            return nanoTokenHelpers.EncodeTableIndex(value.TonanoClrTable(), nanoTokenHelpers.NanoTypeTokenTables);
+        }
+
+        public static ClrTable TonanoClrTable(this TypeReference value)
+        {
+            // this one has to be before the others because generic parameters are also "other" types
+            if (value is GenericParameter)
+            {
+                return ClrTable.GenericParam;
+            }
+            else if (value is TypeDefinition)
+            {
+                return ClrTable.TypeDef;
+            }
+            else if (value is TypeReference)
+            {
+                return ClrTable.TypeRef;
+            }
+            else if (value is TypeSpecification)
+            {
+                return ClrTable.TypeSpec;
+            }
+
+            else
+            {
+                throw new ArgumentException("Unknown conversion to ClrTable.");
+            }
+        }
     }
 }
