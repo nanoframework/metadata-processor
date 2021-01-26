@@ -311,7 +311,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// <summary>
         /// Write metadata token in packed format (variable length).
         /// </summary>
-        /// <param name="value">Metadata tocken in .NET Mico Framework format.</param>
+        /// <param name="value">Metadata token in .NET nanoFramework format.</param>
         public void WriteMetadataToken(uint value)
         {
             if (value <= 0x7F)
