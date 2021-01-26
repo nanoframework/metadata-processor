@@ -214,13 +214,19 @@ namespace nanoFramework.Tools.MetadataProcessor
         }
 
         /// <summary>
-        /// Gets method reference identifier (external or internal) encoded with appropriate prefix.
+        /// Gets (.NET nanoFramework encoded) method reference identifier (external or internal).
         /// </summary>
         /// <param name="methodReference">Method reference in Mono.Cecil format.</param>
         /// <returns>Reference identifier for passed <paramref name="methodReference"/> value.</returns>
         public ushort GetMethodReferenceId(
             MethodReference methodReference)
         {
+            // encodes MethodReference to be decoded with CLR_UncompressMethodToken
+            // CLR tables are: 
+            // 0: TBL_MethodDef
+            // 1: TBL_MethodRef
+            // 2: TBL_MemberRef  (TODO find if needed)
+
             if (MethodReferencesTable.TryGetMethodReferenceId(methodReference, out ushort referenceId))
             {
                 // referenceId |= 0x8000; // External method reference
@@ -311,40 +317,43 @@ namespace nanoFramework.Tools.MetadataProcessor
         }
 
         /// <summary>
-        /// Gets an (.NET nanoFramework encoded) type reference identifier (all kinds). It's encoded with appropriate mask.
+        /// Gets an (.NET nanoFramework encoded) type reference identifier (all kinds).
         /// </summary>
         /// <param name="typeReference">Type reference in Mono.Cecil format.</param>
         /// <param name="typeReferenceMask">The mask type to add to the encoded type reference Id. TypeRef mask will be added if none is specified.</param>
         /// <returns>Encoded type reference identifier for passed <paramref name="typeReference"/> value.</returns>
         public ushort GetTypeReferenceId(
-            TypeReference typeReference,
-            nanoEncodedInlineType typeReferenceMask = nanoEncodedInlineType.TypeRef)
+            TypeReference typeReference)
         {
-            ushort referenceId;
+            // encodes TypeReference to be decoded with CLR_UncompressTypeToken
 
-            if ((typeReference is TypeSpecification ||
-                 typeReference is GenericParameter) &&
-                TypeSpecificationsTable.TryGetTypeReferenceId(typeReference, out referenceId))
+            if (typeReference is TypeSpecification &&
+                TypeSpecificationsTable.TryGetTypeReferenceId(typeReference, out ushort referenceId))
             {
                 // get TypeSpec index
                 referenceId = TypeSpecificationsTable.GetOrCreateTypeSpecificationId(typeReference);
-
-                return (ushort)((ushort)nanoEncodedInlineType.TypeSpec | referenceId);
+            }
+            else if (typeReference is GenericParameter &&
+                    GenericParamsTable.TryGetParameterId(typeReference as GenericParameter, out referenceId))
+            {
+                // is GenericParameter
+            }
+            else if (typeReference is TypeDefinition &&
+                     TypeDefinitionTable.TryGetTypeReferenceId(typeReference.Resolve(), out referenceId))
+            {
+                // is TypeDefinition
             }
             else if (TypeReferencesTable.TryGetTypeReferenceId(typeReference, out referenceId))
             {
-                // External type reference
-                referenceId |= (ushort)typeReferenceMask;
+                // is External type reference
             }
             else
             {
-                if (!TypeDefinitionTable.TryGetTypeReferenceId(typeReference.Resolve(), out referenceId))
-                {
-                    Debug.Fail("Can't find type reference.");
-                }
+                Debug.Fail("Can't find type reference.");
+                throw new ArgumentException($"Can't find type reference for {typeReference}.");
             }
 
-            return referenceId;
+            return (ushort)(typeReference.ToEncodedNanoTypeToken() | referenceId);
         }
 
         private List<MethodSpecification> GetMethodSpecifications(List<MethodDefinition> methods)

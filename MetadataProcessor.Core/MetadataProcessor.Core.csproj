@@ -115,11 +115,11 @@
     <Compile Include="Utility\LoadHintsAssemblyResolver.cs" />
     <Compile Include="Utility\nanoBitmapProcessor.cs" />
     <Compile Include="Utility\nanoCLR_DataType.cs" />
+    <Compile Include="Utility\CompressTokenHelper.cs" />
     <Compile Include="Utility\nanoMetadataToken.cs" />
     <Compile Include="Utility\nanoFontProcessor.cs" />
     <Compile Include="Utility\nanoDependencyGeneratorWriter.cs" />
     <Compile Include="Utility\nanoPdbxFileWriter.cs" />
-    <Compile Include="Utility\nanoEncodedInlineType.cs" />
     <Compile Include="Utility\nanoTypeDefinitionFlags.cs" />
     <Compile Include="Utility\nanoSerializationType.cs" />
     <Compile Include="Utility\nanoStringsConstants.cs" />

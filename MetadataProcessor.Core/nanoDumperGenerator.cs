@@ -404,42 +404,46 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                                 {
                                     var token = _tablesContext.GetMetadataToken((IMetadataTokenProvider)instruction.Operand);
 
-                                    ilCode.IL += $"[{token:x8}] /*{realToken}*/";
+                                    ilDescription.Append($"[{token:x8}] /*{realToken}*/");
                                 }
                                 else if (instruction.OpCode.OperandType == OperandType.InlineType)
                                 {
                                     referenceId = _tablesContext.GetTypeReferenceId((TypeReference)instruction.Operand);
                                     var nfToken = new nanoMetadataToken();
 
+                                    // get CLR table
+                                    var clrTable =  nanoTokenHelpers.DecodeTableIndex(referenceId, nanoTokenHelpers.NanoTypeTokenTables);
+
                                     // need to clear the encoded type mask
-                                    referenceId &= (ushort)~nanoEncodedInlineType.EncodedInlineTypeMask;
+                                    referenceId = nanoTokenHelpers.DecodeReferenceIndex(referenceId, nanoTokenHelpers.NanoTypeTokenTables);
 
-                                    if (instruction.Operand is GenericParameter)
+                                    switch(clrTable)
                                     {
-                                        typeName = (instruction.Operand as GenericParameter).TypeSignatureAsString();
-                                        nfToken = new nanoMetadataToken(ClrTable.GenericParam, referenceId);
-                                    }
-                                    else if (instruction.Operand is TypeSpecification)
-                                    {
-                                        typeName = (instruction.Operand as TypeSpecification).FullName;
-                                        nfToken = new nanoMetadataToken(ClrTable.TypeSpec, referenceId);
-                                    }
-                                    else if (instruction.Operand is TypeReference)
-                                    {
-                                        typeName = (instruction.Operand as TypeReference).FullName;
-                                        nfToken = new nanoMetadataToken(ClrTable.TypeRef, referenceId);
-                                    }
-                                    else if (instruction.Operand is TypeDefinition)
-                                    {
-                                        typeName = (instruction.Operand as TypeDefinition).FullName;
-                                        nfToken = new nanoMetadataToken(ClrTable.TypeDef, referenceId);
-                                    }
+                                        case ClrTable.GenericParam:
+                                            typeName = (instruction.Operand as GenericParameter).TypeSignatureAsString();
+                                            nfToken = new nanoMetadataToken(ClrTable.GenericParam, referenceId);
+                                            break;
+                                        
+                                        case ClrTable.TypeSpec:
+                                            typeName = (instruction.Operand as TypeSpecification).FullName;
+                                            nfToken = new nanoMetadataToken(ClrTable.TypeSpec, referenceId);
+                                            break;
+                                        
+                                        case ClrTable.TypeRef:
+                                            typeName = (instruction.Operand as TypeReference).FullName;
+                                            nfToken = new nanoMetadataToken(ClrTable.TypeRef, referenceId);
+                                            break;
+                                        
+                                        case ClrTable.TypeDef:
+                                            typeName = (instruction.Operand as TypeDefinition).FullName;
+                                            nfToken = new nanoMetadataToken(ClrTable.TypeDef, referenceId);
+                                            break;
 
-                                    else
-                                    {
-                                        Debug.Fail("Can't find operand type.");
+                                        default:
+                                            Debug.Fail($"Can't find table for operand type {instruction.Operand}.");
+                                            break;
                                     }
-
+                                
                                     ilDescription.Append($"{typeName}[{nfToken}] /*{realToken}*/");
                                 }
                                 else if (instruction.OpCode.OperandType == OperandType.InlineString)
