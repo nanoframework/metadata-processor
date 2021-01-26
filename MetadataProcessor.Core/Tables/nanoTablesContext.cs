@@ -5,6 +5,7 @@
 //
 
 using Mono.Cecil;
+using nanoFramework.Tools.MetadataProcessor.Core.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
