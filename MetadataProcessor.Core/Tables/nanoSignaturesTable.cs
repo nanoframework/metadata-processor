@@ -402,17 +402,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                 writer.WriteByte((byte)nanoCLR_DataType.DATATYPE_GENERICINST);
 
                 var genericType = (GenericInstanceType)typeDefinition;
-
-                if(genericType.IsValueType)
-                {
-                    writer.WriteByte((byte)nanoCLR_DataType.DATATYPE_VALUETYPE);
-                }
-                else
-                {
-                    writer.WriteByte((byte)nanoCLR_DataType.DATATYPE_CLASS);
-                }
-
-                WriteSubTypeInfo(genericType.Resolve(), writer);
+                WriteDataType(genericType.Resolve(), writer, true, expandEnumType, isTypeDefinition);
 
                 // OK to use byte here as we won't support more than 0x7F arguments
                 writer.WriteByte((byte)genericType.GenericArguments.Count);
