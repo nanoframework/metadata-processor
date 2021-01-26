@@ -50,6 +50,8 @@ namespace nanoFramework.Tools.MetadataProcessor
         public List<TypeDefinition> TypeDefinitions { get; private set; }
 
         public List<EnumDeclaration> EnumDeclarations { get; }
+        
+        public ClrTable TableIndex => ClrTable.TypeDef;
 
         /// <summary>
         /// Creates new instance of <see cref="nanoTypeDefinitionTable"/> object.

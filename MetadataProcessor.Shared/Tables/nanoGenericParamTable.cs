@@ -55,6 +55,8 @@ namespace nanoFramework.Tools.MetadataProcessor
         private Dictionary<GenericParameter, TypeReference> _typeForGenericParam =
             new Dictionary<GenericParameter, TypeReference>();
 
+        public ClrTable TableIndex => ClrTable.GenericParam;
+
         /// <summary>
         /// Creates new instance of <see cref="nanoGenericParamTable"/> object.
         /// </summary>
