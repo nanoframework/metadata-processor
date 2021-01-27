@@ -71,6 +71,7 @@
     <Compile Include="DumpGenerator\DumpAllTable.cs" />
     <Compile Include="DumpGenerator\DumpTemplates.cs" />
     <Compile Include="Endianness\nanoBinaryWriter.cs" />
+    <Compile Include="Extensions\MethodReferenceExtensions.cs" />
     <Compile Include="Extensions\ParameterDefintionExtensions.cs" />
     <Compile Include="Extensions\ByteArrayExtensions.cs" />
     <Compile Include="Extensions\MethodDefinitionExtensions.cs" />
