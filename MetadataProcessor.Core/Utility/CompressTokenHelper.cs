@@ -24,6 +24,13 @@ namespace nanoFramework.Tools.MetadataProcessor
                 ClrTable.GenericParam
             };
 
+        /// <summary>
+        /// Tables to encode NanoMethodToken.
+        /// </summary>
+        public readonly static List<ClrTable> NanoMethodTokenTables = new List<ClrTable>() {
+                ClrTable.MethodDef,
+                ClrTable.MethodRef
+            };
 
         /// <summary>
         /// Encode table to be used in a nanoToken.

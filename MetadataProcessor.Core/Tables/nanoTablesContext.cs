@@ -227,11 +227,11 @@ namespace nanoFramework.Tools.MetadataProcessor
             // 0: TBL_MethodDef
             // 1: TBL_MethodRef
             // 2: TBL_MemberRef  (TODO find if needed)
-
+            
             if (MethodReferencesTable.TryGetMethodReferenceId(methodReference, out ushort referenceId))
             {
-                // referenceId |= 0x8000; // External method reference
-                referenceId |= (ushort)((ushort)MethodReferencesTable.TableIndex << 12);
+                // External method reference
+                //referenceId |= 0x8000;
             }
             else
             {
@@ -240,11 +240,11 @@ namespace nanoFramework.Tools.MetadataProcessor
                 {
                     if(MemberReferencesTable.TryGetMemberReferenceId(methodReference, out referenceId))
                     {
-                        referenceId |= (ushort)((ushort)MemberReferencesTable.TableIndex << 12);
+                        // method reference
                     }
                     else if (MethodDefinitionTable.TryGetMethodReferenceId(methodReference.Resolve(), out referenceId))
                     {
-                        referenceId |= (ushort)((ushort)MethodDefinitionTable.TableIndex << 12);
+                        // method definition
                     }
                     else
                     {
@@ -255,7 +255,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                 {
                     if (MethodDefinitionTable.TryGetMethodReferenceId(methodReference.Resolve(), out referenceId))
                     {
-                        referenceId |= (ushort)((ushort)MethodDefinitionTable.TableIndex << 12);
+                        // method definition
                     }
                     else
                     {
@@ -264,7 +264,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                 }
             }
 
-            return referenceId;
+            return (ushort)(methodReference.ToEncodedNanoMethodToken() | referenceId);
         }
 
         /// <summary>

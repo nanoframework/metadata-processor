@@ -299,7 +299,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                     {
                         ReferenceId = $"[{new nanoMetadataToken(m.MetadataToken, referenceId)}] /*{realToken}*/",
                         Name = m.FullName(),
-                        RVA = m.RVA.ToString("x8"),
+                        RVA = _tablesContext.ByteCodeTable.GetMethodRva(m).ToString("x8"),
                         Implementation = "00000000",
                         Signature = PrintSignatureForMethod(m)
                     };
@@ -368,16 +368,13 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
                                     referenceId = _tablesContext.GetMethodReferenceId((MethodReference)instruction.Operand);
 
-                                    // find table
-                                    var tableIndex = referenceId >> 12;
+                                    // get CLR table
+                                    var clrTable = nanoTokenHelpers.DecodeTableIndex(referenceId, nanoTokenHelpers.NanoMethodTokenTables);
 
-                                    // need to clear the encoded method mask
-                                    unchecked
-                                    {
-                                        referenceId &= 0x0FFF;
-                                    }
+                                    // need to clear the encoded type mask
+                                    referenceId = nanoTokenHelpers.DecodeReferenceIndex(referenceId, nanoTokenHelpers.NanoMethodTokenTables);
 
-                                    ilDescription.Append($"{typeName} [{new nanoMetadataToken((ClrTable)tableIndex, referenceId)}] /*{realToken}*/");
+                                    ilDescription.Append($"{typeName} [{new nanoMetadataToken(clrTable, referenceId)}] /*{realToken}*/");
                                 }
                                 else if (instruction.OpCode.OperandType == OperandType.InlineField)
                                 {
