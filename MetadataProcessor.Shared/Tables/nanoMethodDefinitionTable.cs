@@ -188,8 +188,8 @@ namespace nanoFramework.Tools.MetadataProcessor
             const uint MD_DelegateBeginInvoke =     0x00040000;
             const uint MD_DelegateEndInvoke =       0x00080000;
 
-            const uint MD_ContainsGenericParameter =    0x00100000;
-            const uint MD_HasGenericParameter =         0x00200000;
+            const uint MD_IsGenericInstance =           0x00100000;
+            const uint MD_ContainsGenericParameter =    0x00200000;
 
             const uint MD_Synchronized =            0x01000000;
             const uint MD_GloballySynchronized =    0x02000000;
@@ -323,9 +323,9 @@ namespace nanoFramework.Tools.MetadataProcessor
                 flag |= MD_ContainsGenericParameter;
             }
 
-            if (method.HasGenericParameters)
+            if (method.IsGenericInstance)
             {
-                flag |= MD_HasGenericParameter;
+                flag |= MD_IsGenericInstance;
             }
 
             return flag;
