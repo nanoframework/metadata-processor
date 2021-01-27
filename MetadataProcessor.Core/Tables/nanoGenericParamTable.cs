@@ -4,6 +4,7 @@
 //
 
 using Mono.Cecil;
+using nanoFramework.Tools.MetadataProcessor.Core.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -147,32 +148,22 @@ namespace nanoFramework.Tools.MetadataProcessor
             writer.WriteUInt16((ushort)item.Attributes);
 
             // find owner
-            ushort tag;
-
             if (item.Owner is TypeDefinition &&
-                _context.TypeDefinitionTable.TryGetTypeReferenceId(item.Owner as TypeDefinition, out ushort owner))
+                _context.TypeDefinitionTable.TryGetTypeReferenceId(item.Owner as TypeDefinition, out ushort referenceId))
             {
-                // TypeOrMethodDef tag is 0 (TypeDef)
-                tag = 0;
+                // is TypeDef
             }
-            else if (_context.MethodDefinitionTable.TryGetMethodReferenceId(item.Owner as MethodDefinition, out owner))
+            else if (_context.MethodDefinitionTable.TryGetMethodReferenceId(item.Owner as MethodDefinition, out referenceId))
             {
-                // TypeOrMethodDef tag is 1 (MethodDef)
-                tag = 1;
+                // is MethodDef
             }
             else
             {
                 throw new ArgumentException($"Can't find entry in type or method definition tables for generic parameter '{item.FullName}' [0x{item.Owner.MetadataToken.ToInt32():x8}].");
             }
 
-            // TypeOrMethodDef tag is 1 bit
-            owner = (ushort)(owner << 1);
-
-            // OR with tag to form coded index
-            owner |= tag;
-
             // owner
-            writer.WriteUInt16(owner);
+            writer.WriteUInt16((ushort)(item.Owner.ToEncodedNanoTypeOrMethodDefToken() | referenceId));
 
             // Signature
             if (_typeForGenericParam[item] != null)

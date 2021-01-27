@@ -33,6 +33,14 @@ namespace nanoFramework.Tools.MetadataProcessor
             };
 
         /// <summary>
+        /// Tables to encode NanoTypeOrMethodToken.
+        /// </summary>
+        public readonly static List<ClrTable> NanoTypeOrMethodDefTokenTables = new List<ClrTable>() {
+                ClrTable.TypeDef,
+                ClrTable.MethodDef
+            };
+
+        /// <summary>
         /// Encode table to be used in a nanoToken.
         /// The table index in moved to the MSbits.
         /// </summary>
