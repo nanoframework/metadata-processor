@@ -80,13 +80,14 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             if (_context.TypeReferencesTable.TryGetTypeReferenceId(item.DeclaringType, out ushort referenceId))
             {
+                // name
                 WriteStringReference(writer, item.Name);
+
+                // owner
                 writer.WriteUInt16(referenceId);
 
+                // signature
                 writer.WriteUInt16(_context.SignaturesTable.GetOrCreateSignatureId(item));
-
-                // padding
-                writer.WriteUInt16(0);
             }
             else
             {
