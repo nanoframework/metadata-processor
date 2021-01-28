@@ -36,7 +36,7 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             writer.WriteStartElement("Classes");
 
-            _context.TypeDefinitionTable.ForEachItems((token, item) => WriteClassInfo(writer, token, item));
+            _context.TypeDefinitionTable.ForEachItems((token, item) => WriteClassInfo(writer, item, token));
 
             writer.WriteEndDocument();            
         }
@@ -57,8 +57,8 @@ namespace nanoFramework.Tools.MetadataProcessor
 
         private void WriteClassInfo(
             XmlWriter writer,
-            uint nanoClrItemToken,
-            TypeDefinition item)
+            TypeDefinition item,
+            uint nanoClrItemToken)
         {
             writer.WriteStartElement("Class");
 
@@ -124,10 +124,9 @@ namespace nanoFramework.Tools.MetadataProcessor
         {
             foreach (var method in methods)
             {
-                ushort fieldToken;
-                _context.MethodDefinitionTable.TryGetMethodReferenceId(method, out fieldToken);
+                _context.MethodDefinitionTable.TryGetMethodReferenceId(method, out ushort methodToken);
                 yield return new Tuple<uint, uint, MethodDefinition>(
-                    method.MetadataToken.ToUInt32(), 0x06000000 | (uint)fieldToken, method);
+                    method.MetadataToken.ToUInt32(), 0x06000000 | (uint)methodToken, method);
             }
         }
 
@@ -136,8 +135,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         {
             foreach (var field in fields.Where(item => !item.HasConstant))
             {
-                ushort fieldToken;
-                _context.FieldsTable.TryGetFieldReferenceId(field, false, out fieldToken);
+                _context.FieldsTable.TryGetFieldReferenceId(field, false, out ushort fieldToken);
                 yield return new Tuple<uint, uint>(
                     field.MetadataToken.ToUInt32(), 0x05000000 | (uint)fieldToken);
             }
