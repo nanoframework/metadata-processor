@@ -331,19 +331,19 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
             // this one has to be before the others because generic parameters are also "other" types
             if (value is GenericParameter)
             {
-                return ClrTable.GenericParam;
+                return ClrTable.TBL_GenericParam;
             }
             else if (value is TypeDefinition)
             {
-                return ClrTable.TypeDef;
+                return ClrTable.TBL_TypeDef;
             }
             else if (value is TypeReference)
             {
-                return ClrTable.TypeRef;
+                return ClrTable.TBL_TypeRef;
             }
             else if (value is TypeSpecification)
             {
-                return ClrTable.TypeSpec;
+                return ClrTable.TBL_TypeSpec;
             }
 
             else

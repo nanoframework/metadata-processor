@@ -18,26 +18,26 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// Tables to encode NanoTypeToken.
         /// </summary>
         public readonly static List<ClrTable> NanoTypeTokenTables = new List<ClrTable>() {
-                ClrTable.TypeDef,
-                ClrTable.TypeRef,
-                ClrTable.TypeSpec,
-                ClrTable.GenericParam
+                ClrTable.TBL_TypeDef,
+                ClrTable.TBL_TypeRef,
+                ClrTable.TBL_TypeSpec,
+                ClrTable.TBL_GenericParam
             };
 
         /// <summary>
         /// Tables to encode NanoMethodToken.
         /// </summary>
         public readonly static List<ClrTable> NanoMethodTokenTables = new List<ClrTable>() {
-                ClrTable.MethodDef,
-                ClrTable.MethodRef
+                ClrTable.TBL_MethodDef,
+                ClrTable.TBL_MethodRef
             };
 
         /// <summary>
         /// Tables to encode NanoTypeOrMethodToken.
         /// </summary>
         public readonly static List<ClrTable> NanoTypeOrMethodDefTokenTables = new List<ClrTable>() {
-                ClrTable.TypeDef,
-                ClrTable.MethodDef
+                ClrTable.TBL_TypeDef,
+                ClrTable.TBL_MethodDef
             };
 
         /// <summary>

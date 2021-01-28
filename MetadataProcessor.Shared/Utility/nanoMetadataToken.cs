@@ -35,23 +35,23 @@ namespace nanoFramework.Tools.MetadataProcessor
             switch(token.TokenType)
             {
                 case TokenType.AssemblyRef:
-                    _clrTable = ClrTable.AssemblyRef;
+                    _clrTable = ClrTable.TBL_AssemblyRef;
                     break;
 
                 case TokenType.TypeRef:
-                    _clrTable = ClrTable.TypeRef;
+                    _clrTable = ClrTable.TBL_TypeRef;
                     break;
 
                 case TokenType.Field:
-                    _clrTable = ClrTable.FieldDef;
+                    _clrTable = ClrTable.TBL_FieldDef;
                     break;
 
                 case TokenType.Method:
-                    _clrTable = ClrTable.MethodRef;
+                    _clrTable = ClrTable.TBL_MethodRef;
                     break;
 
                 case TokenType.TypeDef:
-                    _clrTable = ClrTable.TypeDef;
+                    _clrTable = ClrTable.TBL_TypeDef;
                     break;
 
                 //case TokenType.MethodSpec:
@@ -63,19 +63,19 @@ namespace nanoFramework.Tools.MetadataProcessor
                 //    break;
 
                 case TokenType.GenericParam:
-                    _clrTable = ClrTable.GenericParam;
+                    _clrTable = ClrTable.TBL_GenericParam;
                     break;
 
                 case TokenType.MethodSpec:
-                    _clrTable = ClrTable.MethodDef;
+                    _clrTable = ClrTable.TBL_MethodDef;
                     break;
 
                 case TokenType.MemberRef:
-                    _clrTable = ClrTable.MethodRef;
+                    _clrTable = ClrTable.TBL_MethodRef;
                     break;
 
                 case TokenType.TypeSpec:
-                    _clrTable = ClrTable.TypeSpec;
+                    _clrTable = ClrTable.TBL_TypeSpec;
                     break;
 
                 default:

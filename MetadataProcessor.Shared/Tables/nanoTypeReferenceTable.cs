@@ -39,7 +39,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             }
         }
 
-        public ClrTable TableIndex => ClrTable.TypeRef;
+        public ClrTable TableIndex => ClrTable.TBL_TypeRef;
 
         /// <summary>
         /// Creates new instance of <see cref="nanoTypeReferenceTable"/> object.

@@ -27,11 +27,11 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
         {
             if (value is TypeDefinition)
             {
-                return ClrTable.TypeDef;
+                return ClrTable.TBL_TypeDef;
             }
             else if (value is MethodDefinition)
             {
-                return ClrTable.MethodDef;
+                return ClrTable.TBL_MethodDef;
             }
             else
             {

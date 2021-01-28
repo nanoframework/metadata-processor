@@ -48,7 +48,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                 return obj.MetadataToken.ToInt32().GetHashCode();
             }
         }
-        public ClrTable TableIndex => ClrTable.MemberRef;
+        public ClrTable TableIndex => ClrTable.TBL_MemberRef;
 
         /// <summary>
         /// Creates new instance of <see cref="nanoMemberReferenceTable"/> object.
