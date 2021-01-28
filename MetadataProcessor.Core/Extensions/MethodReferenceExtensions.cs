@@ -28,11 +28,11 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
             // this one has to be before the others because generic parameters are also "other" types
             if (value is MethodDefinition)
             {
-                return ClrTable.MethodDef;
+                return ClrTable.TBL_MethodDef;
             }
             else if (value is MethodReference)
             {
-                return ClrTable.MethodRef;
+                return ClrTable.TBL_MethodRef;
             }
             else
             {

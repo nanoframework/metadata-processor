@@ -18,7 +18,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// List of registered resouce data for writing into output stream "as is".
         /// </summary>
         private readonly IList<byte[]> _dataByteArrays = new List<byte[]>();
-        public ClrTable TableIndex => ClrTable.ResourcesData;
+        public ClrTable TableIndex => ClrTable.TBL_ResourcesData;
 
         /// <summary>
         /// Gets current offset in resrouces data table (total size of all data blocks).
