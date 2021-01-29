@@ -309,10 +309,10 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
             // 2: TBL_TypeSpec
             // 3: TBL_GenericParam
 
-            return nanoTokenHelpers.EncodeTableIndex(value.TonanoClrTable(), nanoTokenHelpers.NanoTypeTokenTables);
+            return nanoTokenHelpers.EncodeTableIndex(value.ToNanoClrTable(), nanoTokenHelpers.NanoTypeTokenTables);
         }
 
-        public static ClrTable TonanoClrTable(this TypeReference value)
+        public static ClrTable ToNanoClrTable(this TypeReference value)
         {
             // this one has to be before the others because generic parameters are also "other" types
             if (value is GenericParameter)

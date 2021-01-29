@@ -20,10 +20,10 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
             // 0: TBL_MethodDef
             // 1: TBL_MethodRef
 
-            return nanoTokenHelpers.EncodeTableIndex(value.TonanoClrTable(), nanoTokenHelpers.NanoMethodTokenTables);
+            return nanoTokenHelpers.EncodeTableIndex(value.ToNanoClrTable(), nanoTokenHelpers.NanoMethodTokenTables);
         }
 
-        public static ClrTable TonanoClrTable(this MethodReference value)
+        public static ClrTable ToNanoClrTable(this MethodReference value)
         {
             // this one has to be before the others because generic parameters are also "other" types
             if (value is MethodDefinition)
