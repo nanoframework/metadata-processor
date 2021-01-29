@@ -230,25 +230,44 @@ namespace nanoFramework.Tools.MetadataProcessor
             
             if (MethodReferencesTable.TryGetMethodReferenceId(methodReference, out ushort referenceId))
             {
-                // External method reference
-                //referenceId |= 0x8000;
-            }
-            else
-            {
-                if (methodReference is MethodSpecification &&
-                    MethodSpecificationTable.TryGetMethodSpecificationId(methodReference as MethodSpecification, out referenceId))
+                // check if method is external
+                if(methodReference.DeclaringType.Scope.MetadataScopeType == MetadataScopeType.AssemblyNameReference)
                 {
-                    if(MemberReferencesTable.TryGetMemberReferenceId(methodReference, out referenceId))
+                    // method reference is external
+                }
+                else
+                {
+                    // method reference is internal
+                    if (MethodDefinitionTable.TryGetMethodReferenceId(methodReference.Resolve(), out referenceId))
                     {
-                        // method reference
-                    }
-                    else if (MethodDefinitionTable.TryGetMethodReferenceId(methodReference.Resolve(), out referenceId))
-                    {
-                        // method definition
+                        // method reference is internal => method definition
                     }
                     else
                     {
-                        Debug.Fail("Can't find method reference on any table");
+                        Debug.Fail($"Can't find method definition for {methodReference}");
+                    }
+                }
+            }
+            else
+            {
+                if (methodReference is MethodSpecification)
+                {
+                    // check if method is external
+                    if (methodReference.DeclaringType.Scope.MetadataScopeType == MetadataScopeType.AssemblyNameReference)
+                    {
+                        // method reference is external
+                    }
+                    else
+                    {
+                        // method reference is internal
+                        if (MethodDefinitionTable.TryGetMethodReferenceId(methodReference.Resolve(), out referenceId))
+                        {
+                            // method reference is internal => method definition
+                        }
+                        else
+                        {
+                            Debug.Fail($"Can't find method definition for {methodReference}");
+                        }
                     }
                 }
                 else
@@ -259,7 +278,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                     }
                     else
                     {
-                        Debug.Fail("Can't find method reference on method definition table");
+                        Debug.Fail($"Can't find method definition for {methodReference}");
                     }
                 }
             }
