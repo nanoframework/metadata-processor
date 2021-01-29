@@ -62,6 +62,13 @@ namespace nanoFramework.Tools.MetadataProcessor
         {
             writer.WriteStartElement("Class");
 
+            writer.WriteElementString("Name", item.FullName);
+
+            writer.WriteElementString("IsValueType", item.IsValueType.ToString());
+            writer.WriteElementString("IsEnum", item.IsEnum.ToString());
+            writer.WriteElementString("NumGenericParams", item.GenericParameters.Count.ToString("D", CultureInfo.InvariantCulture));
+            writer.WriteElementString("IsGenericInstance", item.IsGenericInstance.ToString().ToLowerInvariant());
+
             WriteTokensPair(writer, item.MetadataToken.ToUInt32(), 0x04000000 | nanoClrItemToken);
 
             writer.WriteStartElement("Methods");
@@ -71,10 +78,18 @@ namespace nanoFramework.Tools.MetadataProcessor
 
                 WriteTokensPair(writer, tuple.Item1, tuple.Item2);
 
+                writer.WriteElementString("Name", tuple.Item3.Name);
+                writer.WriteElementString("NumArgs", tuple.Item3.Parameters.Count.ToString("D", CultureInfo.InvariantCulture));
+                writer.WriteElementString("NumLocals", tuple.Item3.HasBody ? tuple.Item3.Body.Variables.Count.ToString("D", CultureInfo.InvariantCulture) : "0");
+                writer.WriteElementString("MaxStack", CodeWriter.CalculateStackSize(tuple.Item3.Body).ToString("D", CultureInfo.InvariantCulture));
+                writer.WriteElementString("NumGenericParams", tuple.Item3.GenericParameters.Count.ToString("D", CultureInfo.InvariantCulture));
+                writer.WriteElementString("IsGenericInstance", tuple.Item3.IsGenericInstance.ToString().ToLowerInvariant());
+
                 if (!tuple.Item3.HasBody)
                 {
                     writer.WriteElementString("HasByteCode", "false");
                 }
+
                 writer.WriteStartElement("ILMap");
 
                 // sanity check vars
@@ -106,11 +121,13 @@ namespace nanoFramework.Tools.MetadataProcessor
             writer.WriteEndElement();
 
             writer.WriteStartElement("Fields");
-            foreach (var pair in GetFieldsTokens(item.Fields))
+            foreach (var tuple in GetFieldsTokens(item.Fields))
             {
                 writer.WriteStartElement("Field");
 
-                WriteTokensPair(writer, pair.Item1, pair.Item2);
+                writer.WriteElementString("Name", tuple.Item3.Name);
+
+                WriteTokensPair(writer, tuple.Item1, tuple.Item2);
 
                 writer.WriteEndElement();
             }
@@ -130,14 +147,14 @@ namespace nanoFramework.Tools.MetadataProcessor
             }
         }
 
-        private IEnumerable<Tuple<uint, uint>> GetFieldsTokens(
+        private IEnumerable<Tuple<uint, uint, FieldDefinition>> GetFieldsTokens(
             IEnumerable<FieldDefinition> fields)
         {
             foreach (var field in fields.Where(item => !item.HasConstant))
             {
                 _context.FieldsTable.TryGetFieldReferenceId(field, false, out ushort fieldToken);
-                yield return new Tuple<uint, uint>(
-                    field.MetadataToken.ToUInt32(), 0x05000000 | (uint)fieldToken);
+                yield return new Tuple<uint, uint, FieldDefinition>(
+                    field.MetadataToken.ToUInt32(), 0x05000000 | (uint)fieldToken, field);
             }
         }
 
