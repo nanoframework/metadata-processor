@@ -118,18 +118,18 @@ namespace nanoFramework.Tools.MetadataProcessor
             // special processing for arrays
             if(parameterType.IsArray)
             {
-                typeName += nanoCLR_DataType.DATATYPE_SZARRAY + "_" + GetParameterType(parameterType.GetElementType());
+                typeName += nanoClrDataType.DATATYPE_SZARRAY + "_" + GetParameterType(parameterType.GetElementType());
                 continueProcessing = false;
             }
             else if (parameterType.IsByReference)
             {
                 var elementType = ((TypeSpecification)parameterType).ElementType;
 
-                typeName += nanoCLR_DataType.DATATYPE_BYREF + "_";
+                typeName += nanoClrDataType.DATATYPE_BYREF + "_";
 
                 if (elementType.IsArray)
                 {
-                    typeName += nanoCLR_DataType.DATATYPE_SZARRAY + "_" + GetParameterType(((TypeSpecification)elementType).ElementType);
+                    typeName += nanoClrDataType.DATATYPE_SZARRAY + "_" + GetParameterType(((TypeSpecification)elementType).ElementType);
                 }
                 else
                 {
@@ -157,22 +157,22 @@ namespace nanoFramework.Tools.MetadataProcessor
         {
             // try getting primitive type
 
-            nanoCLR_DataType myType;
+            nanoClrDataType myType;
             if(nanoSignaturesTable.PrimitiveTypes.TryGetValue(parameterType.FullName, out myType))
             {
-                if (myType == nanoCLR_DataType.DATATYPE_LAST_PRIMITIVE)
+                if (myType == nanoClrDataType.DATATYPE_LAST_PRIMITIVE)
                 {
                     return "DATATYPE_STRING";
                 }
-                else if (myType == nanoCLR_DataType.DATATYPE_LAST_NONPOINTER)
+                else if (myType == nanoClrDataType.DATATYPE_LAST_NONPOINTER)
                 {
                     return "DATATYPE_TIMESPAN";
                 }
-                else if (myType == nanoCLR_DataType.DATATYPE_LAST_PRIMITIVE_TO_MARSHAL)
+                else if (myType == nanoClrDataType.DATATYPE_LAST_PRIMITIVE_TO_MARSHAL)
                 {
                     return "DATATYPE_TIMESPAN";
                 }
-                else if (myType == nanoCLR_DataType.DATATYPE_LAST_PRIMITIVE_TO_PRESERVE)
+                else if (myType == nanoClrDataType.DATATYPE_LAST_PRIMITIVE_TO_PRESERVE)
                 {
                     return "DATATYPE_R8";
                 }
