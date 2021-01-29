@@ -30,9 +30,19 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
             {
                 return ClrTable.TBL_MethodDef;
             }
-            else if (value is MethodReference)
+            else if (value is MethodReference ||
+                    value is MethodSpecification)
             {
-                return ClrTable.TBL_MethodRef;
+                if (value.DeclaringType.Scope.MetadataScopeType == MetadataScopeType.AssemblyNameReference)
+                {
+                    // method ref is external
+                    return ClrTable.TBL_MethodRef;
+                }
+                else
+                {
+                    // method ref is internal
+                    return ClrTable.TBL_MethodDef;
+                }
             }
             else
             {
