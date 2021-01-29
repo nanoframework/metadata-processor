@@ -64,7 +64,6 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             writer.WriteElementString("Name", item.FullName);
 
-            writer.WriteElementString("IsValueType", item.IsValueType.ToString());
             writer.WriteElementString("IsEnum", item.IsEnum.ToString());
             writer.WriteElementString("NumGenericParams", item.GenericParameters.Count.ToString("D", CultureInfo.InvariantCulture));
             writer.WriteElementString("IsGenericInstance", item.IsGenericInstance.ToString().ToLowerInvariant());
