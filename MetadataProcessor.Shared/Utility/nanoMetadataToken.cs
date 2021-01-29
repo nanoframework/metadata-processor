@@ -89,7 +89,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             // table token
             var tokenType = (uint)_clrTable << 24;
 
-            return $"{tokenType | _id:x8}";
+            return $"{tokenType | _id:X8}";
         }
     }
 }
