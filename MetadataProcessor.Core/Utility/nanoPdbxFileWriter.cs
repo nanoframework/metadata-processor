@@ -62,27 +62,26 @@ namespace nanoFramework.Tools.MetadataProcessor
         {
             writer.WriteStartElement("Class");
 
-            writer.WriteElementString("Name", item.FullName);
-
-            writer.WriteElementString("IsEnum", item.IsEnum.ToString());
-            writer.WriteElementString("NumGenericParams", item.GenericParameters.Count.ToString("D", CultureInfo.InvariantCulture));
-            writer.WriteElementString("IsGenericInstance", item.IsGenericInstance.ToString().ToLowerInvariant());
+            writer.WriteAttributeString("Name", item.FullName);
+            writer.WriteAttributeString("IsEnum", item.IsEnum.ToString());
+            writer.WriteAttributeString("NumGenericParams", item.GenericParameters.Count.ToString("D", CultureInfo.InvariantCulture));
+            writer.WriteAttributeString("IsGenericInstance", item.IsGenericInstance.ToString().ToLowerInvariant());
 
             WriteTokensPair(writer, item.MetadataToken.ToUInt32(), 0x04000000 | nanoClrItemToken);
 
             writer.WriteStartElement("Methods");
+
             foreach (var tuple in GetMethodsTokens(item.Methods))
             {
                 writer.WriteStartElement("Method");
 
-                WriteTokensPair(writer, tuple.Item1, tuple.Item2);
+                writer.WriteAttributeString("Name", tuple.Item3.Name);
+                writer.WriteAttributeString("NumArgs", tuple.Item3.Parameters.Count.ToString("D", CultureInfo.InvariantCulture));
+                writer.WriteAttributeString("NumLocals", tuple.Item3.HasBody ? tuple.Item3.Body.Variables.Count.ToString("D", CultureInfo.InvariantCulture) : "0");
+                writer.WriteAttributeString("NumGenericParams", tuple.Item3.GenericParameters.Count.ToString("D", CultureInfo.InvariantCulture));
+                writer.WriteAttributeString("IsGenericInstance", tuple.Item3.IsGenericInstance.ToString().ToLowerInvariant());
 
-                writer.WriteElementString("Name", tuple.Item3.Name);
-                writer.WriteElementString("NumArgs", tuple.Item3.Parameters.Count.ToString("D", CultureInfo.InvariantCulture));
-                writer.WriteElementString("NumLocals", tuple.Item3.HasBody ? tuple.Item3.Body.Variables.Count.ToString("D", CultureInfo.InvariantCulture) : "0");
-                writer.WriteElementString("MaxStack", CodeWriter.CalculateStackSize(tuple.Item3.Body).ToString("D", CultureInfo.InvariantCulture));
-                writer.WriteElementString("NumGenericParams", tuple.Item3.GenericParameters.Count.ToString("D", CultureInfo.InvariantCulture));
-                writer.WriteElementString("IsGenericInstance", tuple.Item3.IsGenericInstance.ToString().ToLowerInvariant());
+                WriteTokensPair(writer, tuple.Item1, tuple.Item2);
 
                 if (!tuple.Item3.HasBody)
                 {
@@ -111,12 +110,18 @@ namespace nanoFramework.Tools.MetadataProcessor
                     prevItem1 = offset.Item1;
                     prevItem2 = offset.Item2;
 
+                    // IL
                     writer.WriteEndElement();
                 }
+
+                // ILMap
                 writer.WriteEndElement();
 
+                // Method
                 writer.WriteEndElement();
             }
+
+            // Methods
             writer.WriteEndElement();
 
             writer.WriteStartElement("Fields");
@@ -124,14 +129,17 @@ namespace nanoFramework.Tools.MetadataProcessor
             {
                 writer.WriteStartElement("Field");
 
-                writer.WriteElementString("Name", tuple.Item3.Name);
+                writer.WriteAttributeString("Name", tuple.Item3.Name);
 
                 WriteTokensPair(writer, tuple.Item1, tuple.Item2);
 
+                // Field
                 writer.WriteEndElement();
             }
+            // Fields
             writer.WriteEndElement();
 
+            // Class
             writer.WriteEndElement();
         }
 
@@ -164,8 +172,8 @@ namespace nanoFramework.Tools.MetadataProcessor
         {
             writer.WriteStartElement("Token");
 
-            writer.WriteElementString("CLR", "0x" + clrToken.ToString("X8", CultureInfo.InvariantCulture));
-            writer.WriteElementString("nanoCLR", "0x" + nanoClrToken.ToString("X8", CultureInfo.InvariantCulture));
+            writer.WriteElementString("CLR", clrToken.ToString("X8", CultureInfo.InvariantCulture));
+            writer.WriteElementString("nanoCLR", nanoClrToken.ToString("X8", CultureInfo.InvariantCulture));
 
             writer.WriteEndElement();
         }
