@@ -5,6 +5,7 @@
 //
 
 using Mono.Cecil;
+using nanoFramework.Tools.MetadataProcessor.Core.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -35,7 +36,6 @@ namespace nanoFramework.Tools.MetadataProcessor
             WriteVersionInfo(writer, _context.AssemblyDefinition.Name.Version);
 
             writer.WriteStartElement("Classes");
-
             _context.TypeDefinitionTable.ForEachItems((token, item) => WriteClassInfo(writer, item, token));
 
             writer.WriteEndDocument();            
@@ -55,6 +55,8 @@ namespace nanoFramework.Tools.MetadataProcessor
             writer.WriteEndElement();
         }
 
+        #region Class output
+
         private void WriteClassInfo(
             XmlWriter writer,
             TypeDefinition item,
@@ -67,7 +69,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             writer.WriteAttributeString("NumGenericParams", item.GenericParameters.Count.ToString("D", CultureInfo.InvariantCulture));
             writer.WriteAttributeString("IsGenericInstance", item.IsGenericInstance.ToString().ToLowerInvariant());
 
-            WriteTokensPair(writer, item.MetadataToken.ToUInt32(), 0x04000000 | nanoClrItemToken);
+            WriteTokensPair(writer, item.MetadataToken.ToUInt32(), ClrTable.TBL_TypeDef.ToNanoTokenType() | nanoClrItemToken);
 
             writer.WriteStartElement("Methods");
 
@@ -150,7 +152,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             {
                 _context.MethodDefinitionTable.TryGetMethodReferenceId(method, out ushort methodToken);
                 yield return new Tuple<uint, uint, MethodDefinition>(
-                    method.MetadataToken.ToUInt32(), 0x06000000 | (uint)methodToken, method);
+                    method.MetadataToken.ToUInt32(), ClrTable.TBL_MethodDef.ToNanoTokenType() | methodToken, method);
             }
         }
 
@@ -161,10 +163,11 @@ namespace nanoFramework.Tools.MetadataProcessor
             {
                 _context.FieldsTable.TryGetFieldReferenceId(field, false, out ushort fieldToken);
                 yield return new Tuple<uint, uint, FieldDefinition>(
-                    field.MetadataToken.ToUInt32(), 0x05000000 | (uint)fieldToken, field);
+                    field.MetadataToken.ToUInt32(), ClrTable.TBL_FieldDef.ToNanoTokenType() | (uint)fieldToken, field);
             }
         }
 
+        #endregion
         private void WriteTokensPair(
             XmlWriter writer,
             uint clrToken,
