@@ -14,14 +14,14 @@ namespace nanoFramework.Tools.MetadataProcessor
     /// </summary>
     public class nanoMetadataToken
     {
-        private ClrTable _clrTable;
+        private nanoClrTable _clrTable;
         private ushort _id;
 
         public nanoMetadataToken()
         {
         }
 
-        public nanoMetadataToken(ClrTable clrTable, ushort id)
+        public nanoMetadataToken(nanoClrTable clrTable, ushort id)
         {
             _clrTable = clrTable;
             _id = id;
@@ -35,23 +35,23 @@ namespace nanoFramework.Tools.MetadataProcessor
             switch(token.TokenType)
             {
                 case TokenType.AssemblyRef:
-                    _clrTable = ClrTable.TBL_AssemblyRef;
+                    _clrTable = nanoClrTable.TBL_AssemblyRef;
                     break;
 
                 case TokenType.TypeRef:
-                    _clrTable = ClrTable.TBL_TypeRef;
+                    _clrTable = nanoClrTable.TBL_TypeRef;
                     break;
 
                 case TokenType.Field:
-                    _clrTable = ClrTable.TBL_FieldDef;
+                    _clrTable = nanoClrTable.TBL_FieldDef;
                     break;
 
                 case TokenType.Method:
-                    _clrTable = ClrTable.TBL_MethodRef;
+                    _clrTable = nanoClrTable.TBL_MethodRef;
                     break;
 
                 case TokenType.TypeDef:
-                    _clrTable = ClrTable.TBL_TypeDef;
+                    _clrTable = nanoClrTable.TBL_TypeDef;
                     break;
 
                 //case TokenType.MethodSpec:
@@ -63,19 +63,19 @@ namespace nanoFramework.Tools.MetadataProcessor
                 //    break;
 
                 case TokenType.GenericParam:
-                    _clrTable = ClrTable.TBL_GenericParam;
+                    _clrTable = nanoClrTable.TBL_GenericParam;
                     break;
 
                 case TokenType.MethodSpec:
-                    _clrTable = ClrTable.TBL_MethodDef;
+                    _clrTable = nanoClrTable.TBL_MethodDef;
                     break;
 
                 case TokenType.MemberRef:
-                    _clrTable = ClrTable.TBL_MethodRef;
+                    _clrTable = nanoClrTable.TBL_MethodRef;
                     break;
 
                 case TokenType.TypeSpec:
-                    _clrTable = ClrTable.TBL_TypeSpec;
+                    _clrTable = nanoClrTable.TBL_TypeSpec;
                     break;
 
                 default:

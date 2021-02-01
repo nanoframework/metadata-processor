@@ -34,7 +34,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             }
         }
 
-        public ClrTable TableIndex => ClrTable.TBL_MethodDef;
+        public nanoClrTable TableIndex => nanoClrTable.TBL_MethodDef;
 
         /// <summary>
         /// Creates new instance of <see cref="nanoMethodDefinitionTable"/> object.

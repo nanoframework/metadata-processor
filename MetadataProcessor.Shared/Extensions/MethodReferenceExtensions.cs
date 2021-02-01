@@ -23,12 +23,12 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
             return nanoTokenHelpers.EncodeTableIndex(value.ToNanoClrTable(), nanoTokenHelpers.NanoMethodTokenTables);
         }
 
-        public static ClrTable ToNanoClrTable(this MethodReference value)
+        public static nanoClrTable ToNanoClrTable(this MethodReference value)
         {
             // this one has to be before the others because generic parameters are also "other" types
             if (value is MethodDefinition)
             {
-                return ClrTable.TBL_MethodDef;
+                return nanoClrTable.TBL_MethodDef;
             }
             else if (value is MethodReference ||
                     value is MethodSpecification)
@@ -36,12 +36,12 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
                 if (value.DeclaringType.Scope.MetadataScopeType == MetadataScopeType.AssemblyNameReference)
                 {
                     // method ref is external
-                    return ClrTable.TBL_MethodRef;
+                    return nanoClrTable.TBL_MethodRef;
                 }
                 else
                 {
                     // method ref is internal
-                    return ClrTable.TBL_MethodDef;
+                    return nanoClrTable.TBL_MethodDef;
                 }
             }
             else

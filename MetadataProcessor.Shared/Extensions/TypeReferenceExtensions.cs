@@ -312,24 +312,24 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
             return nanoTokenHelpers.EncodeTableIndex(value.ToNanoClrTable(), nanoTokenHelpers.NanoTypeTokenTables);
         }
 
-        public static ClrTable ToNanoClrTable(this TypeReference value)
+        public static nanoClrTable ToNanoClrTable(this TypeReference value)
         {
             // this one has to be before the others because generic parameters are also "other" types
             if (value is GenericParameter)
             {
-                return ClrTable.TBL_GenericParam;
+                return nanoClrTable.TBL_GenericParam;
             }
             else if (value is TypeDefinition)
             {
-                return ClrTable.TBL_TypeDef;
+                return nanoClrTable.TBL_TypeDef;
             }
             else if (value is TypeReference)
             {
-                return ClrTable.TBL_TypeRef;
+                return nanoClrTable.TBL_TypeRef;
             }
             else if (value is TypeSpecification)
             {
-                return ClrTable.TBL_TypeSpec;
+                return nanoClrTable.TBL_TypeSpec;
             }
 
             else
