@@ -10,17 +10,17 @@ using System.Text;
 
 namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
 {
-    internal static class IGenericParameterProviderExtensionsExtensions
+    internal static class IGenericParameterProviderExtensions
     {
-         public static ushort ToEncodedNanoTypeOrMethodDefToken(this IGenericParameterProvider value)
+        public static ushort ToEncodedNanoTypeOrMethodDefToken(this IGenericParameterProvider value)
         {
-            // implements .NET nanoFramework encoding for MethodToken
-            // encodes Method to be decoded with CLR_UncompressTypeOrMethodDefToken
-            // CLR tables are
-            // 0: TBL_TypeDef
-            // 1: TBL_MethodDef
+        // implements .NET nanoFramework encoding for MethodToken
+        // encodes Method to be decoded with CLR_UncompressTypeOrMethodDefToken
+        // CLR tables are
+        // 0: TBL_TypeDef
+        // 1: TBL_MethodDef
 
-            return nanoTokenHelpers.EncodeTableIndex(value.ToNanoClrTable(), nanoTokenHelpers.NanoTypeOrMethodDefTokenTables);
+        return nanoTokenHelpers.EncodeTableIndex(value.ToNanoClrTable(), nanoTokenHelpers.NanoTypeOrMethodDefTokenTables);
         }
 
         public static ClrTable ToNanoClrTable(this IGenericParameterProvider value)
