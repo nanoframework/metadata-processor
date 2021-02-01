@@ -17,27 +17,27 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// <summary>
         /// Tables to encode NanoTypeToken.
         /// </summary>
-        public readonly static List<ClrTable> NanoTypeTokenTables = new List<ClrTable>() {
-                ClrTable.TBL_TypeDef,
-                ClrTable.TBL_TypeRef,
-                ClrTable.TBL_TypeSpec,
-                ClrTable.TBL_GenericParam
+        public readonly static List<nanoClrTable> NanoTypeTokenTables = new List<nanoClrTable>() {
+                nanoClrTable.TBL_TypeDef,
+                nanoClrTable.TBL_TypeRef,
+                nanoClrTable.TBL_TypeSpec,
+                nanoClrTable.TBL_GenericParam
             };
 
         /// <summary>
         /// Tables to encode NanoMethodToken.
         /// </summary>
-        public readonly static List<ClrTable> NanoMethodTokenTables = new List<ClrTable>() {
-                ClrTable.TBL_MethodDef,
-                ClrTable.TBL_MethodRef
+        public readonly static List<nanoClrTable> NanoMethodTokenTables = new List<nanoClrTable>() {
+                nanoClrTable.TBL_MethodDef,
+                nanoClrTable.TBL_MethodRef
             };
 
         /// <summary>
         /// Tables to encode NanoTypeOrMethodToken.
         /// </summary>
-        public readonly static List<ClrTable> NanoTypeOrMethodDefTokenTables = new List<ClrTable>() {
-                ClrTable.TBL_TypeDef,
-                ClrTable.TBL_MethodDef
+        public readonly static List<nanoClrTable> NanoTypeOrMethodDefTokenTables = new List<nanoClrTable>() {
+                nanoClrTable.TBL_TypeDef,
+                nanoClrTable.TBL_MethodDef
             };
 
         /// <summary>
@@ -47,7 +47,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// <param name="table">Table to compress.</param>
         /// <param name="tableList">List of tables to be used in encoding.</param>
         /// <returns>The encoded tag to be used in a nanoToken.</returns>
-        public static ushort EncodeTableIndex(ClrTable table, List<ClrTable> tableList)
+        public static ushort EncodeTableIndex(nanoClrTable table, List<nanoClrTable> tableList)
         {
             // sanity checks
             if (tableList.Count < 1)
@@ -67,12 +67,12 @@ namespace nanoFramework.Tools.MetadataProcessor
         }
 
         /// <summary>
-        /// Decode <see cref="ClrTable"/> from nanoToken.
+        /// Decode <see cref="nanoClrTable"/> from nanoToken.
         /// </summary>
         /// <param name="value">Encoded value containing the table index.</param>
         /// <param name="tableList">List of tables to be used in encoding.</param>
-        /// <returns>The <see cref="ClrTable"/> encoded in the <paramref name="value"/>.</returns>
-        public static ClrTable DecodeTableIndex(ushort value, List<ClrTable> tableList)
+        /// <returns>The <see cref="nanoClrTable"/> encoded in the <paramref name="value"/>.</returns>
+        public static nanoClrTable DecodeTableIndex(ushort value, List<nanoClrTable> tableList)
         {
             if (tableList.Count < 1)
             {
@@ -93,7 +93,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// <param name="value">Encoded value.</param>
         /// <param name="tableList">List of tables used in encoding.</param>
         /// <returns>The reference encoded in the <paramref name="value"/>.</returns>
-        public static ushort DecodeReferenceIndex(ushort value, List<ClrTable> tableList)
+        public static ushort DecodeReferenceIndex(ushort value, List<nanoClrTable> tableList)
         {
             if (tableList.Count < 1)
             {

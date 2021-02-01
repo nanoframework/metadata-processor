@@ -80,7 +80,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// </summary>
         private readonly nanoTablesContext _context;
 
-        public ClrTable TableIndex => ClrTable.TBL_TypeSpec;
+        public nanoClrTable TableIndex => nanoClrTable.TBL_TypeSpec;
 
         /// <summary>
         /// Creates new instance of <see cref="nanoTypeSpecificationsTable"/> object.

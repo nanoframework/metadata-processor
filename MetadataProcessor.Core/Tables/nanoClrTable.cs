@@ -10,12 +10,12 @@ namespace nanoFramework.Tools.MetadataProcessor
     /// <summary>
     /// .NET nanoFramework PE tables index.
     /// </summary>
-    public enum ClrTable
+    public enum nanoClrTable
     {
-        //////////////////////////////////////////////////////////////////////////////////
-        // !!! KEEP IN SYNC WITH enum ClrTable (in nanoCLR_TypeSystem VS extension) !!! //
-        // !!! KEEP IN SYNC WITH enum ClrTable (in nanoCLRT_Types.h in CLR)         !!! //
-        //////////////////////////////////////////////////////////////////////////////////
+        //////////////////////////////////////////////////////////////////////////////////////
+        // !!! KEEP IN SYNC WITH enum nanoClrTable (in nanoCLR_TypeSystem VS extension) !!! //
+        // !!! KEEP IN SYNC WITH enum nanoClrTable (in nanoCLRT_Types.h in CLR)         !!! //
+        //////////////////////////////////////////////////////////////////////////////////////
 
         TBL_AssemblyRef = 0x00000000,
         TBL_TypeRef = 0x00000001,

@@ -23,15 +23,15 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
         return nanoTokenHelpers.EncodeTableIndex(value.ToNanoClrTable(), nanoTokenHelpers.NanoTypeOrMethodDefTokenTables);
         }
 
-        public static ClrTable ToNanoClrTable(this IGenericParameterProvider value)
+        public static nanoClrTable ToNanoClrTable(this IGenericParameterProvider value)
         {
             if (value is TypeDefinition)
             {
-                return ClrTable.TBL_TypeDef;
+                return nanoClrTable.TBL_TypeDef;
             }
             else if (value is MethodDefinition)
             {
-                return ClrTable.TBL_MethodDef;
+                return nanoClrTable.TBL_MethodDef;
             }
             else
             {

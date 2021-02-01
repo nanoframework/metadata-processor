@@ -69,7 +69,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             writer.WriteAttributeString("NumGenericParams", item.GenericParameters.Count.ToString("D", CultureInfo.InvariantCulture));
             writer.WriteAttributeString("IsGenericInstance", item.IsGenericInstance.ToString().ToLowerInvariant());
 
-            WriteTokensPair(writer, item.MetadataToken.ToUInt32(), ClrTable.TBL_TypeDef.ToNanoTokenType() | nanoClrItemToken);
+            WriteTokensPair(writer, item.MetadataToken.ToUInt32(), nanoClrTable.TBL_TypeDef.ToNanoTokenType() | nanoClrItemToken);
 
             writer.WriteStartElement("Methods");
 
@@ -152,7 +152,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             {
                 _context.MethodDefinitionTable.TryGetMethodReferenceId(method, out ushort methodToken);
                 yield return new Tuple<uint, uint, MethodDefinition>(
-                    method.MetadataToken.ToUInt32(), ClrTable.TBL_MethodDef.ToNanoTokenType() | methodToken, method);
+                    method.MetadataToken.ToUInt32(), nanoClrTable.TBL_MethodDef.ToNanoTokenType() | methodToken, method);
             }
         }
 
@@ -163,7 +163,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             {
                 _context.FieldsTable.TryGetFieldReferenceId(field, false, out ushort fieldToken);
                 yield return new Tuple<uint, uint, FieldDefinition>(
-                    field.MetadataToken.ToUInt32(), ClrTable.TBL_FieldDef.ToNanoTokenType() | (uint)fieldToken, field);
+                    field.MetadataToken.ToUInt32(), nanoClrTable.TBL_FieldDef.ToNanoTokenType() | (uint)fieldToken, field);
             }
         }
 

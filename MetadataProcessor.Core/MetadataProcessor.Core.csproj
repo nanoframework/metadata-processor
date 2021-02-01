@@ -95,7 +95,7 @@
     <Compile Include="Tables\nanoAttributesTable.cs" />
     <Compile Include="Tables\nanoByteCodeTable.cs" />
     <Compile Include="Tables\nanoEmptyTable.cs" />
-    <Compile Include="Tables\ClrTable.cs" />
+    <Compile Include="Tables\nanoClrTable.cs" />
     <Compile Include="Tables\nanoFieldDefinitionTable.cs" />
     <Compile Include="Tables\nanoFieldReferenceTable.cs" />
     <Compile Include="Tables\nanoMemberReferenceTable.cs" />
