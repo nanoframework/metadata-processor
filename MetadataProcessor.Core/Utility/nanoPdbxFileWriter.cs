@@ -106,8 +106,8 @@ namespace nanoFramework.Tools.MetadataProcessor
                     }
                     writer.WriteStartElement("IL");
 
-                    writer.WriteElementString("CLR", "0x" + offset.Item1.ToString("X8", CultureInfo.InvariantCulture));
-                    writer.WriteElementString("nanoCLR", "0x" + offset.Item2.ToString("X8", CultureInfo.InvariantCulture));
+                    writer.WriteElementString("CLR", offset.Item1.ToString("X8", CultureInfo.InvariantCulture));
+                    writer.WriteElementString("nanoCLR", offset.Item2.ToString("X8", CultureInfo.InvariantCulture));
 
                     prevItem1 = offset.Item1;
                     prevItem2 = offset.Item2;
