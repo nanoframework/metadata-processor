@@ -73,6 +73,7 @@
     <Compile Include="Endianness\nanoBinaryWriter.cs" />
     <Compile Include="Extensions\IGenericParameterProviderExtensions.cs" />
     <Compile Include="Extensions\ClrTableExtensions.cs" />
+    <Compile Include="Extensions\MemberReferenceExtensions.cs" />
     <Compile Include="Extensions\MethodReferenceExtensions.cs" />
     <Compile Include="Extensions\ParameterDefintionExtensions.cs" />
     <Compile Include="Extensions\ByteArrayExtensions.cs" />
