@@ -25,11 +25,13 @@ namespace nanoFramework.Tools.MetadataProcessor
             };
 
         /// <summary>
-        /// Tables to encode NanoMethodToken.
+        /// Tables to encode NanoMethodDefOrRefToken.
         /// </summary>
-        public readonly static List<nanoClrTable> NanoMethodTokenTables = new List<nanoClrTable>() {
+        public readonly static List<nanoClrTable> NanoMethodDefOrRefTokenTables = new List<nanoClrTable>() {
                 nanoClrTable.TBL_MethodDef,
-                nanoClrTable.TBL_MethodRef
+                nanoClrTable.TBL_MethodRef,
+                nanoClrTable.TBL_TypeSpec,
+                nanoClrTable.TBL_MethodSpec,
             };
 
         /// <summary>

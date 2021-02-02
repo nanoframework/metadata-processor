@@ -378,10 +378,10 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                                     referenceId = _tablesContext.GetMethodReferenceId((MethodReference)instruction.Operand);
 
                                     // get CLR table
-                                    var clrTable = nanoTokenHelpers.DecodeTableIndex(referenceId, nanoTokenHelpers.NanoMethodTokenTables);
+                                    var clrTable = nanoTokenHelpers.DecodeTableIndex(referenceId, nanoTokenHelpers.NanoMethodDefOrRefTokenTables);
 
                                     // need to clear the encoded type mask
-                                    referenceId = nanoTokenHelpers.DecodeReferenceIndex(referenceId, nanoTokenHelpers.NanoMethodTokenTables);
+                                    referenceId = nanoTokenHelpers.DecodeReferenceIndex(referenceId, nanoTokenHelpers.NanoMethodDefOrRefTokenTables);
 
                                     ilDescription.Append($"{typeName} [{new nanoMetadataToken(clrTable, referenceId)}] /*{realToken}*/");
                                 }
