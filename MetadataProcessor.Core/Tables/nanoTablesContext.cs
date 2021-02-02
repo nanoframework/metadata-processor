@@ -217,83 +217,91 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// <summary>
         /// Gets (.NET nanoFramework encoded) method reference identifier (external or internal).
         /// </summary>
-        /// <param name="methodReference">Method reference in Mono.Cecil format.</param>
-        /// <returns>Reference identifier for passed <paramref name="methodReference"/> value.</returns>
+        /// <param name="memberReference">Method reference in Mono.Cecil format.</param>
+        /// <returns>Reference identifier for passed <paramref name="memberReference"/> value.</returns>
         public ushort GetMethodReferenceId(
-            MethodReference methodReference)
+            MemberReference memberReference)
         {
             // encodes MethodReference to be decoded with CLR_UncompressMethodToken
             // CLR tables are: 
             // 0: TBL_MethodDef
             // 1: TBL_MethodRef
             // 2: TBL_MemberRef  (TODO find if needed)
-            
-            if (MethodReferencesTable.TryGetMethodReferenceId(methodReference, out ushort referenceId))
+
+            ushort referenceId = 0xFFFF;
+
+            if (memberReference is MethodDefinition)
             {
                 // check if method is external
-                if(methodReference.DeclaringType.Scope.MetadataScopeType == MetadataScopeType.AssemblyNameReference)
+                if (memberReference.DeclaringType.Scope.MetadataScopeType == MetadataScopeType.AssemblyNameReference)
                 {
                     // method reference is external
                 }
                 else
                 {
                     // method reference is internal
-                    if (MethodDefinitionTable.TryGetMethodReferenceId(methodReference.Resolve(), out referenceId))
+                    if (MethodDefinitionTable.TryGetMethodReferenceId(memberReference as MethodDefinition, out referenceId))
                     {
                         // method reference is internal => method definition
                     }
                     else
                     {
-                        Debug.Fail($"Can't find method definition for {methodReference}");
+                        Debug.Fail($"Can't find method definition for {memberReference}");
+                    }
+                }
+            }
+            else if (memberReference is MethodSpecification &&
+                MethodSpecificationTable.TryGetMethodSpecificationId(memberReference as MethodSpecification, out referenceId))
+            {
+                // member reference is MethodSpecification
+            }
+            else if (memberReference.DeclaringType is TypeSpecification &&
+                    TypeSpecificationsTable.TryGetTypeReferenceId(memberReference.DeclaringType, out referenceId))
+            {
+                // member reference is TypeSpec
+            }
+            else if (memberReference is MethodReference &&
+                MethodReferencesTable.TryGetMethodReferenceId(memberReference as MethodReference, out referenceId))
+            {
+                // check if method is external
+                if(memberReference.DeclaringType.Scope.MetadataScopeType == MetadataScopeType.AssemblyNameReference)
+                {
+                    // method reference is external
+                }
+                else
+                {
+                    // method reference is internal
+                    if (MethodDefinitionTable.TryGetMethodReferenceId((memberReference as MethodReference).Resolve(), out referenceId))
+                    {
+                        // method reference is internal => method definition
+                    }
+                    else
+                    {
+                        Debug.Fail($"Can't find method definition for {memberReference}");
                     }
                 }
             }
             else
             {
-                if (methodReference is MethodSpecification)
-                {
-                    // check if method is external
-                    if (methodReference.DeclaringType.Scope.MetadataScopeType == MetadataScopeType.AssemblyNameReference)
-                    {
-                        // method reference is external
-                    }
-                    else
-                    {
-                        // method reference is internal
-                        if (MethodDefinitionTable.TryGetMethodReferenceId(methodReference.Resolve(), out referenceId))
-                        {
-                            // method reference is internal => method definition
-                        }
-                        else
-                        {
-                            Debug.Fail($"Can't find method definition for {methodReference}");
-                        }
-                    }
-                }
-                else
-                {
-                    if (MethodDefinitionTable.TryGetMethodReferenceId(methodReference.Resolve(), out referenceId))
-                    {
-                        // method definition
-                    }
-                    else
-                    {
-                        Debug.Fail($"Can't find method definition for {methodReference}");
-                    }
-                }
+                Debug.Fail($"Can't find any reference for {memberReference}");
             }
 
-            return (ushort)(methodReference.ToEncodedNanoMethodToken() | referenceId);
+            return (ushort)(memberReference.ToEncodedNanoMethodToken() | referenceId);
         }
 
         /// <summary>
-        /// Gets field reference identifier (external or internal) encoded with appropriate prefix.
+        /// Gets (.NET nanoFramework encoded) field reference identifier (external or internal).
         /// </summary>
         /// <param name="fieldReference">Field reference in Mono.Cecil format.</param>
         /// <returns>Reference identifier for passed <paramref name="fieldReference"/> value.</returns>
         public ushort GetFieldReferenceId(
             FieldReference fieldReference)
         {
+            // encodes FieldReference to be decoded with CLR_UncompressFieldToken
+            // CLR tables are: 
+            // 0: TBL_FieldDef
+            // 1: TBL_FieldRef
+
             ushort referenceId;
             if (FieldReferencesTable.TryGetFieldReferenceId(fieldReference, out referenceId))
             {
