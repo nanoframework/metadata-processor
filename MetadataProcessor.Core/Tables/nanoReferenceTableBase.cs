@@ -172,5 +172,31 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             _items = usedItems;
         }
+
+        public virtual void AddItem(T value)
+        {
+            // need to recreate the items dictionary after adding this new one
+
+            List<T> copyOfItems = new List<T>();
+
+            foreach (var i in _idsByItemsDictionary)
+            {
+                copyOfItems.Add(i.Key);
+            }
+
+            // add new item
+            copyOfItems.Add(value);
+
+            // rebuild dictionary
+            _idsByItemsDictionary = copyOfItems
+                .Select((reference,
+                         index) => new { reference, index })
+                .ToDictionary(item => item.reference,
+                              item => (ushort)item.index,
+                              _comparer);
+
+            // repopulate items
+            _items = copyOfItems;
+        }
     }
 }
