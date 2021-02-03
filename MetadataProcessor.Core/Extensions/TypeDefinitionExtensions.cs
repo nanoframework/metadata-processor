@@ -142,5 +142,25 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
 
             return myEnum;
         }
+
+        /// <summary>
+        /// Fixed full name with simplified type names.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static string FixedFullName(this TypeDefinition value)
+        {
+            return nanoHelpers.FixTypeNames(value.FullName);
+        }
+        
+        /// <summary>
+        /// Fixed name with simplified type names.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static string FixedName(this TypeDefinition value)
+        {
+            return nanoHelpers.FixTypeNames(value.Name);
+        }
     }
 }
