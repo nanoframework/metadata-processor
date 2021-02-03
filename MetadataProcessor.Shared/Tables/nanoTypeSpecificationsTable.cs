@@ -119,6 +119,12 @@ namespace nanoFramework.Tools.MetadataProcessor
                 if(!_idSignatures.Contains(signatureId))
                 {
                     _idSignatures.Add(signatureId);
+
+                    // if this is a generic type instance, add it to type definitions too
+                    if (typeReference.IsGenericInstance)
+                    {
+                        _context.TypeDefinitionTable.AddGenericInstanceType(typeReference);
+                    }
                 }
             }
 

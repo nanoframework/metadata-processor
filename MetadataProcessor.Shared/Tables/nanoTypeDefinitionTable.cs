@@ -194,6 +194,23 @@ namespace nanoFramework.Tools.MetadataProcessor
             }
         }
 
+        /// <summary>
+        /// Add a "fake" TypeDef as placeholder for an instanced generic type.
+        /// </summary>
+        /// <param name="typeReference"></param>
+        public void AddGenericInstanceType(TypeReference typeReference)
+        {
+            // drop namespace as it's already on the full name
+            // OK to use full name as type name to help comparison ahead
+            var genericType = new TypeDefinition(
+                "",
+                typeReference.FullName,
+                typeReference.Resolve().Attributes);
+
+            // add to items list
+            AddItem(genericType);
+        }
+
         private void WriteClassFields(
             IList<FieldDefinition> fieldsList,
             nanoBinaryWriter writer)
