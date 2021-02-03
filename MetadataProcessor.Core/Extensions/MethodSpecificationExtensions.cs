@@ -10,9 +10,9 @@ using System.Text;
 
 namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
 {
-    internal static class MethodReferenceExtensions
+    internal static class MethodSpecificationExtensions
     {
-         public static ushort ToEncodedNanoMethodToken(this MethodReference value)
+         public static ushort ToEncodedNanoMethodToken(this MethodSpecification value)
         {
             // implements .NET nanoFramework encoding for MethodToken
             // encodes Method to be decoded with CLR_UncompressMethodToken
@@ -20,10 +20,10 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
             // 0: TBL_MethodDef
             // 1: TBL_MethodRef
 
-            return nanoTokenHelpers.EncodeTableIndex(value.ToNanoClrTable(), nanoTokenHelpers.NanoMemberRefTokenTables);
+            return nanoTokenHelpers.EncodeTableIndex(value.ToNanoClrTable(), nanoTokenHelpers.NanoMethodDefOrRefTokenTables);
         }
 
-        public static nanoClrTable ToNanoClrTable(this MethodReference value)
+        public static nanoClrTable ToNanoClrTable(this MethodSpecification value)
         {
             // this one has to be before the others because generic parameters are also "other" types
             if (value is MethodDefinition)

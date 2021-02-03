@@ -378,10 +378,10 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                                     referenceId = _tablesContext.GetMethodReferenceId((MethodReference)instruction.Operand);
 
                                     // get CLR table
-                                    var clrTable = nanoTokenHelpers.DecodeTableIndex(referenceId, nanoTokenHelpers.NanoMethodDefOrRefTokenTables);
+                                    var clrTable = nanoTokenHelpers.DecodeTableIndex(referenceId, nanoTokenHelpers.NanoMemberRefTokenTables);
 
                                     // need to clear the encoded type mask
-                                    referenceId = nanoTokenHelpers.DecodeReferenceIndex(referenceId, nanoTokenHelpers.NanoMethodDefOrRefTokenTables);
+                                    referenceId = nanoTokenHelpers.DecodeReferenceIndex(referenceId, nanoTokenHelpers.NanoMemberRefTokenTables);
 
                                     ilDescription.Append($"{typeName} [{new nanoMetadataToken(clrTable, referenceId)}] /*{realToken}*/");
                                 }
@@ -607,7 +607,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
                     typeSpec.Name = t.Value.FullName;
 
-                    foreach (var mr in _tablesContext.MemberReferencesTable.Items)
+                    foreach (var mr in _tablesContext.MethodReferencesTable.Items)
                     {
                         if (_tablesContext.TypeSpecificationsTable.TryGetTypeReferenceId(mr.DeclaringType, out referenceId) &&
                             referenceId == t.Key)
@@ -617,12 +617,12 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                                 Name = mr.Name
                             };
 
-                            if (_tablesContext.MemberReferencesTable.TryGetMemberReferenceId(mr, out ushort memberRefId))
+                            if (_tablesContext.MethodReferencesTable.TryGetMethodReferenceId(mr, out ushort memberRefId))
                             {
                                 realToken = mr.MetadataToken.ToInt32().ToString("X8");
 
-                                memberRef.ReferenceId = $"[{new nanoMetadataToken(nanoClrTable.TBL_MemberRef, memberRefId)}] /*{realToken}*/";
-                                memberRef.Signature = PrintSignatureForMethod(mr as MethodReference);
+                                memberRef.ReferenceId = $"[{new nanoMetadataToken(nanoClrTable.TBL_MethodRef, memberRefId)}] /*{realToken}*/";
+                                memberRef.Signature = PrintSignatureForMethod(mr);
                             }
 
                             typeSpec.MemberReferences.Add(memberRef);

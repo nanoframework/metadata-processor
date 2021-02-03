@@ -412,7 +412,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                     _writer.WriteUInt16(stringReferenceId);
 		            break;
                 case OperandType.InlineMethod:
-                    _writer.WriteUInt16(_context.GetMethodReferenceId((MethodReference)operand));
+                    _writer.WriteUInt16(_context.GetMethodReferenceId((MemberReference)operand));
                     break;
                 case OperandType.InlineType:
                     _writer.WriteUInt16(_context.GetTypeReferenceId((TypeReference)operand));

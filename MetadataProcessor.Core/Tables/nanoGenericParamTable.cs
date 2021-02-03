@@ -91,15 +91,12 @@ namespace nanoFramework.Tools.MetadataProcessor
 
                     if(typeWithGenericParam != null)
                     {
-                        if (_context.MemberReferencesTable.Items.Any())
+                        if(_context.MethodReferencesTable.Items.Any())
                         {
-                            // get the first member that matches this type
-                            var genericInstance = _context.MemberReferencesTable.Items.FirstOrDefault(
+                            var genericInstance = _context.MethodReferencesTable.Items.FirstOrDefault(
                                 mr => mr.DeclaringType.GetElementType() == typeWithGenericParam)
                                 .DeclaringType as GenericInstanceType;
-
-
-                            Debug.Assert(genericInstance != null, $"Couldn't find a member reference for type {typeWithGenericParam} when processing generic parameter {gp}.");
+                            Debug.Assert(genericInstance != null, $"Couldn't find a method reference for type {typeWithGenericParam} when processing generic parameter {gp}.");
 
                             _typeForGenericParam.Add(gp, genericInstance.GenericArguments.ElementAt(gp.Position));
                         }
