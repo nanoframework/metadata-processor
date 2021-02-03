@@ -36,10 +36,6 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
             {
                 return nanoClrTable.TBL_MethodSpec;
             }
-            else if (value.DeclaringType is TypeSpecification)
-            {
-                return nanoClrTable.TBL_TypeSpec;
-            }
             else if (value.Resolve() is MethodReference)
             {
                 if (value.DeclaringType.Scope.MetadataScopeType == MetadataScopeType.AssemblyNameReference)
@@ -52,6 +48,10 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
                     // method ref is internal
                     return nanoClrTable.TBL_MethodDef;
                 }
+            }
+            else if (value.DeclaringType is TypeSpecification)
+            {
+                return nanoClrTable.TBL_TypeSpec;
             }
             else
             {
