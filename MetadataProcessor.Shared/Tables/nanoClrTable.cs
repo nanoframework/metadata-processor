@@ -24,17 +24,16 @@ namespace nanoFramework.Tools.MetadataProcessor
         TBL_TypeDef = 0x00000004,
         TBL_FieldDef = 0x00000005,
         TBL_MethodDef = 0x00000006,
-        TBL_MemberRef = 0x00000007,
-        TBL_GenericParam = 0x00000008,
-        TBL_MethodSpec = 0x00000009,
-        TBL_TypeSpec = 0x0000000A,
-        TBL_Attributes = 0x0000000B,
-        TBL_Resources = 0x0000000C,
-        TBL_ResourcesData = 0x0000000D,
-        TBL_Strings = 0x0000000E,
-        TBL_Signatures = 0x0000000F,
-        TBL_ByteCode = 0x00000010,
-        TBL_ResourcesFiles = 0x00000011,
-        TBL_EndOfAssembly = 0x000000012
+        TBL_GenericParam = 0x00000007,
+        TBL_MethodSpec = 0x00000008,
+        TBL_TypeSpec = 0x00000009,
+        TBL_Attributes = 0x0000000A,
+        TBL_Resources = 0x0000000B,
+        TBL_ResourcesData = 0x0000000C,
+        TBL_Strings = 0x0000000D,
+        TBL_Signatures = 0x0000000E,
+        TBL_ByteCode = 0x000000F,
+        TBL_ResourcesFiles = 0x00000010,
+        TBL_EndOfAssembly = 0x000000011
     }
 }

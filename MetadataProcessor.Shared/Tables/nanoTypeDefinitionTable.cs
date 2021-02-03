@@ -116,10 +116,10 @@ namespace nanoFramework.Tools.MetadataProcessor
             WriteStringReference(writer, item.Namespace);
 
             // Extends
-            writer.WriteUInt16(GetTypeReferenceOrDefinitionId(item.BaseType));
+            writer.WriteUInt16(GetEncodedTypeReferenceOrDefinitionId(item.BaseType));
 
             // EnclosingType
-            writer.WriteUInt16(GetTypeReferenceOrDefinitionId(item.DeclaringType));
+            writer.WriteUInt16(GetEncodedTypeReferenceOrDefinitionId(item.DeclaringType));
 
             var fieldsList = item.Fields
                 .Where(field => !field.HasConstant)
@@ -328,7 +328,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             _context.StringTable.GetOrCreateStringId(method.Name);
         }
 
-        private ushort GetTypeReferenceOrDefinitionId(
+        private ushort GetEncodedTypeReferenceOrDefinitionId(
             TypeReference typeReference)
         {
             ushort tag;
@@ -338,16 +338,9 @@ namespace nanoFramework.Tools.MetadataProcessor
                 // check "nested inside" case
                 if (referenceId != 0xFFFF)
                 {
-                    // TypeDefOrRef tag is 1 (TypeRef)
-                    tag = 1;
+                    // is TypeRef
 
-                    // TypeDefOrRef tag is 2 bits
-                    referenceId = (ushort)(referenceId << 2);
-
-                    // OR with tag to form coded index
-                    referenceId |= tag;
-
-                    return referenceId;
+                    return  (ushort)(typeReference.ToEncodedNanoTypeDefOrRefToken() | referenceId);
                 }
             }
 
@@ -356,16 +349,9 @@ namespace nanoFramework.Tools.MetadataProcessor
                 // check "nested inside" case
                 if (referenceId != 0xFFFF)
                 {
-                    // TypeDefOrRef tag is 0 (TypeDef)
-                    tag = 0;
+                    // is TypeDef
 
-                    // TypeDefOrRef tag is 2 bits
-                    typeId = (ushort)(typeId << 2);
-
-                    // OR with tag to form coded index
-                    typeId |= tag;
-
-                    return typeId;
+                    return (ushort)(typeReference.Resolve().ToEncodedNanoTypeDefOrRefToken() | typeId);
                 }
             }
 

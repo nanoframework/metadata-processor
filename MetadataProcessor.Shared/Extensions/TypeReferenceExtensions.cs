@@ -323,19 +323,29 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
             {
                 return nanoClrTable.TBL_TypeDef;
             }
-            else if (value is TypeReference)
-            {
-                return nanoClrTable.TBL_TypeRef;
-            }
             else if (value is TypeSpecification)
             {
                 return nanoClrTable.TBL_TypeSpec;
+            }
+            else if (value is TypeReference)
+            {
+                return nanoClrTable.TBL_TypeRef;
             }
 
             else
             {
                 throw new ArgumentException("Unknown conversion to ClrTable.");
             }
+        }
+
+        public static ushort ToEncodedNanoTypeDefOrRefToken(this TypeReference value)
+        {
+            // implements .NET nanoFramework encoding for TypeToken
+            // CLR tables are
+            // 0: TBL_TypeDef
+            // 1: TBL_TypeRef
+
+            return nanoTokenHelpers.EncodeTableIndex(value.ToNanoClrTable(), nanoTokenHelpers.NanoTypeDefOrRefTokenTables);
         }
     }
 }

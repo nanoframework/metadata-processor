@@ -132,7 +132,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             MethodReferencesTable = new nanoMethodReferenceTable(
                 memberReferences.OfType<MethodReference>(), this);
 
-            MemberReferencesTable = new nanoMemberReferenceTable(memberReferences, this);
+            //MemberReferencesTable = new nanoMemberReferenceTable(memberReferences, this);
 
             // Internal types definitions
 
@@ -255,21 +255,11 @@ namespace nanoFramework.Tools.MetadataProcessor
                     }
                 }
             }
-            else if (memberReference is MethodSpecification &&
-                MethodSpecificationTable.TryGetMethodSpecificationId(memberReference as MethodSpecification, out referenceId))
-            {
-                // member reference is MethodSpecification
-            }
-            else if (memberReference.DeclaringType is TypeSpecification &&
-                    TypeSpecificationsTable.TryGetTypeReferenceId(memberReference.DeclaringType, out referenceId))
-            {
-                // member reference is TypeSpec
-            }
             else if (memberReference is MethodReference &&
-                MethodReferencesTable.TryGetMethodReferenceId(memberReference as MethodReference, out referenceId))
+                 MethodReferencesTable.TryGetMethodReferenceId(memberReference as MethodReference, out referenceId))
             {
                 // check if method is external
-                if(memberReference.DeclaringType.Scope.MetadataScopeType == MetadataScopeType.AssemblyNameReference)
+                if (memberReference.DeclaringType.Scope.MetadataScopeType == MetadataScopeType.AssemblyNameReference)
                 {
                     // method reference is external
                 }
@@ -284,6 +274,34 @@ namespace nanoFramework.Tools.MetadataProcessor
                     {
                         Debug.Fail($"Can't find method definition for {memberReference}");
                     }
+                }
+            }
+            else if (memberReference is MethodSpecification &&
+                    MethodSpecificationTable.TryGetMethodSpecificationId(memberReference as MethodSpecification, out referenceId))
+            {
+                // member reference is MethodSpecification
+            }
+            else if (memberReference.DeclaringType is TypeSpecification &&
+                    TypeSpecificationsTable.TryGetTypeReferenceId(memberReference.DeclaringType, out referenceId))
+            {
+                // member reference is TypeSpec
+
+                if (memberReference.ContainsGenericParameter)
+                {
+                    // try to search method in the declaring type
+
+                    var methodDefinition = MethodDefinitionTable.Items.FirstOrDefault(md => md.DeclaringType == memberReference.DeclaringType && md.Name == memberReference.Name);
+
+                    if (methodDefinition != null)
+                    {
+                        // method reference is internal
+                        MethodDefinitionTable.TryGetMethodReferenceId(methodDefinition, out referenceId);
+                    }
+                    else
+                    {
+                        // try now at method specification
+                    }
+
                 }
             }
             else
@@ -435,8 +453,6 @@ namespace nanoFramework.Tools.MetadataProcessor
         public nanoGenericParamTable GenericParamsTable { get; private set; }
 
         public nanoMethodSpecificationTable MethodSpecificationTable { get; private set; }
-
-        public nanoMemberReferenceTable MemberReferencesTable { get; private set; }
 
         public nanoMethodReferenceTable MethodReferencesTable { get; private set; }
 

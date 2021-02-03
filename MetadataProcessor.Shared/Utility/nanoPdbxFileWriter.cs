@@ -5,12 +5,14 @@
 //
 
 using Mono.Cecil;
+using nanoFramework.Tools.MetadataProcessor.Core;
 using nanoFramework.Tools.MetadataProcessor.Core.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Text;
 using System.Xml;
 
 namespace nanoFramework.Tools.MetadataProcessor
@@ -37,6 +39,12 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             writer.WriteStartElement("Classes");
             _context.TypeDefinitionTable.ForEachItems((token, item) => WriteClassInfo(writer, item, token));
+
+            writer.WriteStartElement("GenericParams");
+            _context.GenericParamsTable.ForEachItems((token, item) => WriteGenericParamInfo(writer, item, token));
+
+            writer.WriteStartElement("TypeSpecs");
+            _context.TypeSpecificationsTable.ForEachItems((token, item) => WriteTypeSpecInfo(writer, token, item));
 
             writer.WriteEndDocument();            
         }
@@ -168,6 +176,119 @@ namespace nanoFramework.Tools.MetadataProcessor
         }
 
         #endregion
+
+        #region GenericParams output
+
+        private void WriteGenericParamInfo(
+            XmlWriter writer, 
+            GenericParameter item, 
+            uint nanoClrItemToken)
+        {
+            writer.WriteStartElement("GenericParam");
+
+            writer.WriteAttributeString("Name", item.FullName);
+
+            WriteTokensPair(writer, item.MetadataToken.ToUInt32(), nanoClrTable.TBL_GenericParam.ToNanoTokenType() | nanoClrItemToken);
+
+            // GenericParam
+            writer.WriteEndElement();
+        }
+
+        #endregion
+
+        #region TypeSpecs output
+
+
+        private void WriteTypeSpecInfo(
+            XmlWriter writer, 
+            uint nanoClrItemToken, 
+            TypeReference item)
+        {
+            writer.WriteStartElement("TypeSpec");
+
+            if (item.IsGenericInstance)
+            {
+                writer.WriteAttributeString("Name", item.FullName);
+            }
+            else if (item.IsGenericParameter)
+            {
+                var genericParam = item as GenericParameter;
+
+                StringBuilder typeSpecName = new StringBuilder(item.MetadataType.ToString());
+
+                if (genericParam.Owner is TypeDefinition)
+                {
+                    typeSpecName.Append("!");
+                }
+                if (genericParam.Owner is MethodDefinition)
+                {
+                    typeSpecName.Append("!!");
+                }
+
+                typeSpecName.Append(genericParam.Owner.GenericParameters.IndexOf(genericParam));
+
+                writer.WriteAttributeString("Name", typeSpecName.ToString());
+            }
+
+            WriteTokensPair(writer, item.MetadataToken.ToUInt32(), nanoClrTable.TBL_TypeSpec.ToNanoTokenType() | nanoClrItemToken);
+
+            writer.WriteStartElement("Members");
+
+            if (item.IsGenericInstance)
+            {
+
+                foreach (var mr in _context.MethodReferencesTable.Items)
+                {
+                    if (_context.TypeSpecificationsTable.TryGetTypeReferenceId(mr.DeclaringType, out ushort referenceId) &&
+                        referenceId == nanoClrItemToken)
+                    {
+                        if (_context.MethodReferencesTable.TryGetMethodReferenceId(mr, out referenceId))
+                        {
+                            writer.WriteStartElement("Member");
+
+                            writer.WriteAttributeString("Name", mr.FullName.ToString());
+
+                            WriteTokensPair(writer, mr.MetadataToken.ToUInt32(), nanoClrTable.TBL_MethodRef.ToNanoTokenType() | nanoClrItemToken);
+
+                            // Member
+                            writer.WriteEndElement();
+                        }
+                    }
+                }
+
+                foreach (var ms in _context.MethodSpecificationTable.Items)
+                {
+                    if (_context.TypeSpecificationsTable.TryGetTypeReferenceId(ms.DeclaringType, out ushort referenceId) &&
+                        referenceId == nanoClrItemToken)
+                    {
+                        if (_context.MethodSpecificationTable.TryGetMethodSpecificationId(ms, out ushort methodSpecId))
+                        {
+                            writer.WriteStartElement("Member");
+
+                            writer.WriteAttributeString("Name", ms.FullName.ToString());
+
+                            WriteTokensPair(writer, ms.MetadataToken.ToUInt32(), nanoClrTable.TBL_MethodSpec.ToNanoTokenType() | nanoClrItemToken);
+
+                            // Member
+                            writer.WriteEndElement();
+                        }
+                    }
+                }
+            }
+            else if(item.IsGenericParameter)
+            {
+                writer.WriteElementString("IsGenericInstance", "false");
+            }
+
+            // Members
+            writer.WriteEndElement();
+
+            // TypeSpec
+            writer.WriteEndElement();
+        }
+
+        #endregion
+
         private void WriteTokensPair(
             XmlWriter writer,
             uint clrToken,

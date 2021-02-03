@@ -5,6 +5,7 @@
 //
 
 using Mono.Cecil;
+using nanoFramework.Tools.MetadataProcessor.Core.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -80,45 +81,31 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             var writerStartPosition = writer.BaseStream.Position;
 
-            ushort tag;
-
             if ((item.DeclaringType is TypeSpecification ||
                  item.DeclaringType is GenericParameter) &&
                 _context.TypeSpecificationsTable.TryGetTypeReferenceId(item.DeclaringType, out ushort referenceId))
             {
-                // MemberRefParent tag is 4 (TypeSpec)
-                tag = 4;
+                // methodReference is TypeSpecification
 
                 // get TypeSpec index
                 referenceId = _context.TypeSpecificationsTable.GetOrCreateTypeSpecificationId(item.DeclaringType);
             }
             else if (_context.TypeReferencesTable.TryGetTypeReferenceId(item.DeclaringType, out referenceId))
             {
-                // MemberRefParent tag is 1 (TypeRef)
-                tag = 1;
-            }
-            else if (_context.TypeDefinitionTable.TryGetTypeReferenceId(item.DeclaringType.Resolve(), out referenceId))
-            {
-                // MemberRefParent tag is 0 (TypeDef)
-                tag = 0;
+                // methodReference is TypeReference
             }
             else
             {
-                // developer note:
-                // The current implementation is lacking support for: ModuleRef and MethodDef
-
-                throw new ArgumentException($"Can't find entry in type reference table for {item.DeclaringType.FullName} for Method {item.FullName}.");
+                throw new ArgumentException($"Can't find a type reference for {item.DeclaringType}.");
             }
 
-            // MemberRefParent tag is 3 bits
-            referenceId = (ushort)(referenceId << 3);
-
-            // OR with tag to form coded index
-            referenceId |= tag;
-
+            // Name
             WriteStringReference(writer, item.Name);
-            writer.WriteUInt16(referenceId);
 
+            // Container
+            writer.WriteUInt16((ushort)(item.DeclaringType.ToEncodedNanoTypeToken() | referenceId));
+
+            // Signature
             writer.WriteUInt16(_context.SignaturesTable.GetOrCreateSignatureId(item));
 
             var writerEndPosition = writer.BaseStream.Position;

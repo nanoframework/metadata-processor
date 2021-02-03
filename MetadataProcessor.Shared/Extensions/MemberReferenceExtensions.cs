@@ -12,18 +12,17 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
 {
     internal static class MemberReferenceExtensions
     {
-         public static ushort ToEncodedNanoMethodToken(this MemberReference value)
+        public static ushort ToEncodedNanoMethodToken(this MemberReference value)
         {
             // implements .NET nanoFramework encoding for MethodToken
             // encodes Method to be decoded with CLR_UncompressMethodToken
             // CLR tables are
             // 0: TBL_MethodDef
             // 1: TBL_MethodRef
-            // 2: TBL_TypeDef
             // 3: TBL_TypeSpec
             // 4: TBL_MethodSpec
 
-            return nanoTokenHelpers.EncodeTableIndex(value.ToNanoClrTable(), nanoTokenHelpers.NanoMethodDefOrRefTokenTables);
+            return nanoTokenHelpers.EncodeTableIndex(value.ToNanoClrTable(), nanoTokenHelpers.NanoMemberRefTokenTables);
         }
 
         public static nanoClrTable ToNanoClrTable(this MemberReference value)

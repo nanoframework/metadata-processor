@@ -175,6 +175,17 @@ namespace nanoFramework.Tools.MetadataProcessor
             }
         }
 
+        public void ForEachItems(Action<uint, TypeReference> action)
+        {
+            foreach (var item in _idByTypeSpecifications.Select(
+                i => new KeyValuePair<ushort, TypeReference>(
+                    (ushort)_idSignatures.IndexOf(i.Value),
+                    i.Key)).Distinct(new TypeSpecBySignatureComparer()))
+            {
+                action(item.Key, item.Value);
+            }
+        }
+
         public IEnumerable<KeyValuePair<ushort, TypeReference>> GetItems()
         {
             return _idByTypeSpecifications.Select(

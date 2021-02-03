@@ -4,6 +4,7 @@
 //
 
 using Mono.Cecil;
+using nanoFramework.Tools.MetadataProcessor.Core.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -17,7 +18,7 @@ namespace nanoFramework.Tools.MetadataProcessor
     public sealed class nanoMethodSpecificationTable :
         nanoReferenceTableBase<MethodSpecification>
     {
-        private const int sizeOf_CLR_RECORD_METHODSPEC = 4;
+        private const int sizeOf_CLR_RECORD_METHODSPEC = 6;
 
         /// <summary>
         /// Helper class for comparing two instances of <see cref="MethodSpecification"/> objects
@@ -89,44 +90,28 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             var writerStartPosition = writer.BaseStream.Position;
 
-            ushort instantiation;
-            ushort tag;
-
-            if (_context.MethodDefinitionTable.TryGetMethodReferenceId(item.Resolve(), out ushort method))
+            // Method
+            if (_context.MethodDefinitionTable.TryGetMethodReferenceId(item.Resolve(), out ushort referenceId))
             {
-                // MethodDefOrRef tag is 0 (MethodDef)
-                tag = 0;
-
-                instantiation = _context.SignaturesTable.GetOrCreateSignatureId(item.Resolve());
+                // method is method definition
             }
-            else if (_context.TypeReferencesTable.TryGetTypeReferenceId(item.DeclaringType, out method))
-            {
-                // MethodDefOrRef tag is 1 (MemberRef)
-                tag = 1;
-
-                instantiation = _context.SignaturesTable.GetOrCreateSignatureId(item);
-            }
-            //else if (_context.FieldReferencesTable.TryGetFieldReferenceId(item.Resolve(), out method))
-            //{
-            //    // MethodDefOrRef tag is 1 (MemberRef)
-            //    tag = 1;
-
-            //    instantiation = _context.SignaturesTable.GetOrCreateSignatureId(item);
-            //}
             else
             {
-                throw new ArgumentException($"Can't find entry in method definition or reference tables for method '{item.FullName}' [0x{item.MetadataToken.ToInt32():x8}].");
+                Debug.Fail($"Can't find a reference for {item.Resolve()}");
             }
 
-            // MethodDefOrRef tag is 1 bit
-            method = (ushort)(method << 1);
+            writer.WriteUInt16((ushort)((item.Resolve() as MemberReference).ToEncodedNanoMethodToken() | referenceId));
 
-            // OR with tag to form coded index
-            method |= tag;
+            // Instantiation
+            writer.WriteUInt16(_context.SignaturesTable.GetOrCreateSignatureId(item));
 
-            writer.WriteUInt16(method);
+            // Container
+            if (_context.TypeSpecificationsTable.TryGetTypeReferenceId(item.DeclaringType, out referenceId))
+            {
+                // method is method definition
+            }
 
-            writer.WriteUInt16(instantiation);
+            writer.WriteUInt16(referenceId);
 
             var writerEndPosition = writer.BaseStream.Position;
 

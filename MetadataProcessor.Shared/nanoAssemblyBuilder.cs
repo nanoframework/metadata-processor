@@ -178,13 +178,11 @@ namespace nanoFramework.Tools.MetadataProcessor
             _tablesContext.FieldReferencesTable.RemoveUnusedItems(set);
             _tablesContext.MethodDefinitionTable.RemoveUnusedItems(set);
             _tablesContext.MethodReferencesTable.RemoveUnusedItems(set);
-            _tablesContext.MemberReferencesTable.RemoveUnusedItems(set);
             _tablesContext.TypeSpecificationsTable.RemoveUnusedItems(set);
             _tablesContext.TypeDefinitionTable.RemoveUnusedItems(set);
             _tablesContext.TypeDefinitionTable.ResetByteCodeOffsets();
             _tablesContext.AttributesTable.RemoveUnusedItems(set);
             _tablesContext.StringTable.RemoveUnusedItems(set);
-
 
             // renormalise type definitions look-up tables
             // by removing items that are not used
@@ -1134,7 +1132,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// <summary>
         /// Count of tables in the assembly
         /// </summary>
-        static public int TablesCount => 0x0013;
+        static public int TablesCount => 0x12;
 
         internal static IEnumerable<InanoTable> GetTables(
             nanoTablesContext context)
@@ -1143,9 +1141,9 @@ namespace nanoFramework.Tools.MetadataProcessor
             // order matters and must follow CLR_TABLESENUM //
             //////////////////////////////////////////////////
 
-            ////////////////////////////////////////////////////////
-            // update count property above when adding new tables //
-            ////////////////////////////////////////////////////////
+            //////////////////////////////////////////////////////////////
+            // update count property above whenever changing the tables //
+            //////////////////////////////////////////////////////////////
 
             yield return context.AssemblyReferenceTable;
 
@@ -1160,8 +1158,6 @@ namespace nanoFramework.Tools.MetadataProcessor
             yield return context.FieldsTable;
 
             yield return context.MethodDefinitionTable;
-
-            yield return context.MemberReferencesTable;
 
             yield return context.GenericParamsTable;
 

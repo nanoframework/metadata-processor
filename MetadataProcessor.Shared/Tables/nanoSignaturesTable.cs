@@ -106,22 +106,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         }
 
         /// <summary>
-        /// Gets existing or creates new singature identifier for method definition.
-        /// </summary>
-        /// <param name="methodDefinition">Method definition in Mono.Cecil format.</param>
-        public ushort GetOrCreateSignatureId(
-            MethodDefinition methodDefinition)
-        {
-            var sig = GetSignature(methodDefinition);
-            var sigId = GetOrCreateSignatureIdImpl(sig);
-
-            if (_verbose) Console.WriteLine($"{methodDefinition.MetadataToken.ToInt32()} -> {sig.BufferToHexString()} -> {sigId.ToString("X4")}");
-
-            return sigId;
-        }
-
-        /// <summary>
-        /// Gets existing or creates new singature identifier for field definition.
+        /// Gets existing or creates new signature identifier for field definition.
         /// </summary>
         /// <param name="fieldDefinition">Field definition in Mono.Cecil format.</param>
         public ushort GetOrCreateSignatureId(
@@ -150,7 +135,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         }
 
         /// <summary>
-        /// Gets existing or creates new singature identifier for field reference.
+        /// Gets existing or creates new signature identifier for field reference.
         /// </summary>
         /// <param name="fieldReference">Field reference in Mono.Cecil format.</param>
         public ushort GetOrCreateSignatureId(
@@ -165,7 +150,22 @@ namespace nanoFramework.Tools.MetadataProcessor
         }
 
         /// <summary>
-        /// Gets existing or creates new singature identifier for member reference.
+        /// Gets existing or creates new signature identifier for method definition.
+        /// </summary>
+        /// <param name="methodDefinition">Method definition in Mono.Cecil format.</param>
+        public ushort GetOrCreateSignatureId(
+            MethodDefinition methodDefinition)
+        {
+            var sig = GetSignature(methodDefinition);
+            var sigId = GetOrCreateSignatureIdImpl(sig);
+
+            if (_verbose) Console.WriteLine($"{methodDefinition.MetadataToken.ToInt32()} -> {sig.BufferToHexString()} -> {sigId.ToString("X4")}");
+
+            return sigId;
+        }
+
+        /// <summary>
+        /// Gets existing or creates new signature identifier for method reference.
         /// </summary>
         /// <param name="methodReference">Method reference in Mono.Cecil format.</param>
         public ushort GetOrCreateSignatureId(
@@ -180,7 +180,22 @@ namespace nanoFramework.Tools.MetadataProcessor
         }
 
         /// <summary>
-        /// Gets existing or creates new singature identifier for list of local variables.
+        /// Gets existing or creates new signature identifier for method specification.
+        /// </summary>
+        /// <param name="methodReference">Method reference in Mono.Cecil format.</param>
+        public ushort GetOrCreateSignatureId(
+            MethodSpecification methodSpecification)
+        {
+            var sig = GetSignature(methodSpecification);
+            var sigId = GetOrCreateSignatureIdImpl(sig);
+
+            if (_verbose) Console.WriteLine($"{methodSpecification.MetadataToken.ToInt32()} -> {sig.BufferToHexString()} -> {sigId.ToString("X4")}");
+
+            return sigId;
+        }
+
+        /// <summary>
+        /// Gets existing or creates new signature identifier for list of local variables.
         /// </summary>
         /// <param name="variables">List of variables information in Mono.Cecil format.</param>
         public ushort GetOrCreateSignatureId(
@@ -195,7 +210,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         }
 
         /// <summary>
-        /// Gets existing or creates new singature identifier for list of class interfaces.
+        /// Gets existing or creates new signature identifier for list of class interfaces.
         /// </summary>
         /// <param name="interfaces">List of interfaes information in Mono.Cecil format.</param>
         public ushort GetOrCreateSignatureId(
@@ -478,6 +493,35 @@ namespace nanoFramework.Tools.MetadataProcessor
                 foreach (var parameter in methodReference.Parameters)
                 {
                     WriteTypeInfo(parameter.ParameterType, binaryWriter);
+                }
+
+                return buffer.ToArray();
+            }
+        }
+
+        internal byte[] GetSignature(
+            MethodSpecification methodSpecification)
+        {
+            using (var buffer = new MemoryStream())
+            using (var writer = new BinaryWriter(buffer)) // Only Write(Byte) will be used
+            {
+                var binaryWriter = nanoBinaryWriter.CreateLittleEndianBinaryWriter(writer);
+
+                var genericInstance = methodSpecification as GenericInstanceMethod;
+
+                // implementation from ECMA-335 II.23.2.15
+
+                // method calling convention
+                // IMAGE_CEE_CS_CALLCONV_GENERICINST: 0x0A
+
+                writer.Write((byte)0x0A);
+
+                // generic arguments count
+                writer.Write((byte)(genericInstance.GenericArguments.Count));
+
+                foreach (var argument in genericInstance.GenericArguments)
+                {
+                    WriteTypeInfo(argument.GetElementType(), binaryWriter);
                 }
 
                 return buffer.ToArray();
