@@ -103,7 +103,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             var setNew = new HashSet<MetadataToken>();
             var set = new HashSet<MetadataToken>();
 
-            foreach (var t in _tablesContext.TypeDefinitionTable.TypeDefinitions)
+            foreach (var t in _tablesContext.TypeDefinitionTable.Items)
             {
                 if (!t.IsToExclude())
                 {

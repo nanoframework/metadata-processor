@@ -47,7 +47,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         private IDictionary<uint, List<Tuple<uint, uint>>> _byteCodeOffsets =
             new Dictionary<uint, List<Tuple<uint, uint>>>();
 
-        public List<TypeDefinition> TypeDefinitions { get; private set; }
+        private List<TypeDefinition> TypeDefinitions;
 
         public List<EnumDeclaration> EnumDeclarations { get; }
         
@@ -56,7 +56,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// <summary>
         /// Creates new instance of <see cref="nanoTypeDefinitionTable"/> object.
         /// </summary>
-        /// <param name="items">List of types definitins in Mono.Cecil format.</param>
+        /// <param name="items">List of types definitions in Mono.Cecil format.</param>
         /// <param name="context">
         /// Assembly tables context - contains all tables used for building target assembly.
         /// </param>
