@@ -45,9 +45,9 @@ namespace nanoFramework.Tools.MetadataProcessor
             _context.GenericParamsTable.ForEachItems((token, item) => WriteGenericParamInfo(writer, item, token));
             writer.WriteEndElement();
 
-            //writer.WriteStartElement("TypeSpecs");
-            //_context.TypeSpecificationsTable.ForEachItems((token, item) => WriteTypeSpecInfo(writer, token, item));
-            //writer.WriteEndElement();
+            writer.WriteStartElement("TypeSpecs");
+            _context.TypeSpecificationsTable.ForEachItems((token, item) => WriteTypeSpecInfo(writer, token, item));
+            writer.WriteEndElement();
 
             writer.WriteEndDocument();            
         }
