@@ -31,7 +31,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         public nanoTypeReferenceTable(
             IEnumerable<TypeReference> items,
             nanoTablesContext context)
-            : base(items, new TypeReferenceEqualityComparer(), context)
+            : base(items, new TypeReferenceEqualityComparer(context), context)
         {
         }
 
