@@ -4,8 +4,6 @@
 //
 
 using Mono.Cecil;
-using System;
-using System.Collections.Generic;
 using System.Text;
 
 namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
@@ -312,32 +310,6 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
             return nanoTokenHelpers.EncodeTableIndex(value.ToNanoClrTable(), nanoTokenHelpers.NanoTypeTokenTables);
         }
 
-        public static nanoClrTable ToNanoClrTable(this TypeReference value)
-        {
-            // this one has to be before the others because generic parameters are also "other" types
-            if (value is GenericParameter)
-            {
-                return nanoClrTable.TBL_GenericParam;
-            }
-            else if (value is TypeDefinition)
-            {
-                return nanoClrTable.TBL_TypeDef;
-            }
-            else if (value is TypeSpecification)
-            {
-                return nanoClrTable.TBL_TypeSpec;
-            }
-            else if (value is TypeReference)
-            {
-                return nanoClrTable.TBL_TypeRef;
-            }
-
-            else
-            {
-                throw new ArgumentException("Unknown conversion to ClrTable.");
-            }
-        }
-
         public static ushort ToEncodedNanoTypeDefOrRefToken(this TypeReference value)
         {
             // implements .NET nanoFramework encoding for TypeToken
@@ -346,6 +318,23 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
             // 1: TBL_TypeRef
 
             return nanoTokenHelpers.EncodeTableIndex(value.ToNanoClrTable(), nanoTokenHelpers.NanoTypeDefOrRefTokenTables);
+        }
+
+        ////////////////////////////////////////////
+
+        /// <summary>
+        /// Encodes a TypeReference or TypeSpecification to CLR_TypeRefOrSpec.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static ushort ToCLR_TypeRefOrSpec(this TypeReference value)
+        {
+            return nanoTokenHelpers.EncodeTableIndex(value.ToNanoClrTable(), nanoTokenHelpers.CLR_TypeRefOrSpecTables);
+        }
+
+        private static nanoClrTable ToNanoClrTable(this TypeReference value)
+        {
+            return nanoTokenHelpers.ConvertToNanoClrTable(value);
         }
 
         /// <summary>
