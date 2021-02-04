@@ -173,8 +173,15 @@ namespace nanoFramework.Tools.MetadataProcessor
             _items = usedItems;
         }
 
-        public virtual void AddItem(T value)
+        public virtual void AddItem(T value, int index = -1)
         {
+            // sanity check 
+            if(_idsByItemsDictionary.ContainsKey(value))
+            {
+                // already there
+                return;
+            }
+
             // need to recreate the items dictionary after adding this new one
 
             List<T> copyOfItems = new List<T>();
@@ -184,15 +191,24 @@ namespace nanoFramework.Tools.MetadataProcessor
                 copyOfItems.Add(i.Key);
             }
 
-            // add new item
-            copyOfItems.Add(value);
+            // add new item...
+            if (index > -1)
+            {
+                // index was specified, so make it happen
+                copyOfItems.Insert(index, value);
+            }
+            else
+            {
+                // no index specified, so just add it
+                copyOfItems.Add (value);
+            }
 
             // rebuild dictionary
             _idsByItemsDictionary = copyOfItems
                 .Select((reference,
-                         index) => new { reference, index })
+                         position) => new { reference, position })
                 .ToDictionary(item => item.reference,
-                              item => (ushort)item.index,
+                              item => (ushort)item.position,
                               _comparer);
 
             // repopulate items
