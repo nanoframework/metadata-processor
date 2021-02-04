@@ -41,7 +41,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
             //DumpModuleReferences(dumpTable);
             DumpTypeReferences(dumpTable);
             DumpTypeDefinitions(dumpTable);
-            DumpTypeSpecifications(dumpTable);
+            _tablesContext.TypeSpecificationsTable.ForEachItems((index, typeReference) => DumpTypeSpecifications(typeReference, dumpTable));
             DumpCustomAttributes(dumpTable);
             DumpStringHeap(dumpTable);
             DumpUserStrings(dumpTable);
@@ -561,101 +561,101 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
             }
         }
 
-        private void DumpTypeSpecifications(DumpAllTable dumpTable)
+        private void DumpTypeSpecifications(
+            TypeReference typeReference,
+            DumpAllTable dumpTable)
         {
-            foreach (var t in _tablesContext.TypeSpecificationsTable.GetItems())
+            
+            // get real token for the TypeSpec
+            string realToken = string.Empty;
+
+             _tablesContext.TypeSpecificationsTable.TryGetTypeReferenceId(typeReference, out ushort index);
+
+            var typeSpec = new TypeSpec();
+
+            // assume that real token index is the same as ours
+            // need to add one because ours is 0 indexed
+            realToken = new MetadataToken(TokenType.TypeSpec, index + 1).ToUInt32().ToString("X8");
+
+            typeSpec.ReferenceId = $"[{new nanoMetadataToken(nanoClrTable.TBL_TypeSpec, index)}] /*{realToken}*/";
+
+            // build name
+            StringBuilder typeSpecName = new StringBuilder();
+
+            if (typeReference is GenericParameter)
             {
-                // get real token for the TypeSpec
-                string realToken = string.Empty;
+                var genericParam = typeReference as GenericParameter;
 
-                _tablesContext.TypeSpecificationsTable.TryGetTypeReferenceId(t.Value, out ushort referenceId);
+                typeSpecName.Append(typeReference.MetadataType);
 
-                var typeSpec = new TypeSpec();
-
-                // assume that real token index is the same as ours
-                // need to add one because this is not 0 indexed
-                realToken = new MetadataToken(TokenType.TypeSpec, t.Key + 1).ToUInt32().ToString("X8");
-
-                typeSpec.ReferenceId = $"[{new nanoMetadataToken(nanoClrTable.TBL_TypeSpec, referenceId)}] /*{realToken}*/";
-
-                // build name
-                StringBuilder typeSpecName = new StringBuilder();
-
-                if (t.Value is GenericParameter)
+                if (genericParam.Owner is TypeDefinition)
                 {
-                    var genericParam = t.Value as GenericParameter;
-
-                    typeSpecName.Append(t.Value.MetadataType);
-
-                    if (genericParam.Owner is TypeDefinition)
-                    {
-                        typeSpecName.Append("!");
-                    }
-                    if (genericParam.Owner is MethodDefinition)
-                    {
-                        typeSpecName.Append("!!");
-                    }
-
-                    typeSpecName.Append(genericParam.Owner.GenericParameters.IndexOf(genericParam));
-
-                    typeSpec.Name = typeSpecName.ToString();
+                    typeSpecName.Append("!");
                 }
-                else if (t.Value is GenericInstanceType)
+                if (genericParam.Owner is MethodDefinition)
                 {
-                    // type is a GenericInstance
-                    // can't compare with Cecil MetadataToken because the tables have been cleaned-up and re-indexed
-
-                    typeSpec.Name = t.Value.FullName;
-
-                    foreach (var mr in _tablesContext.MethodReferencesTable.Items)
-                    {
-                        if (_tablesContext.TypeSpecificationsTable.TryGetTypeReferenceId(mr.DeclaringType, out referenceId) &&
-                            referenceId == t.Key)
-                        {
-                            var memberRef = new MemberRef()
-                            {
-                                Name = mr.Name
-                            };
-
-                            if (_tablesContext.MethodReferencesTable.TryGetMethodReferenceId(mr, out ushort memberRefId))
-                            {
-                                realToken = mr.MetadataToken.ToInt32().ToString("X8");
-
-                                memberRef.ReferenceId = $"[{new nanoMetadataToken(nanoClrTable.TBL_MethodRef, memberRefId)}] /*{realToken}*/";
-                                memberRef.Signature = PrintSignatureForMethod(mr);
-                            }
-
-                            typeSpec.MemberReferences.Add(memberRef);
-                        }
-                    }
-
-                    foreach (var ms in _tablesContext.MethodSpecificationTable.Items)
-                    {
-                        if (_tablesContext.TypeSpecificationsTable.TryGetTypeReferenceId(ms.DeclaringType, out referenceId) &&
-                            referenceId == t.Key)
-                        {
-                            var memberRef = new MemberRef()
-                            {
-                                Name = ms.Name
-                            };
-
-                            if (_tablesContext.MethodSpecificationTable.TryGetMethodSpecificationId(ms, out ushort methodSpecId))
-                            {
-                                realToken = ms.MetadataToken.ToInt32().ToString("X8");
-
-                                memberRef.ReferenceId = $"[{new nanoMetadataToken(nanoClrTable.TBL_MethodSpec, methodSpecId)}] /*{realToken}*/";
-                                memberRef.Signature = PrintSignatureForMethod(ms);
-                            }
-
-                            typeSpec.MemberReferences.Add(memberRef);
-                        }
-                    }
-
-                    Debug.Assert(typeSpec.MemberReferences.Count > 0, $"Couldn't find any MethodRef for TypeSpec[{t.Value}] {t.Value.FullName}");
+                    typeSpecName.Append("!!");
                 }
 
-                dumpTable.TypeSpecifications.Add(typeSpec);
+                typeSpecName.Append(genericParam.Owner.GenericParameters.IndexOf(genericParam));
+
+                typeSpec.Name = typeSpecName.ToString();
             }
+            else if (typeReference is GenericInstanceType)
+            {
+                // type is a GenericInstance
+                // can't compare with Cecil MetadataToken because the tables have been cleaned-up and re-indexed
+
+                typeSpec.Name = typeReference.FullName;
+
+                foreach (var mr in _tablesContext.MethodReferencesTable.Items)
+                {
+                    if (_tablesContext.TypeSpecificationsTable.TryGetTypeReferenceId(mr.DeclaringType, out ushort referenceId) &&
+                        referenceId == index)
+                    {
+                        var memberRef = new MemberRef()
+                        {
+                            Name = mr.Name
+                        };
+
+                        if (_tablesContext.MethodReferencesTable.TryGetMethodReferenceId(mr, out ushort memberRefId))
+                        {
+                            realToken = mr.MetadataToken.ToInt32().ToString("X8");
+
+                            memberRef.ReferenceId = $"[{new nanoMetadataToken(nanoClrTable.TBL_MethodRef, memberRefId)}] /*{realToken}*/";
+                            memberRef.Signature = PrintSignatureForMethod(mr);
+                        }
+
+                        typeSpec.MemberReferences.Add(memberRef);
+                    }
+                }
+
+                foreach (var ms in _tablesContext.MethodSpecificationTable.Items)
+                {
+                    if (_tablesContext.TypeSpecificationsTable.TryGetTypeReferenceId(ms.DeclaringType, out ushort referenceId) &&
+                        referenceId == index)
+                    {
+                        var memberRef = new MemberRef()
+                        {
+                            Name = ms.Name
+                        };
+
+                        if (_tablesContext.MethodSpecificationTable.TryGetMethodSpecificationId(ms, out ushort methodSpecId))
+                        {
+                            realToken = ms.MetadataToken.ToInt32().ToString("X8");
+
+                            memberRef.ReferenceId = $"[{new nanoMetadataToken(nanoClrTable.TBL_MethodSpec, methodSpecId)}] /*{realToken}*/";
+                            memberRef.Signature = PrintSignatureForMethod(ms);
+                        }
+
+                        typeSpec.MemberReferences.Add(memberRef);
+                    }
+                }
+
+                Debug.Assert(typeSpec.MemberReferences.Count > 0, $"Couldn't find any MethodRef for TypeSpec[{typeReference}] {typeReference.FullName}");
+            }
+
+            dumpTable.TypeSpecifications.Add(typeSpec);
         }
 
 
