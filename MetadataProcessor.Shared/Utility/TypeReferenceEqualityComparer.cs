@@ -15,6 +15,10 @@ namespace nanoFramework.Tools.MetadataProcessor
     /// </summary>
     public sealed class TypeReferenceEqualityComparer : IEqualityComparer<TypeReference>
     {
+        private readonly nanoTablesContext _context;
+
+        public TypeReferenceEqualityComparer(nanoTablesContext context) => _context = context;
+
         /// <inheritdoc/>
         public bool Equals(TypeReference x, TypeReference y)
         {
@@ -28,7 +32,38 @@ namespace nanoFramework.Tools.MetadataProcessor
                 throw new ArgumentNullException(nameof(y));
             }
 
-            return string.Equals(x.FullName, y.FullName, StringComparison.Ordinal);
+            if (x is TypeSpecification &&
+                !(y is TypeSpecification))
+            {
+                return false;
+            }
+            else if (y is TypeSpecification &&
+                !(x is TypeSpecification))
+            {
+                return false;
+            }
+            else if (x is TypeSpecification &&
+                     y is TypeSpecification)
+            {
+                // get signatures to perform comparison
+                ushort xSignatureId = _context.SignaturesTable.GetOrCreateSignatureId(x);
+                ushort ySignatureId = _context.SignaturesTable.GetOrCreateSignatureId(y);
+
+                return xSignatureId == ySignatureId;
+            }
+            else if (x is GenericParameter && y is GenericParameter)
+            {
+                // comparison is made with type and position
+                var xGenericParam = x as GenericParameter;
+                var yGenericParam = y as GenericParameter;
+
+                return (xGenericParam.Type == yGenericParam.Type) &&
+                    (xGenericParam.Position == yGenericParam.Position);
+            }
+            else
+            {
+                return x.MetadataToken == y.MetadataToken;
+            }
         }
 
         /// <inheritdoc/>
@@ -39,7 +74,26 @@ namespace nanoFramework.Tools.MetadataProcessor
                 throw new ArgumentNullException(nameof(obj));
             }
 
-            return obj.FullName.GetHashCode();
+            if(obj is TypeSpecification)
+            {
+                ushort xSignatureId = _context.SignaturesTable.GetOrCreateSignatureId(obj);
+
+                // provide an hash code based on the TypeSpec signature 
+                return xSignatureId;
+            }
+            else if (obj is GenericParameter)
+            {
+                // provide an hash code based on the generic parameter position and type, 
+                // which is what makes it unique when comparing GenericParameter as a TypeReference
+                var genericParam = obj as GenericParameter;
+
+                return genericParam.Position * 10 + (int)genericParam.Type;
+            }
+            else
+            {
+                // provide an hash code from the metadatatoken
+                return obj.MetadataToken.GetHashCode();
+            }
         }
     }
 }
