@@ -78,21 +78,27 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             var writerStartPosition = writer.BaseStream.Position;
 
+            // name
+            WriteStringReference(writer, item.Name);
+
+            // owner
             if (_context.TypeReferencesTable.TryGetTypeReferenceId(item.DeclaringType, out ushort referenceId))
             {
-                // name
-                WriteStringReference(writer, item.Name);
-
-                // owner
                 writer.WriteUInt16(referenceId);
-
-                // signature
-                writer.WriteUInt16(_context.SignaturesTable.GetOrCreateSignatureId(item));
+            }
+            else if(item.FieldType is GenericParameter &&
+                _context.GenericParamsTable.TryGetParameterId(item.FieldType, out referenceId))
+            {
+                // TODO
+                writer.WriteUInt16(referenceId);
             }
             else
             {
                 throw new ArgumentException($"Can't find entry in type reference table for Field {item.FullName}.");
             }
+
+            // signature
+            writer.WriteUInt16(_context.SignaturesTable.GetOrCreateSignatureId(item));
 
             var writerEndPosition = writer.BaseStream.Position;
 
