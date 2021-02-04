@@ -114,7 +114,7 @@
     <Compile Include="Tables\nanoTypeDefinitionTable.cs" />
     <Compile Include="Tables\nanoTypeReferenceTable.cs" />
     <Compile Include="Tables\nanoTypeSpecificationsTable.cs" />
-    <Compile Include="Tables\TypeReferenceEqualityComparer.cs" />
+    <Compile Include="Utility\TypeReferenceEqualityComparer.cs" />
     <Compile Include="Utility\FixTypeNames.cs" />
     <Compile Include="Utility\Crc32.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
