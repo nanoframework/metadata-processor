@@ -85,11 +85,11 @@ namespace nanoFramework.Tools.MetadataProcessor
                  item.DeclaringType is GenericParameter) &&
                 _context.TypeSpecificationsTable.TryGetTypeReferenceId(item.DeclaringType, out ushort referenceId))
             {
-                // methodReference is TypeSpecification
+                // is TypeSpecification
             }
             else if (_context.TypeReferencesTable.TryGetTypeReferenceId(item.DeclaringType, out referenceId))
             {
-                // methodReference is TypeReference
+                // is TypeReference
             }
             else
             {
@@ -99,8 +99,8 @@ namespace nanoFramework.Tools.MetadataProcessor
             // Name
             WriteStringReference(writer, item.Name);
 
-            // Container
-            writer.WriteUInt16((ushort)(item.DeclaringType.ToEncodedNanoTypeToken() | referenceId));
+            // Owner
+            writer.WriteUInt16((ushort)(item.DeclaringType.ToCLR_TypeRefOrSpec() | referenceId));
 
             // Signature
             writer.WriteUInt16(_context.SignaturesTable.GetOrCreateSignatureId(item));
@@ -108,7 +108,6 @@ namespace nanoFramework.Tools.MetadataProcessor
             var writerEndPosition = writer.BaseStream.Position;
 
             Debug.Assert((writerEndPosition - writerStartPosition) == sizeOf_CLR_RECORD_METHODREF);
-
         }
     }
 }
