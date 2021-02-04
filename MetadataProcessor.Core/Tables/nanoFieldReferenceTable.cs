@@ -5,6 +5,7 @@
 //
 
 using Mono.Cecil;
+using nanoFramework.Tools.MetadataProcessor.Core.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -78,24 +79,26 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             var writerStartPosition = writer.BaseStream.Position;
 
-            // name
-            WriteStringReference(writer, item.Name);
-
-            // owner
-            if (_context.TypeReferencesTable.TryGetTypeReferenceId(item.DeclaringType, out ushort referenceId))
+            if ((item.DeclaringType is TypeSpecification ||
+                 item.DeclaringType is GenericParameter) &&
+                _context.TypeSpecificationsTable.TryGetTypeReferenceId(item.DeclaringType, out ushort referenceId))
             {
-                writer.WriteUInt16(referenceId);
+                // is TypeSpecification
             }
-            else if(item.FieldType is GenericParameter &&
-                _context.GenericParamsTable.TryGetParameterId(item.FieldType, out referenceId))
+            else if (_context.TypeReferencesTable.TryGetTypeReferenceId(item.DeclaringType, out referenceId))
             {
-                // TODO
-                writer.WriteUInt16(referenceId);
+                // is TypeReference
             }
             else
             {
-                throw new ArgumentException($"Can't find entry in type reference table for Field {item.FullName}.");
+                throw new ArgumentException($"Can't find a type reference for {item.DeclaringType}.");
             }
+
+            // Name
+            WriteStringReference(writer, item.Name);
+
+            // Owner
+            writer.WriteUInt16((ushort)(item.DeclaringType.ToCLR_TypeRefOrSpec() | referenceId));
 
             // signature
             writer.WriteUInt16(_context.SignaturesTable.GetOrCreateSignatureId(item));
