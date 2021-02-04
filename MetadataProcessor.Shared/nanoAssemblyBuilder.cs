@@ -356,7 +356,24 @@ namespace nanoFramework.Tools.MetadataProcessor
 
                         if (mr.DeclaringType != null)
                         {
-                            set.Add(mr.DeclaringType.MetadataToken);
+                            if (mr.DeclaringType is TypeSpecification)
+                            {
+                                // Cecil.Mono has a bug providing TypeSpecs Metadata tokens generic parameters variables, so we need to check against our internal table and build one from it
+                                if(_tablesContext.TypeSpecificationsTable.TryGetTypeReferenceId(mr.DeclaringType, out ushort referenceId))
+                                {
+                                    set.Add(new MetadataToken(
+                                        TokenType.TypeSpec,
+                                        referenceId));
+                                }
+                                else
+                                {
+                                    Debug.Fail($"Couldn't find a TypeSpec entry for {mr.DeclaringType}");
+                                }
+                            }
+                            else
+                            {
+                                set.Add(mr.DeclaringType.MetadataToken);
+                            }
                         }
 
                         if (mr.MethodReturnType.ReturnType.IsValueType &&
@@ -440,9 +457,25 @@ namespace nanoFramework.Tools.MetadataProcessor
                         {
                             if (fr.DeclaringType != null)
                             {
-                                set.Add(fr.DeclaringType.MetadataToken);
+                                if (fr.DeclaringType is TypeSpecification)
+                                {
+                                    // Cecil.Mono has a bug providing TypeSpecs Metadata tokens generic parameters variables, so we need to check against our internal table and build one from it
+                                    if (_tablesContext.TypeSpecificationsTable.TryGetTypeReferenceId(fr.DeclaringType, out ushort referenceId))
+                                    {
+                                        set.Add(new MetadataToken(
+                                            TokenType.TypeSpec,
+                                            referenceId));
+                                    }
+                                    else
+                                    {
+                                        Debug.Fail($"Couldn't find a TypeSpec entry for {fr.DeclaringType}");
+                                    }
+                                }
+                                else
+                                {
+                                    set.Add(fr.DeclaringType.MetadataToken);
+                                }
                             }
-
 
                             if (fr.FieldType.MetadataType == MetadataType.Class)
                             {
@@ -764,12 +797,18 @@ namespace nanoFramework.Tools.MetadataProcessor
                             }
                             else if (v.VariableType is GenericInstanceType)
                             {
-                                set.Add(v.VariableType.MetadataToken);
-                                set.Add(v.VariableType.GetElementType().MetadataToken);
-
-                                if (v.VariableType is TypeSpecification)
+                                // Cecil.Mono has a bug providing TypeSpecs Metadata tokens generic parameters variables, so we need to check against our internal table and build one from it
+                                if (_tablesContext.TypeSpecificationsTable.TryGetTypeReferenceId(v.VariableType, out ushort referenceId))
                                 {
-                                    _tablesContext.TypeSpecificationsTable.GetOrCreateTypeSpecificationId(v.VariableType);
+                                    set.Add(new MetadataToken(
+                                        TokenType.TypeSpec,
+                                        referenceId));
+
+                                    set.Add(v.VariableType.GetElementType().MetadataToken);
+                                }
+                                else
+                                {
+                                    Debug.Fail($"Couldn't find a TypeSpec entry for {v.VariableType}");
                                 }
                             }
                             else if(v.VariableType.IsPointer)
@@ -795,8 +834,17 @@ namespace nanoFramework.Tools.MetadataProcessor
                                     if(methodReferenceType.DeclaringType != null &&
                                        methodReferenceType.DeclaringType.IsGenericInstance)
                                     {
-                                        set.Add(methodReferenceType.DeclaringType.MetadataToken);
-                                    _tablesContext.TypeSpecificationsTable.GetOrCreateTypeSpecificationId(methodReferenceType.DeclaringType);
+                                        // Cecil.Mono has a bug providing TypeSpecs Metadata tokens generic parameters variables, so we need to check against our internal table and build one from it
+                                        if (_tablesContext.TypeSpecificationsTable.TryGetTypeReferenceId(methodReferenceType.DeclaringType, out referenceId))
+                                        {
+                                            set.Add(new MetadataToken(
+                                                TokenType.TypeSpec,
+                                                referenceId));
+                                        }
+                                        else
+                                        {
+                                            Debug.Fail($"Couldn't find a TypeSpec entry for {methodReferenceType.DeclaringType}");
+                                        }
                                     }
                                 }
                                 //else
@@ -826,12 +874,6 @@ namespace nanoFramework.Tools.MetadataProcessor
 
                                 var opToken = ((IMetadataTokenProvider)i.Operand).MetadataToken;
                                 set.Add(opToken);
-
-                                if (opToken.TokenType == TokenType.TypeSpec ||
-                                    opType is GenericParameter)
-                                {
-                                    _tablesContext.TypeSpecificationsTable.GetOrCreateTypeSpecificationId(opType);
-                                }
                             }
                             else if (i.Operand is string)
                             {
