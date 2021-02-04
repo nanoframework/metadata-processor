@@ -102,6 +102,10 @@ namespace TestNFApp
 
     class GenericClass<T>
     {
+        public int NativeField;
+
+        public T GenericField;
+
         public void InstanceGenericDoOne(T t)
         {
             T v = t;
@@ -154,15 +158,23 @@ namespace TestNFApp
             Debug.WriteLine("++++++++++++++++++++");
             Debug.WriteLine("");
 
-            var m = new GenericClass<int>();
-            m.InstanceGenericDoOne(1);
-            m.InstanceGenericDoTwo(1, "ONE");
-            m.InstanceGenericDoOneOther(true);
 
-            var m2 = new GenericClass<string>();
-            m2.InstanceGenericDoOne("ONE");
-            m2.InstanceGenericDoTwo("ONE", "TWO");
-            m2.InstanceGenericDoOneOther(true);
+            var other = new ClassDoString();
+            other.Do1();
+            other.Do2();
+
+            var gc1 = new GenericClass<int>();
+            gc1.InstanceGenericDoOne(1);
+            gc1.InstanceGenericDoTwo(1, "TWO");
+            gc1.InstanceGenericDoOneOther(false);
+            gc1.GenericField = 10;
+
+
+            var gc2 = new GenericClass<string>();
+            gc2.InstanceGenericDoOne("ONE");
+            gc2.InstanceGenericDoTwo("ONE", "TWO");
+            gc2.InstanceGenericDoOneOther(33.33);
+            gc2.GenericField = "TEN";
 
             StaticGenericDo(new ClassDoInt(), new ClassDoString());
 
