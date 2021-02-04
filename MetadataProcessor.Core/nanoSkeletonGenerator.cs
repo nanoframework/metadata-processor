@@ -87,7 +87,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                 IsInterop = !_withoutInteropCode
             };
 
-            foreach (var c in _tablesContext.TypeDefinitionTable.TypeDefinitions)
+            foreach (var c in _tablesContext.TypeDefinitionTable.Items)
             {
                 if (c.IncludeInStub() && 
                     !c.IsToExclude())
