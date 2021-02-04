@@ -160,8 +160,6 @@ namespace nanoFramework.Tools.MetadataProcessor
                 GetAttributes(methods, applyAttributesCompression),
                 this);
 
-            TypeSpecificationsTable = new nanoTypeSpecificationsTable(this);
-
             // Resources information
 
             ResourcesTable = new nanoResourcesTable(
@@ -197,6 +195,8 @@ namespace nanoFramework.Tools.MetadataProcessor
                             .ToList();
 
             GenericParamsTable = new nanoGenericParamTable(generics, this);
+
+            TypeSpecificationsTable = new nanoTypeSpecificationsTable(this);
 
             // Pre-allocate strings from some tables
             AssemblyReferenceTable.AllocateStrings();
@@ -381,8 +381,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             if (typeReference is TypeSpecification &&
                 TypeSpecificationsTable.TryGetTypeReferenceId(typeReference, out ushort referenceId))
             {
-                // get TypeSpec index
-                referenceId = TypeSpecificationsTable.GetOrCreateTypeSpecificationId(typeReference);
+                // is TypeSpec
             }
             else if (typeReference is GenericParameter &&
                     GenericParamsTable.TryGetParameterId(typeReference as GenericParameter, out referenceId))
@@ -654,6 +653,11 @@ namespace nanoFramework.Tools.MetadataProcessor
         internal void ResetSignaturesTable()
         {
             SignaturesTable = new nanoSignaturesTable(this);
+        }
+
+        internal void ResetTypeSpecificationsTable()
+        {
+            TypeSpecificationsTable = new nanoTypeSpecificationsTable(this);
         }
 
         internal void ResetResourcesTables()
