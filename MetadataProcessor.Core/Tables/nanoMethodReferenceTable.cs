@@ -86,9 +86,6 @@ namespace nanoFramework.Tools.MetadataProcessor
                 _context.TypeSpecificationsTable.TryGetTypeReferenceId(item.DeclaringType, out ushort referenceId))
             {
                 // methodReference is TypeSpecification
-
-                // get TypeSpec index
-                referenceId = _context.TypeSpecificationsTable.GetOrCreateTypeSpecificationId(item.DeclaringType);
             }
             else if (_context.TypeReferencesTable.TryGetTypeReferenceId(item.DeclaringType, out referenceId))
             {

@@ -5,6 +5,7 @@
 //
 
 using Mono.Cecil;
+using Mono.Cecil.Cil;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -21,13 +22,13 @@ namespace nanoFramework.Tools.MetadataProcessor
         private const int sizeOf_CLR_RECORD_TYPESPEC = 2;
 
         /// <summary>
-        /// Helper class for comparing two instances of <see cref="TypeReference"/> objects
-        /// using <see cref="TypeReference.FullName"/> property as unique key for comparison.
+        /// Helper class for comparing two instances of <see cref="TypeSpecification"/> objects
+        /// using <see cref="TypeSpecification.MetadataToken"/> property as unique key for comparison.
         /// </summary>
-        private sealed class TypeReferenceComparer : IEqualityComparer<TypeReference>
+        private sealed class TypeSpecificationEqualityComparer : IEqualityComparer<TypeSpecification>
         {
             /// <inheritdoc/>
-            public bool Equals(TypeReference x, TypeReference y)
+            public bool Equals(TypeSpecification x, TypeSpecification y)
             {
                 if (x is null)
                 {
@@ -39,13 +40,18 @@ namespace nanoFramework.Tools.MetadataProcessor
                     throw new ArgumentNullException(nameof(y));
                 }
 
-                return x.MetadataToken == y.MetadataToken;
+                return string.Equals(x.MetadataToken, y.MetadataToken);
             }
 
             /// <inheritdoc/>
-            public int GetHashCode(TypeReference that)
+            public int GetHashCode(TypeSpecification obj)
             {
-                return that.MetadataToken.GetHashCode();
+                if (obj is null)
+                {
+                    throw new ArgumentNullException(nameof(obj));
+                }
+
+                return obj.MetadataToken.GetHashCode();
             }
         }
 
@@ -66,14 +72,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// <summary>
         /// Maps for each unique type specification and related identifier.
         /// </summary>
-        private Dictionary<TypeReference, ushort> _idByTypeSpecifications =
-            new Dictionary<TypeReference, ushort>(new TypeReferenceComparer());
-
-
-        /// <summary>
-        /// Maps for each unique type specification and related identifier.
-        /// </summary>
-        private List<ushort> _idSignatures = new List<ushort>();
+        private Dictionary<TypeReference, ushort> _idByTypeSpecifications;
 
         /// <summary>
         /// Assembly tables context - contains all tables used for building target assembly.
@@ -116,26 +115,18 @@ namespace nanoFramework.Tools.MetadataProcessor
 
                 _idByTypeSpecifications.Add(typeReference, _lastAvailableId);
 
-                if(!_idSignatures.Contains(signatureId))
-                {
-                    _idSignatures.Add(signatureId);
+            _idByTypeSpecifications = new Dictionary<TypeReference, ushort>(new TypeReferenceEqualityComparer(context));
 
-                    // if this is a generic type instance, add it to type definitions too
-                    if (typeReference.IsGenericInstance)
-                    {
-                        _context.TypeDefinitionTable.AddGenericInstanceType(typeReference);
-                    }
-                }
-            }
+            FillTypeSpecsFromTypes(_context.TypeDefinitionTable.Items);
 
-            return (ushort)_idSignatures.IndexOf(signatureId);
+            FillTypeSpecsFromMemberReferences(_context.MemberReferencesTable.Items.Where(mr => mr.DeclaringType is TypeSpecification));
         }
 
         /// <summary>
-        /// Gets type specification identifier (if it already added into type specifications list).
+        /// Gets type specification identifier.
         /// </summary>
         /// <param name="typeReference">Type reference in Mono.Cecil format.</param>
-        /// <param name="referenceId">Type reference identifier for filling.</param>
+        /// <param name="referenceId">Type Specification identifier for filling.</param>
         /// <returns>Returns <c>true</c> if item found, otherwise returns <c>false</c>.</returns>
         public bool TryGetTypeReferenceId(
             TypeReference typeReference,
@@ -143,7 +134,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         {
             if(_idByTypeSpecifications.TryGetValue(typeReference, out referenceId))
             {
-                referenceId = (ushort)_idSignatures.IndexOf(referenceId);
+                referenceId = (ushort)Array.IndexOf(_idByTypeSpecifications.Values.ToArray(), referenceId);
 
                 return true;
             }
@@ -153,15 +144,7 @@ namespace nanoFramework.Tools.MetadataProcessor
 
         public TypeReference TryGetTypeSpecification(MetadataToken token)
         {
-            foreach (var t in _idByTypeSpecifications)
-            {
-                if(t.Key.MetadataToken == token)
-                {
-                    return t.Key;
-                }
-            }
-
-            return null;
+            return _idByTypeSpecifications.ElementAtOrDefault((int)token.RID).Key;
         }
 
         /// <inheritdoc/>
@@ -169,11 +152,11 @@ namespace nanoFramework.Tools.MetadataProcessor
             nanoBinaryWriter writer)
         {
 
-            foreach (var item in GetItems())
+            foreach (var item in _idByTypeSpecifications)
             {
                 var writerStartPosition = writer.BaseStream.Position;
 
-                writer.WriteUInt16(item.Key);
+                writer.WriteUInt16(item.Value);
 
                 var writerEndPosition = writer.BaseStream.Position;
 
@@ -183,45 +166,52 @@ namespace nanoFramework.Tools.MetadataProcessor
 
         public void ForEachItems(Action<uint, TypeReference> action)
         {
-            foreach (var item in _idByTypeSpecifications.Select(
-                i => new KeyValuePair<ushort, TypeReference>(
-                    (ushort)_idSignatures.IndexOf(i.Value),
-                    i.Key)).Distinct(new TypeSpecBySignatureComparer()))
+            foreach (var item in _idByTypeSpecifications)
             {
-                action(item.Key, item.Value);
+                action(item.Value, item.Key);
             }
         }
 
-        public IEnumerable<KeyValuePair<ushort, TypeReference>> GetItems()
+        private void FillTypeSpecsFromMemberReferences(IEnumerable<MemberReference> members)
         {
-            return _idByTypeSpecifications.Select(
-                i => new KeyValuePair<ushort, TypeReference>(
-                    (ushort)_idSignatures.IndexOf(i.Value),
-                    i.Key)).Distinct(new TypeSpecBySignatureComparer());
+            List<TypeSpecification> typeSpecs = new List<TypeSpecification>();
+
+            foreach (var m in members)
+            {
+                if (!typeSpecs.Contains(m.DeclaringType as TypeSpecification, new TypeSpecificationEqualityComparer()))
+                {
+                    typeSpecs.Add(m.DeclaringType as TypeSpecification);
+
+                    // get index of signature for the TypeSpecification 
+                    ushort signatureId = _context.SignaturesTable.GetOrCreateSignatureId(m.DeclaringType);
+
+                    if (!_idByTypeSpecifications.TryGetValue(m.DeclaringType, out ushort referenceId))
+                    {
+                        // is not on the list yet, add it
+                        _idByTypeSpecifications.Add(m.DeclaringType, signatureId);
+                    }
+                }
+            }
         }
 
-        internal void RemoveUnusedItems(HashSet<MetadataToken> set)
+        private void FillTypeSpecsFromTypes(IEnumerable<TypeDefinition> types)
         {
-            // build a collection of the current items that are present in the used items set
-            List<TypeReference> usedItems = new List<TypeReference>();
-
-            foreach (var item in _idByTypeSpecifications
-                                    .Where(item => set.Contains(item.Key.MetadataToken)))
+            foreach (var t in types)
             {
-                usedItems.Add(item.Key);
-            }
+                foreach(var m in t.Methods.Where(i => i.HasBody))
+                {
+                    foreach (var i in m.Body.Instructions.Where(i => i.Operand is GenericParameter))
+                    {
+                        // get index of signature for the TypeSpecification 
+                        ushort signatureId = _context.SignaturesTable.GetOrCreateSignatureId(i.Operand as GenericParameter);
 
-            // reset dictionary
-            _idByTypeSpecifications = new Dictionary<TypeReference, ushort>(
-                new TypeReferenceComparer());
-
-            // reset list
-            _idSignatures = new List<ushort>();
-
-            // rebuild
-            foreach (var item in usedItems)
-            {
-                GetOrCreateTypeSpecificationId(item);
+                        if (!_idByTypeSpecifications.TryGetValue(i.Operand as GenericParameter, out ushort referenceId))
+                        {
+                            // is not on the list yet, add it
+                            _idByTypeSpecifications.Add(i.Operand as GenericParameter, signatureId);
+                        }
+                    }
+                }
             }
         }
     }

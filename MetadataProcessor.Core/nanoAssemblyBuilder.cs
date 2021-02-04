@@ -180,8 +180,8 @@ namespace nanoFramework.Tools.MetadataProcessor
             _tablesContext.MethodDefinitionTable.RemoveUnusedItems(set);
             _tablesContext.MethodReferencesTable.RemoveUnusedItems(set);
             _tablesContext.TypeDefinitionTable.RemoveUnusedItems(set);
-            _tablesContext.TypeSpecificationsTable.RemoveUnusedItems(set);
             _tablesContext.TypeDefinitionTable.ResetByteCodeOffsets();
+            _tablesContext.ResetTypeSpecificationsTable();
             _tablesContext.AttributesTable.RemoveUnusedItems(set);
             _tablesContext.StringTable.RemoveUnusedItems(set);
 
