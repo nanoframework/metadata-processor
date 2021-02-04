@@ -3,6 +3,7 @@
 // See LICENSE file in the project root for full license information.
 //
 
+using Mono.Cecil;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -129,6 +130,33 @@ namespace nanoFramework.Tools.MetadataProcessor
             }
 
             return (ushort)(value & mask);
+        }
+
+        /// <summary>
+        /// Convert <see cref="TypeReference"/> (and derived) in <see cref="nanoClrTable"/>.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static nanoClrTable ConvertToNanoClrTable(TypeReference value)
+        {
+            switch (value)
+            {
+                case GenericParameter _:
+                    return nanoClrTable.TBL_GenericParam;
+
+                case TypeDefinition _:
+                    return nanoClrTable.TBL_TypeDef;
+
+                case TypeSpecification _:
+                    return nanoClrTable.TBL_TypeSpec;
+
+                case TypeReference _:
+                    return nanoClrTable.TBL_TypeRef;
+
+                default:
+                    throw new ArgumentException("Unknown conversion to ClrTable.");
+            }
+
         }
     }
 }
