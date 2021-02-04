@@ -60,6 +60,14 @@ namespace nanoFramework.Tools.MetadataProcessor
             };
 
         /// <summary>
+        /// Tables to encode CLR_TypeRefOrSpec.
+        /// </summary>
+        public readonly static List<nanoClrTable> CLR_TypeRefOrSpecTables = new List<nanoClrTable>() {
+                nanoClrTable.TBL_TypeRef,
+                nanoClrTable.TBL_TypeSpec
+            };
+
+        /// <summary>
         /// Encode table to be used in a nanoToken.
         /// The table index in moved to the MSbits.
         /// </summary>
