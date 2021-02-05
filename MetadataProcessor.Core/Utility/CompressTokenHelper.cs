@@ -145,7 +145,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
-        public static nanoClrTable ConvertToNanoClrTable(TypeReference value)
+        public static nanoClrTable ConvertToNanoClrTable(MemberReference value)
         {
             switch (value)
             {
@@ -161,10 +161,15 @@ namespace nanoFramework.Tools.MetadataProcessor
                 case TypeReference _:
                     return nanoClrTable.TBL_TypeRef;
 
+                case FieldReference _:
+                    return nanoClrTable.TBL_FieldRef;
+
+                case MethodReference _:
+                    return nanoClrTable.TBL_MethodRef;
+
                 default:
                     throw new ArgumentException("Unknown conversion to ClrTable.");
             }
-
         }
     }
 }

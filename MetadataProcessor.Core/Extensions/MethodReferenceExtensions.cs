@@ -12,7 +12,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
 {
     internal static class MethodReferenceExtensions
     {
-         public static ushort ToEncodedNanoMethodToken(this MethodReference value)
+        public static ushort ToEncodedNanoMethodToken(this MethodReference value)
         {
             // implements .NET nanoFramework encoding for MethodToken
             // encodes Method to be decoded with CLR_UncompressMethodToken
@@ -23,31 +23,9 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
             return nanoTokenHelpers.EncodeTableIndex(value.ToNanoClrTable(), nanoTokenHelpers.NanoMemberRefTokenTables);
         }
 
-        public static nanoClrTable ToNanoClrTable(this MethodReference value)
+        private static nanoClrTable ToNanoClrTable(this MethodReference value)
         {
-            // this one has to be before the others because generic parameters are also "other" types
-            if (value is MethodDefinition)
-            {
-                return nanoClrTable.TBL_MethodDef;
-            }
-            else if (value is MethodReference ||
-                    value is MethodSpecification)
-            {
-                if (value.DeclaringType.Scope.MetadataScopeType == MetadataScopeType.AssemblyNameReference)
-                {
-                    // method ref is external
-                    return nanoClrTable.TBL_MethodRef;
-                }
-                else
-                {
-                    // method ref is internal
-                    return nanoClrTable.TBL_MethodDef;
-                }
-            }
-            else
-            {
-                throw new ArgumentException("Unknown conversion to ClrTable.");
-            }
+            return nanoTokenHelpers.ConvertToNanoClrTable(value);
         }
     }
 }
