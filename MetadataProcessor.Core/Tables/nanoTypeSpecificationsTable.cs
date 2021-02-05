@@ -117,9 +117,9 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             _idByTypeSpecifications = new Dictionary<TypeReference, ushort>(new TypeReferenceEqualityComparer(context));
 
-            FillTypeSpecsFromTypes(_context.TypeDefinitionTable.Items);
+            FillTypeSpecsFromTypes();
 
-            FillTypeSpecsFromMemberReferences(_context.MemberReferencesTable.Items.Where(mr => mr.DeclaringType is TypeSpecification));
+            FillTypeSpecsFromMemberReferences();
         }
 
         /// <summary>
@@ -172,11 +172,11 @@ namespace nanoFramework.Tools.MetadataProcessor
             }
         }
 
-        private void FillTypeSpecsFromMemberReferences(IEnumerable<MemberReference> members)
+        private void FillTypeSpecsFromMemberReferences()
         {
             List<TypeSpecification> typeSpecs = new List<TypeSpecification>();
 
-            foreach (var m in members)
+            foreach (var m in _context.MemberReferencesTable.Items.Where(mr => mr.DeclaringType is TypeSpecification))
             {
                 if (!typeSpecs.Contains(m.DeclaringType as TypeSpecification, new TypeSpecificationEqualityComparer()))
                 {
@@ -194,9 +194,9 @@ namespace nanoFramework.Tools.MetadataProcessor
             }
         }
 
-        private void FillTypeSpecsFromTypes(IEnumerable<TypeDefinition> types)
+        private void FillTypeSpecsFromTypes()
         {
-            foreach (var t in types)
+            foreach (var t in _context.TypeDefinitionTable.Items)
             {
                 foreach(var m in t.Methods.Where(i => i.HasBody))
                 {
