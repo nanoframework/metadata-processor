@@ -871,7 +871,25 @@ namespace nanoFramework.Tools.MetadataProcessor
                                 var opType = (TypeReference)i.Operand;
 
                                 var opToken = ((IMetadataTokenProvider)i.Operand).MetadataToken;
-                                set.Add(opToken);
+
+                                if (opToken.TokenType == TokenType.TypeSpec)
+                                {
+                                    // Cecil.Mono has a bug providing TypeSpecs Metadata tokens generic parameters variables, so we need to check against our internal table and build one from it
+                                    if (_tablesContext.TypeSpecificationsTable.TryGetTypeReferenceId(opType, out ushort referenceId))
+                                    {
+                                        set.Add(new MetadataToken(
+                                            TokenType.TypeSpec,
+                                            referenceId));
+                                    }
+                                    else
+                                    {
+                                        Debug.Fail($"Couldn't find a TypeSpec entry for {opType}");
+                                    }
+                                }
+                                else
+                                {
+                                    set.Add(opToken);
+                                }
                             }
                             else if (i.Operand is string)
                             {

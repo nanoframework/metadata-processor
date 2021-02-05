@@ -200,15 +200,30 @@ namespace nanoFramework.Tools.MetadataProcessor
             {
                 foreach(var m in t.Methods.Where(i => i.HasBody))
                 {
-                    foreach (var i in m.Body.Instructions.Where(i => i.Operand is GenericParameter))
+                    foreach (var i in m.Body.Instructions.Where(i => (i.Operand is GenericParameter) || (i.OpCode.OperandType is OperandType.InlineType && ((TypeReference)i.Operand).IsArray)))
                     {
                         // get index of signature for the TypeSpecification 
-                        ushort signatureId = _context.SignaturesTable.GetOrCreateSignatureId(i.Operand as GenericParameter);
+                        ushort signatureId;
 
-                        if (!_idByTypeSpecifications.TryGetValue(i.Operand as GenericParameter, out ushort referenceId))
+                        if (i.Operand is GenericParameter)
                         {
-                            // is not on the list yet, add it
-                            _idByTypeSpecifications.Add(i.Operand as GenericParameter, signatureId);
+                            signatureId = _context.SignaturesTable.GetOrCreateSignatureId(i.Operand as GenericParameter);
+
+                            if (!_idByTypeSpecifications.TryGetValue(i.Operand as GenericParameter, out ushort referenceId))
+                            {
+                                // is not on the list yet, add it
+                                _idByTypeSpecifications.Add(i.Operand as GenericParameter, signatureId);
+                            }
+                        }
+                        else
+                        {
+                            signatureId = _context.SignaturesTable.GetOrCreateSignatureId(i.Operand as TypeReference);
+
+                            if (!_idByTypeSpecifications.TryGetValue(i.Operand as TypeReference, out ushort referenceId))
+                            {
+                                // is not on the list yet, add it
+                                _idByTypeSpecifications.Add(i.Operand as TypeReference, signatureId);
+                            }
                         }
                     }
                 }
