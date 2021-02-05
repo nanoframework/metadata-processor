@@ -278,8 +278,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                 {
                     case ExceptionHandlerType.Catch:
                         _writer.WriteUInt16(0x0000);
-                        // force encoding with TypeSpec mask
-                        _writer.WriteUInt16(_context.GetTypeReferenceId(handler.CatchType, nanoEncodedInlineType.TypeSpec));
+                        _writer.WriteUInt16(_context.GetTypeReferenceId(handler.CatchType));
                         break;
                     case ExceptionHandlerType.Fault:
                         _writer.WriteUInt16(0x0001);
