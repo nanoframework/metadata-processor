@@ -122,12 +122,12 @@ namespace nanoFramework.Tools.MetadataProcessor
                     item.DeclaringType.IsGenericInstance))
                 .ToList();
 
+            MemberReferencesTable = new nanoMemberReferencesTable(memberReferences, this);
+
             FieldReferencesTable = new nanoFieldReferenceTable(
                 memberReferences.OfType<FieldReference>(), this);
             MethodReferencesTable = new nanoMethodReferenceTable(
                 memberReferences.OfType<MethodReference>(), this);
-
-            //MemberReferencesTable = new nanoMemberReferenceTable(memberReferences, this);
 
             // Internal types definitions
 
@@ -455,6 +455,8 @@ namespace nanoFramework.Tools.MetadataProcessor
         public nanoMethodDefinitionTable MethodDefinitionTable { get; private set; }
 
         public nanoTypeDefinitionTable TypeDefinitionTable { get; private set; }
+
+        public nanoMemberReferencesTable MemberReferencesTable { get; private set; }
 
         public nanoAttributesTable AttributesTable { get; private set; }
 
