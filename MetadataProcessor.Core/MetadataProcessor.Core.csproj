@@ -100,6 +100,7 @@
     <Compile Include="Tables\nanoClrTable.cs" />
     <Compile Include="Tables\nanoFieldDefinitionTable.cs" />
     <Compile Include="Tables\nanoFieldReferenceTable.cs" />
+    <Compile Include="Tables\nanoMemberReferenceTable.cs" />
     <Compile Include="Tables\nanoMethodSpecificationTable.cs" />
     <Compile Include="Tables\nanoMethodDefinitionTable.cs" />
     <Compile Include="Tables\nanoGenericParamTable.cs" />
