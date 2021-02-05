@@ -266,14 +266,6 @@ namespace nanoFramework.Tools.MetadataProcessor
                 else
                 {
                     // method reference is internal
-                    if (MethodDefinitionTable.TryGetMethodReferenceId((memberReference as MethodReference).Resolve(), out referenceId))
-                    {
-                        // method reference is internal => method definition
-                    }
-                    else
-                    {
-                        Debug.Fail($"Can't find method definition for {memberReference}");
-                    }
                 }
             }
             else if (memberReference is MethodSpecification &&
