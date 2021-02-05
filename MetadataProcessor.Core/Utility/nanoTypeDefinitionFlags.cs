@@ -70,7 +70,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         TD_Delegate =                   0x0200,
         TD_MulticastDelegate =          0x0400,
 
-        TD_IsGenericInstance =          0x0800,
+        TD_Patched =                    0x0800,
 
         TD_BeforeFieldInit =            0x1000,
         TD_HasSecurity =                0x2000,
