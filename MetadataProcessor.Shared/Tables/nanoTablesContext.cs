@@ -316,17 +316,54 @@ namespace nanoFramework.Tools.MetadataProcessor
             // CLR tables are: 
             // 0: TBL_FieldDef
             // 1: TBL_FieldRef
+            // 2: TBL_TypeSpec
 
-            ushort referenceId;
-            if (FieldReferencesTable.TryGetFieldReferenceId(fieldReference, out referenceId))
+            ushort referenceId = 0xFFFF;
+            nanoClrTable ownerTable = nanoClrTable.TBL_EndOfAssembly;
+
+            if (fieldReference is FieldDefinition)
             {
-                referenceId |= 0x8000; // External field reference
+                // check if field is external
+                if (fieldReference.DeclaringType.Scope.MetadataScopeType == MetadataScopeType.AssemblyNameReference)
+                {
+                    // field reference is external
+                    ownerTable = nanoClrTable.TBL_FieldRef;
+                }
+                else
+                {
+                    // field reference is internal
+                    if (FieldsTable.TryGetFieldReferenceId(fieldReference as FieldDefinition, false, out referenceId))
+                    {
+                        // field reference is internal => field definition
+                        ownerTable = nanoClrTable.TBL_FieldDef;
+                    }
+                    else
+                    {
+                        Debug.Fail($"Can't find method definition for {fieldReference}");
+                    }
+                }
+            }
+            else if (fieldReference is FieldReference &&
+                 FieldReferencesTable.TryGetFieldReferenceId(fieldReference, out referenceId))
+            {
+                // check if field is external
+                if (fieldReference.DeclaringType.Scope.MetadataScopeType == MetadataScopeType.AssemblyNameReference)
+                {
+                    // field reference is external
+                    ownerTable = nanoClrTable.TBL_FieldRef;
+                }
+                else
+                {
+                    // field reference is internal
+                    ownerTable = nanoClrTable.TBL_TypeSpec;
+                }
             }
             else
             {
-                FieldsTable.TryGetFieldReferenceId(fieldReference.Resolve(), false, out referenceId);
+                Debug.Fail($"Can't find any reference for {fieldReference}");
             }
-            return referenceId;
+
+            return (ushort)(nanoTokenHelpers.EncodeTableIndex(ownerTable, nanoTokenHelpers.NanoFieldMemberRefTokenTables) | referenceId);
         }
 
         /// <summary>
