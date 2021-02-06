@@ -234,6 +234,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             // 2: TBL_MemberRef  (TODO find if needed)
 
             ushort referenceId = 0xFFFF;
+            nanoClrTable ownerTable = nanoClrTable.TBL_EndOfAssembly;
 
             if (memberReference is MethodDefinition)
             {
@@ -241,6 +242,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                 if (memberReference.DeclaringType.Scope.MetadataScopeType == MetadataScopeType.AssemblyNameReference)
                 {
                     // method reference is external
+                    ownerTable = nanoClrTable.TBL_MethodRef;
                 }
                 else
                 {
@@ -248,6 +250,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                     if (MethodDefinitionTable.TryGetMethodReferenceId(memberReference as MethodDefinition, out referenceId))
                     {
                         // method reference is internal => method definition
+                        ownerTable = nanoClrTable.TBL_MethodDef;
                     }
                     else
                     {
@@ -262,46 +265,26 @@ namespace nanoFramework.Tools.MetadataProcessor
                 if (memberReference.DeclaringType.Scope.MetadataScopeType == MetadataScopeType.AssemblyNameReference)
                 {
                     // method reference is external
+                    ownerTable = nanoClrTable.TBL_MethodRef;
                 }
                 else
                 {
                     // method reference is internal
+                    ownerTable = nanoClrTable.TBL_TypeSpec;
                 }
             }
             else if (memberReference is MethodSpecification &&
                     MethodSpecificationTable.TryGetMethodSpecificationId(memberReference as MethodSpecification, out referenceId))
             {
                 // member reference is MethodSpecification
-            }
-            else if (memberReference.DeclaringType is TypeSpecification &&
-                    TypeSpecificationsTable.TryGetTypeReferenceId(memberReference.DeclaringType, out referenceId))
-            {
-                // member reference is TypeSpec
-
-                if (memberReference.ContainsGenericParameter)
-                {
-                    // try to search method in the declaring type
-
-                    var methodDefinition = MethodDefinitionTable.Items.FirstOrDefault(md => md.DeclaringType == memberReference.DeclaringType && md.Name == memberReference.Name);
-
-                    if (methodDefinition != null)
-                    {
-                        // method reference is internal
-                        MethodDefinitionTable.TryGetMethodReferenceId(methodDefinition, out referenceId);
-                    }
-                    else
-                    {
-                        // try now at method specification
-                    }
-
-                }
+                ownerTable = nanoClrTable.TBL_TypeSpec;
             }
             else
             {
                 Debug.Fail($"Can't find any reference for {memberReference}");
             }
 
-            return (ushort)(memberReference.ToEncodedNanoMethodToken() | referenceId);
+            return (ushort)(nanoTokenHelpers.EncodeTableIndex(ownerTable, nanoTokenHelpers.NanoMemberRefTokenTables) | referenceId);
         }
 
         /// <summary>
