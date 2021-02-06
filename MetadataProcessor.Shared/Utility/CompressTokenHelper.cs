@@ -97,7 +97,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             }
 
             // find out how many bits are required to compress the list
-            var requiredBits = (int)Math.Log(tableList.Count, 2);
+            var requiredBits = (int)Math.Round(Math.Log(tableList.Count, 2));
 
             return (ushort)(tableList.IndexOf(table) << (16 - requiredBits));
         }
@@ -116,7 +116,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             }
 
             // find out how many bits are required to compress the list
-            var requiredBits = (int)Math.Log(tableList.Count, 2);
+            var requiredBits = (int)Math.Round(Math.Log(tableList.Count, 2));
 
             var index = (value >> 16 - requiredBits);
 
