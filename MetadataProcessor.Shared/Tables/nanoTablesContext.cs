@@ -265,19 +265,27 @@ namespace nanoFramework.Tools.MetadataProcessor
                 if (memberReference.DeclaringType.Scope.MetadataScopeType == MetadataScopeType.AssemblyNameReference)
                 {
                     // method reference is external
-                    ownerTable = nanoClrTable.TBL_MethodRef;
                 }
                 else
                 {
-                    // method reference is internal
-                    ownerTable = nanoClrTable.TBL_TypeSpec;
+                    // method reference belongs to a TypeSpec
+
+                    // find MethodDef for this 
+                    var methodRef = MethodReferencesTable.Items.FirstOrDefault(m => m.DeclaringType.MetadataToken == memberReference.DeclaringType.MetadataToken && m.Name == memberReference.Name);
+
+                    if(!MethodReferencesTable.TryGetMethodReferenceId(methodRef, out referenceId))
+                    {
+                        Debug.Fail($"Can't find MethodRef for {memberReference}");
+                    }
                 }
+
+                ownerTable = nanoClrTable.TBL_MethodRef;
             }
             else if (memberReference is MethodSpecification &&
                     MethodSpecificationTable.TryGetMethodSpecificationId(memberReference as MethodSpecification, out referenceId))
             {
                 // member reference is MethodSpecification
-                ownerTable = nanoClrTable.TBL_TypeSpec;
+                ownerTable = nanoClrTable.TBL_MethodSpec;
             }
             else
             {

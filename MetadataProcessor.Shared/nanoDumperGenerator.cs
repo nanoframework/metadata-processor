@@ -707,9 +707,9 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                 {
                     sig.Append($"class {l.VariableType.FullName}");
 
-                    _tablesContext.TypeDefinitionTable.TryGetTypeReferenceId(l.VariableType.GetElementType() as TypeDefinition, out ushort referenceId);
+                    _tablesContext.TypeSpecificationsTable.TryGetTypeReferenceId(l.VariableType as TypeSpecification, out ushort referenceId);
 
-                    sig.Append($"[{new nanoMetadataToken(nanoClrTable.TBL_TypeDef, referenceId)}] /*{l.VariableType.GetElementType().MetadataToken.ToInt32().ToString("X8")}*/");
+                    sig.Append($"[{new nanoMetadataToken(nanoClrTable.TBL_TypeSpec, referenceId)}] /*{l.VariableType.GetElementType().MetadataToken.ToInt32().ToString("X8")}*/");
                 }
                 else
                 {
