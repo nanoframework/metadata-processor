@@ -100,7 +100,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                 Debug.Fail($"Can't find a reference for {item.Resolve()}");
             }
 
-            writer.WriteUInt16((ushort)((item.Resolve() as MemberReference).ToEncodedNanoMethodToken() | referenceId));
+            writer.WriteUInt16((ushort)(item.ToEncodedNanoMethodToken() | referenceId));
 
             // Instantiation
             writer.WriteUInt16(_context.SignaturesTable.GetOrCreateSignatureId(item));
