@@ -431,8 +431,33 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                                             break;
                                         
                                         case nanoClrTable.TBL_TypeSpec:
-                                            typeName = (instruction.Operand as TypeSpecification).FullName;
+                                            if (instruction.Operand is TypeSpecification)
+                                            {
+                                                typeName = (instruction.Operand as TypeSpecification).FullName;
+                                            }
+                                            else if(instruction.Operand is GenericParameter)
+                                            {
+                                                typeName = (instruction.Operand as GenericParameter).FullName;
+
+                                                if ((instruction.Operand as GenericParameter).Owner is TypeDefinition)
+                                                {
+                                                    ilDescription.Append("!");
+                                                }
+                                                if ((instruction.Operand as GenericParameter).Owner is MethodDefinition)
+                                                {
+                                                    ilDescription.Append("!!");
+                                                }
+                                            }
+                                            else
+                                            {
+                                                Debug.Fail($"Can't find table for operand type {instruction.Operand}.");
+                                            }
+
+                                            // need to fake a MetadataToken and add one because ours is 0 indexed
+                                            realToken = new MetadataToken(TokenType.TypeSpec, referenceId + 1).ToUInt32().ToString("X8");
+
                                             nfToken = new nanoMetadataToken(nanoClrTable.TBL_TypeSpec, referenceId);
+
                                             break;
                                         
                                         case nanoClrTable.TBL_TypeRef:

@@ -393,24 +393,38 @@ namespace nanoFramework.Tools.MetadataProcessor
         {
             // encodes TypeReference to be decoded with CLR_UncompressTypeToken
 
+            nanoClrTable ownerTable = nanoClrTable.TBL_EndOfAssembly;
+
             if (typeReference is TypeSpecification &&
                 TypeSpecificationsTable.TryGetTypeReferenceId(typeReference, out ushort referenceId))
             {
                 // is TypeSpec
+                ownerTable = nanoClrTable.TBL_TypeSpec;
             }
-            else if (typeReference is GenericParameter &&
-                    GenericParamsTable.TryGetParameterId(typeReference as GenericParameter, out referenceId))
+            else if (typeReference is GenericParameter) 
             {
                 // is GenericParameter
+                if(TypeSpecificationsTable.TryGetTypeReferenceId(typeReference, out referenceId))
+                {
+                    // found it!
+                    ownerTable = nanoClrTable.TBL_TypeSpec;
+                }
+                else
+                {
+                    Debug.Fail("Can't find type reference.");
+                    throw new ArgumentException($"Can't find type reference for {typeReference}.");
+                }
             }
             else if (typeReference is TypeDefinition &&
                      TypeDefinitionTable.TryGetTypeReferenceId(typeReference.Resolve(), out referenceId))
             {
                 // is TypeDefinition
+                ownerTable = nanoClrTable.TBL_TypeDef;
             }
             else if (TypeReferencesTable.TryGetTypeReferenceId(typeReference, out referenceId))
             {
                 // is External type reference
+                ownerTable = nanoClrTable.TBL_TypeRef;
             }
             else
             {
@@ -418,7 +432,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                 throw new ArgumentException($"Can't find type reference for {typeReference}.");
             }
 
-            return (ushort)(typeReference.ToEncodedNanoTypeToken() | referenceId);
+            return (ushort)(nanoTokenHelpers.EncodeTableIndex(ownerTable, nanoTokenHelpers.NanoTypeTokenTables) | referenceId);
         }
 
         private List<MethodSpecification> GetMethodSpecifications(List<MethodDefinition> methods)

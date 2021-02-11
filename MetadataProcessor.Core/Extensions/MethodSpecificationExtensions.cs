@@ -26,12 +26,12 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
         public static nanoClrTable ToNanoClrTable(this MethodSpecification value)
         {
             // this one has to be before the others because generic parameters are also "other" types
-            if (value is MethodDefinition)
+            if (value.Resolve() is MethodDefinition)
             {
                 return nanoClrTable.TBL_MethodDef;
             }
-            else if (value is MethodReference ||
-                    value is MethodSpecification)
+            else if (value.Resolve() is MethodReference ||
+                    value.Resolve() is MethodSpecification)
             {
                 if (value.DeclaringType.Scope.MetadataScopeType == MetadataScopeType.AssemblyNameReference)
                 {
