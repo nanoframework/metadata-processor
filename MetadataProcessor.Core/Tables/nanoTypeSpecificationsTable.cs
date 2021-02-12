@@ -76,7 +76,8 @@ namespace nanoFramework.Tools.MetadataProcessor
             if (!_idByTypeSpecifications.TryGetValue(typeReference, out referenceId))
             {
                 // check for array in TypeSpec because we don't support for multidimensional arrays
-                if (typeReference.IsArray)
+                if (typeReference.IsArray &&
+                    (typeReference as ArrayType).Rank > 1)
                 {
                     throw new ArgumentException($".NET nanoFramework doesn't have support for multidimensional arrays. Unable to parse {typeReference.FullName}.");
                 }
