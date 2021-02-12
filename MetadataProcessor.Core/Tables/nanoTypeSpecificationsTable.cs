@@ -180,6 +180,13 @@ namespace nanoFramework.Tools.MetadataProcessor
             {
                 if (!typeSpecs.Contains(m.DeclaringType as TypeSpecification, new TypeSpecificationEqualityComparer()))
                 {
+                    // check for array in TypeSpec because we don't support for multidimensional arrays
+                    if (m.DeclaringType.IsArray &&
+                        (m.DeclaringType as ArrayType).Rank > 1)
+                    {
+                        throw new ArgumentException($".NET nanoFramework doesn't have support for multidimensional arrays. Unable to parse {m.DeclaringType.FullName}.");
+                    }
+
                     typeSpecs.Add(m.DeclaringType as TypeSpecification);
 
                     // get index of signature for the TypeSpecification 
