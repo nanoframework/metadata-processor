@@ -75,6 +75,12 @@ namespace nanoFramework.Tools.MetadataProcessor
             ushort referenceId;
             if (!_idByTypeSpecifications.TryGetValue(typeReference, out referenceId))
             {
+                // check for array in TypeSpec because we don't support for multidimensional arrays
+                if (typeReference.IsArray)
+                {
+                    throw new ArgumentException($".NET nanoFramework doesn't have support for multidimensional arrays. Unable to parse {typeReference.FullName}.");
+                }
+
                 _idByTypeSpecifications.Add(typeReference, _lastAvailableId);
 
                 referenceId = _lastAvailableId;
