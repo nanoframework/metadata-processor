@@ -48,8 +48,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// </summary>
         public readonly static List<nanoClrTable> NanoFieldMemberRefTokenTables = new List<nanoClrTable>() {
                 nanoClrTable.TBL_FieldDef,
-                nanoClrTable.TBL_FieldRef,
-                nanoClrTable.TBL_TypeSpec
+                nanoClrTable.TBL_FieldRef
             };
 
         /// <summary>
