@@ -391,20 +391,13 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
                                     referenceId = _tablesContext.GetFieldReferenceId((FieldReference)instruction.Operand);
 
-                                    if((referenceId & 0X8000) != 0)
-                                    {
-                                        // need to clear the external ref mask
-                                        unchecked
-                                        {
-                                            referenceId &= 0x7FFF;
-                                        }
+                                    // get CLR table
+                                    var clrTable = nanoTokenHelpers.DecodeTableIndex(referenceId, nanoTokenHelpers.NanoFieldMemberRefTokenTables);
 
-                                        ilDescription.Append($"{typeName} [{new nanoMetadataToken(nanoClrTable.TBL_FieldRef, referenceId)}] /*{realToken}*/");
-                                    }
-                                    else
-                                    {
-                                        ilDescription.Append($"{typeName} [{new nanoMetadataToken(nanoClrTable.TBL_FieldDef, referenceId)}] /*{realToken}*/");
-                                    }
+                                    // need to clear the encoded type mask
+                                    referenceId = nanoTokenHelpers.DecodeReferenceIndex(referenceId, nanoTokenHelpers.NanoFieldMemberRefTokenTables);
+
+                                    ilDescription.Append($"{typeName} [{new nanoMetadataToken(clrTable, referenceId)}] /*{realToken}*/");
                                 }
                                 else if (instruction.OpCode.OperandType == OperandType.InlineTok)
                                 {

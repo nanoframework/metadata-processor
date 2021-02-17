@@ -302,47 +302,27 @@ namespace nanoFramework.Tools.MetadataProcessor
             // CLR tables are: 
             // 0: TBL_FieldDef
             // 1: TBL_FieldRef
-            // 2: TBL_TypeSpec
 
             ushort referenceId = 0xFFFF;
             nanoClrTable ownerTable = nanoClrTable.TBL_EndOfAssembly;
 
             if (fieldReference is FieldDefinition)
             {
-                // check if field is external
-                if (fieldReference.DeclaringType.Scope.MetadataScopeType == MetadataScopeType.AssemblyNameReference)
+                // field reference is internal
+                if (FieldsTable.TryGetFieldReferenceId(fieldReference as FieldDefinition, false, out referenceId))
                 {
-                    // field reference is external
-                    ownerTable = nanoClrTable.TBL_FieldRef;
+                    // field reference is internal => field definition
+                    ownerTable = nanoClrTable.TBL_FieldDef;
                 }
                 else
                 {
-                    // field reference is internal
-                    if (FieldsTable.TryGetFieldReferenceId(fieldReference as FieldDefinition, false, out referenceId))
-                    {
-                        // field reference is internal => field definition
-                        ownerTable = nanoClrTable.TBL_FieldDef;
-                    }
-                    else
-                    {
-                        Debug.Fail($"Can't find method definition for {fieldReference}");
-                    }
+                    Debug.Fail($"Can't find field definition for {fieldReference}");
                 }
             }
-            else if (fieldReference is FieldReference &&
-                 FieldReferencesTable.TryGetFieldReferenceId(fieldReference, out referenceId))
+            else if (FieldReferencesTable.TryGetFieldReferenceId(fieldReference, out referenceId))
             {
-                // check if field is external
-                if (fieldReference.DeclaringType.Scope.MetadataScopeType == MetadataScopeType.AssemblyNameReference)
-                {
-                    // field reference is external
-                    ownerTable = nanoClrTable.TBL_FieldRef;
-                }
-                else
-                {
-                    // field reference is internal
-                    ownerTable = nanoClrTable.TBL_TypeSpec;
-                }
+                // field reference is external
+                ownerTable = nanoClrTable.TBL_FieldRef;
             }
             else
             {
