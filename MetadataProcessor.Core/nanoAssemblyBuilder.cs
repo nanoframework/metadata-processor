@@ -1181,11 +1181,10 @@ namespace nanoFramework.Tools.MetadataProcessor
             return output.ToString();
         }
 
-        public void Write(
-            XmlWriter xmlWriter)
+        public void Write(string fileName)
         {
             var pdbxWriter = new nanoPdbxFileWriter(_tablesContext);
-            pdbxWriter.Write(xmlWriter);
+            pdbxWriter.Write(fileName);
         }
 
         /// <summary>

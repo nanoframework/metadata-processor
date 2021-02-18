@@ -88,6 +88,8 @@
     <Compile Include="nanoDependencyGenerator.cs" />
     <Compile Include="nanoDumperGenerator.cs" />
     <Compile Include="nanoSkeletonGenerator.cs" />
+    <Compile Include="Pdbx\PdbxFileHelpers.cs" />
+    <Compile Include="Pdbx\Pdbx.cs" />
     <Compile Include="SkeletonGenerator\AssemblyClass.cs" />
     <Compile Include="SkeletonGenerator\AssemblyClassStubs.cs" />
     <Compile Include="SkeletonGenerator\AssemblyClassTable.cs" />
@@ -126,7 +128,7 @@
     <Compile Include="Utility\nanoMetadataToken.cs" />
     <Compile Include="Utility\nanoFontProcessor.cs" />
     <Compile Include="Utility\nanoDependencyGeneratorWriter.cs" />
-    <Compile Include="Utility\nanoPdbxFileWriter.cs" />
+    <Compile Include="Pdbx\nanoPdbxFileWriter.cs" />
     <Compile Include="Utility\nanoTypeDefinitionFlags.cs" />
     <Compile Include="Utility\nanoSerializationType.cs" />
     <Compile Include="Utility\nanoStringsConstants.cs" />
@@ -154,6 +156,10 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="System.Text.Json">
+      <Version>5.0.1</Version>
+    </PackageReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

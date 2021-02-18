@@ -364,10 +364,7 @@ namespace nanoFramework.Tools.MetadataProcessor.MsBuildTask
                 }
 
                 // output PDBX
-                using (var writer = XmlWriter.Create(Path.ChangeExtension(fileName, "pdbx")))
-                {
-                    _assemblyBuilder.Write(writer);
-                }
+                _assemblyBuilder.Write(Path.ChangeExtension(fileName, "pdbx"));
 
                 // output assembly metadata
                 if (DumpMetadata)
