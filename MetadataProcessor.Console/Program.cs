@@ -11,7 +11,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.Reflection;
 using System.Xml;
 
 namespace nanoFramework.Tools.MetadataProcessor.Console
@@ -93,12 +92,9 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
                         _assemblyBuilder.Write(GetBinaryWriter(writer));
                     }
 
-                    using (var writer = XmlWriter.Create(Path.ChangeExtension(fileName, "pdbx")))
-                    {
-                        _assemblyBuilder.Write(writer);
-                    }
+                    _assemblyBuilder.Write(Path.ChangeExtension(fileName, "pdbx"));
 
-                    if(DumpMetadata)
+                    if (DumpMetadata)
                     {
                         nanoDumperGenerator dumper = new nanoDumperGenerator(
                             _assemblyBuilder.TablesContext,
@@ -188,7 +184,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
 
         public static void Main(string[] args)
 		{
-            FileVersionInfo fileVersion = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location);
+            FileVersionInfo fileVersion = FileVersionInfo.GetVersionInfo(System.Reflection.Assembly.GetExecutingAssembly().Location);
 
             bool isCoreLibrary = false;
 

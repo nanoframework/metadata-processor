@@ -88,6 +88,8 @@
     <Compile Include="nanoDependencyGenerator.cs" />
     <Compile Include="nanoDumperGenerator.cs" />
     <Compile Include="nanoSkeletonGenerator.cs" />
+    <Compile Include="Pdbx\PdbxFileHelpers.cs" />
+    <Compile Include="Pdbx\Pdbx.cs" />
     <Compile Include="SkeletonGenerator\AssemblyClass.cs" />
     <Compile Include="SkeletonGenerator\AssemblyClassStubs.cs" />
     <Compile Include="SkeletonGenerator\AssemblyClassTable.cs" />
@@ -140,6 +142,9 @@
       <Version>3.5.109</Version>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="System.Text.Json">
+      <Version>5.0.1</Version>
     </PackageReference>
   </ItemGroup>
   <Import Project="..\MetadataProcessor.Shared\MetadataProcessor.Shared.projitems" Label="Shared" />
