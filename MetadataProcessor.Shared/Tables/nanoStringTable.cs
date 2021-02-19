@@ -55,7 +55,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// </summary>
         private readonly nanoTablesContext _context;
 
-        public nanoClrTable TableIndex => nanoClrTable.TBL_Strings;
+        public NanoCLRTable TableIndex => NanoCLRTable.TBL_Strings;
 
         /// <summary>
         /// Last pre-allocated string identifier.

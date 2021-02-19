@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>nanoFramework.Tools.MetadataProcessor.Tests</RootNamespace>
     <AssemblyName>nanoFramework.Tools.MetadataProcessor.Tests</AssemblyName>
-    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">16.0</VisualStudioVersion>
@@ -19,7 +19,6 @@
     <TestProjectType>UnitTest</TestProjectType>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
-    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -57,20 +56,17 @@
     <Compile Include="Core\Extensions\ParameterDefintionExtensionsTests.cs" />
     <Compile Include="Core\Extensions\TypeDefinitionExtensionsTests.cs" />
     <Compile Include="Core\Extensions\TypeReferenceExtensionsTests.cs" />
-    <Compile Include="Core\StubsGenerationTests.cs" />
     <Compile Include="Core\Mono.Cecil\CodeWriterTests.cs" />
     <Compile Include="Core\Tables\nanoAssemblyReferenceTableTests.cs" />
     <Compile Include="Core\Tables\nanoAttributesTableTests.cs" />
     <Compile Include="Core\Tables\nanoReferenceTableBaseTests.cs" />
-    <Compile Include="Core\ClrIntegrationTests.cs" />
-    <Compile Include="Core\Utility\DumperTests.cs" />
+    <Compile Include="Core\CLRIntegrationTests.cs" />
     <Compile Include="Core\Utility\LoadHintsAssemblyResolverTests.cs" />
     <Compile Include="Core\Utility\Crc32Tests.cs" />
     <Compile Include="Core\Utility\nanoBitmapProcessorTests.cs" />
     <Compile Include="Core\Utility\nanoDependencyGeneratorWriterTests.cs" />
     <Compile Include="Core\Utility\nanoStringsConstantsTests.cs" />
     <Compile Include="Core\Utility\NativeMethodsCrcTests.cs" />
-    <Compile Include="MsbuildTask\MsbuildTaskTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TestObjectHelper.cs" />
     <Compile Include="TestPreprocessedFiles.cs" />
@@ -96,19 +92,23 @@
       <Project>{e32f7d15-2499-440c-8026-4d5ee1c5ec3a}</Project>
       <Name>MetadataProcessor.Core</Name>
     </ProjectReference>
+    <ProjectReference Include="TestNFApp\TestNFApp.nfproj">
+      <Project>{9e5e0766-701d-4266-9eba-7b3e4338ed21}</Project>
+      <Name>TestNFApp</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Mono.Cecil">
       <Version>0.11.4</Version>
     </PackageReference>
     <PackageReference Include="MSTest.TestAdapter">
-      <Version>2.2.10</Version>
+      <Version>2.2.5</Version>
     </PackageReference>
     <PackageReference Include="MSTest.TestFramework">
-      <Version>2.2.10</Version>
+      <Version>2.2.5</Version>
     </PackageReference>
     <PackageReference Include="nanoFramework.nanoCLR.Win32" GeneratePathProperty="true">
-      <Version>1.8.0.513</Version>
+      <Version>1.6.5-preview.235</Version>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
@@ -117,17 +117,13 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>
-      nuget restore "$(ProjectDir)mscorlib\nanoFramework.CoreLibrary.sln"
-      "$(MSBuildBinPath)\msbuild" "$(ProjectDir)mscorlib\nanoFramework.CoreLibrary.sln" -t:Build -nr:False -p:Configuration=$(Configuration) -p:NF_MDP_MSBUILDTASK_PATH="$(ProjectDir)..\MetadataProcessor.MsBuildTask\bin\$(Configuration)\net472" /m
-      "$(MSBuildBinPath)\msbuild" "$(ProjectDir)TestNFClassLibrary\TestNFClassLibrary\TestNFClassLibrary.nfproj" -t:Build -nr:False -p:Configuration=$(Configuration) -p:NF_MDP_MSBUILDTASK_PATH="$(ProjectDir)..\MetadataProcessor.MsBuildTask\bin\$(Configuration)\net472"
-      "$(MSBuildBinPath)\msbuild" "$(ProjectDir)TestNFApp\TestNFApp.nfproj" -t:Build -nr:False -p:Configuration=$(Configuration) -p:NF_MDP_MSBUILDTASK_PATH="$(ProjectDir)..\MetadataProcessor.MsBuildTask\bin\$(Configuration)\net472"
-      "$(MSBuildBinPath)\msbuild" "$(ProjectDir)StubsGenerationTestNFApp\StubsGenerationTestNFApp.nfproj" -t:Build -nr:False -p:Configuration=$(Configuration) -p:NF_MDP_MSBUILDTASK_PATH="$(ProjectDir)..\MetadataProcessor.MsBuildTask\bin\$(Configuration)\net472"
       mkdir "$(TargetDir)\TestNFApp"
-      mkdir "$(TargetDir)\StubsGenerationTestNFApp"
-      copy /y "$(ProjectDir)TestNFApp\$(OutDir)\*" "$(TargetDir)\TestNFApp"
-      copy /y "$(ProjectDir)StubsGenerationTestNFApp\$(OutDir)\*" "$(TargetDir)\StubsGenerationTestNFApp"
+      copy /y "$(ProjectDir)\TestNFApp\$(OutDir)\*" "$(TargetDir)\TestNFApp"
     </PreBuildEvent>
   </PropertyGroup>
+  <Target Name="BeforeBuild">
+    <Error Text="Can't perform Unit Tests without Metadata processor location overriden with NF_MDP_MSBUILDTASK_PATH env variable." Condition="'$(NF_MDP_MSBUILDTASK_PATH)' == ''" />
+  </Target>
   <Target Name="SetNFClrLocation" AfterTargets="Build">
     <Copy SourceFiles="$(PkgnanoFramework_nanoCLR_Win32)\tools\nanoFramework.nanoCLR.exe" DestinationFolder="$(TargetDir)\nanoCLR" SkipUnchangedFiles="false">
     </Copy>

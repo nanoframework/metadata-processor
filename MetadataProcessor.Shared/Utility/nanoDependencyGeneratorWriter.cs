@@ -129,12 +129,12 @@ namespace nanoFramework.Tools.MetadataProcessor
 
         private void WriteClassInfo(
             XmlWriter writer,
-            uint nanoClrItemToken,
+            uint nanoCLRItemToken,
             TypeDefinition item)
         {
             writer.WriteStartElement("Class");
 
-            WriteTokensPair(writer, item.MetadataToken.ToUInt32(), 0x04000000 | nanoClrItemToken);
+            WriteTokensPair(writer, item.MetadataToken.ToUInt32(), 0x04000000 | nanoCLRItemToken);
 
             writer.WriteStartElement("Methods");
             foreach (var tuple in GetMethodsTokens(item.Methods))
@@ -204,12 +204,12 @@ namespace nanoFramework.Tools.MetadataProcessor
         private void WriteTokensPair(
             XmlWriter writer,
             uint clrToken,
-            uint nanoClrToken)
+            uint nanoCLRToken)
         {
             writer.WriteStartElement("Token");
 
             writer.WriteElementString("CLR", "0x" + clrToken.ToString("X8", CultureInfo.InvariantCulture));
-            writer.WriteElementString("nanoCLR", "0x" + nanoClrToken.ToString("X8", CultureInfo.InvariantCulture));
+            writer.WriteElementString("nanoCLR", "0x" + nanoCLRToken.ToString("X8", CultureInfo.InvariantCulture));
 
             writer.WriteEndElement();
         }

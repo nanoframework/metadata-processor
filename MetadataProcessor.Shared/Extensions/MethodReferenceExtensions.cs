@@ -20,12 +20,12 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
             // 0: TBL_MethodDef
             // 1: TBL_MethodRef
 
-            return nanoTokenHelpers.EncodeTableIndex(value.ToNanoClrTable(), nanoTokenHelpers.NanoMemberRefTokenTables);
+            return nanoTokenHelpers.EncodeTableIndex(value.ToNanoCLRTable(), nanoTokenHelpers.NanoMemberRefTokenTables);
         }
 
-        private static nanoClrTable ToNanoClrTable(this MethodReference value)
+        private static NanoCLRTable ToNanoCLRTable(this MethodReference value)
         {
-            return nanoTokenHelpers.ConvertToNanoClrTable(value);
+            return nanoTokenHelpers.ConvertToNanoCLRTable(value);
         }
     }
 }

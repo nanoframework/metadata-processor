@@ -1,33 +1,29 @@
-﻿//
-// Copyright (c) .NET Foundation and Contributors
-// See LICENSE file in the project root for full license information.
-//
-
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
 {
     [TestClass]
-    public class ClrIntegrationTests
+    public class CLRIntegrationTests
     {
         [TestMethod]
         public void RunBCLTest()
         {
-            var workingDirectory = TestObjectHelper.TestNFAppLocation;
+            var workingDirectory = Path.GetDirectoryName(TestObjectHelper.GetTestNFAppLocation());
             var mscorlibLocation = Path.Combine(workingDirectory, "mscorlib.pe");
 
             // prepare the process start of the WIN32 nanoCLR
-            Process nanoClr = new Process();
-
+            Process nanoCLR = new Process();
+            
             // load only mscorlib
             string parameter = $"-load {mscorlibLocation}";
 
-            nanoClr.StartInfo = new ProcessStartInfo(TestObjectHelper.NanoClrLocation, parameter)
+            nanoCLR.StartInfo = new ProcessStartInfo(TestObjectHelper.GetNanoCLRLocation(), parameter)
             {
                 WorkingDirectory = workingDirectory,
                 UseShellExecute = false,
@@ -36,21 +32,21 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
             };
 
             // launch nanoCLR
-            if (!nanoClr.Start())
+            if (!nanoCLR.Start())
             {
                 Assert.Fail("Failed to start nanoCLR Win32");
             }
 
             // wait 5 seconds for exit
-            nanoClr.WaitForExit(5000);
+            nanoCLR.WaitForExit(5000);
 
-            Assert.IsTrue(nanoClr.HasExited, "nanoCLR hasn't completed execution");
+            Assert.IsTrue(nanoCLR.HasExited, "nanoCLR hasn't completed execution");
 
             // read standard output
-            var output = nanoClr.StandardOutput.ReadToEnd();
+            var output = nanoCLR.StandardOutput.ReadToEnd();
             
             // look for any error message 
-            Assert.IsFalse(output.Contains("Error:"), "Unexpected error message in output of nanoClr");
+            Assert.IsFalse(output.Contains("Error:"), "Unexpected error message in output of NanoCLR");
 
             // look for the error message reporting that there is no entry point
             Assert.IsTrue(output.Contains("Cannot find any entrypoint!"));
@@ -62,13 +58,13 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
             // 5 seconds
             int runTimeout = 5000;
 
-            var workingDirectory = TestObjectHelper.TestNFAppLocation;
+            var workingDirectory = Path.GetDirectoryName(TestObjectHelper.GetTestNFAppLocation());
             var mscorlibLocation = Path.Combine(workingDirectory, "mscorlib.pe");
-            var nfTestAppLocation = TestObjectHelper.TestNFAppFullPath.Replace("exe", "pe");
-            var nfTestClassLibLocation = TestObjectHelper.TestNFClassLibFullPath.Replace("dll", "pe");
+            var nfTestAppLocation = TestObjectHelper.GetTestNFAppLocation().Replace("exe", "pe");
+            var nfTestClassLibLocation = TestObjectHelper.GetTestNFClassLibLocation().Replace("dll", "pe");
 
             // prepare the process start of the WIN32 nanoCLR
-            Process nanoClr = new Process();
+            Process nanoCLR = new Process();
 
             AutoResetEvent outputWaitHandle = new AutoResetEvent(false);
             AutoResetEvent errorWaitHandle = new AutoResetEvent(false);
@@ -78,7 +74,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
                 // load only mscorlib
                 string parameter = $"-load {nfTestAppLocation} -load {mscorlibLocation} -load {nfTestClassLibLocation}";
 
-                nanoClr.StartInfo = new ProcessStartInfo(TestObjectHelper.NanoClrLocation, parameter)
+                nanoCLR.StartInfo = new ProcessStartInfo(TestObjectHelper.GetNanoCLRLocation(), parameter)
                 {
                     WorkingDirectory = workingDirectory,
                     UseShellExecute = false,
@@ -87,11 +83,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
                 };
 
                 // launch nanoCLR
-                if (nanoClr.Start())
-                {
-                    Console.WriteLine($"Running nanoCLR Win32 @ '{TestObjectHelper.NanoClrLocation}'");
-                }
-                else
+                if (!nanoCLR.Start())
                 {
                     Assert.Fail("Failed to start nanoCLR Win32");
                 }
@@ -99,8 +91,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
                 StringBuilder output = new StringBuilder();
                 StringBuilder error = new StringBuilder();
 
-                nanoClr.OutputDataReceived += (sender, e) =>
-                {
+                nanoCLR.OutputDataReceived += (sender, e) => {
                     if (e.Data == null)
                     {
                         outputWaitHandle.Set();
@@ -110,7 +101,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
                         output.AppendLine(e.Data);
                     }
                 };
-                nanoClr.ErrorDataReceived += (sender, e) =>
+                nanoCLR.ErrorDataReceived += (sender, e) =>
                 {
                     if (e.Data == null)
                     {
@@ -122,32 +113,31 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
                     }
                 };
 
-                nanoClr.Start();
+                nanoCLR.Start();
 
-                nanoClr.BeginOutputReadLine();
-                nanoClr.BeginErrorReadLine();
+                nanoCLR.BeginOutputReadLine();
+                nanoCLR.BeginErrorReadLine();
 
-                Console.WriteLine($"nanoCLR started @ process ID: {nanoClr.Id}");
+                Console.WriteLine($"nanoCLR started @ process ID: {nanoCLR.Id}");
 
                 // wait for exit, no worries about the outcome
-                nanoClr.WaitForExit(runTimeout);
+                nanoCLR.WaitForExit(runTimeout);
 
-                var outputOfTest = output.ToString();
 
                 // look for standard messages
-                Assert.IsTrue(outputOfTest.Contains("Ready."), $"Failed to find READY message.{Environment.NewLine}Output is:{Environment.NewLine}{outputOfTest}");
-                Assert.IsTrue(outputOfTest.Contains("Done."), $"Failed to find DONE message.{Environment.NewLine}Output is:{Environment.NewLine}{outputOfTest}");
-                Assert.IsTrue(outputOfTest.Contains("Exiting."), $"Failed to find EXITING message.{Environment.NewLine}Output is:{Environment.NewLine}{outputOfTest}");
+                Assert.IsTrue(output.ToString().Contains("Ready."), "Failed to find READY message.");
+                Assert.IsTrue(output.ToString().Contains("Done."), "Failed to find DONE message.");
+                Assert.IsTrue(output.ToString().Contains("Exiting."), "Failed to find EXITING message.");
 
                 // look for any exceptions
-                Assert.IsFalse(outputOfTest.Contains("++++ Exception "), $"Exception thrown by TestNFApp application.{Environment.NewLine}Output is:{Environment.NewLine}{outputOfTest}");
+                Assert.IsFalse(output.ToString().Contains("++++ Exception System.Exception"), "Exception thrown by TestNFApp application.");
             }
             finally
             {
-                if (!nanoClr.HasExited)
+                if (!nanoCLR.HasExited)
                 {
-                    nanoClr.Kill();
-                    nanoClr.WaitForExit(runTimeout);
+                    nanoCLR.Kill();
+                    nanoCLR.WaitForExit(runTimeout);
                 }
             }
         }

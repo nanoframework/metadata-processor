@@ -20,15 +20,15 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
             // 0: TBL_MethodDef
             // 1: TBL_MethodRef
 
-            return nanoTokenHelpers.EncodeTableIndex(value.ToNanoClrTable(), nanoTokenHelpers.NanoMethodDefOrRefTokenTables);
+            return nanoTokenHelpers.EncodeTableIndex(value.ToNanoCLRTable(), nanoTokenHelpers.NanoMethodDefOrRefTokenTables);
         }
 
-        public static nanoClrTable ToNanoClrTable(this MethodSpecification value)
+        public static NanoCLRTable ToNanoCLRTable(this MethodSpecification value)
         {
             // this one has to be before the others because generic parameters are also "other" types
             if (value.Resolve() is MethodDefinition)
             {
-                return nanoClrTable.TBL_MethodDef;
+                return NanoCLRTable.TBL_MethodDef;
             }
             else if (value.Resolve() is MethodReference ||
                     value.Resolve() is MethodSpecification)
@@ -36,17 +36,17 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
                 if (value.DeclaringType.Scope.MetadataScopeType == MetadataScopeType.AssemblyNameReference)
                 {
                     // method ref is external
-                    return nanoClrTable.TBL_MethodRef;
+                    return NanoCLRTable.TBL_MethodRef;
                 }
                 else
                 {
                     // method ref is internal
-                    return nanoClrTable.TBL_MethodDef;
+                    return NanoCLRTable.TBL_MethodDef;
                 }
             }
             else
             {
-                throw new ArgumentException("Unknown conversion to ClrTable.");
+                throw new ArgumentException("Unknown conversion to CLR Table.");
             }
         }
     }

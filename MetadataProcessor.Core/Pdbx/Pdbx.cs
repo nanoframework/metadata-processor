@@ -98,8 +98,8 @@ namespace nanoFramework.Tools.MetadataProcessor
 
     public partial class Token
     {
-        public string Clr { get; set; }
-        public string NanoClr { get; set; }
+        public string CLR { get; set; }
+        public string NanoCLR { get; set; }
     }
 
     #region Converters
