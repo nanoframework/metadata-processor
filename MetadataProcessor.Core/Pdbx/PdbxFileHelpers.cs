@@ -85,7 +85,7 @@ namespace nanoFramework.Tools.MetadataProcessor
     {
         public Class(nanoTablesContext context, TypeDefinition item, uint nanoToken)
         {
-            Token = new Token(item.MetadataToken, nanoClrTable.TBL_TypeDef.ToNanoTokenType() | nanoToken);
+            Token = new Token(item.MetadataToken, NanoCLRTable.TBL_TypeDef.ToNanoTokenType() | nanoToken);
 
             Name = item.FullName;
             IsEnum = item.IsEnum;
@@ -114,7 +114,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         {
             context.MethodDefinitionTable.TryGetMethodReferenceId(method, out ushort methodToken);
 
-            Token = new Token(method.MetadataToken, nanoClrTable.TBL_MethodDef.ToNanoTokenType() | methodToken);
+            Token = new Token(method.MetadataToken, NanoCLRTable.TBL_MethodDef.ToNanoTokenType() | methodToken);
 
             Name = method.Name;
             NumParams = method.Parameters.Count;
@@ -152,7 +152,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         {
             context.FieldsTable.TryGetFieldReferenceId(field, false, out ushort fieldToken);
 
-            Token = new Token(field.MetadataToken, nanoClrTable.TBL_FieldDef.ToNanoTokenType() | fieldToken);
+            Token = new Token(field.MetadataToken, NanoCLRTable.TBL_FieldDef.ToNanoTokenType() | fieldToken);
 
             Name = field.Name;
         }
@@ -170,7 +170,7 @@ namespace nanoFramework.Tools.MetadataProcessor
     {
         public GenericParam(nanoTablesContext context, GenericParameter item, uint nanoToken)
         {
-            Token = new Token(item.MetadataToken, nanoClrTable.TBL_GenericParam.ToNanoTokenType() | nanoToken);
+            Token = new Token(item.MetadataToken, NanoCLRTable.TBL_GenericParam.ToNanoTokenType() | nanoToken);
 
             Name = item.FullName;
         }
@@ -186,7 +186,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             // need to add one because ours is 0 indexed
             var clrToken = new MetadataToken(TokenType.TypeSpec, nanoToken + 1);
 
-            Token = new Token(clrToken, nanoClrTable.TBL_TypeSpec.ToNanoTokenType() | nanoToken);
+            Token = new Token(clrToken, NanoCLRTable.TBL_TypeSpec.ToNanoTokenType() | nanoToken);
 
             if (item.IsGenericInstance)
             {
@@ -225,7 +225,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                     {
                         if (context.MethodReferencesTable.TryGetMethodReferenceId(mr, out referenceId))
                         {
-                            Members.Add(new Member(mr, nanoClrTable.TBL_MethodRef.ToNanoTokenType() | nanoToken));
+                            Members.Add(new Member(mr, NanoCLRTable.TBL_MethodRef.ToNanoTokenType() | nanoToken));
                         }
                     }
                 }
@@ -237,7 +237,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                     {
                         if (context.MethodSpecificationTable.TryGetMethodSpecificationId(ms, out ushort methodSpecId))
                         {
-                            Members.Add(new Member(ms, nanoClrTable.TBL_MethodSpec.ToNanoTokenType() | nanoToken));
+                            Members.Add(new Member(ms, NanoCLRTable.TBL_MethodSpec.ToNanoTokenType() | nanoToken));
                         }
                     }
                 }
@@ -249,7 +249,7 @@ namespace nanoFramework.Tools.MetadataProcessor
     {
         public Member(MethodReference mr, uint nanoToken)
         {
-            Token = new Token(mr.MetadataToken, nanoClrTable.TBL_MethodRef.ToNanoTokenType() | nanoToken);
+            Token = new Token(mr.MetadataToken, NanoCLRTable.TBL_MethodRef.ToNanoTokenType() | nanoToken);
 
             Name = mr.Name;
         }
@@ -259,20 +259,20 @@ namespace nanoFramework.Tools.MetadataProcessor
     {
         public Token(MetadataToken metadataToken)
         {
-            Clr = metadataToken.ToUInt32().ToString("X8", CultureInfo.InvariantCulture);
-            NanoClr = "00000000";
+            CLR = metadataToken.ToUInt32().ToString("X8", CultureInfo.InvariantCulture);
+            NanoCLR = "00000000";
         }
 
         public Token(MetadataToken metadataToken, uint nanoToken)
         {
-            Clr = metadataToken.ToUInt32().ToString("X8", CultureInfo.InvariantCulture);
-            NanoClr = nanoToken.ToString("X8", CultureInfo.InvariantCulture);
+            CLR = metadataToken.ToUInt32().ToString("X8", CultureInfo.InvariantCulture);
+            NanoCLR = nanoToken.ToString("X8", CultureInfo.InvariantCulture);
         }
 
         public Token(uint clrToken, uint nanoToken)
         {
-            Clr = clrToken.ToString("X8", CultureInfo.InvariantCulture);
-            NanoClr = nanoToken.ToString("X8", CultureInfo.InvariantCulture);
+            CLR = clrToken.ToString("X8", CultureInfo.InvariantCulture);
+            NanoCLR = nanoToken.ToString("X8", CultureInfo.InvariantCulture);
         }
     }
 }

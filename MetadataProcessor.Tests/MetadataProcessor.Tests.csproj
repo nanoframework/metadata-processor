@@ -60,7 +60,7 @@
     <Compile Include="Core\Tables\nanoAssemblyReferenceTableTests.cs" />
     <Compile Include="Core\Tables\nanoAttributesTableTests.cs" />
     <Compile Include="Core\Tables\nanoReferenceTableBaseTests.cs" />
-    <Compile Include="Core\ClrIntegrationTests.cs" />
+    <Compile Include="Core\CLRIntegrationTests.cs" />
     <Compile Include="Core\Utility\LoadHintsAssemblyResolverTests.cs" />
     <Compile Include="Core\Utility\Crc32Tests.cs" />
     <Compile Include="Core\Utility\nanoBitmapProcessorTests.cs" />

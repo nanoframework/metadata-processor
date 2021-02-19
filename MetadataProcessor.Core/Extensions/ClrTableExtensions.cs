@@ -5,9 +5,9 @@
 
 namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
 {
-    internal static class ClrTableExtensions
+    internal static class CLRTableExtensions
     {
-         public static uint ToNanoTokenType(this nanoClrTable value)
+         public static uint ToNanoTokenType(this NanoCLRTable value)
          {
             return ((uint)value << 24);
          }

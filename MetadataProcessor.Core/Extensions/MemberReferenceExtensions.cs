@@ -22,40 +22,40 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
             // 3: TBL_TypeSpec
             // 4: TBL_MethodSpec
 
-            return nanoTokenHelpers.EncodeTableIndex(value.ToNanoClrTable(), nanoTokenHelpers.NanoMemberRefTokenTables);
+            return nanoTokenHelpers.EncodeTableIndex(value.ToNanoCLRTable(), nanoTokenHelpers.NanoMemberRefTokenTables);
         }
 
-        public static nanoClrTable ToNanoClrTable(this MemberReference value)
+        public static NanoCLRTable ToNanoCLRTable(this MemberReference value)
         {
             // this one has to be before the others because generic parameters are also "other" types
             if (value is MethodDefinition)
             {
-                return nanoClrTable.TBL_MethodDef;
+                return NanoCLRTable.TBL_MethodDef;
             }
             else if (value is MethodSpecification)
             {
-                return nanoClrTable.TBL_MethodSpec;
+                return NanoCLRTable.TBL_MethodSpec;
             }
             else if (value.Resolve() is MethodReference)
             {
                 if (value.DeclaringType.Scope.MetadataScopeType == MetadataScopeType.AssemblyNameReference)
                 {
                     // method ref is external
-                    return nanoClrTable.TBL_MethodRef;
+                    return NanoCLRTable.TBL_MethodRef;
                 }
                 else
                 {
                     // method ref is internal
-                    return nanoClrTable.TBL_MethodDef;
+                    return NanoCLRTable.TBL_MethodDef;
                 }
             }
             else if (value.DeclaringType is TypeSpecification)
             {
-                return nanoClrTable.TBL_TypeSpec;
+                return NanoCLRTable.TBL_TypeSpec;
             }
             else
             {
-                throw new ArgumentException("Unknown conversion to ClrTable.");
+                throw new ArgumentException("Unknown conversion to CLR Table.");
             }
         }
     }

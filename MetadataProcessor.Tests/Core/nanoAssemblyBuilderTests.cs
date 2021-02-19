@@ -17,8 +17,8 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
                 "Tables count from context doesn't match the nanoAssemblyBuilder.TablesCount property.");
             
             Assert.IsTrue(
-                nanoAssemblyBuilder.GetTables(nanoTablesContext).Count() == Enum.GetNames(typeof(nanoClrTable)).Length,
-                "Tables count from context doesn't match number of items in ClrTables enum.");
+                nanoAssemblyBuilder.GetTables(nanoTablesContext).Count() == Enum.GetNames(typeof(NanoCLRTable)).Length,
+                "Tables count from context doesn't match number of items in CLR Tables enum.");
         }
     }
 }

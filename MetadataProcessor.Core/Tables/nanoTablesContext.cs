@@ -229,7 +229,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             // 2: TBL_MemberRef  (TODO find if needed)
 
             ushort referenceId = 0xFFFF;
-            nanoClrTable ownerTable = nanoClrTable.TBL_EndOfAssembly;
+            NanoCLRTable ownerTable = NanoCLRTable.TBL_EndOfAssembly;
 
             if (memberReference is MethodDefinition)
             {
@@ -237,7 +237,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                 if (memberReference.DeclaringType.Scope.MetadataScopeType == MetadataScopeType.AssemblyNameReference)
                 {
                     // method reference is external
-                    ownerTable = nanoClrTable.TBL_MethodRef;
+                    ownerTable = NanoCLRTable.TBL_MethodRef;
                 }
                 else
                 {
@@ -245,7 +245,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                     if (MethodDefinitionTable.TryGetMethodReferenceId(memberReference as MethodDefinition, out referenceId))
                     {
                         // method reference is internal => method definition
-                        ownerTable = nanoClrTable.TBL_MethodDef;
+                        ownerTable = NanoCLRTable.TBL_MethodDef;
                     }
                     else
                     {
@@ -274,13 +274,13 @@ namespace nanoFramework.Tools.MetadataProcessor
                     }
                 }
 
-                ownerTable = nanoClrTable.TBL_MethodRef;
+                ownerTable = NanoCLRTable.TBL_MethodRef;
             }
             else if (memberReference is MethodSpecification &&
                     MethodSpecificationTable.TryGetMethodSpecificationId(memberReference as MethodSpecification, out referenceId))
             {
                 // member reference is MethodSpecification
-                ownerTable = nanoClrTable.TBL_MethodSpec;
+                ownerTable = NanoCLRTable.TBL_MethodSpec;
             }
             else
             {
@@ -304,7 +304,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             // 1: TBL_FieldRef
 
             ushort referenceId = 0xFFFF;
-            nanoClrTable ownerTable = nanoClrTable.TBL_EndOfAssembly;
+            NanoCLRTable ownerTable = NanoCLRTable.TBL_EndOfAssembly;
 
             if (fieldReference is FieldDefinition)
             {
@@ -312,7 +312,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                 if (FieldsTable.TryGetFieldReferenceId(fieldReference as FieldDefinition, false, out referenceId))
                 {
                     // field reference is internal => field definition
-                    ownerTable = nanoClrTable.TBL_FieldDef;
+                    ownerTable = NanoCLRTable.TBL_FieldDef;
                 }
                 else
                 {
@@ -322,7 +322,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             else if (FieldReferencesTable.TryGetFieldReferenceId(fieldReference, out referenceId))
             {
                 // field reference is external
-                ownerTable = nanoClrTable.TBL_FieldRef;
+                ownerTable = NanoCLRTable.TBL_FieldRef;
             }
             else
             {
@@ -373,13 +373,13 @@ namespace nanoFramework.Tools.MetadataProcessor
         {
             // encodes TypeReference to be decoded with CLR_UncompressTypeToken
 
-            nanoClrTable ownerTable = nanoClrTable.TBL_EndOfAssembly;
+            NanoCLRTable ownerTable = NanoCLRTable.TBL_EndOfAssembly;
 
             if (typeReference is TypeSpecification &&
                 TypeSpecificationsTable.TryGetTypeReferenceId(typeReference, out ushort referenceId))
             {
                 // is TypeSpec
-                ownerTable = nanoClrTable.TBL_TypeSpec;
+                ownerTable = NanoCLRTable.TBL_TypeSpec;
             }
             else if (typeReference is GenericParameter) 
             {
@@ -387,7 +387,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                 if(TypeSpecificationsTable.TryGetTypeReferenceId(typeReference, out referenceId))
                 {
                     // found it!
-                    ownerTable = nanoClrTable.TBL_TypeSpec;
+                    ownerTable = NanoCLRTable.TBL_TypeSpec;
                 }
                 else
                 {
@@ -399,12 +399,12 @@ namespace nanoFramework.Tools.MetadataProcessor
                      TypeDefinitionTable.TryGetTypeReferenceId(typeReference.Resolve(), out referenceId))
             {
                 // is TypeDefinition
-                ownerTable = nanoClrTable.TBL_TypeDef;
+                ownerTable = NanoCLRTable.TBL_TypeDef;
             }
             else if (TypeReferencesTable.TryGetTypeReferenceId(typeReference, out referenceId))
             {
                 // is External type reference
-                ownerTable = nanoClrTable.TBL_TypeRef;
+                ownerTable = NanoCLRTable.TBL_TypeRef;
             }
             else
             {

@@ -19,7 +19,7 @@ namespace nanoFramework.Tools.MetadataProcessor
     {
         private const int sizeOf_CLR_RECORD_TYPEREF = 6;
 
-        public nanoClrTable TableIndex => nanoClrTable.TBL_TypeRef;
+        public NanoCLRTable TableIndex => NanoCLRTable.TBL_TypeRef;
 
         /// <summary>
         /// Creates new instance of <see cref="nanoTypeReferenceTable"/> object.

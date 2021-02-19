@@ -47,13 +47,13 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
             return testNfClassLibPath;
         }
 
-        public static string GetNanoClrLocation()
+        public static string GetNanoCLRLocation()
         {
             var thisAssemblyDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            var nanoClrDir = Path.Combine(thisAssemblyDir, "nanoClr");
-            var nanoClrFullPath = Path.Combine(nanoClrDir, "nanoFramework.nanoCLR.exe");
+            var nanoCLRDir = Path.Combine(thisAssemblyDir, "nanoCLR");
+            var nanoCLRFullPath = Path.Combine(nanoCLRDir, "nanoFramework.nanoCLR.exe");
 
-            return nanoClrFullPath;
+            return nanoCLRFullPath;
         }
 
         public static AssemblyDefinition GetTestNFAppAssemblyDefinition()

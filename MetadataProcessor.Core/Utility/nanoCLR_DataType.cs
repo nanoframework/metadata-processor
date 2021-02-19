@@ -7,11 +7,11 @@
 namespace nanoFramework.Tools.MetadataProcessor
 {
     //////////////////////////////////////////////////////////////////////////////////
-    // !!! KEEP IN SYNC WITH enum ClrDataType (in nanoCLR_TypeSystem Debugger) !!! //
-    // !!! KEEP IN SYNC WITH enum ClrDataType (in nanoCLRT_Types.h in CLR)     !!! //
+    // !!! KEEP IN SYNC WITH enum CLRDataType (in nanoCLR_TypeSystem Debugger) !!! //
+    // !!! KEEP IN SYNC WITH enum CLRDataType (in nanoCLRT_Types.h in CLR)     !!! //
     //////////////////////////////////////////////////////////////////////////////////
 
-    public enum nanoClrDataType : byte
+    public enum NanoCLRDataType : byte
     {
         // these where defined @ enum CLR_DataType
 

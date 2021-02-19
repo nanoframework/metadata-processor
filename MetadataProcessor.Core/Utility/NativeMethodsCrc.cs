@@ -118,22 +118,22 @@ namespace nanoFramework.Tools.MetadataProcessor
             // special processing for arrays
             if(parameterType.IsArray)
             {
-                typeName += nanoClrDataType.DATATYPE_SZARRAY + "_" + GetParameterType(parameterType.GetElementType());
+                typeName += NanoCLRDataType.DATATYPE_SZARRAY + "_" + GetParameterType(parameterType.GetElementType());
                 continueProcessing = false;
             }
             else if (parameterType.IsByReference)
             {
                 var elementType = ((TypeSpecification)parameterType).ElementType;
 
-                typeName += nanoClrDataType.DATATYPE_BYREF + "_";
+                typeName += NanoCLRDataType.DATATYPE_BYREF + "_";
 
                 if (elementType.IsArray)
                 {
-                    typeName += nanoClrDataType.DATATYPE_SZARRAY + "_" + GetParameterType(((TypeSpecification)elementType).ElementType);
+                    typeName += NanoCLRDataType.DATATYPE_SZARRAY + "_" + GetParameterType(((TypeSpecification)elementType).ElementType);
                 }
                 else
                 {
-                    typeName += GetnanoClrTypeName(elementType);
+                    typeName += GetNanoCLRTypeName(elementType);
                 }
                 continueProcessing = false;
             }
@@ -145,7 +145,7 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             if (continueProcessing)
             {
-                typeName = GetnanoClrTypeName(parameterType);
+                typeName = GetNanoCLRTypeName(parameterType);
             }
 
             // clear 'DATATYPE_' prefixes 
@@ -153,26 +153,26 @@ namespace nanoFramework.Tools.MetadataProcessor
             return typeName.Replace("DATATYPE_", "");
         }
 
-        internal static string GetnanoClrTypeName(TypeReference parameterType)
+        internal static string GetNanoCLRTypeName(TypeReference parameterType)
         {
             // try getting primitive type
 
-            nanoClrDataType myType;
+            NanoCLRDataType myType;
             if(nanoSignaturesTable.PrimitiveTypes.TryGetValue(parameterType.FullName, out myType))
             {
-                if (myType == nanoClrDataType.DATATYPE_LAST_PRIMITIVE)
+                if (myType == NanoCLRDataType.DATATYPE_LAST_PRIMITIVE)
                 {
                     return "DATATYPE_STRING";
                 }
-                else if (myType == nanoClrDataType.DATATYPE_LAST_NONPOINTER)
+                else if (myType == NanoCLRDataType.DATATYPE_LAST_NONPOINTER)
                 {
                     return "DATATYPE_TIMESPAN";
                 }
-                else if (myType == nanoClrDataType.DATATYPE_LAST_PRIMITIVE_TO_MARSHAL)
+                else if (myType == NanoCLRDataType.DATATYPE_LAST_PRIMITIVE_TO_MARSHAL)
                 {
                     return "DATATYPE_TIMESPAN";
                 }
-                else if (myType == nanoClrDataType.DATATYPE_LAST_PRIMITIVE_TO_PRESERVE)
+                else if (myType == NanoCLRDataType.DATATYPE_LAST_PRIMITIVE_TO_PRESERVE)
                 {
                     return "DATATYPE_R8";
                 }

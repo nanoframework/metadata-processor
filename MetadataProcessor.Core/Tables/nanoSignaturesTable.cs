@@ -41,35 +41,35 @@ namespace nanoFramework.Tools.MetadataProcessor
             }
         }
 
-        internal static readonly IDictionary<string, nanoClrDataType> PrimitiveTypes =
-            new Dictionary<string, nanoClrDataType>(StringComparer.Ordinal);
+        internal static readonly IDictionary<string, NanoCLRDataType> PrimitiveTypes =
+            new Dictionary<string, NanoCLRDataType>(StringComparer.Ordinal);
 
         static nanoSignaturesTable()
         {
-            PrimitiveTypes.Add(typeof(void).FullName, nanoClrDataType.DATATYPE_VOID);
+            PrimitiveTypes.Add(typeof(void).FullName, NanoCLRDataType.DATATYPE_VOID);
 
-            PrimitiveTypes.Add(typeof(sbyte).FullName, nanoClrDataType.DATATYPE_I1);
-            PrimitiveTypes.Add(typeof(short).FullName, nanoClrDataType.DATATYPE_I2);
-            PrimitiveTypes.Add(typeof(int).FullName, nanoClrDataType.DATATYPE_I4);
-            PrimitiveTypes.Add(typeof(long).FullName, nanoClrDataType.DATATYPE_I8);
+            PrimitiveTypes.Add(typeof(sbyte).FullName, NanoCLRDataType.DATATYPE_I1);
+            PrimitiveTypes.Add(typeof(short).FullName, NanoCLRDataType.DATATYPE_I2);
+            PrimitiveTypes.Add(typeof(int).FullName, NanoCLRDataType.DATATYPE_I4);
+            PrimitiveTypes.Add(typeof(long).FullName, NanoCLRDataType.DATATYPE_I8);
 
-            PrimitiveTypes.Add(typeof(byte).FullName, nanoClrDataType.DATATYPE_U1);
-            PrimitiveTypes.Add(typeof(ushort).FullName, nanoClrDataType.DATATYPE_U2);
-            PrimitiveTypes.Add(typeof(uint).FullName, nanoClrDataType.DATATYPE_U4);
-            PrimitiveTypes.Add(typeof(ulong).FullName, nanoClrDataType.DATATYPE_U8);
+            PrimitiveTypes.Add(typeof(byte).FullName, NanoCLRDataType.DATATYPE_U1);
+            PrimitiveTypes.Add(typeof(ushort).FullName, NanoCLRDataType.DATATYPE_U2);
+            PrimitiveTypes.Add(typeof(uint).FullName, NanoCLRDataType.DATATYPE_U4);
+            PrimitiveTypes.Add(typeof(ulong).FullName, NanoCLRDataType.DATATYPE_U8);
 
-            PrimitiveTypes.Add(typeof(float).FullName, nanoClrDataType.DATATYPE_R4);
-            PrimitiveTypes.Add(typeof(double).FullName, nanoClrDataType.DATATYPE_R8);
+            PrimitiveTypes.Add(typeof(float).FullName, NanoCLRDataType.DATATYPE_R4);
+            PrimitiveTypes.Add(typeof(double).FullName, NanoCLRDataType.DATATYPE_R8);
 
-            PrimitiveTypes.Add(typeof(char).FullName, nanoClrDataType.DATATYPE_CHAR);
-            PrimitiveTypes.Add(typeof(string).FullName, nanoClrDataType.DATATYPE_STRING);
-            PrimitiveTypes.Add(typeof(bool).FullName, nanoClrDataType.DATATYPE_BOOLEAN);
+            PrimitiveTypes.Add(typeof(char).FullName, NanoCLRDataType.DATATYPE_CHAR);
+            PrimitiveTypes.Add(typeof(string).FullName, NanoCLRDataType.DATATYPE_STRING);
+            PrimitiveTypes.Add(typeof(bool).FullName, NanoCLRDataType.DATATYPE_BOOLEAN);
 
-            PrimitiveTypes.Add(typeof(object).FullName, nanoClrDataType.DATATYPE_OBJECT);
-            PrimitiveTypes.Add(typeof(IntPtr).FullName, nanoClrDataType.DATATYPE_I4);
-            PrimitiveTypes.Add(typeof(UIntPtr).FullName, nanoClrDataType.DATATYPE_U4);
+            PrimitiveTypes.Add(typeof(object).FullName, NanoCLRDataType.DATATYPE_OBJECT);
+            PrimitiveTypes.Add(typeof(IntPtr).FullName, NanoCLRDataType.DATATYPE_I4);
+            PrimitiveTypes.Add(typeof(UIntPtr).FullName, NanoCLRDataType.DATATYPE_U4);
 
-            PrimitiveTypes.Add(typeof(WeakReference).FullName, nanoClrDataType.DATATYPE_WEAKCLASS);
+            PrimitiveTypes.Add(typeof(WeakReference).FullName, NanoCLRDataType.DATATYPE_WEAKCLASS);
         }
 
         /// <summary>
@@ -90,7 +90,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// </summary>
         private ushort _lastAvailableId;
 
-        public nanoClrTable TableIndex => nanoClrTable.TBL_Signatures;
+        public NanoCLRTable TableIndex => NanoCLRTable.TBL_Signatures;
 
         /// <summary>
         /// Creates new instance of <see cref="nanoSignaturesTable"/> object.
@@ -300,11 +300,11 @@ namespace nanoFramework.Tools.MetadataProcessor
             if (isTypeDefinition &&
                 typeDefinition.MetadataType == MetadataType.Object)
             {
-                writer.WriteByte((byte)nanoClrDataType.DATATYPE_CLASS);
+                writer.WriteByte((byte)NanoCLRDataType.DATATYPE_CLASS);
                 return;
             }
 
-            nanoClrDataType dataType;
+            NanoCLRDataType dataType;
             if (PrimitiveTypes.TryGetValue(typeDefinition.FullName, out dataType))
             {
                 writer.WriteByte((byte)dataType);
@@ -318,7 +318,7 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             if (typeDefinition.MetadataType == MetadataType.Class)
             {
-                writer.WriteByte((byte)nanoClrDataType.DATATYPE_CLASS);
+                writer.WriteByte((byte)NanoCLRDataType.DATATYPE_CLASS);
                 if (alsoWriteSubType)
                 {
                     WriteSubTypeInfo(typeDefinition, writer);
@@ -339,7 +339,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                     }
                 }
 
-                writer.WriteByte((byte)nanoClrDataType.DATATYPE_VALUETYPE);
+                writer.WriteByte((byte)NanoCLRDataType.DATATYPE_VALUETYPE);
                 if (alsoWriteSubType)
                 {
                     WriteSubTypeInfo(typeDefinition, writer);
@@ -349,7 +349,7 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             if (typeDefinition.MetadataType == MetadataType.Var)
             {
-                writer.WriteByte((byte)nanoClrDataType.DATATYPE_VAR);
+                writer.WriteByte((byte)NanoCLRDataType.DATATYPE_VAR);
 
                 if (alsoWriteSubType)
                 {
@@ -362,7 +362,7 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             if (typeDefinition.MetadataType == MetadataType.MVar)
             {
-                writer.WriteByte((byte)nanoClrDataType.DATATYPE_MVAR);
+                writer.WriteByte((byte)NanoCLRDataType.DATATYPE_MVAR);
 
                 if (alsoWriteSubType)
                 {
@@ -375,14 +375,14 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             if (typeDefinition.IsArray)
             {
-                writer.WriteByte((byte)nanoClrDataType.DATATYPE_SZARRAY);
+                writer.WriteByte((byte)NanoCLRDataType.DATATYPE_SZARRAY);
 
                 var array = (ArrayType)typeDefinition;
 
                 if (array.ElementType.IsGenericParameter)
                 {
                     // ECMA 335 VI.B.4.3 Metadata
-                    writer.WriteByte((byte)nanoClrDataType.DATATYPE_VAR);
+                    writer.WriteByte((byte)NanoCLRDataType.DATATYPE_VAR);
 
                     // OK to use byte here as we won't support more than 0x7F generic parameters
                     writer.WriteByte((byte)(array.ElementType as GenericParameter).Position);
@@ -398,7 +398,7 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             if(typeDefinition.IsByReference)
             {
-                writer.WriteByte((byte)nanoClrDataType.DATATYPE_BYREF);
+                writer.WriteByte((byte)NanoCLRDataType.DATATYPE_BYREF);
 
                 if (alsoWriteSubType)
                 {
@@ -414,7 +414,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             {
                 // following ECMA-335 VI.B.4.3 Metadata
                 // II.23.2.12 Type
-                writer.WriteByte((byte)nanoClrDataType.DATATYPE_GENERICINST);
+                writer.WriteByte((byte)NanoCLRDataType.DATATYPE_GENERICINST);
 
                 var genericType = (GenericInstanceType)typeDefinition;
                 WriteDataType(genericType.Resolve(), writer, true, expandEnumType, isTypeDefinition);
@@ -655,60 +655,60 @@ namespace nanoFramework.Tools.MetadataProcessor
             BinaryWriter writer,
             CustomAttributeArgument argument)
         {
-            nanoClrDataType dataType;
+            NanoCLRDataType dataType;
             if (PrimitiveTypes.TryGetValue(argument.Type.FullName, out dataType))
             {
                 switch (dataType)
                 {
-                    case nanoClrDataType.DATATYPE_BOOLEAN:
+                    case NanoCLRDataType.DATATYPE_BOOLEAN:
                         writer.Write((byte)nanoSerializationType.ELEMENT_TYPE_BOOLEAN);
                         writer.Write((byte)((bool)argument.Value ? 1 : 0));
                         break;
-                    case nanoClrDataType.DATATYPE_I1:
+                    case NanoCLRDataType.DATATYPE_I1:
                         writer.Write((byte)nanoSerializationType.ELEMENT_TYPE_I1);
                         writer.Write((sbyte)argument.Value);
                         break;
-                    case nanoClrDataType.DATATYPE_U1:
+                    case NanoCLRDataType.DATATYPE_U1:
                         writer.Write((byte)nanoSerializationType.ELEMENT_TYPE_U1);
                         writer.Write((byte)argument.Value);
                         break;
-                    case nanoClrDataType.DATATYPE_I2:
+                    case NanoCLRDataType.DATATYPE_I2:
                         writer.Write((byte)nanoSerializationType.ELEMENT_TYPE_I2);
                         writer.Write((short)argument.Value);
                         break;
-                    case nanoClrDataType.DATATYPE_U2:
+                    case NanoCLRDataType.DATATYPE_U2:
                         writer.Write((byte)nanoSerializationType.ELEMENT_TYPE_U2);
                         writer.Write((ushort)argument.Value);
                         break;
-                    case nanoClrDataType.DATATYPE_I4:
+                    case NanoCLRDataType.DATATYPE_I4:
                         writer.Write((byte)nanoSerializationType.ELEMENT_TYPE_I4);
                         writer.Write((int)argument.Value);
                         break;
-                    case nanoClrDataType.DATATYPE_U4:
+                    case NanoCLRDataType.DATATYPE_U4:
                         writer.Write((byte)nanoSerializationType.ELEMENT_TYPE_U4);
                         writer.Write((uint)argument.Value);
                         break;
-                    case nanoClrDataType.DATATYPE_I8:
+                    case NanoCLRDataType.DATATYPE_I8:
                         writer.Write((byte)nanoSerializationType.ELEMENT_TYPE_I8);
                         writer.Write((long)argument.Value);
                         break;
-                    case nanoClrDataType.DATATYPE_U8:
+                    case NanoCLRDataType.DATATYPE_U8:
                         writer.Write((byte)nanoSerializationType.ELEMENT_TYPE_U8);
                         writer.Write((ulong)argument.Value);
                         break;
-                    case nanoClrDataType.DATATYPE_R4:
+                    case NanoCLRDataType.DATATYPE_R4:
                         writer.Write((byte)nanoSerializationType.ELEMENT_TYPE_R4);
                         writer.Write((float)argument.Value);
                         break;
-                    case nanoClrDataType.DATATYPE_R8:
+                    case NanoCLRDataType.DATATYPE_R8:
                         writer.Write((byte)nanoSerializationType.ELEMENT_TYPE_R8);
                         writer.Write((double)argument.Value);
                         break;
-                    case nanoClrDataType.DATATYPE_CHAR:
+                    case NanoCLRDataType.DATATYPE_CHAR:
                         writer.Write((byte)nanoSerializationType.ELEMENT_TYPE_CHAR);
                         writer.Write((char)argument.Value);
                         break;
-                    case nanoClrDataType.DATATYPE_STRING:
+                    case NanoCLRDataType.DATATYPE_STRING:
                         writer.Write((byte)nanoSerializationType.ELEMENT_TYPE_STRING);
                         writer.Write(_context.StringTable.GetOrCreateStringId((string)argument.Value));
                         break;
@@ -778,7 +778,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             var byReference = typeReference as ByReferenceType;
             if (byReference != null)
             {
-                writer.WriteByte((byte)nanoClrDataType.DATATYPE_BYREF);
+                writer.WriteByte((byte)NanoCLRDataType.DATATYPE_BYREF);
                 WriteDataType(byReference.ElementType, writer, true, false, false);
             }
             else

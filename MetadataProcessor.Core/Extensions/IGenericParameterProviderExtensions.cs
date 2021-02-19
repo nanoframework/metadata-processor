@@ -20,22 +20,22 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
         // 0: TBL_TypeDef
         // 1: TBL_MethodDef
 
-        return nanoTokenHelpers.EncodeTableIndex(value.ToNanoClrTable(), nanoTokenHelpers.NanoTypeOrMethodDefTokenTables);
+        return nanoTokenHelpers.EncodeTableIndex(value.ToNanoCLRTable(), nanoTokenHelpers.NanoTypeOrMethodDefTokenTables);
         }
 
-        public static nanoClrTable ToNanoClrTable(this IGenericParameterProvider value)
+        public static NanoCLRTable ToNanoCLRTable(this IGenericParameterProvider value)
         {
             if (value is TypeDefinition)
             {
-                return nanoClrTable.TBL_TypeDef;
+                return NanoCLRTable.TBL_TypeDef;
             }
             else if (value is MethodDefinition)
             {
-                return nanoClrTable.TBL_MethodDef;
+                return NanoCLRTable.TBL_MethodDef;
             }
             else
             {
-                throw new ArgumentException("Unknown conversion to ClrTable.");
+                throw new ArgumentException("Unknown conversion to CLR Table.");
             }
         }
     }

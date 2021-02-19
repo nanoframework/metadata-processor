@@ -72,7 +72,7 @@
     <Compile Include="DumpGenerator\DumpTemplates.cs" />
     <Compile Include="Endianness\nanoBinaryWriter.cs" />
     <Compile Include="Extensions\IGenericParameterProviderExtensions.cs" />
-    <Compile Include="Extensions\ClrTableExtensions.cs" />
+    <Compile Include="Extensions\CLRTableExtensions.cs" />
     <Compile Include="Extensions\MemberReferenceExtensions.cs" />
     <Compile Include="Extensions\MethodSpecificationExtensions.cs" />
     <Compile Include="Extensions\MethodReferenceExtensions.cs" />
