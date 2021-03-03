@@ -30,7 +30,7 @@
     <file src="bin\Release\nanoFramework.Tools.MetadataProcessor.MsBuildTask.dll" target="lib/net472" />
     <file src="nanoFramework.Tools.MetadataProcessor.MsBuildTask.targets" target="build" />
     
-    <file src="..\assests\nf-logo.png" target="images\" />
+    <file src="..\assets\nf-logo.png" target="images\" />
     <file src="..\LICENSE.md" target="" />
   </files>
 </package>
