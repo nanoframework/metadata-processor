@@ -66,6 +66,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
                     !string.IsNullOrEmpty(source.DeclaringType.Namespace))
                 {
                     enumName = source.FullName.Replace(source.DeclaringType.Namespace, "");
+                   
                     // remove trailing dot
                     enumName = enumName.Replace(".", "");
 
@@ -74,11 +75,26 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
                 }
                 else if (source.DeclaringType != null)
                 {
-                    // namespace not showing up, remove everything before the last '.'
-                    // namespace not showing up, remove everything before the last '.'
-                    enumName = source.FullName.Substring(
-                        source.DeclaringType.FullName.LastIndexOf('.'))
-                        .Replace(".", "");
+                    // namespace not showing up, remove everything before the last '.', if any
+                    var indexOfLastDot = source.DeclaringType.FullName.LastIndexOf('.');
+
+                    if (indexOfLastDot >= 0)
+                    {
+                        enumName = source.FullName.Substring(
+                            indexOfLastDot)
+                            .Replace(".", "");
+                    }
+
+                    try
+                    {
+                        // replace '/' separator
+                        enumName = source.FullName.Replace("/", "_");
+                    }
+                    catch
+                    {
+                        // something very wrong here...
+                        throw new ArgumentException($"Can't process enum type {source.FullName}.");
+                    }
                 }
                 else
                 {
