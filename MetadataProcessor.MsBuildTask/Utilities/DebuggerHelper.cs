@@ -14,17 +14,18 @@ namespace nanoFramework.Tools.Utilities
     {
         public static void WaitForDebuggerIfEnabled(string varName, int timeoutSeconds = 30)
         {
-
             // this wait should be only available on debug build
             // to prevent unwanted wait on VS in machines where the variable is present
 #if DEBUG
-            TimeSpan waitForDebugToAttach = TimeSpan.FromSeconds(timeoutSeconds);
+            TimeSpan timeoutToWaitForDebugToAttach = TimeSpan.FromSeconds(timeoutSeconds);
 
-            var debugEnabled = Environment.GetEnvironmentVariable(varName, EnvironmentVariableTarget.User);
+            var isToEnablePauseForDebug = Environment.GetEnvironmentVariable(varName, EnvironmentVariableTarget.User);
 
-            if (!string.IsNullOrEmpty(debugEnabled) && debugEnabled.Equals("1", StringComparison.Ordinal))
+            if (!string.IsNullOrEmpty(isToEnablePauseForDebug) 
+                && isToEnablePauseForDebug.Equals("1", StringComparison.Ordinal))
             {
-                Console.WriteLine($".NET nanoFramework Metadata Processor msbuild instrumentation task debugging is enabled. Waiting {timeoutSeconds} seconds for debugger attachment...");
+                // output helper messsage to console, hopefully to be read by a human
+                Console.WriteLine($".NET nanoFramework Metadata Processor msbuild task debugging is enabled. Waiting {timeoutSeconds} seconds for debugger to attach...");
 
                 var currentProcessId = Process.GetCurrentProcess().Id;
                 var currentProcessName = Process.GetProcessById(currentProcessId).ProcessName;
@@ -33,12 +34,14 @@ namespace nanoFramework.Tools.Utilities
                     );
 
                 // wait N seconds for debugger to attach
-                while (!Debugger.IsAttached && waitForDebugToAttach.TotalSeconds > 0)
+                while (!Debugger.IsAttached 
+                    && timeoutToWaitForDebugToAttach.TotalSeconds > 0)
                 {
                     Thread.Sleep(1000);
-                    waitForDebugToAttach -= TimeSpan.FromSeconds(1);
+                    timeoutToWaitForDebugToAttach -= TimeSpan.FromSeconds(1);
                 }
 
+                // stop debug
                 Debugger.Break();
             }
 #endif
