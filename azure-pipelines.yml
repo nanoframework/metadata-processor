@@ -139,22 +139,10 @@ jobs:
       msbuildArgs: '/p:PublicRelease=true'
       configuration: '$(buildConfiguration)'
 
-  # update could build number (only possible if this is not a PR from a fork)
-  - task: PowerShell@2
-    condition: and( succeeded(), ne(variables['system.pullrequest.isfork'], true) )
-    displayName: Update cloud build number
-    inputs:
-        targetType: 'inline'
-        script: Write-Host "$("##vso[build.updatebuildnumber]")$env:NBGV_NuGetPackageVersion"
-
-  - task: PowerShell@2
-    displayName: Store NBGV versions
-    inputs:
-        targetType: 'inline'
-        script: |
-            Write-Host "$("##vso[task.setvariable variable=BKP_NBGV_NuGetPackageVersion]")$env:NBGV_NuGetPackageVersion"
-            Write-Host "$("##vso[task.setvariable variable=BKP_GitBuildVersionSimple]")$env:GitBuildVersionSimple"
-      
+  - script: nbgv cloud -a -c
+    condition: succeeded()
+    displayName: Set Could Version
+        
   - task: VisualStudioTestPlatformInstaller@1
     condition: succeeded()
     displayName: 'Visual Studio Test Platform Installer'
@@ -194,7 +182,7 @@ jobs:
     displayName: Pack NuGet with MDP MSBuild task
     inputs:
       command: 'custom' 
-      arguments: 'pack MetadataProcessor.MsBuildTask\package.nuspec -Version $(BKP_NBGV_NuGetPackageVersion) -properties commit="$(Build.SourceVersion)"'
+      arguments: 'pack MetadataProcessor.MsBuildTask\package.nuspec -Version $(NBGV_NuGetPackageVersion) -properties commit="$(Build.SourceVersion)"'
 
   - task: CopyFiles@1
     condition: succeeded()
@@ -257,7 +245,7 @@ jobs:
       githubOwner: 'nanoframework'
       githubRepositoryName: 'metadata-processor'
       githubTag: v$(GitBuildVersionSimple)
-      githubReleaseTitle: 'nanoFramework Metadata Processor v$(BKP_GitBuildVersionSimple)'
+      githubReleaseTitle: 'nanoFramework Metadata Processor v$(GitBuildVersionSimple)'
       githubReleaseNotes: 'add description here'
       githubTargetCommitsh: $(Build.SourceVersion)
       githubReleaseDraft: false
