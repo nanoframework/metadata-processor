@@ -114,6 +114,13 @@ jobs:
     inputs:
       versionSpec: '5.8.0'
 
+  - task: DotNetCoreCLI@2  
+    displayName: Install NBGV tool
+    inputs:
+      command: custom
+      custom: tool
+      arguments: install -g nbgv
+
   - task: InstallnFBuildComponents@1
     condition: ne( variables['StartReleaseCandidate'], true )
     displayName: Install nanoFramework MSBuild components
