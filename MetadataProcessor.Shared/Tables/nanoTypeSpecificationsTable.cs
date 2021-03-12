@@ -91,35 +91,12 @@ namespace nanoFramework.Tools.MetadataProcessor
             nanoTablesContext context)
         {
             _context = context;
-        }
-
-        /// <summary>
-        /// Gets existing or creates new type specification reference identifier.
-        /// </summary>
-        /// <param name="typeReference">Type reference value for obtaining identifier.</param>
-        /// <returns>Existing identifier if specification already in table or new one.</returns>
-        public ushort GetOrCreateTypeSpecificationId(
-            TypeReference typeReference)
-        {
-            // get index of signature for the TypeSpecification 
-            ushort signatureId = _context.SignaturesTable.GetOrCreateSignatureId(typeReference);
             
-            if (!_idByTypeSpecifications.TryGetValue(typeReference, out ushort referenceId))
-            {
-                // check for array in TypeSpec because we don't support for multidimensional arrays
-                if (typeReference.IsArray &&
-                    (typeReference as ArrayType).Rank > 1)
-                {
-                    throw new ArgumentException($".NET nanoFramework doesn't have support for multidimensional arrays. Unable to parse {typeReference.FullName}.");
-                }
-
-                _idByTypeSpecifications.Add(typeReference, _lastAvailableId);
-
             _idByTypeSpecifications = new Dictionary<TypeReference, ushort>(new TypeReferenceEqualityComparer(context));
 
             FillTypeSpecsFromTypes();
 
-            FillTypeSpecsFromMemberReferences();
+            FillTypeSpecsFromMemberReferences();        
         }
 
         /// <summary>
