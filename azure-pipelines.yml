@@ -145,7 +145,17 @@ jobs:
   - script: nbgv cloud -a -c
     condition: succeeded()
     displayName: Set Could Version
-        
+
+  - task: PowerShell@2
+    displayName: Remove nano Test Adapter
+    inputs:
+      targetType: 'inline'
+      script: |
+        Get-ChildItem -Path $env:System_DefaultWorkingDirectory -Include "nanoFramework.TestAdapter.dll" -Recurse |
+        Foreach-object {
+            Remove-Item -Path $_.fullname
+        }
+
   - task: VisualStudioTestPlatformInstaller@1
     condition: succeeded()
     displayName: 'Visual Studio Test Platform Installer'
@@ -157,6 +167,7 @@ jobs:
     displayName: 'Running tests'
     inputs:
       testSelector: 'testAssemblies'
+      pathtoCustomTestAdapters: 
       testAssemblyVer2: |
         **\*Tests*.dll
         !**\*TestAdapter*.dll
