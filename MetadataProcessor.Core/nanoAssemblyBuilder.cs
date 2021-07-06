@@ -738,6 +738,13 @@ namespace nanoFramework.Tools.MetadataProcessor
                                 set.Add(v.VariableType.MetadataToken);
                                 set.Add(v.VariableType.GetElementType().MetadataToken);
                             }
+                            else if(v.VariableType.IsPointer)
+                            {
+                                var message = $"Pointer types in unsafe code aren't supported. Can't use {v.VariableType} variable in \"{md.FullName}\".";
+
+                                Console.WriteLine(message);
+                                throw new Exception(message);
+                            }
                         }
 
                         // op codes
