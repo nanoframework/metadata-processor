@@ -101,7 +101,7 @@ jobs:
   # need this here in order to persist GitHub credentials, do a shallow fetch AND init submodules
   - checkout: self
     persistCredentials: true
-    submodules: true
+    submodules: recursive
 
   - script: |
       git config --global user.email "nanoframework@outlook.com"
