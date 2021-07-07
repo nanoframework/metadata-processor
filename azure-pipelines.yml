@@ -204,7 +204,7 @@ jobs:
     inputs:
       sourceFolder: $(Build.SourcesDirectory)
       Contents: |
-        **\nanoFramework*.nupkg
+        **\nanoFramework.Tools*.nupkg
       TargetFolder: '$(Build.ArtifactStagingDirectory)'
       flattenFolders: true
 
@@ -253,23 +253,20 @@ jobs:
       allowPackageConflicts: true
 
   # create or update GitHub release
-  - task: GitHubReleasePublish@1
-    inputs:
-      githubEndpoint: 'nanoFramework'
-      githubOwner: 'nanoframework'
-      githubRepositoryName: 'metadata-processor'
-      githubTag: v$(GitBuildVersionSimple)
-      githubReleaseTitle: 'nanoFramework Metadata Processor v$(GitBuildVersionSimple)'
-      githubReleaseNotes: 'add description here'
-      githubTargetCommitsh: $(Build.SourceVersion)
-      githubReleaseDraft: false
-      githubReleasePrerelease: false
-      githubReuseDraftOnly: false
-      githubReuseRelease: true
-      githubEditRelease: true
-      githubReleaseAsset: '$(Build.ArtifactStagingDirectory)/*.exe'
+  - task: GithubRelease@1
     condition: and( succeeded(), eq(variables['System.PullRequest.PullRequestId'], ''), not( startsWith(variables['Build.SourceBranch'], 'refs/tags/v') ) )
     displayName: Create/Update GitHub release
+    inputs:
+      gitHubConnection: 'github.com_nano-$(System.TeamProject)'
+      tagSource: userSpecifiedTag
+      tag: v$(GitBuildVersionSimple)
+      title: 'nanoFramework Metadata Processor v$(GitBuildVersionSimple)'
+      releaseNotesSource: inline
+      releaseNotesInline: 'add description here'
+      assets: '$(Build.ArtifactStagingDirectory)/*'
+      assetUploadMode: replace
+      isPreRelease: false
+      addChangeLog: false
 
 ##############################
 - job: Update_Dependents
