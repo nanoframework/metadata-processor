@@ -459,12 +459,14 @@ namespace nanoFramework.Tools.MetadataProcessor
                                 }
                                 else
                                 {
-                                    if ( fr.FieldType.FullName != "System.Void" &&
-                                         fr.FieldType.FullName != "System.String" &&
-                                         fr.FieldType.FullName != "System.Object" &&
-                                        !fr.FieldType.IsPrimitive)
+                                    var elementType = fr.FieldType.GetElementType();
+
+                                    if (elementType.FullName != "System.Void" &&
+                                         elementType.FullName != "System.String" &&
+                                         elementType.FullName != "System.Object" &&
+                                        !elementType.IsPrimitive)
                                     {
-                                        set.Add(fr.FieldType.MetadataToken);
+                                        set.Add(elementType.MetadataToken);
                                     }
                                 }
                             }
