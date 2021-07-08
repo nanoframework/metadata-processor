@@ -22,7 +22,7 @@
     "buildNumber": {
       "enabled": true,
       "includeCommitId": {
-        "when": "nonPublicReleaseOnly"
+        "when": "never"
       }
     }
   }
