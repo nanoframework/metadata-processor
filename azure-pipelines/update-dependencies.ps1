@@ -39,7 +39,7 @@ Write-Host "Updating nanoFramework.Tools.MetadataProcessor.MsBuildTask package i
 
 dotnet remove VisualStudio.Extension\VisualStudio.Extension.csproj package nanoFramework.Tools.MetadataProcessor.MsBuildTask
 
-dotnet add VisualStudio.Extension\VisualStudio.Extension.csproj package nanoFramework.Tools.MetadataProcessor.MsBuildTask --prerelease -s https://pkgs.dev.azure.com/nanoframework/feed/_packaging/sandbox/nuget/v3/index.json
+dotnet add VisualStudio.Extension\VisualStudio.Extension.csproj package nanoFramework.Tools.MetadataProcessor.MsBuildTask -s https://pkgs.dev.azure.com/nanoframework/feed/_packaging/sandbox/nuget/v3/index.json
 
 ####################
 # VS 2019
@@ -48,7 +48,7 @@ Write-Host "Updating nanoFramework.Tools.MetadataProcessor.MsBuildTask package i
 
 dotnet remove VisualStudio.Extension-2019\VisualStudio.Extension.csproj package nanoFramework.Tools.MetadataProcessor.MsBuildTask
 
-dotnet add VisualStudio.Extension-2019\VisualStudio.Extension.csproj package nanoFramework.Tools.MetadataProcessor.MsBuildTask --prerelease -s https://pkgs.dev.azure.com/nanoframework/feed/_packaging/sandbox/nuget/v3/index.json
+dotnet add VisualStudio.Extension-2019\VisualStudio.Extension.csproj package nanoFramework.Tools.MetadataProcessor.MsBuildTask -s https://pkgs.dev.azure.com/nanoframework/feed/_packaging/sandbox/nuget/v3/index.json
 
 #####################
 
