@@ -5,12 +5,11 @@
     <title>nanoFramework.Tools.MetadataProcessor.Core</title>
     <version>$version$</version>
     <authors>nanoFramework project contributors</authors>
-    <owners>nanoFramework project contributors</owners>
-    <description>
-      Metadata Processor tool to be used internally by the VS nanoFramework extension.
-    </description>
+    <owners>nanoframework,dotnetfoundation</owners>
+    <description>Metadata Processor tool to be used internally by the VS nanoFramework extension.</description>
     <releaseNotes>
     </releaseNotes>
+    <readme>docs\README.md</readme>
     <projectUrl>https://github.com/nanoframework/metadata-processor</projectUrl>
     <icon>images\nf-logo.png</icon>
     <license type="file">LICENSE.md</license>
@@ -29,5 +28,6 @@
     <file src="nanoFramework.Tools.MetaDataProcessor.Core.targets" target="build" />
     <file src="..\nf-logo.png" target="images\" />
     <file src="..\LICENSE.md" target="" />
+    <file src="..\README.md" target="docs\" />
   </files>
 </package>
