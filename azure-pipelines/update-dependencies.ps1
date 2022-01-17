@@ -35,20 +35,20 @@ git checkout --quiet develop | Out-Null
 ####################
 # VS 2019 & 2022
 
-"********************************************************************************" | Write-Host
-"Updating nanoFramework.Tools.Debugger.Net package in VS2019 & VS2022 solution..." | Write-Host
+"*****************************************************************************************************" | Write-Host
+"Updating nanoFramework.Tools.MetadataProcessor.MsBuildTask.Net package in VS2019 & VS2022 solution..." | Write-Host
 
-dotnet remove VisualStudio.Extension-2019/VisualStudio.Extension-vs2019.csproj package nanoFramework.Tools.Debugger.Net
-dotnet add VisualStudio.Extension-2019/VisualStudio.Extension-vs2019.csproj package nanoFramework.Tools.Debugger.Net --prerelease
-dotnet remove VisualStudio.Extension-2022/VisualStudio.Extension-vs2022.csproj package nanoFramework.Tools.Debugger.Net
-dotnet add VisualStudio.Extension-2022/VisualStudio.Extension-vs2022.csproj package nanoFramework.Tools.Debugger.Net --prerelease
+dotnet remove VisualStudio.Extension-2019/VisualStudio.Extension-vs2019.csproj package nanoFramework.Tools.MetadataProcessor.MsBuildTask
+dotnet add VisualStudio.Extension-2019/VisualStudio.Extension-vs2019.csproj package nanoFramework.Tools.MetadataProcessor.MsBuildTask
+dotnet remove VisualStudio.Extension-2022/VisualStudio.Extension-vs2022.csproj package nanoFramework.Tools.MetadataProcessor.MsBuildTask
+dotnet add VisualStudio.Extension-2022/VisualStudio.Extension-vs2022.csproj package nanoFramework.Tools.MetadataProcessor.MsBuildTask
 
-"Bumping nanoFramework.Tools.Debugger to $packageTargetVersion." | Write-Host -ForegroundColor Cyan                
+"Bumping nanoFramework.Tools.MetadataProcessor.MsBuildTask to $packageTargetVersion." | Write-Host -ForegroundColor Cyan                
 
 # build commit message
-$commitMessage += "Bumps nanoFramework.Tools.Debugger to $packageTargetVersion.`n"
+$commitMessage += "Bumps nanoFramework.Tools.MetadataProcessor.MsBuildTask to $packageTargetVersion.`n"
 # build PR title
-$prTitle = "Bumps nanoFramework.Tools.Debugger to $packageTargetVersion"
+$prTitle = "Bumps nanoFramework.Tools.MetadataProcessor.MsBuildTask to $packageTargetVersion"
 
 # need this line so nfbot flags the PR appropriately
 $commitMessage += "`n[version update]`n`n"
