@@ -35,6 +35,7 @@ jobs:
   steps:
   - checkout: self
     fetchDepth: 1
+    
 
   # get commit message
   - powershell: |
@@ -295,6 +296,7 @@ jobs:
   # need this here in order to persist GitHub credentials 
   - checkout: self
     fetchDepth: 100
+    persistCredentials: true
   
   - template: azure-pipelines-templates/install-nbgv-tool.yml@templates
   
