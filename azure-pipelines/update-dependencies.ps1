@@ -33,31 +33,22 @@ Write-Host "Checkout develop branch..."
 git checkout --quiet develop | Out-Null
 
 ####################
-# VS 2017
+# VS 2019 & 2022
 
-Write-Host "Updating nanoFramework.Tools.MetadataProcessor.MsBuildTask package in VS2017 solution..."
+"********************************************************************************" | Write-Host
+"Updating nanoFramework.Tools.Debugger.Net package in VS2019 & VS2022 solution..." | Write-Host
 
-dotnet remove VisualStudio.Extension\VisualStudio.Extension.csproj package nanoFramework.Tools.MetadataProcessor.MsBuildTask
+dotnet remove VisualStudio.Extension-2019/VisualStudio.Extension-vs2019.csproj package nanoFramework.Tools.Debugger.Net
+dotnet add VisualStudio.Extension-2019/VisualStudio.Extension-vs2019.csproj package nanoFramework.Tools.Debugger.Net --prerelease
+dotnet remove VisualStudio.Extension-2022/VisualStudio.Extension-vs2022.csproj package nanoFramework.Tools.Debugger.Net
+dotnet add VisualStudio.Extension-2022/VisualStudio.Extension-vs2022.csproj package nanoFramework.Tools.Debugger.Net --prerelease
 
-dotnet add VisualStudio.Extension\VisualStudio.Extension.csproj package nanoFramework.Tools.MetadataProcessor.MsBuildTask -s "https://api.nuget.org/v3/index.json;https://pkgs.dev.azure.com/nanoframework/feed/_packaging/sandbox/nuget/v3/index.json"
-
-####################
-# VS 2019
-
-Write-Host "Updating nanoFramework.Tools.MetadataProcessor.MsBuildTask package in VS2019 solution..."
-
-dotnet remove VisualStudio.Extension-2019\VisualStudio.Extension.csproj package nanoFramework.Tools.MetadataProcessor.MsBuildTask
-
-dotnet add VisualStudio.Extension-2019\VisualStudio.Extension.csproj package nanoFramework.Tools.MetadataProcessor.MsBuildTask -s "https://api.nuget.org/v3/index.json;https://pkgs.dev.azure.com/nanoframework/feed/_packaging/sandbox/nuget/v3/index.json"
-
-#####################
-
-"Bumping MetadataProcessor.MsBuildTask to $packageTargetVersion." | Write-Host -ForegroundColor Cyan                
+"Bumping nanoFramework.Tools.Debugger to $packageTargetVersion." | Write-Host -ForegroundColor Cyan                
 
 # build commit message
-$commitMessage += "Bumps MetadataProcessor.MsBuildTask to $packageTargetVersion.`n"
+$commitMessage += "Bumps nanoFramework.Tools.Debugger to $packageTargetVersion.`n"
 # build PR title
-$prTitle = "Bumps MetadataProcessor.MsBuildTask to $packageTargetVersion"
+$prTitle = "Bumps nanoFramework.Tools.Debugger to $packageTargetVersion"
 
 # need this line so nfbot flags the PR appropriately
 $commitMessage += "`n[version update]`n`n"
@@ -67,52 +58,62 @@ $commitMessage += "### :warning: This is an automated update. Merge only after a
 
 Write-Debug "Git branch" 
 
-# create branch to perform updates
-git branch $newBranchName
+# check if anything was changed
+$repoStatus = "$(git status --short --porcelain)"
 
-Write-Debug "Checkout branch" 
-
-# checkout branch
-git checkout $newBranchName
-
-Write-Debug "Add changes" 
-
-# commit changes
-git add -A > $null
-
-Write-Debug "Commit changed files"
-
-git commit -m "$prTitle ***NO_CI***" -m "$commitMessage" > $null
-
-Write-Debug "Push changes"
-
-git -c http.extraheader="AUTHORIZATION: $auth" push --set-upstream origin $newBranchName > $null
-
-# start PR
-# we are hardcoding to 'develop' branch to have a fixed one
-# this is very important for tags (which don't have branch information)
-# considering that the base branch can be changed at the PR ther is no big deal about this 
-$prRequestBody = @{title="$prTitle";body="$commitMessage";head="$newBranchName";base="develop"} | ConvertTo-Json
-$githubApiEndpoint = "https://api.github.com/repos/nanoframework/nf-Visual-Studio-extension/pulls"
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-
-$headers = @{}
-$headers.Add("Authorization","$auth")
-$headers.Add("Accept","application/vnd.github.symmetra-preview+json")
-
-try 
+if ($repoStatus -ne "")
 {
-    $result = Invoke-RestMethod -Method Post -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::InternetExplorer -Uri  $githubApiEndpoint -Header $headers -ContentType "application/json" -Body $prRequestBody
-    'Started PR with dependencies update...' | Write-Host -NoNewline
-    'OK' | Write-Host -ForegroundColor Green
+    # create branch to perform updates
+    git branch $newBranchName
+
+    Write-Debug "Checkout branch" 
+
+    # checkout branch
+    git checkout $newBranchName
+
+    Write-Debug "Add changes" 
+
+    # commit changes
+    git add -A > $null
+
+    Write-Debug "Commit changed files"
+
+    git commit -m "$prTitle ***NO_CI***" -m "$commitMessage" > $null
+
+    Write-Debug "Push changes"
+
+    git -c http.extraheader="AUTHORIZATION: $auth" push --set-upstream origin $newBranchName > $null
+
+    # start PR
+    # we are hardcoding to 'develop' branch to have a fixed one
+    # this is very important for tags (which don't have branch information)
+    # considering that the base branch can be changed at the PR ther is no big deal about this 
+    $prRequestBody = @{title="$prTitle";body="$commitMessage";head="$newBranchName";base="develop"} | ConvertTo-Json
+    $githubApiEndpoint = "https://api.github.com/repos/nanoframework/nf-Visual-Studio-extension/pulls"
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
+    $headers = @{}
+    $headers.Add("Authorization","$auth")
+    $headers.Add("Accept","application/vnd.github.symmetra-preview+json")
+
+    try 
+    {
+        $result = Invoke-RestMethod -Method Post -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::InternetExplorer -Uri  $githubApiEndpoint -Header $headers -ContentType "application/json" -Body $prRequestBody
+        'Started PR with dependencies update...' | Write-Host -NoNewline
+        'OK' | Write-Host -ForegroundColor Green
+    }
+    catch 
+    {
+        $result = $_.Exception.Response.GetResponseStream()
+        $reader = New-Object System.IO.StreamReader($result)
+        $reader.BaseStream.Position = 0
+        $reader.DiscardBufferedData()
+        $responseBody = $reader.ReadToEnd();
+
+        throw "Error starting PR: $responseBody"
+    }
 }
-catch 
+else
 {
-    $result = $_.Exception.Response.GetResponseStream()
-    $reader = New-Object System.IO.StreamReader($result)
-    $reader.BaseStream.Position = 0
-    $reader.DiscardBufferedData()
-    $responseBody = $reader.ReadToEnd();
-
-    throw "Error starting PR: $responseBody"
+    Write-Host "Nothing udpate at VS extension."
 }
