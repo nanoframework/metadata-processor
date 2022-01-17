@@ -91,10 +91,6 @@
       <Project>{e32f7d15-2499-440c-8026-4d5ee1c5ec3a}</Project>
       <Name>MetadataProcessor.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="TestNFApp\TestNFApp.nfproj">
-      <Project>{9e5e0766-701d-4266-9eba-7b3e4338ed21}</Project>
-      <Name>TestNFApp</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Mono.Cecil">
