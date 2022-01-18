@@ -67,8 +67,8 @@
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
-		<PackageReference Include="Microsoft.Build.Framework" Version="15.1.0-*" PrivateAssets="All" />
-		<PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.1.0-*" PrivateAssets="All" />
+		<PackageReference Include="Microsoft.Build.Framework" Version="15.1.548-*" PrivateAssets="All" />
+		<PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.1.548-*" PrivateAssets="All" />
 		<PackageReference Include="Mono.Cecil" Version="0.11.4" PrivateAssets="All" />
 		<PackageReference Include="mustache-sharp" Version="1.0.0" PrivateAssets="All" />
 		<PackageReference Include="System.Drawing.Common" Version="6.0.0"  PrivateAssets="All" />
@@ -80,7 +80,7 @@
     but before NuGet generates a nuspec. See https://github.com/NuGet/Home/issues/4704.
     -->
     <ItemGroup>
-      <_PackageFiles Include="bin\$(Configuration)\*\Mono.Cecil.*.dll;bin\$(Configuration)\*\mustache-sharp.dll;bin\$(Configuration)\*\System.Drawing.Common.dll">
+      <_PackageFiles Include="bin\$(Configuration)\*\Mono.Cecil.dll;bin\$(Configuration)\*\Mono.Cecil.Pdb.dll;bin\$(Configuration)\*\Mono.Cecil.Rocks.dll;bin\$(Configuration)\*\mustache-sharp.dll;bin\$(Configuration)\*\System.Drawing.Common.dll">
         <PackagePath>lib\%(RecursiveDir)</PackagePath>
         <Visible>false</Visible>
         <BuildAction>Content</BuildAction>
