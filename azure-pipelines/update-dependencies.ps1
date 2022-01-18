@@ -4,11 +4,6 @@
 # 'encoded token' is the Base64 of the string "nfbot:personal-token"
 $auth = "basic $([System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes("nfbot:$env:MY_GITHUB_TOKEN"))))"
 
-# because it can take sometime for the package to become available on the NuGet providers
-# need to hang here for 1 minute (1 * 60)
-"Waiting 1 minute to let package process flow in Azure Artifacts feed..." | Write-Host
-Start-Sleep -Seconds 60 
-
 # init/reset these
 $commitMessage = ""
 $prTitle = ""
