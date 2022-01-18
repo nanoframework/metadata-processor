@@ -15,12 +15,6 @@
 		<RepositoryType>git</RepositoryType>
 		<PackageIcon>nf-logo.png</PackageIcon>
 		<PackageLicenseFile>LICENSE.md</PackageLicenseFile>
-		<Deterministic>true</Deterministic>
-		<EmbedUntrackedSources>true</EmbedUntrackedSources>
-		<ContinuousIntegrationBuild Condition="'$(TF_BUILD)' == 'true'">True</ContinuousIntegrationBuild>
-		<PublishRepositoryUrl>true</PublishRepositoryUrl>
-		<IncludeSymbols>true</IncludeSymbols>
-		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 	</PropertyGroup>
 
 	<PropertyGroup>
@@ -35,9 +29,6 @@
 		<NoPackageAnalysis>true</NoPackageAnalysis>
 		<!-- MSBuild Task DLLs need to be versioned with every build -->
 		<AutoGenerateAssemblyVersion>true</AutoGenerateAssemblyVersion>
-		<SignAssembly>True</SignAssembly>
-		<AssemblyOriginatorKeyFile>key.snk</AssemblyOriginatorKeyFile>
-		<DelaySign>True</DelaySign>
 		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
 	</PropertyGroup>
 
@@ -66,12 +57,11 @@
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
 		<PackageReference Include="Microsoft.Build.Framework" Version="15.1.548-*" PrivateAssets="All" />
 		<PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.1.548-*" PrivateAssets="All" />
 		<PackageReference Include="Mono.Cecil" Version="0.11.4" PrivateAssets="All" />
 		<PackageReference Include="mustache-sharp" Version="1.0.0" PrivateAssets="All" />
-		<PackageReference Include="System.Drawing.Common" Version="6.0.0"  PrivateAssets="All" />
+		<PackageReference Include="System.Drawing.Common" Version="6.0.0" PrivateAssets="All" />
 	</ItemGroup>
 	
   <Target Name="PackTaskDependencies" BeforeTargets="GenerateNuspec">
