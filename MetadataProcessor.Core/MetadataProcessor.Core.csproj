@@ -52,75 +52,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DumpGenerator\ExceptionHandler.cs" />
-    <Compile Include="DumpGenerator\AttributeCustom.cs" />
-    <Compile Include="DumpGenerator\AttFixedArgs.cs" />
-    <Compile Include="DumpGenerator\GenericParam.cs" />
-    <Compile Include="DumpGenerator\UserString.cs" />
-    <Compile Include="DumpGenerator\ILCode.cs" />
-    <Compile Include="DumpGenerator\LocalDef.cs" />
-    <Compile Include="DumpGenerator\MethodDef.cs" />
-    <Compile Include="DumpGenerator\FieldDef.cs" />
-    <Compile Include="DumpGenerator\MemberRef.cs" />
-    <Compile Include="DumpGenerator\InterfaceDef.cs" />
-    <Compile Include="DumpGenerator\TypeDef.cs" />
-    <Compile Include="DumpGenerator\TypeRef.cs" />
-    <Compile Include="DumpGenerator\AssemblyRef.cs" />
-    <Compile Include="DumpGenerator\DumpAllTable.cs" />
-    <Compile Include="DumpGenerator\DumpTemplates.cs" />
-    <Compile Include="Endianness\nanoBinaryWriter.cs" />
-    <Compile Include="Extensions\ParameterDefintionExtensions.cs" />
-    <Compile Include="Extensions\ByteArrayExtensions.cs" />
-    <Compile Include="Extensions\MethodDefinitionExtensions.cs" />
-    <Compile Include="Extensions\TypeReferenceExtensions.cs" />
-    <Compile Include="Extensions\TypeDefinitionExtensions.cs" />
-    <Compile Include="InanoTable.cs" />
-    <Compile Include="Mono.Cecil\CodeWriter.cs" />
-    <Compile Include="nanoAssemblyBuilder.cs" />
-    <Compile Include="nanoAssemblyDefinition.cs" />
-    <Compile Include="nanoDependencyGenerator.cs" />
-    <Compile Include="nanoDumperGenerator.cs" />
-    <Compile Include="nanoSkeletonGenerator.cs" />
-    <Compile Include="SkeletonGenerator\AssemblyClass.cs" />
-    <Compile Include="SkeletonGenerator\AssemblyClassStubs.cs" />
-    <Compile Include="SkeletonGenerator\AssemblyClassTable.cs" />
-    <Compile Include="SkeletonGenerator\AssemblyLookupTable.cs" />
-    <Compile Include="Tables\ICustomStringSorter.cs" />
-    <Compile Include="Tables\nanoAssemblyReferenceTable.cs" />
-    <Compile Include="Tables\nanoAttributesTable.cs" />
-    <Compile Include="Tables\nanoByteCodeTable.cs" />
-    <Compile Include="Tables\nanoEmptyTable.cs" />
-    <Compile Include="Tables\nanoFieldDefinitionTable.cs" />
-    <Compile Include="Tables\nanoFieldReferenceTable.cs" />
-    <Compile Include="Tables\nanoMethodDefinitionTable.cs" />
-    <Compile Include="Tables\nanoGenericParamTable.cs" />
-    <Compile Include="Tables\nanoMethodReferenceTable.cs" />
-    <Compile Include="Tables\nanoReferenceTableBase.cs" />
-    <Compile Include="Tables\nanoResourceDataTable.cs" />
-    <Compile Include="Tables\nanoResourceFileTable.cs" />
-    <Compile Include="Tables\nanoResourcesTable.cs" />
-    <Compile Include="Tables\nanoSignaturesTable.cs" />
-    <Compile Include="Tables\nanoStringTable.cs" />
-    <Compile Include="Tables\nanoTablesContext.cs" />
-    <Compile Include="Tables\nanoTypeDefinitionTable.cs" />
-    <Compile Include="Tables\nanoTypeReferenceTable.cs" />
-    <Compile Include="Tables\nanoTypeSpecificationsTable.cs" />
-    <Compile Include="Utility\Crc32.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Utility\LoadHintsAssemblyResolver.cs" />
-    <Compile Include="Utility\nanoBitmapProcessor.cs" />
-    <Compile Include="Utility\nanoCLR_DataType.cs" />
-    <Compile Include="Utility\nanoFontProcessor.cs" />
-    <Compile Include="Utility\nanoDependencyGeneratorWriter.cs" />
-    <Compile Include="Utility\nanoPdbxFileWriter.cs" />
-    <Compile Include="Utility\nanoTypeDefinitionFlags.cs" />
-    <Compile Include="Utility\nanoSerializationType.cs" />
-    <Compile Include="Utility\nanoStringsConstants.cs" />
-    <Compile Include="Utility\NativeMethodsCrc.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="key.snk" />
-    <Compile Include="SkeletonGenerator\SkeletonTemplates.cs" />
     <None Include="packages.lock.json" />
   </ItemGroup>
   <ItemGroup>
@@ -141,5 +76,6 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
   </ItemGroup>
+  <Import Project="..\MetadataProcessor.Shared\MetadataProcessor.Shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

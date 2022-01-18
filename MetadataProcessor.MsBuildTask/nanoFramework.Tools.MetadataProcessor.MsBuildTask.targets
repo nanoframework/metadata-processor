@@ -36,5 +36,12 @@
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
             <IncludeInVSIX>true</IncludeInVSIX>
         </Content>
-    </ItemGroup>
+		<Content Include="$(OutDir)System.Drawing.Common.dll">
+			<InstallRoot>MSBuild</InstallRoot>
+			<VSIXSubPath>nanoFramework\v1.0\</VSIXSubPath>
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+			<IncludeInVSIX>true</IncludeInVSIX>
+		</Content>
+
+	</ItemGroup>
 </Project>

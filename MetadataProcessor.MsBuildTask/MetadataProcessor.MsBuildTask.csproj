@@ -3,8 +3,6 @@
 	<PropertyGroup>
 		<OutputType>Library</OutputType>
 
-		<MicrosoftBuildFrameworkVersion>15.4.8</MicrosoftBuildFrameworkVersion>
-
 		<TargetFrameworks>net6.0;net472</TargetFrameworks>
 		<PackageId>nanoFramework.Tools.MetadataProcessor.MsBuildTask</PackageId>
 		<AssemblyName>nanoFramework.Tools.MetadataProcessor.MsBuildTask</AssemblyName>
@@ -30,10 +28,17 @@
 		<EnableDefaultItems>false</EnableDefaultItems>
 		<GenerateDependencyFile>false</GenerateDependencyFile>
 		<IncludeBuildOutput>true</IncludeBuildOutput>
+		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+
+		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 
 		<NoPackageAnalysis>true</NoPackageAnalysis>
 		<!-- MSBuild Task DLLs need to be versioned with every build -->
-		 <AutoGenerateAssemblyVersion>true</AutoGenerateAssemblyVersion> 
+		<AutoGenerateAssemblyVersion>true</AutoGenerateAssemblyVersion>
+		<SignAssembly>True</SignAssembly>
+		<AssemblyOriginatorKeyFile>key.snk</AssemblyOriginatorKeyFile>
+		<DelaySign>True</DelaySign>
+		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -55,21 +60,34 @@
 		<Compile Include="*.cs" />
 		<Compile Include="Utilities/*.cs" />
 	</ItemGroup>
-	
+
 	<ItemGroup>
 		<PackageReference Include="Nerdbank.GitVersioning" Version="3.4.255">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All"/>
-		<PackageReference Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildFrameworkVersion)" />
-		<PackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildFrameworkVersion)" />
-		<PackageReference Include="Mono.Cecil" Version="0.11.4" />
-		<PackageReference Include="mustache-sharp" Version="1.0.0" />
+		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
+		<PackageReference Include="Microsoft.Build.Framework" Version="15.1.0-*" PrivateAssets="All" />
+		<PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.1.0-*" PrivateAssets="All" />
+		<PackageReference Include="Mono.Cecil" Version="0.11.4" PrivateAssets="All" />
+		<PackageReference Include="mustache-sharp" Version="1.0.0" PrivateAssets="All" />
+		<PackageReference Include="System.Drawing.Common" Version="6.0.0"  PrivateAssets="All" />
 	</ItemGroup>
-
-	<ItemGroup>
-		<ProjectReference Include="..\MetadataProcessor.Core\MetadataProcessor.Core.csproj" />
-	</ItemGroup>
+	
+  <Target Name="PackTaskDependencies" BeforeTargets="GenerateNuspec">
+    <!--
+    The include needs to happen after output has been copied to build output folder
+    but before NuGet generates a nuspec. See https://github.com/NuGet/Home/issues/4704.
+    -->
+    <ItemGroup>
+      <_PackageFiles Include="bin\$(Configuration)\*\Mono.Cecil.*.dll;bin\$(Configuration)\*\mustache-sharp.dll;bin\$(Configuration)\*\System.Drawing.Common.dll">
+        <PackagePath>lib\%(RecursiveDir)</PackagePath>
+        <Visible>false</Visible>
+        <BuildAction>Content</BuildAction>
+      </_PackageFiles>
+    </ItemGroup>
+  </Target>
+	
+  <Import Project="..\MetadataProcessor.Shared\MetadataProcessor.Shared.projitems" Label="Shared" />
 
 </Project>

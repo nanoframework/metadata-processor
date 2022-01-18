@@ -1,0 +1,78 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>efe862a2-8aa5-4e4d-8aa2-7fe9a8c22069</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>MetadataProcessor.Shared</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)DumpGenerator\AssemblyRef.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DumpGenerator\AttFixedArgs.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DumpGenerator\AttributeCustom.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DumpGenerator\DumpAllTable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DumpGenerator\DumpTemplates.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DumpGenerator\ExceptionHandler.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DumpGenerator\FieldDef.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DumpGenerator\GenericParam.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DumpGenerator\ILCode.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DumpGenerator\InterfaceDef.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DumpGenerator\LocalDef.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DumpGenerator\MemberRef.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DumpGenerator\MethodDef.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DumpGenerator\TypeDef.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DumpGenerator\TypeRef.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DumpGenerator\UserString.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Endianness\nanoBinaryWriter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\ByteArrayExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\MethodDefinitionExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\ParameterDefintionExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\TypeDefinitionExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\TypeReferenceExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)InanoTable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Mono.Cecil\CodeWriter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)nanoAssemblyBuilder.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)nanoAssemblyDefinition.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)nanoDependencyGenerator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)nanoDumperGenerator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)nanoSkeletonGenerator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SkeletonGenerator\AssemblyClass.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SkeletonGenerator\AssemblyClassStubs.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SkeletonGenerator\AssemblyClassTable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SkeletonGenerator\AssemblyLookupTable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SkeletonGenerator\SkeletonTemplates.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tables\ICustomStringSorter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tables\nanoAssemblyReferenceTable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tables\nanoAttributesTable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tables\nanoByteCodeTable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tables\nanoEmptyTable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tables\nanoFieldDefinitionTable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tables\nanoFieldReferenceTable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tables\nanoGenericParamTable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tables\nanoMethodDefinitionTable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tables\nanoMethodReferenceTable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tables\nanoReferenceTableBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tables\nanoResourceDataTable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tables\nanoResourceFileTable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tables\nanoResourcesTable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tables\nanoSignaturesTable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tables\nanoStringTable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tables\nanoTablesContext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tables\nanoTypeDefinitionTable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tables\nanoTypeReferenceTable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tables\nanoTypeSpecificationsTable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utility\Crc32.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utility\LoadHintsAssemblyResolver.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utility\nanoBitmapProcessor.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utility\nanoCLR_DataType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utility\nanoDependencyGeneratorWriter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utility\nanoFontProcessor.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utility\nanoPdbxFileWriter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utility\nanoSerializationType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utility\nanoStringsConstants.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utility\nanoTypeDefinitionFlags.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utility\NativeMethodsCrc.cs" />
+  </ItemGroup>
+</Project>
