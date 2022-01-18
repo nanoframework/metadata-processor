@@ -22,7 +22,14 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MetadataProcessor.MsBuildTa
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TestProjects", "TestProjects", "{65BB4122-2D2E-4CC2-9C28-42845B1A496B}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "MetadataProcessor.Shared", "MetadataProcessor.Shared\MetadataProcessor.Shared.shproj", "{EFE862A2-8AA5-4E4D-8AA2-7FE9A8C22069}"
+EndProject
 Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		MetadataProcessor.Shared\MetadataProcessor.Shared.projitems*{9b18784e-1bf2-47d1-bdd1-85b678f883f9}*SharedItemsImports = 5
+		MetadataProcessor.Shared\MetadataProcessor.Shared.projitems*{e32f7d15-2499-440c-8026-4d5ee1c5ec3a}*SharedItemsImports = 4
+		MetadataProcessor.Shared\MetadataProcessor.Shared.projitems*{efe862a2-8aa5-4e4d-8aa2-7fe9a8c22069}*SharedItemsImports = 13
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU

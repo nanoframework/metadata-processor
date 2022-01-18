@@ -36,8 +36,9 @@
 		<!-- MSBuild Task DLLs need to be versioned with every build -->
 		<AutoGenerateAssemblyVersion>true</AutoGenerateAssemblyVersion>
 		<SignAssembly>True</SignAssembly>
-		<AssemblyOriginatorKeyFile>E:\GitHub\nf-metadata-processor\MetadataProcessor.Core\key.snk</AssemblyOriginatorKeyFile>
-		<DelaySign>False</DelaySign>
+		<AssemblyOriginatorKeyFile>key.snk</AssemblyOriginatorKeyFile>
+		<DelaySign>True</DelaySign>
+		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -70,10 +71,7 @@
 		<PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.1.0-*" PrivateAssets="All" />
 		<PackageReference Include="Mono.Cecil" Version="0.11.4" PrivateAssets="All" />
 		<PackageReference Include="mustache-sharp" Version="1.0.0" PrivateAssets="All" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<ProjectReference Include="..\MetadataProcessor.Core\MetadataProcessor.Core.csproj" />
+		<PackageReference Include="System.Drawing.Common" Version="6.0.0"  PrivateAssets="All" />
 	</ItemGroup>
 	
   <Target Name="PackTaskDependencies" BeforeTargets="GenerateNuspec">
@@ -82,12 +80,14 @@
     but before NuGet generates a nuspec. See https://github.com/NuGet/Home/issues/4704.
     -->
     <ItemGroup>
-      <_PackageFiles Include="bin\$(Configuration)\*\Mono.Cecil.*.dll;bin\$(Configuration)\*\mustache-sharp.dll">
+      <_PackageFiles Include="bin\$(Configuration)\*\Mono.Cecil.*.dll;bin\$(Configuration)\*\mustache-sharp.dll;bin\$(Configuration)\*\System.Drawing.Common.dll">
         <PackagePath>lib\%(RecursiveDir)</PackagePath>
         <Visible>false</Visible>
         <BuildAction>Content</BuildAction>
       </_PackageFiles>
     </ItemGroup>
   </Target>
+	
+  <Import Project="..\MetadataProcessor.Shared\MetadataProcessor.Shared.projitems" Label="Shared" />
 
 </Project>
