@@ -7,7 +7,7 @@
 		<PackageId>nanoFramework.Tools.MetadataProcessor.MsBuildTask</PackageId>
 		<AssemblyName>nanoFramework.Tools.MetadataProcessor.MsBuildTask</AssemblyName>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-		<Authors>.NET nanoFramework project contributors</Authors>
+		<Authors>nanoframework</Authors>
 		<Company>.NET nanoFramework</Company>
 		<Description>This package includes the Metadata Processor build task required to build a .NET nanoFramework project with msbuild and dotnet tool.</Description>
 		<PackageProjectUrl>https://github.com/nanoframework/metadata-processor</PackageProjectUrl>
