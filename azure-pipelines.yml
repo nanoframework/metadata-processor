@@ -1,3 +1,6 @@
+# Copyright (c) .NET Foundation and Contributors
+# See LICENSE file in the project root for full license information.
+
 trigger:
   branches:
     include:
@@ -16,6 +19,8 @@ trigger:
       - v*
 
 # PR always trigger build
+pr:
+  autoCancel: true
 
 # add nf-tools repo to resources (for Azure Pipelines templates)
 resources:
@@ -103,7 +108,7 @@ jobs:
     buildPlatform: 'Any CPU'
     buildConfiguration: 'Release'
     solution: 'nanoFramework.Tools.MetadataProcessor.sln'
-    NF_MDP_MSBUILDTASK_PATH: '$(System.DefaultWorkingDirectory)/MetadataProcessor.MsBuildTask/bin/Release'
+    NF_MDP_MSBUILDTASK_PATH: '$(System.DefaultWorkingDirectory)/MetadataProcessor.MsBuildTask/bin/Release/net472'
 
   steps:
 
@@ -113,18 +118,16 @@ jobs:
     submodules: true
 
   - script: |
+      cd $(System.DefaultWorkingDirectory)/MetadataProcessor.Tests/mscorlib
+      git submodule update --init --recursive
+    displayName: Update mscorlib sub-module
+
+  - script: |
       git config --global user.email "nanoframework@outlook.com"
       git config --global user.name "nfbot"
     displayName: Setup git identity
 
   - template: azure-pipelines-templates/install-nuget.yml@templates  
-
-  - task: DotNetCoreCLI@2  
-    displayName: Install NBGV tool
-    inputs:
-      command: custom
-      custom: tool
-      arguments: install -g nbgv
 
   - task: InstallnFBuildComponents@1
     condition: ne( variables['StartReleaseCandidate'], true )
@@ -136,54 +139,48 @@ jobs:
       restoreSolution: '$(solution)'
       feedsToUse: config
       nugetConfigPath: 'NuGet.config'
-
-  # - task: NuGetCommand@2
-  #   displayName: NuGet restore mscorlib
-  #   inputs:
-  #     restoreSolution: 'MetadataProcessor.Tests\mscorlib\nanoFramework.CoreLibrary.sln'
-  #     feedsToUse: config
-  #     nugetConfigPath: 'NuGet.config'
   
   - task: VSBuild@1
     inputs:
       solution: '$(solution)'
       platform: '$(buildPlatform)'
+      msbuildArchitecture: x64
       msbuildArgs: '/p:PublicRelease=true'
       configuration: '$(buildConfiguration)'
 
-  # - task: PowerShell@2
-  #   displayName: Remove nano Test Adapter
-  #   inputs:
-  #     targetType: 'inline'
-  #     script: |
-  #       Get-ChildItem -Path $env:System_DefaultWorkingDirectory -Include "nanoFramework.TestAdapter.dll" -Recurse |
-  #       Foreach-object {
-  #           Remove-Item -Path $_.fullname
-  #       }
+  - task: PowerShell@2
+    displayName: Remove nano Test Adapter
+    inputs:
+      targetType: 'inline'
+      script: |
+        Get-ChildItem -Path $env:System_DefaultWorkingDirectory -Include "nanoFramework.TestAdapter.dll" -Recurse |
+        Foreach-object {
+            Remove-Item -Path $_.fullname
+        }
 
-  # - task: VisualStudioTestPlatformInstaller@1
-  #   condition: succeeded()
-  #   displayName: 'Visual Studio Test Platform Installer'
-  #   inputs:
-  #     versionSelector: latestStable
+  - task: VisualStudioTestPlatformInstaller@1
+    condition: succeeded()
+    displayName: 'Visual Studio Test Platform Installer'
+    inputs:
+      versionSelector: latestStable
 
-  # - task: VSTest@2
-  #   condition: succeeded()
-  #   displayName: 'Running tests'
-  #   inputs:
-  #     testSelector: 'testAssemblies'
-  #     pathtoCustomTestAdapters: 
-  #     testAssemblyVer2: |
-  #       **\*Tests*.dll
-  #       !**\*TestAdapter*.dll
-  #       !**\*TestFramework*.dll
-  #       !**\obj\**
-  #     searchFolder: '$(System.DefaultWorkingDirectory)'
-  #     platform: '$(BuildPlatform)'
-  #     configuration: '$(BuildConfiguration)'
-  #     diagnosticsEnabled: true
-  #     vsTestVersion: toolsInstaller
-  #     codeCoverageEnabled: true
+  - task: VSTest@2
+    condition: succeeded()
+    displayName: 'Running tests'
+    inputs:
+      testSelector: 'testAssemblies'
+      pathtoCustomTestAdapters: 
+      testAssemblyVer2: |
+        **\*Tests*.dll
+        !**\*TestAdapter*.dll
+        !**\*TestFramework*.dll
+        !**\obj\**
+      searchFolder: '$(System.DefaultWorkingDirectory)'
+      platform: '$(BuildPlatform)'
+      configuration: '$(BuildConfiguration)'
+      diagnosticsEnabled: true
+      vsTestVersion: toolsInstaller
+      codeCoverageEnabled: true
 
   - task: CopyFiles@1
     condition: succeeded()
