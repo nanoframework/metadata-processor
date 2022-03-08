@@ -97,13 +97,13 @@
       <Version>0.11.4</Version>
     </PackageReference>
     <PackageReference Include="MSTest.TestAdapter">
-      <Version>2.2.5</Version>
+      <Version>2.2.8</Version>
     </PackageReference>
     <PackageReference Include="MSTest.TestFramework">
-      <Version>2.2.5</Version>
+      <Version>2.2.8</Version>
     </PackageReference>
     <PackageReference Include="nanoFramework.nanoCLR.Win32" GeneratePathProperty="true">
-      <Version>1.6.5-preview.235</Version>
+      <Version>1.7.4-preview.39</Version>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
@@ -112,8 +112,12 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>
+      nuget restore "$(ProjectDir)mscorlib\nanoFramework.CoreLibrary.sln"
+      "$(MSBuildBinPath)\msbuild" "$(ProjectDir)mscorlib\nanoFramework.CoreLibrary.sln" -t:Build -p:Configuration=$(Configuration) /m
+      "$(MSBuildBinPath)\msbuild" "$(ProjectDir)TestNFClassLibrary\TestNFClassLibrary\TestNFClassLibrary.nfproj" -t:Build -p:Configuration=$(Configuration) /m
+      "$(MSBuildBinPath)\msbuild" "$(ProjectDir)TestNFApp\TestNFApp.nfproj" -t:Build -p:Configuration=$(Configuration) /m
       mkdir "$(TargetDir)\TestNFApp"
-      copy /y "$(ProjectDir)\TestNFApp\$(OutDir)\*" "$(TargetDir)\TestNFApp"
+      copy /y "$(ProjectDir)TestNFApp\$(OutDir)\*" "$(TargetDir)\TestNFApp"
     </PreBuildEvent>
   </PropertyGroup>
   <Target Name="BeforeBuild">
