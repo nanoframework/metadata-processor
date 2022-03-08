@@ -8,12 +8,18 @@ trigger:
       - develop
       - release-*
   paths:
-    exclude: 
-      - README.md
-      - LICENSE.md
-      - NuGet.Config
-      - github_changelog_generator
+    exclude:
+      - .github_changelog_generator
       - .gitignore
+      - CHANGELOG.md
+      - CODE_OF_CONDUCT.md
+      - LICENSE.md
+      - README.md
+      - NuGet.Config
+      - assets/*
+      - config/*
+      - .github/*
+
   tags:
     include: 
       - v*
