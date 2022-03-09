@@ -1,4 +1,9 @@
-﻿using System;
+﻿//
+// Copyright (c) .NET Foundation and Contributors
+// See LICENSE file in the project root for full license information.
+//
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -164,7 +169,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.MonoCecil
             var r = CodeWriter.PreProcessMethod(methodDefinition, nanoTablesContext.StringTable).ToArray();
 
 #if DEBUG
-            Assert.AreEqual("[18,16][24,20][31,25]", String.Join(String.Empty, r.Select(i=>$"[{i.Item1.ToString()},{i.Item2.ToString()}]")));
+            Assert.AreEqual("[18,16][24,20][31,25]", String.Join(String.Empty, r.Select(i => $"[{i.Item1.ToString()},{i.Item2.ToString()}]")));
 #else
             Assert.AreEqual("[14,12][20,16][27,21]", String.Join(String.Empty, r.Select(i=>$"[{i.Item1.ToString()},{i.Item2.ToString()}]")));
 #endif
@@ -403,7 +408,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.MonoCecil
                 iut.WriteMethodBody();
             });
 
-            CollectionAssert.AreEqual(new byte[] 
+            CollectionAssert.AreEqual(new byte[]
             {
                 0x03,   // ldarg.1
                 0x04,   // ldarg.2

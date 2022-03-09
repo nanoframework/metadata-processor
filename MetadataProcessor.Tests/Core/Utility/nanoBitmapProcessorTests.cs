@@ -1,10 +1,10 @@
-﻿using System;
-using System.Drawing;
-using System.IO;
-using System.Reflection;
-using System.Resources;
-using System.Text;
+﻿//
+// Copyright (c) .NET Foundation and Contributors
+// See LICENSE file in the project root for full license information.
+//
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Drawing;
 
 namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
 {

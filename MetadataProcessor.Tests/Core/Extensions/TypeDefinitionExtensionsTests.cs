@@ -1,4 +1,9 @@
-﻿using System;
+﻿//
+// Copyright (c) .NET Foundation and Contributors
+// See LICENSE file in the project root for full license information.
+//
+
+using System;
 using System.Linq;
 using nanoFramework.Tools.MetadataProcessor.Core.Extensions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -31,7 +36,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Extensions
             Assert.IsTrue(r);
 
 
-            
+
             var valueTypeDefinition = mscorlibAssemblyDefinition.MainModule.Types.First(i => i.FullName == typeof(System.Int32).FullName);
 
             // test
@@ -39,7 +44,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Extensions
 
             Assert.IsTrue(r);
 
-            
+
 
             var interfaceTypeDefinition = mscorlibAssemblyDefinition.MainModule.Types.First(i => i.FullName == typeof(System.ICloneable).FullName);
 

@@ -1,7 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿//
+// Copyright (c) .NET Foundation and Contributors
+// See LICENSE file in the project root for full license information.
+//
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Mono.Cecil;
+using System;
+using System.Collections.Generic;
 
 namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
 {
