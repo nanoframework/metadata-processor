@@ -1,4 +1,9 @@
-﻿using System;
+﻿//
+// Copyright (c) .NET Foundation and Contributors
+// See LICENSE file in the project root for full license information.
+//
+
+using System;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -103,7 +108,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Endianness
             (iut) =>
             {
                 // test
-                iut.WriteVersion(new Version(1,2,3,4));
+                iut.WriteVersion(new Version(1, 2, 3, 4));
             },
             expected);
         }

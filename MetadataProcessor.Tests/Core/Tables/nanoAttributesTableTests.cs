@@ -1,11 +1,13 @@
-﻿using System;
-using System.Linq;
-using System.Collections.Generic;
+﻿//
+// Copyright (c) .NET Foundation and Contributors
+// See LICENSE file in the project root for full license information.
+//
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Mono.Cecil;
-using System.Reflection;
-using System.IO;
-using System.Text;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
 {

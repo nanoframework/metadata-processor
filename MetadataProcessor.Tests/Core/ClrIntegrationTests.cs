@@ -1,10 +1,14 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿//
+// Copyright (c) .NET Foundation and Contributors
+// See LICENSE file in the project root for full license information.
+//
+
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
 {
@@ -14,16 +18,16 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
         [TestMethod]
         public void RunBCLTest()
         {
-            var workingDirectory = Path.GetDirectoryName(TestObjectHelper.GetTestNFAppLocation());
+            var workingDirectory = Path.GetDirectoryName(TestObjectHelper.TestNFAppLocation);
             var mscorlibLocation = Path.Combine(workingDirectory, "mscorlib.pe");
 
             // prepare the process start of the WIN32 nanoCLR
             Process nanoClr = new Process();
-            
+
             // load only mscorlib
             string parameter = $"-load {mscorlibLocation}";
 
-            nanoClr.StartInfo = new ProcessStartInfo(TestObjectHelper.GetNanoClrLocation(), parameter)
+            nanoClr.StartInfo = new ProcessStartInfo(TestObjectHelper.NanoClrLocation, parameter)
             {
                 WorkingDirectory = workingDirectory,
                 UseShellExecute = false,
@@ -55,10 +59,10 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
             // 5 seconds
             int runTimeout = 5000;
 
-            var workingDirectory = Path.GetDirectoryName(TestObjectHelper.GetTestNFAppLocation());
+            var workingDirectory = Path.GetDirectoryName(TestObjectHelper.TestNFAppLocation);
             var mscorlibLocation = Path.Combine(workingDirectory, "mscorlib.pe");
-            var nfTestAppLocation = TestObjectHelper.GetTestNFAppLocation().Replace("exe", "pe");
-            var nfTestClassLibLocation = TestObjectHelper.GetTestNFClassLibLocation().Replace("dll", "pe");
+            var nfTestAppLocation = TestObjectHelper.TestNFAppLocation.Replace("exe", "pe");
+            var nfTestClassLibLocation = TestObjectHelper.TestNFClassLibLocation.Replace("dll", "pe");
 
             // prepare the process start of the WIN32 nanoCLR
             Process nanoClr = new Process();
@@ -71,7 +75,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
                 // load only mscorlib
                 string parameter = $"-load {nfTestAppLocation} -load {mscorlibLocation} -load {nfTestClassLibLocation}";
 
-                nanoClr.StartInfo = new ProcessStartInfo(TestObjectHelper.GetNanoClrLocation(), parameter)
+                nanoClr.StartInfo = new ProcessStartInfo(TestObjectHelper.NanoClrLocation, parameter)
                 {
                     WorkingDirectory = workingDirectory,
                     UseShellExecute = false,
@@ -88,7 +92,8 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
                 StringBuilder output = new StringBuilder();
                 StringBuilder error = new StringBuilder();
 
-                nanoClr.OutputDataReceived += (sender, e) => {
+                nanoClr.OutputDataReceived += (sender, e) =>
+                {
                     if (e.Data == null)
                     {
                         outputWaitHandle.Set();

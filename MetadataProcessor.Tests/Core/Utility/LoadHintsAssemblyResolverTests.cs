@@ -1,7 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿//
+// Copyright (c) .NET Foundation and Contributors
+// See LICENSE file in the project root for full license information.
+//
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
+using System.Collections.Generic;
 
 namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
 {
@@ -50,7 +54,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
         {
             var thisAssemblyName = this.GetType().Assembly.GetName();
             var assemblyNameReference = new Mono.Cecil.AssemblyNameReference(thisAssemblyName.Name, thisAssemblyName.Version);
-            
+
             var loadHints = new Dictionary<string, string>();
             loadHints.Add(thisAssemblyName.Name, this.GetType().Assembly.Location);
 

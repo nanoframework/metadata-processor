@@ -1,7 +1,11 @@
-﻿using System;
+﻿//
+// Copyright (c) .NET Foundation and Contributors
+// See LICENSE file in the project root for full license information.
+//
+
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.IO;
 using System.Xml;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
 {
@@ -24,7 +28,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
                     // test
                     iut.Write(xw);
                 }
-                
+
                 var result = sw.ToString();
 
                 // the minimum:
@@ -50,7 +54,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
                 // test for some points
                 Assert.IsNotNull(xd.SelectSingleNode("//AssemblyGraph/Assembly[@Name='TestNFApp']/AssemblyRef[@Name='mscorlib']"));
                 Assert.IsNotNull(xd.SelectSingleNode("//AssemblyGraph/Assembly[@Name='TestNFApp']/AssemblyRef[@Name='TestNFClassLibrary']"));
-                
+
                 Assert.IsNotNull(xd.SelectSingleNode("//AssemblyGraph/Assembly[@Name='mscorlib']"));
                 Assert.IsNotNull(xd.SelectSingleNode("//AssemblyGraph/Assembly[@Name='TestNFClassLibrary']"));
 
