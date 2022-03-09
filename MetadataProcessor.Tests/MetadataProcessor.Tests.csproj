@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>nanoFramework.Tools.MetadataProcessor.Tests</RootNamespace>
     <AssemblyName>nanoFramework.Tools.MetadataProcessor.Tests</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">16.0</VisualStudioVersion>
@@ -19,6 +19,8 @@
     <TestProjectType>UnitTest</TestProjectType>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <TargetFrameworkProfile />
+    <NF_MDP_MSBUILDTASK_PATH>$(ProjectDir)..\MetadataProcessor.MsBuildTask\bin\$(Configuration)\net472\*</NF_MDP_MSBUILDTASK_PATH>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -113,16 +115,13 @@
   <PropertyGroup>
     <PreBuildEvent>
       nuget restore "$(ProjectDir)mscorlib\nanoFramework.CoreLibrary.sln"
-      "$(MSBuildBinPath)\msbuild" "$(ProjectDir)mscorlib\nanoFramework.CoreLibrary.sln" -t:Build -p:Configuration=$(Configuration) /m
-      "$(MSBuildBinPath)\msbuild" "$(ProjectDir)TestNFClassLibrary\TestNFClassLibrary\TestNFClassLibrary.nfproj" -t:Build -p:Configuration=$(Configuration) /m
-      "$(MSBuildBinPath)\msbuild" "$(ProjectDir)TestNFApp\TestNFApp.nfproj" -t:Build -p:Configuration=$(Configuration) /m
+      "$(MSBuildBinPath)\msbuild" "$(ProjectDir)mscorlib\nanoFramework.CoreLibrary.sln" -t:Build -p:Configuration=$(Configuration) -p:NF_MDP_MSBUILDTASK_PATH="$(ProjectDir)..\MetadataProcessor.MsBuildTask\bin\$(Configuration)\net472" /m
+      "$(MSBuildBinPath)\msbuild" "$(ProjectDir)TestNFClassLibrary\TestNFClassLibrary\TestNFClassLibrary.nfproj" -t:Build -p:Configuration=$(Configuration) -p:NF_MDP_MSBUILDTASK_PATH="$(ProjectDir)..\MetadataProcessor.MsBuildTask\bin\$(Configuration)\net472"
+      "$(MSBuildBinPath)\msbuild" "$(ProjectDir)TestNFApp\TestNFApp.nfproj" -t:Build -p:Configuration=$(Configuration) -p:NF_MDP_MSBUILDTASK_PATH="$(ProjectDir)..\MetadataProcessor.MsBuildTask\bin\$(Configuration)\net472"
       mkdir "$(TargetDir)\TestNFApp"
       copy /y "$(ProjectDir)TestNFApp\$(OutDir)\*" "$(TargetDir)\TestNFApp"
     </PreBuildEvent>
   </PropertyGroup>
-  <Target Name="BeforeBuild">
-    <Error Text="Can't perform Unit Tests without Metadata processor location overriden with NF_MDP_MSBUILDTASK_PATH env variable." Condition="'$(NF_MDP_MSBUILDTASK_PATH)' == ''" />
-  </Target>
   <Target Name="SetNFClrLocation" AfterTargets="Build">
     <Copy SourceFiles="$(PkgnanoFramework_nanoCLR_Win32)\tools\nanoFramework.nanoCLR.exe" DestinationFolder="$(TargetDir)\nanoCLR" SkipUnchangedFiles="false">
     </Copy>
