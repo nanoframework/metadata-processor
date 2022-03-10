@@ -13,6 +13,9 @@ namespace nanoFramework.Tools.MetadataProcessor
 {
     public sealed class nanoTablesContext
     {
+        internal readonly bool _verbose;
+        internal readonly bool _isCoreLibrary;
+
         internal static HashSet<string> IgnoringAttributes { get; } = new HashSet<string>(StringComparer.Ordinal)
             {
                 // Assembly-level attributes
@@ -73,6 +76,8 @@ namespace nanoFramework.Tools.MetadataProcessor
             AssemblyDefinition = assemblyDefinition;
 
             ClassNamesToExclude = classNamesToExclude;
+            _verbose = verbose;
+            _isCoreLibrary = isCoreLibrary;
 
             // check CustomAttributes against list of classes to exclude
             foreach (var item in assemblyDefinition.CustomAttributes)

@@ -186,7 +186,16 @@ jobs:
       configuration: '$(BuildConfiguration)'
       diagnosticsEnabled: true
       vsTestVersion: toolsInstaller
-      codeCoverageEnabled: true
+      codeCoverageEnabled: true  
+
+  - task: CopyFiles@1
+    condition: failed()
+    displayName: Collecting test results
+    inputs:
+      Contents: |
+        **\TestResults\*.trx
+      TargetFolder: '$(Build.ArtifactStagingDirectory)'
+      flattenFolders: true
 
   - task: CopyFiles@1
     condition: succeeded()
@@ -234,7 +243,6 @@ jobs:
     
   # publish artifacts (only possible if this is not a PR originated on a fork)
   - task: PublishBuildArtifacts@1
-    condition: and( succeeded(), ne(variables['system.pullrequest.isfork'], true) )
     displayName: Publish deployables artifacts
     inputs:
       PathtoPublish: '$(Build.ArtifactStagingDirectory)'
