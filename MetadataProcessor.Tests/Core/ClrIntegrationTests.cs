@@ -132,7 +132,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
                 Assert.IsTrue(output.ToString().Contains("Exiting."), "Failed to find EXITING message.");
 
                 // look for any exceptions
-                Assert.IsFalse(output.ToString().Contains("++++ Exception System.Exception"), "Exception thrown by TestNFApp application.");
+                Assert.IsFalse(output.ToString().Contains("++++ Exception "), "Exception thrown by TestNFApp application.");
             }
             finally
             {
