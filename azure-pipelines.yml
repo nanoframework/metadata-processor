@@ -301,8 +301,6 @@ jobs:
     fetchDepth: 100
     persistCredentials: true
   
-  - template: azure-pipelines-templates/install-nbgv-tool.yml@templates
-  
   - template: azure-pipelines-templates/install-nuget.yml@templates  
 
   - script: nbgv cloud -a -c
