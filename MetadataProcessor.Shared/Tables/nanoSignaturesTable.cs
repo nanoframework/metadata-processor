@@ -100,7 +100,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         {
             _context = context;
 
-            //_verbose = true;
+            _verbose = context._verbose;
         }
 
         /// <summary>
@@ -625,9 +625,24 @@ namespace nanoFramework.Tools.MetadataProcessor
                         break;
                     default:
                         Debug.Fail(dataType.ToString());
-                        break;
+                        throw new ArgumentException($"Failed to generate signature for CustomAttribute. Unsupported type: {argument.Type.FullName}.");
                 }
             }
+
+            if (argument.Type.IsArray && argument.Type.GetElementType().FullName == "System.Object")
+            {
+                var paramCollection = (CustomAttributeArgument[])argument.Value;
+
+                // add count of array elements that will follow
+                writer.Write((byte)paramCollection.Length);
+
+                // now add parameters as usual
+                foreach (var attributeArgument in paramCollection)
+                {
+                    WriteAttributeArgumentValue(writer, (CustomAttributeArgument)attributeArgument.Value);
+                }
+            }
+
             if (argument.Type.FullName == "System.Type")
             {
                 writer.Write((byte)nanoSerializationType.ELEMENT_TYPE_STRING);

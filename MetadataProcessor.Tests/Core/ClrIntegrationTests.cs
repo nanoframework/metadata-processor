@@ -18,7 +18,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
         [TestMethod]
         public void RunBCLTest()
         {
-            var workingDirectory = Path.GetDirectoryName(TestObjectHelper.TestNFAppLocation);
+            var workingDirectory = TestObjectHelper.TestNFAppLocation;
             var mscorlibLocation = Path.Combine(workingDirectory, "mscorlib.pe");
 
             // prepare the process start of the WIN32 nanoCLR
@@ -59,10 +59,10 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
             // 5 seconds
             int runTimeout = 5000;
 
-            var workingDirectory = Path.GetDirectoryName(TestObjectHelper.TestNFAppLocation);
+            var workingDirectory = TestObjectHelper.TestNFAppLocation;
             var mscorlibLocation = Path.Combine(workingDirectory, "mscorlib.pe");
-            var nfTestAppLocation = TestObjectHelper.TestNFAppLocation.Replace("exe", "pe");
-            var nfTestClassLibLocation = TestObjectHelper.TestNFClassLibLocation.Replace("dll", "pe");
+            var nfTestAppLocation = TestObjectHelper.TestNFAppFullPath.Replace("exe", "pe");
+            var nfTestClassLibLocation = TestObjectHelper.TestNFClassLibFullPath.Replace("dll", "pe");
 
             // prepare the process start of the WIN32 nanoCLR
             Process nanoClr = new Process();
@@ -84,7 +84,11 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
                 };
 
                 // launch nanoCLR
-                if (!nanoClr.Start())
+                if (nanoClr.Start())
+                {
+                    Console.WriteLine($"Running nanoCLR Win32 @ '{TestObjectHelper.NanoClrLocation}'");
+                }
+                else
                 {
                     Assert.Fail("Failed to start nanoCLR Win32");
                 }
@@ -125,14 +129,15 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
                 // wait for exit, no worries about the outcome
                 nanoClr.WaitForExit(runTimeout);
 
+                var outputOfTest = output.ToString();
 
                 // look for standard messages
-                Assert.IsTrue(output.ToString().Contains("Ready."), "Failed to find READY message.");
-                Assert.IsTrue(output.ToString().Contains("Done."), "Failed to find DONE message.");
-                Assert.IsTrue(output.ToString().Contains("Exiting."), "Failed to find EXITING message.");
+                Assert.IsTrue(outputOfTest.Contains("Ready."), $"Failed to find READY message.{Environment.NewLine}Output is:{Environment.NewLine}{outputOfTest}");
+                Assert.IsTrue(outputOfTest.Contains("Done."), $"Failed to find DONE message.{Environment.NewLine}Output is:{Environment.NewLine}{outputOfTest}");
+                Assert.IsTrue(outputOfTest.Contains("Exiting."), $"Failed to find EXITING message.{Environment.NewLine}Output is:{Environment.NewLine}{outputOfTest}");
 
                 // look for any exceptions
-                Assert.IsFalse(output.ToString().Contains("++++ Exception "), "Exception thrown by TestNFApp application.");
+                Assert.IsFalse(outputOfTest.Contains("++++ Exception "), $"Exception thrown by TestNFApp application.{Environment.NewLine}Output is:{Environment.NewLine}{outputOfTest}");
             }
             finally
             {

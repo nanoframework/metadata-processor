@@ -18,9 +18,16 @@
   </PropertyGroup>
   <Import Project="$(NanoFrameworkProjectSystemPath)NFProjectSystem.props" Condition="Exists('$(NanoFrameworkProjectSystemPath)NFProjectSystem.props')" />
   <ItemGroup>
+    <Compile Include="AuthorAttribute.cs" />
+    <Compile Include="DataRowAttribute.cs" />
     <Compile Include="DummyCustomAttribute1.cs" />
     <Compile Include="DummyCustomAttribute2.cs" />
+    <Compile Include="IgnoreAttribute.cs" />
     <Compile Include="IOneClassOverAll.cs" />
+    <Compile Include="ComplexAttribute.cs" />
+    <Compile Include="MaxAttribute.cs" />
+    <Compile Include="MyAttribute.cs" />
+    <Compile Include="MyClass1.cs" />
     <Compile Include="OneClassOverAll.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
