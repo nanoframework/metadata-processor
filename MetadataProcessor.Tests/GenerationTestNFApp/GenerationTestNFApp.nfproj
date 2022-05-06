@@ -23,7 +23,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\MetadataProcessor.Tests\mscorlib\nanoFramework.CoreLibrary\CoreLibrary.nfproj" />
+    <ProjectReference Include="..\mscorlib\nanoFramework.CoreLibrary\CoreLibrary.nfproj" />
   </ItemGroup>
   <Import Project="$(NanoFrameworkProjectSystemPath)NFProjectSystem.CSharp.targets" Condition="Exists('$(NanoFrameworkProjectSystemPath)NFProjectSystem.CSharp.targets')" />
   <ProjectExtensions>

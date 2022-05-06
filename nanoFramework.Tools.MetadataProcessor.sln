@@ -30,7 +30,7 @@ Project("{11A8DD76-328B-46DF-9F39-F559912D0360}") = "TestNFClassLibrary", "Metad
 EndProject
 Project("{11A8DD76-328B-46DF-9F39-F559912D0360}") = "CoreLibrary", "MetadataProcessor.Tests\mscorlib\nanoFramework.CoreLibrary\CoreLibrary.nfproj", "{BE7B95D5-087C-45F8-8197-4B438BEDFE11}"
 EndProject
-Project("{11A8DD76-328B-46DF-9F39-F559912D0360}") = "GenerationTestNFApp", "GenerationTestNFApp\GenerationTestNFApp.nfproj", "{06589FF8-1FB2-4513-B2C8-FDA351D57BF9}"
+Project("{11A8DD76-328B-46DF-9F39-F559912D0360}") = "GenerationTestNFApp", "MetadataProcessor.Tests\GenerationTestNFApp\GenerationTestNFApp.nfproj", "{06589FF8-1FB2-4513-B2C8-FDA351D57BF9}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
