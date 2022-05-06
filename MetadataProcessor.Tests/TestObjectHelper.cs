@@ -175,7 +175,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
             {
                 if (string.IsNullOrEmpty(_generationTestNFAppLocation))
                 {
-                    return Path.Combine(
+                    _generationTestNFAppLocation = Path.Combine(
                         TestExecutionLocation,
                         "GenerationTestNFApp");
                 }

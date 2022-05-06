@@ -69,6 +69,22 @@ namespace nanoFramework.Tools.MetadataProcessor
             PrimitiveTypes.Add(typeof(IntPtr).FullName, nanoCLR_DataType.DATATYPE_I4);
             PrimitiveTypes.Add(typeof(UIntPtr).FullName, nanoCLR_DataType.DATATYPE_U4);
 
+            PrimitiveTypes.Add($"{typeof(sbyte).FullName}&", nanoCLR_DataType.DATATYPE_I1_BYREF);
+            PrimitiveTypes.Add($"{typeof(short).FullName}&", nanoCLR_DataType.DATATYPE_I2_BYREF);
+            PrimitiveTypes.Add($"{typeof(int).FullName}&", nanoCLR_DataType.DATATYPE_I4_BYREF);
+            PrimitiveTypes.Add($"{typeof(long).FullName}&", nanoCLR_DataType.DATATYPE_I8_BYREF);
+
+            PrimitiveTypes.Add($"{typeof(byte).FullName}&", nanoCLR_DataType.DATATYPE_U1_BYREF);
+            PrimitiveTypes.Add($"{typeof(ushort).FullName}&", nanoCLR_DataType.DATATYPE_U2_BYREF);
+            PrimitiveTypes.Add($"{typeof(uint).FullName}&", nanoCLR_DataType.DATATYPE_U4_BYREF);
+            PrimitiveTypes.Add($"{typeof(ulong).FullName}&", nanoCLR_DataType.DATATYPE_U8_BYREF);
+
+            PrimitiveTypes.Add($"{typeof(float).FullName}&", nanoCLR_DataType.DATATYPE_R4_BYREF);
+            PrimitiveTypes.Add($"{typeof(double).FullName}&", nanoCLR_DataType.DATATYPE_R8_BYREF);
+
+            PrimitiveTypes.Add($"{typeof(char).FullName}&", nanoCLR_DataType.DATATYPE_CHAR_BYREF);
+            PrimitiveTypes.Add($"{typeof(bool).FullName}&", nanoCLR_DataType.DATATYPE_BOOLEAN_BYREF);
+
             PrimitiveTypes.Add(typeof(WeakReference).FullName, nanoCLR_DataType.DATATYPE_WEAKCLASS);
         }
 
