@@ -21,6 +21,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
         private static string _testNFClassLibLocation;
         private static string _nanoClrLocation;
         private static string _configuration;
+        private static string _generationTestNFAppLocation;
 
         public static nanoTablesContext GetTestNFAppNanoTablesContext()
         {
@@ -143,6 +144,43 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
                 }
 
                 return _nanoClrLocation;
+            }
+        }
+
+        public static string GenerationNFAppFullPath
+        {
+            get
+            {
+                return Path.Combine(
+                    TestExecutionLocation,
+                    "..\\..\\GenerationTestNFApp\\bin",
+                    _configuration,
+                    "GenerationTestNFApp.exe");
+            }
+        }
+
+        public static string GenerationTestNFAppFullPath
+        {
+            get
+            {
+                return Path.Combine(
+                    GenerationTestNFAppLocation,
+                    "GenerationTestNFApp.exe");
+            }
+        }
+
+        public static string GenerationTestNFAppLocation
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(_generationTestNFAppLocation))
+                {
+                    return Path.Combine(
+                        TestExecutionLocation,
+                        "GenerationTestNFApp");
+                }
+
+                return _generationTestNFAppLocation;
             }
         }
 

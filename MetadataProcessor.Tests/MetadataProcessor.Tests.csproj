@@ -56,6 +56,7 @@
     <Compile Include="Core\Extensions\ParameterDefintionExtensionsTests.cs" />
     <Compile Include="Core\Extensions\TypeDefinitionExtensionsTests.cs" />
     <Compile Include="Core\Extensions\TypeReferenceExtensionsTests.cs" />
+    <Compile Include="Core\GenerationTests.cs" />
     <Compile Include="Core\Mono.Cecil\CodeWriterTests.cs" />
     <Compile Include="Core\Tables\nanoAssemblyReferenceTableTests.cs" />
     <Compile Include="Core\Tables\nanoAttributesTableTests.cs" />
