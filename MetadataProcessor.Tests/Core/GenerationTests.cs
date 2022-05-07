@@ -57,6 +57,27 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
             skeletonGenerator.GenerateSkeleton();
 
             // Assert
+            string generatedFile = File.ReadAllText($"{stubPath}\\GenerationTestNFApp_GenerationTestNFApp_NativeMethodGeneration.cpp");
+            string shouldHaveGenerated =
+@"void NativeMethodGeneration::NativeMethodWithReferenceParameters( uint8_t& param0, uint16_t& param1, HRESULT &hr )
+{
+
+    (void)param0;
+    (void)param1;
+    (void)hr;
+
+
+    ////////////////////////////////
+    // implementation starts here //
+
+
+    // implementation ends here   //
+    ////////////////////////////////
+
+
+}";
+            Assert.IsTrue(generatedFile.Contains(shouldHaveGenerated));
+            Directory.Delete(stubPath, true);
         }
 
         private nanoBinaryWriter GetBinaryWriter(
