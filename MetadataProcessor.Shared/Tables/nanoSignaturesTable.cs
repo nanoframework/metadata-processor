@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using MetadataProcessor.Shared.Utility;
 
 namespace nanoFramework.Tools.MetadataProcessor
 {
@@ -44,6 +45,10 @@ namespace nanoFramework.Tools.MetadataProcessor
         internal static readonly IDictionary<string, nanoCLR_DataType> PrimitiveTypes =
             new Dictionary<string, nanoCLR_DataType>(StringComparer.Ordinal);
 
+        internal static readonly IDictionary<string, ReferencedDataType> ReferencedTypes =
+            new Dictionary<string, ReferencedDataType>(StringComparer.Ordinal);
+
+
         static nanoSignaturesTable()
         {
             PrimitiveTypes.Add(typeof(void).FullName, nanoCLR_DataType.DATATYPE_VOID);
@@ -69,23 +74,22 @@ namespace nanoFramework.Tools.MetadataProcessor
             PrimitiveTypes.Add(typeof(IntPtr).FullName, nanoCLR_DataType.DATATYPE_I4);
             PrimitiveTypes.Add(typeof(UIntPtr).FullName, nanoCLR_DataType.DATATYPE_U4);
 
-            PrimitiveTypes.Add($"{typeof(sbyte).FullName}&", nanoCLR_DataType.DATATYPE_I1_BYREF);
-            PrimitiveTypes.Add($"{typeof(short).FullName}&", nanoCLR_DataType.DATATYPE_I2_BYREF);
-            PrimitiveTypes.Add($"{typeof(int).FullName}&", nanoCLR_DataType.DATATYPE_I4_BYREF);
-            PrimitiveTypes.Add($"{typeof(long).FullName}&", nanoCLR_DataType.DATATYPE_I8_BYREF);
-
-            PrimitiveTypes.Add($"{typeof(byte).FullName}&", nanoCLR_DataType.DATATYPE_U1_BYREF);
-            PrimitiveTypes.Add($"{typeof(ushort).FullName}&", nanoCLR_DataType.DATATYPE_U2_BYREF);
-            PrimitiveTypes.Add($"{typeof(uint).FullName}&", nanoCLR_DataType.DATATYPE_U4_BYREF);
-            PrimitiveTypes.Add($"{typeof(ulong).FullName}&", nanoCLR_DataType.DATATYPE_U8_BYREF);
-
-            PrimitiveTypes.Add($"{typeof(float).FullName}&", nanoCLR_DataType.DATATYPE_R4_BYREF);
-            PrimitiveTypes.Add($"{typeof(double).FullName}&", nanoCLR_DataType.DATATYPE_R8_BYREF);
-
-            PrimitiveTypes.Add($"{typeof(char).FullName}&", nanoCLR_DataType.DATATYPE_CHAR_BYREF);
-            PrimitiveTypes.Add($"{typeof(bool).FullName}&", nanoCLR_DataType.DATATYPE_BOOLEAN_BYREF);
-
             PrimitiveTypes.Add(typeof(WeakReference).FullName, nanoCLR_DataType.DATATYPE_WEAKCLASS);
+
+            ReferencedTypes.Add($"{typeof(sbyte).FullName}&", ReferencedDataType.DATATYPE_I1_BYREF);
+            ReferencedTypes.Add($"{typeof(short).FullName}&", ReferencedDataType.DATATYPE_I2_BYREF);
+            ReferencedTypes.Add($"{typeof(int).FullName}&", ReferencedDataType.DATATYPE_I4_BYREF);
+            ReferencedTypes.Add($"{typeof(long).FullName}&", ReferencedDataType.DATATYPE_I8_BYREF);
+
+            ReferencedTypes.Add($"{typeof(byte).FullName}&", ReferencedDataType.DATATYPE_U1_BYREF);
+            ReferencedTypes.Add($"{typeof(ushort).FullName}&", ReferencedDataType.DATATYPE_U2_BYREF);
+            ReferencedTypes.Add($"{typeof(uint).FullName}&", ReferencedDataType.DATATYPE_U4_BYREF);
+            ReferencedTypes.Add($"{typeof(ulong).FullName}&", ReferencedDataType.DATATYPE_U8_BYREF);
+
+            ReferencedTypes.Add($"{typeof(float).FullName}&", ReferencedDataType.DATATYPE_R4_BYREF);
+
+            ReferencedTypes.Add($"{typeof(char).FullName}&", ReferencedDataType.DATATYPE_CHAR_BYREF);
+            ReferencedTypes.Add($"{typeof(bool).FullName}&", ReferencedDataType.DATATYPE_BOOLEAN_BYREF);
         }
 
         /// <summary>

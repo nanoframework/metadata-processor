@@ -5,6 +5,7 @@
 
 using Mono.Cecil;
 using System.Text;
+using MetadataProcessor.Shared.Utility;
 
 namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
 {
@@ -108,8 +109,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
 
         public static string ToNativeTypeAsString(this TypeReference type)
         {
-            nanoCLR_DataType dataType;
-            if (nanoSignaturesTable.PrimitiveTypes.TryGetValue(type.FullName, out dataType))
+            if (nanoSignaturesTable.PrimitiveTypes.TryGetValue(type.FullName, out var dataType))
             {
                 switch (dataType)
                 {
@@ -138,29 +138,6 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
                     case nanoCLR_DataType.DATATYPE_R4:
                         return "float";
 
-                    case nanoCLR_DataType.DATATYPE_BOOLEAN_BYREF:
-                        return "bool&";
-                    case nanoCLR_DataType.DATATYPE_CHAR_BYREF:
-                        return "char&";
-                    case nanoCLR_DataType.DATATYPE_I1_BYREF:
-                        return "int8_t&";
-                    case nanoCLR_DataType.DATATYPE_U1_BYREF:
-                        return "uint8_t&";
-                    case nanoCLR_DataType.DATATYPE_I2_BYREF:
-                        return "int16_t&";
-                    case nanoCLR_DataType.DATATYPE_U2_BYREF:
-                        return "uint16_t&";
-                    case nanoCLR_DataType.DATATYPE_I4_BYREF:
-                        return "signed int&";
-                    case nanoCLR_DataType.DATATYPE_U4_BYREF:
-                        return "unsigned int&";
-                    case nanoCLR_DataType.DATATYPE_I8_BYREF:
-                        return "int64_t&";
-                    case nanoCLR_DataType.DATATYPE_U8_BYREF:
-                        return "uint64_t&";
-                    case nanoCLR_DataType.DATATYPE_R4_BYREF:
-                        return "float&";
-
                     case nanoCLR_DataType.DATATYPE_BYREF:
                         return "";
 
@@ -172,6 +149,37 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
                     case nanoCLR_DataType.DATATYPE_LAST_PRIMITIVE_TO_PRESERVE:
                         return "double";
 
+                    default:
+                        return "UNSUPPORTED";
+                }
+            }
+
+            if (nanoSignaturesTable.ReferencedTypes.TryGetValue(type.FullName, out var referencedDataType))
+            {
+                switch (referencedDataType)
+                {
+                    case ReferencedDataType.DATATYPE_BOOLEAN_BYREF:
+                        return "bool&";
+                    case ReferencedDataType.DATATYPE_CHAR_BYREF:
+                        return "char&";
+                    case ReferencedDataType.DATATYPE_I1_BYREF:
+                        return "int8_t&";
+                    case ReferencedDataType.DATATYPE_U1_BYREF:
+                        return "uint8_t&";
+                    case ReferencedDataType.DATATYPE_I2_BYREF:
+                        return "int16_t&";
+                    case ReferencedDataType.DATATYPE_U2_BYREF:
+                        return "uint16_t&";
+                    case ReferencedDataType.DATATYPE_I4_BYREF:
+                        return "signed int&";
+                    case ReferencedDataType.DATATYPE_U4_BYREF:
+                        return "unsigned int&";
+                    case ReferencedDataType.DATATYPE_I8_BYREF:
+                        return "int64_t&";
+                    case ReferencedDataType.DATATYPE_U8_BYREF:
+                        return "uint64_t&";
+                    case ReferencedDataType.DATATYPE_R4_BYREF:
+                        return "float&";
                     default:
                         return "UNSUPPORTED";
                 }
@@ -199,49 +207,38 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
             {
                 return "UNSUPPORTED";
             }
+
             return "";
         }
 
         public static string ToCLRTypeAsString(this TypeReference type)
         {
-            nanoCLR_DataType dataType;
-            if (nanoSignaturesTable.PrimitiveTypes.TryGetValue(type.FullName, out dataType))
+            if (nanoSignaturesTable.PrimitiveTypes.TryGetValue(type.FullName, out var dataType))
             {
                 switch (dataType)
                 {
                     case nanoCLR_DataType.DATATYPE_VOID:
                         return "void";
-                    case nanoCLR_DataType.DATATYPE_BOOLEAN_BYREF:
                     case nanoCLR_DataType.DATATYPE_BOOLEAN:
                         return "bool";
-                    case nanoCLR_DataType.DATATYPE_CHAR_BYREF:
                     case nanoCLR_DataType.DATATYPE_CHAR:
                         return "CHAR";
-                    case nanoCLR_DataType.DATATYPE_I1_BYREF:
                     case nanoCLR_DataType.DATATYPE_I1:
                         return "INT8";
-                    case nanoCLR_DataType.DATATYPE_U1_BYREF:
                     case nanoCLR_DataType.DATATYPE_U1:
                         return "UINT8";
-                    case nanoCLR_DataType.DATATYPE_I2_BYREF:
                     case nanoCLR_DataType.DATATYPE_I2:
                         return "INT16";
-                    case nanoCLR_DataType.DATATYPE_U2_BYREF:
                     case nanoCLR_DataType.DATATYPE_U2:
                         return "UINT16";
-                    case nanoCLR_DataType.DATATYPE_I4_BYREF:
                     case nanoCLR_DataType.DATATYPE_I4:
                         return "INT32";
-                    case nanoCLR_DataType.DATATYPE_U4_BYREF:
                     case nanoCLR_DataType.DATATYPE_U4:
                         return "UINT32";
-                    case nanoCLR_DataType.DATATYPE_I8_BYREF:
                     case nanoCLR_DataType.DATATYPE_I8:
                         return "INT64";
-                    case nanoCLR_DataType.DATATYPE_U8_BYREF:
                     case nanoCLR_DataType.DATATYPE_U8:
                         return "UINT64";
-                    case nanoCLR_DataType.DATATYPE_R4_BYREF:
                     case nanoCLR_DataType.DATATYPE_R4:
                         return "float";
                     case nanoCLR_DataType.DATATYPE_BYREF:
@@ -254,6 +251,38 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
                     // System.Double
                     case nanoCLR_DataType.DATATYPE_LAST_PRIMITIVE_TO_PRESERVE:
                         return "double";
+
+                    default:
+                        return "UNSUPPORTED";
+                }
+            }
+
+            if (nanoSignaturesTable.ReferencedTypes.TryGetValue(type.FullName, out var referencedDataType))
+            {
+                switch (referencedDataType)
+                {
+                    case ReferencedDataType.DATATYPE_BOOLEAN_BYREF:
+                        return "bool";
+                    case ReferencedDataType.DATATYPE_CHAR_BYREF:
+                        return "CHAR";
+                    case ReferencedDataType.DATATYPE_I1_BYREF:
+                        return "INT8";
+                    case ReferencedDataType.DATATYPE_U1_BYREF:
+                        return "UINT8";
+                    case ReferencedDataType.DATATYPE_I2_BYREF:
+                        return "INT16";
+                    case ReferencedDataType.DATATYPE_U2_BYREF:
+                        return "UINT16";
+                    case ReferencedDataType.DATATYPE_I4_BYREF:
+                        return "INT32";
+                    case ReferencedDataType.DATATYPE_U4_BYREF:
+                        return "UINT32";
+                    case ReferencedDataType.DATATYPE_I8_BYREF:
+                        return "INT64";
+                    case ReferencedDataType.DATATYPE_U8_BYREF:
+                        return "UINT64";
+                    case ReferencedDataType.DATATYPE_R4_BYREF:
+                        return "float";
 
                     default:
                         return "UNSUPPORTED";
