@@ -74,5 +74,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Utility\nanoStringsConstants.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utility\nanoTypeDefinitionFlags.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utility\NativeMethodsCrc.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utility\ReferencedDataType.cs" />
   </ItemGroup>
 </Project>

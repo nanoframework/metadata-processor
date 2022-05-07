@@ -53,25 +53,6 @@ namespace nanoFramework.Tools.MetadataProcessor
         DATATYPE_BYREF, // BYREF <type>
 
         /// <summary>
-        /// Reference versions of all of the basic versions
-        /// </summary>
-        DATATYPE_BOOLEAN_BYREF, // 1 byte
-        DATATYPE_I1_BYREF, // 1 byte
-        DATATYPE_U1_BYREF, // 1 byte
-        
-        DATATYPE_CHAR_BYREF, // 2 bytes
-        DATATYPE_I2_BYREF, // 2 bytes
-        DATATYPE_U2_BYREF, // 2 bytes
-        
-        DATATYPE_I4_BYREF, // 4 bytes
-        DATATYPE_U4_BYREF, // 4 bytes
-        DATATYPE_R4_BYREF, // 4 bytes
-        
-        DATATYPE_I8_BYREF, // 8 bytes
-        DATATYPE_U8_BYREF, // 8 bytes
-        DATATYPE_R8_BYREF, // 8 bytes
-
-        /// <summary>
         /// Generic parameter in a generic type definition, represented as number
         /// </summary>
         DATATYPE_VAR,
