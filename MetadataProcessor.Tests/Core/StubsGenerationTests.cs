@@ -90,9 +90,9 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
 
             // read generated stub file and look for the function declaration
             string generatedFile = File.ReadAllText($"{stubPath}\\StubsGenerationTestNFApp_StubsGenerationTestNFApp_NativeMethodGeneration.cpp");
-            string shouldHaveGenerated =
-NativeMethodGenerationDeclaration;
-            Assert.IsTrue(generatedFile.Contains(shouldHaveGenerated));
+
+            Assert.IsTrue(generatedFile.Contains(NativeMethodGenerationDeclaration));
+
             Directory.Delete(stubPath, true);
         }
 
