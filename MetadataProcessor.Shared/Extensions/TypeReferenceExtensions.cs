@@ -5,7 +5,6 @@
 
 using Mono.Cecil;
 using System.Text;
-using MetadataProcessor.Shared.Utility;
 
 namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
 {
@@ -109,7 +108,8 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
 
         public static string ToNativeTypeAsString(this TypeReference type)
         {
-            if (nanoSignaturesTable.PrimitiveTypes.TryGetValue(type.FullName, out var dataType))
+            nanoCLR_DataType dataType;
+            if (nanoSignaturesTable.PrimitiveTypes.TryGetValue(type.FullName, out dataType))
             {
                 switch (dataType)
                 {
@@ -137,7 +137,6 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
                         return "uint64_t";
                     case nanoCLR_DataType.DATATYPE_R4:
                         return "float";
-
                     case nanoCLR_DataType.DATATYPE_BYREF:
                         return "";
 
@@ -149,37 +148,6 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
                     case nanoCLR_DataType.DATATYPE_LAST_PRIMITIVE_TO_PRESERVE:
                         return "double";
 
-                    default:
-                        return "UNSUPPORTED";
-                }
-            }
-
-            if (nanoSignaturesTable.ReferencedTypes.TryGetValue(type.FullName, out var referencedDataType))
-            {
-                switch (referencedDataType)
-                {
-                    case ReferencedDataType.DATATYPE_BOOLEAN_BYREF:
-                        return "bool&";
-                    case ReferencedDataType.DATATYPE_CHAR_BYREF:
-                        return "char&";
-                    case ReferencedDataType.DATATYPE_I1_BYREF:
-                        return "int8_t&";
-                    case ReferencedDataType.DATATYPE_U1_BYREF:
-                        return "uint8_t&";
-                    case ReferencedDataType.DATATYPE_I2_BYREF:
-                        return "int16_t&";
-                    case ReferencedDataType.DATATYPE_U2_BYREF:
-                        return "uint16_t&";
-                    case ReferencedDataType.DATATYPE_I4_BYREF:
-                        return "signed int&";
-                    case ReferencedDataType.DATATYPE_U4_BYREF:
-                        return "unsigned int&";
-                    case ReferencedDataType.DATATYPE_I8_BYREF:
-                        return "int64_t&";
-                    case ReferencedDataType.DATATYPE_U8_BYREF:
-                        return "uint64_t&";
-                    case ReferencedDataType.DATATYPE_R4_BYREF:
-                        return "float&";
                     default:
                         return "UNSUPPORTED";
                 }
@@ -207,13 +175,13 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
             {
                 return "UNSUPPORTED";
             }
-
             return "";
         }
 
         public static string ToCLRTypeAsString(this TypeReference type)
         {
-            if (nanoSignaturesTable.PrimitiveTypes.TryGetValue(type.FullName, out var dataType))
+            nanoCLR_DataType dataType;
+            if (nanoSignaturesTable.PrimitiveTypes.TryGetValue(type.FullName, out dataType))
             {
                 switch (dataType)
                 {
@@ -251,38 +219,6 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
                     // System.Double
                     case nanoCLR_DataType.DATATYPE_LAST_PRIMITIVE_TO_PRESERVE:
                         return "double";
-
-                    default:
-                        return "UNSUPPORTED";
-                }
-            }
-
-            if (nanoSignaturesTable.ReferencedTypes.TryGetValue(type.FullName, out var referencedDataType))
-            {
-                switch (referencedDataType)
-                {
-                    case ReferencedDataType.DATATYPE_BOOLEAN_BYREF:
-                        return "bool";
-                    case ReferencedDataType.DATATYPE_CHAR_BYREF:
-                        return "CHAR";
-                    case ReferencedDataType.DATATYPE_I1_BYREF:
-                        return "INT8";
-                    case ReferencedDataType.DATATYPE_U1_BYREF:
-                        return "UINT8";
-                    case ReferencedDataType.DATATYPE_I2_BYREF:
-                        return "INT16";
-                    case ReferencedDataType.DATATYPE_U2_BYREF:
-                        return "UINT16";
-                    case ReferencedDataType.DATATYPE_I4_BYREF:
-                        return "INT32";
-                    case ReferencedDataType.DATATYPE_U4_BYREF:
-                        return "UINT32";
-                    case ReferencedDataType.DATATYPE_I8_BYREF:
-                        return "INT64";
-                    case ReferencedDataType.DATATYPE_U8_BYREF:
-                        return "UINT64";
-                    case ReferencedDataType.DATATYPE_R4_BYREF:
-                        return "float";
 
                     default:
                         return "UNSUPPORTED";
