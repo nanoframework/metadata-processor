@@ -56,6 +56,7 @@
     <Compile Include="Core\Extensions\ParameterDefintionExtensionsTests.cs" />
     <Compile Include="Core\Extensions\TypeDefinitionExtensionsTests.cs" />
     <Compile Include="Core\Extensions\TypeReferenceExtensionsTests.cs" />
+    <Compile Include="Core\StubsGenerationTests.cs" />
     <Compile Include="Core\Mono.Cecil\CodeWriterTests.cs" />
     <Compile Include="Core\Tables\nanoAssemblyReferenceTableTests.cs" />
     <Compile Include="Core\Tables\nanoAttributesTableTests.cs" />
@@ -119,8 +120,11 @@
       "$(MSBuildBinPath)\msbuild" "$(ProjectDir)mscorlib\nanoFramework.CoreLibrary.sln" -t:Build -p:Configuration=$(Configuration) -p:NF_MDP_MSBUILDTASK_PATH="$(ProjectDir)..\MetadataProcessor.MsBuildTask\bin\$(Configuration)\net472" /m
       "$(MSBuildBinPath)\msbuild" "$(ProjectDir)TestNFClassLibrary\TestNFClassLibrary\TestNFClassLibrary.nfproj" -t:Build -p:Configuration=$(Configuration) -p:NF_MDP_MSBUILDTASK_PATH="$(ProjectDir)..\MetadataProcessor.MsBuildTask\bin\$(Configuration)\net472"
       "$(MSBuildBinPath)\msbuild" "$(ProjectDir)TestNFApp\TestNFApp.nfproj" -t:Build -p:Configuration=$(Configuration) -p:NF_MDP_MSBUILDTASK_PATH="$(ProjectDir)..\MetadataProcessor.MsBuildTask\bin\$(Configuration)\net472"
+      "$(MSBuildBinPath)\msbuild" "$(ProjectDir)StubsGenerationTestNFApp\StubsGenerationTestNFApp.nfproj" -t:Build -p:Configuration=$(Configuration) -p:NF_MDP_MSBUILDTASK_PATH="$(ProjectDir)..\MetadataProcessor.MsBuildTask\bin\$(Configuration)\net472"
       mkdir "$(TargetDir)\TestNFApp"
+      mkdir "$(TargetDir)\StubsGenerationTestNFApp"
       copy /y "$(ProjectDir)TestNFApp\$(OutDir)\*" "$(TargetDir)\TestNFApp"
+      copy /y "$(ProjectDir)StubsGenerationTestNFApp\$(OutDir)\*" "$(TargetDir)\StubsGenerationTestNFApp"
     </PreBuildEvent>
   </PropertyGroup>
   <Target Name="SetNFClrLocation" AfterTargets="Build">

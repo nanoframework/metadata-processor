@@ -153,8 +153,20 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                                     foreach (var item in m.Parameters)
                                     {
                                         // get the parameter type
-                                        var parameterType = item.ParameterType.ToNativeTypeAsString();
-                                        var parameterTypeClr = item.ParameterType.ToCLRTypeAsString();
+                                        string parameterType = string.Empty;
+                                        string parameterTypeClr = string.Empty;
+
+                                        if (item.ParameterType.IsByReference)
+                                        {
+                                            // for ref types need an extra step to get the element type
+                                            parameterType = item.ParameterType.GetElementType().ToNativeTypeAsString() + "&";
+                                            parameterTypeClr = item.ParameterType.GetElementType().ToCLRTypeAsString();
+                                        }
+                                        else
+                                        {
+                                            parameterType = item.ParameterType.ToNativeTypeAsString();
+                                            parameterTypeClr = item.ParameterType.ToCLRTypeAsString();
+                                        }
 
                                         // compose the function declaration
                                         declaration.Append($"{parameterType} param{parameterIndex.ToString()}, ");

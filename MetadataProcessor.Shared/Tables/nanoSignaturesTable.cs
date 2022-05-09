@@ -282,7 +282,7 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             if (typeDefinition is TypeSpecification)
             {
-               //Debug.Fail("Gotcha!");
+                //Debug.Fail("Gotcha!");
             }
 
             if (typeDefinition.MetadataType == MetadataType.Class)
@@ -344,14 +344,14 @@ namespace nanoFramework.Tools.MetadataProcessor
                 }
                 else if (alsoWriteSubType)
                 {
-                    
+
                     WriteDataType(array.ElementType, writer, true, expandEnumType, isTypeDefinition);
                 }
 
                 return;
             }
 
-            if(typeDefinition.IsByReference)
+            if (typeDefinition.IsByReference)
             {
                 writer.WriteByte((byte)nanoCLR_DataType.DATATYPE_BYREF);
 
@@ -376,7 +376,7 @@ namespace nanoFramework.Tools.MetadataProcessor
 
                 writer.WriteByte((byte)genericType.GenericArguments.Count);
 
-                foreach(var a in genericType.GenericArguments)
+                foreach (var a in genericType.GenericArguments)
                 {
                     WriteDataType(a, writer, true, expandEnumType, isTypeDefinition);
                 }
@@ -476,7 +476,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             using (var writer = new BinaryWriter(buffer)) // Only Write(Byte) will be used
             {
                 var binaryWriter = nanoBinaryWriter.CreateBigEndianBinaryWriter(writer);
-                
+
                 binaryWriter.WriteByte((byte)interfaces.Count);
                 foreach (var item in interfaces)
                 {
@@ -718,7 +718,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             if (typeDefinition is TypeSpecification &&
                 _context.TypeSpecificationsTable.TryGetTypeReferenceId(typeDefinition, out referenceId))
             {
-                    writer.WriteMetadataToken(((uint)referenceId << 2) | 0x02);
+                writer.WriteMetadataToken(((uint)referenceId << 2) | 0x02);
             }
             else if (_context.TypeReferencesTable.TryGetTypeReferenceId(typeDefinition, out referenceId))
             {
