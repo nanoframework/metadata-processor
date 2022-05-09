@@ -13,7 +13,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using MetadataProcessor.Shared.Utility;
 
 namespace nanoFramework.Tools.MetadataProcessor
 {
@@ -45,10 +44,6 @@ namespace nanoFramework.Tools.MetadataProcessor
         internal static readonly IDictionary<string, nanoCLR_DataType> PrimitiveTypes =
             new Dictionary<string, nanoCLR_DataType>(StringComparer.Ordinal);
 
-        internal static readonly IDictionary<string, ReferencedDataType> ReferencedTypes =
-            new Dictionary<string, ReferencedDataType>(StringComparer.Ordinal);
-
-
         static nanoSignaturesTable()
         {
             PrimitiveTypes.Add(typeof(void).FullName, nanoCLR_DataType.DATATYPE_VOID);
@@ -75,21 +70,6 @@ namespace nanoFramework.Tools.MetadataProcessor
             PrimitiveTypes.Add(typeof(UIntPtr).FullName, nanoCLR_DataType.DATATYPE_U4);
 
             PrimitiveTypes.Add(typeof(WeakReference).FullName, nanoCLR_DataType.DATATYPE_WEAKCLASS);
-
-            ReferencedTypes.Add($"{typeof(sbyte).FullName}&", ReferencedDataType.DATATYPE_I1_BYREF);
-            ReferencedTypes.Add($"{typeof(short).FullName}&", ReferencedDataType.DATATYPE_I2_BYREF);
-            ReferencedTypes.Add($"{typeof(int).FullName}&", ReferencedDataType.DATATYPE_I4_BYREF);
-            ReferencedTypes.Add($"{typeof(long).FullName}&", ReferencedDataType.DATATYPE_I8_BYREF);
-
-            ReferencedTypes.Add($"{typeof(byte).FullName}&", ReferencedDataType.DATATYPE_U1_BYREF);
-            ReferencedTypes.Add($"{typeof(ushort).FullName}&", ReferencedDataType.DATATYPE_U2_BYREF);
-            ReferencedTypes.Add($"{typeof(uint).FullName}&", ReferencedDataType.DATATYPE_U4_BYREF);
-            ReferencedTypes.Add($"{typeof(ulong).FullName}&", ReferencedDataType.DATATYPE_U8_BYREF);
-
-            ReferencedTypes.Add($"{typeof(float).FullName}&", ReferencedDataType.DATATYPE_R4_BYREF);
-
-            ReferencedTypes.Add($"{typeof(char).FullName}&", ReferencedDataType.DATATYPE_CHAR_BYREF);
-            ReferencedTypes.Add($"{typeof(bool).FullName}&", ReferencedDataType.DATATYPE_BOOLEAN_BYREF);
         }
 
         /// <summary>
@@ -302,7 +282,7 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             if (typeDefinition is TypeSpecification)
             {
-               //Debug.Fail("Gotcha!");
+                //Debug.Fail("Gotcha!");
             }
 
             if (typeDefinition.MetadataType == MetadataType.Class)
@@ -364,14 +344,14 @@ namespace nanoFramework.Tools.MetadataProcessor
                 }
                 else if (alsoWriteSubType)
                 {
-                    
+
                     WriteDataType(array.ElementType, writer, true, expandEnumType, isTypeDefinition);
                 }
 
                 return;
             }
 
-            if(typeDefinition.IsByReference)
+            if (typeDefinition.IsByReference)
             {
                 writer.WriteByte((byte)nanoCLR_DataType.DATATYPE_BYREF);
 
@@ -396,7 +376,7 @@ namespace nanoFramework.Tools.MetadataProcessor
 
                 writer.WriteByte((byte)genericType.GenericArguments.Count);
 
-                foreach(var a in genericType.GenericArguments)
+                foreach (var a in genericType.GenericArguments)
                 {
                     WriteDataType(a, writer, true, expandEnumType, isTypeDefinition);
                 }
@@ -496,7 +476,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             using (var writer = new BinaryWriter(buffer)) // Only Write(Byte) will be used
             {
                 var binaryWriter = nanoBinaryWriter.CreateBigEndianBinaryWriter(writer);
-                
+
                 binaryWriter.WriteByte((byte)interfaces.Count);
                 foreach (var item in interfaces)
                 {
@@ -738,7 +718,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             if (typeDefinition is TypeSpecification &&
                 _context.TypeSpecificationsTable.TryGetTypeReferenceId(typeDefinition, out referenceId))
             {
-                    writer.WriteMetadataToken(((uint)referenceId << 2) | 0x02);
+                writer.WriteMetadataToken(((uint)referenceId << 2) | 0x02);
             }
             else if (_context.TypeReferencesTable.TryGetTypeReferenceId(typeDefinition, out referenceId))
             {
