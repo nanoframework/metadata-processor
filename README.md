@@ -13,6 +13,22 @@ Is part of .NET **nanoFramework** toolbox, along with other various tools that a
 Version 2.0 is a C# application adapted from the original work of [Oleg Rakhmatulin](@OlegRa).
 Version 1.0 was a Visual C++ application adapted from .NETMF toolbox.
 
+## Developers guide
+
+### Cloning the repository
+After cloning the repository, instantiate the submodules with:
+```shell
+git submodule update --init --recursive
+```
+After which the NuGet packages in both the main solution and the mscorelib solution included within a submodule have to be restored. These have to both be restored individually.
+
+### Adding projects to the solution
+When adding a project to the solution the following points have to be kept in mind for configuring the project and solution:
+- nf projects have to be build in AnyCPU
+- DLLs for msbuild tasks have to be build in x64 since VS2022
+- test projects in MDP are REMOVED off the solution build configuration
+- they are build on request, by calling msbuild at test project pre-build event
+
 ## Feedback and documentation
 
 To provide feedback, report issues and finding out how to contribute please refer to the [Home repo](https://github.com/nanoframework/Home).
