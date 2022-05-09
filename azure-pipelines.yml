@@ -20,10 +20,6 @@ trigger:
       - config/*
       - .github/*
 
-  tags:
-    include: 
-      - v*
-
 # PR always trigger build
 pr:
   autoCancel: true
@@ -41,7 +37,7 @@ jobs:
 ##############################
 - job: Get_Build_Flags
   pool:
-    vmImage: 'windows-2022'
+    vmImage: 'windows-latest'
 
   steps:
   - checkout: self
@@ -107,7 +103,7 @@ jobs:
     - Get_Build_Flags
 
   pool:
-    vmImage: 'windows-2022'
+    vmImage: 'windows-latest'
 
   variables:
     DOTNET_NOLOGO: true
@@ -269,20 +265,28 @@ jobs:
       and(
         succeeded(),
         eq(variables['System.PullRequest.PullRequestId'], ''),
-        not(startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))
+        startsWith(variables['Build.SourceBranch'], 'refs/heads/develop'),
+        eq(variables['UPDATE_DEPENDENTS'], 'false')
       )
     displayName: Create/Update GitHub release
     inputs:
+      action: edit
       gitHubConnection: 'github.com_nano-$(System.TeamProject)'
       tagSource: userSpecifiedTag
-      tag: v$(GitBuildVersionSimple)
-      title: 'nanoFramework Metadata Processor v$(GitBuildVersionSimple)'
-      releaseNotesSource: inline
-      releaseNotesInline: 'add description here'
+      tag: v$(NBGV_NuGetPackageVersion)
+      title: 'nanoFramework Metadata Processor v$(NBGV_NuGetPackageVersion)'
       assets: '$(Build.ArtifactStagingDirectory)/*'
-      assetUploadMode: replace
       isPreRelease: false
-      addChangeLog: false
+      isDraft: false
+      addChangeLog: true
+      changeLogLabels: |
+        [
+          { "label" : "Type: bug", "displayName" : "Bugs fixed", "state" : "closed" },
+          { "label" : "Type: enhancement", "displayName" : "Enhancements and new features", "state" : "closed" },
+          { "label" : "Breaking-Change", "displayName" : "Breaking Changes", "state" : "closed" }
+          { "label" : "Type: dependencies", "displayName" : "Dependencies updated", "state" : "closed" },
+          { "label" : "Type: documentation", "displayName" : "Documentation", "state" : "closed" }
+        ]
 
 ##############################
 - job: Update_Dependents
@@ -300,7 +304,7 @@ jobs:
     - Build_MDP
 
   pool:
-    vmImage: 'windows-2022'
+    vmImage: 'windows-latest'
 
   variables:
     DOTNET_NOLOGO: true
@@ -334,7 +338,7 @@ jobs:
   condition: failed('Build_MDP')
 
   pool:
-    vmImage: 'windows-2022'
+    vmImage: 'windows-latest'
 
   steps:
 
