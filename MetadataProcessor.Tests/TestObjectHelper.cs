@@ -21,7 +21,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
         private static string _testNFClassLibLocation;
         private static string _nanoClrLocation;
         private static string _configuration;
-        private static string _generationTestNFAppLocation;
+        private static string _StubsGenerationTestNFAppLocation;
 
         public static nanoTablesContext GetTestNFAppNanoTablesContext()
         {
@@ -153,34 +153,34 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
             {
                 return Path.Combine(
                     TestExecutionLocation,
-                    "..\\..\\GenerationTestNFApp\\bin",
+                    "..\\..\\StubsGenerationTestNFApp\\bin",
                     _configuration,
-                    "GenerationTestNFApp.exe");
+                    "StubsGenerationTestNFApp.exe");
             }
         }
 
-        public static string GenerationTestNFAppFullPath
+        public static string StubsGenerationTestNFAppFullPath
         {
             get
             {
                 return Path.Combine(
-                    GenerationTestNFAppLocation,
-                    "GenerationTestNFApp.exe");
+                    StubsGenerationTestNFAppLocation,
+                    "StubsGenerationTestNFApp.exe");
             }
         }
 
-        public static string GenerationTestNFAppLocation
+        public static string StubsGenerationTestNFAppLocation
         {
             get
             {
-                if (string.IsNullOrEmpty(_generationTestNFAppLocation))
+                if (string.IsNullOrEmpty(_StubsGenerationTestNFAppLocation))
                 {
-                    _generationTestNFAppLocation = Path.Combine(
+                    _StubsGenerationTestNFAppLocation = Path.Combine(
                         TestExecutionLocation,
-                        "GenerationTestNFApp");
+                        "StubsGenerationTestNFApp");
                 }
 
-                return _generationTestNFAppLocation;
+                return _StubsGenerationTestNFAppLocation;
             }
         }
 

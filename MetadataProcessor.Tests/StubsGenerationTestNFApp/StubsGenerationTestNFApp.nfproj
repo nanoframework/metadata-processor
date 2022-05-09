@@ -12,8 +12,8 @@
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <FileAlignment>512</FileAlignment>
-    <RootNamespace>GenerationTestNFApp</RootNamespace>
-    <AssemblyName>GenerationTestNFApp</AssemblyName>
+    <RootNamespace>StubsGenerationTestNFApp</RootNamespace>
+    <AssemblyName>StubsGenerationTestNFApp</AssemblyName>
     <TargetFrameworkVersion>v1.0</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Label="nanoFramework">

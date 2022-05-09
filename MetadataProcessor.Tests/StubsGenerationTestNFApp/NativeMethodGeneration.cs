@@ -1,6 +1,11 @@
-﻿using System.Runtime.CompilerServices;
+﻿//
+// Copyright (c) .NET Foundation and Contributors
+// See LICENSE file in the project root for full license information.
+//
 
-namespace GenerationTestNFApp
+using System.Runtime.CompilerServices;
+
+namespace StubsGenerationTestNFApp
 {
     internal class NativeMethodGeneration
     {
