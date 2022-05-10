@@ -34,6 +34,27 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
 
 }";
 
+        private const string NativeMarshallingMethodGenerationDeclaration =
+            @"HRESULT Library_StubsGenerationTestNFApp_StubsGenerationTestNFApp_NativeMethodGeneration::NativeMethodWithReferenceParameters___VOID__BYREF_U1__BYREF_U2( CLR_RT_StackFrame& stack )
+{
+    NANOCLR_HEADER(); hr = S_OK;
+    {
+
+        uint8_t& param0;
+        uint8_t heapblock0[CLR_RT_HEAP_BLOCK_SIZE];
+        NANOCLR_CHECK_HRESULT( Interop_Marshal_UINT8_ByRef( stack, heapblock0, param0 ) );
+
+        uint16_t& param1;
+        uint8_t heapblock1[CLR_RT_HEAP_BLOCK_SIZE];
+        NANOCLR_CHECK_HRESULT( Interop_Marshal_UINT16_ByRef( stack, heapblock1, param1 ) );
+
+        NativeMethodGeneration::NativeMethodWithReferenceParameters( param0, param1, hr );
+        NANOCLR_CHECK_HRESULT( hr );
+
+    }
+    NANOCLR_NOCLEANUP();
+}";
+
         private string stubPath;
 
         [TestMethod]
@@ -47,6 +68,15 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
             Assert.IsTrue(generatedFile.Contains(NativeMethodGenerationDeclaration));
         }
 
+        [TestMethod]
+        public void GeneratingMarshallingStubsFromNFAppTest()
+        {
+            var generatedFile =
+                File.ReadAllText(
+                    $"{stubPath}\\StubsGenerationTestNFApp_StubsGenerationTestNFApp_NativeMethodGeneration_mshl.cpp");
+
+            Assert.IsTrue(generatedFile.Contains(NativeMarshallingMethodGenerationDeclaration));
+        }
 
         [TestInitialize]
         public void GenerateStubs()
