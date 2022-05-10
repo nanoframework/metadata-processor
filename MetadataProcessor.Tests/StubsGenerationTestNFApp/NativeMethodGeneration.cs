@@ -23,5 +23,11 @@ namespace StubsGenerationTestNFApp
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         private extern void NativeMethodWithReferenceParameters(ref byte refByteParam, ref ushort refUshortParam);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        private static extern void NativeStaticMethod();
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        private static extern byte NativeStaticMethodReturningByte(char charParam);
     }
 }

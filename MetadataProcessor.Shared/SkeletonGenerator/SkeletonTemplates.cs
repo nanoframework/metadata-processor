@@ -216,7 +216,7 @@ namespace {{RootNamespace}}
             // Helper Functions to access fields of managed object
             // Declaration of stubs. These functions are implemented by Interop code developers
 {{#each Functions}}
-            {{#if IsStatic}}static {{/if}}{{ReturnType}} {{DeclarationForUserCode}};
+            static {{ReturnType}} {{DeclarationForUserCode}};
 {{/each}}
         };
     }
