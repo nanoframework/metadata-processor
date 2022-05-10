@@ -15,7 +15,8 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
     [TestClass]
     public class StubsGenerationTests
     {
-        private const string NativeMethodGenerationDeclaration = @"void NativeMethodGeneration::NativeMethodWithReferenceParameters( uint8_t& param0, uint16_t& param1, HRESULT &hr )
+        private const string NativeMethodGenerationDeclaration =
+            @"void NativeMethodGeneration::NativeMethodWithReferenceParameters( uint8_t& param0, uint16_t& param1, HRESULT &hr )
 {
 
     (void)param0;
@@ -33,8 +34,22 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
 
 }";
 
+        private string stubPath;
+
         [TestMethod]
         public void GeneratingStubsFromNFAppTest()
+        {
+            // read generated stub file and look for the function declaration
+            var generatedFile =
+                File.ReadAllText(
+                    $"{stubPath}\\StubsGenerationTestNFApp_StubsGenerationTestNFApp_NativeMethodGeneration.cpp");
+
+            Assert.IsTrue(generatedFile.Contains(NativeMethodGenerationDeclaration));
+        }
+
+
+        [TestInitialize]
+        public void GenerateStubs()
         {
             var loadHints = new Dictionary<string, string>(StringComparer.Ordinal)
             {
@@ -50,22 +65,22 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
 
             var fileToParse = TestObjectHelper.GenerationNFAppFullPath;
             var fileToCompile = Path.ChangeExtension(fileToParse, "pe");
-            
+
             // get path where stubs will be generated
-            var stubPath = Path.Combine(
+            stubPath = Path.Combine(
                 TestObjectHelper.TestExecutionLocation,
                 "Stubs");
-            
+
             var assemblyDefinition = AssemblyDefinition.ReadAssembly(
                 fileToParse,
                 new ReaderParameters { AssemblyResolver = new LoadHintsAssemblyResolver(loadHints) });
 
-            var assemblyBuilder = new nanoAssemblyBuilder(assemblyDefinition, classNamesToExclude, false, false);
+            var assemblyBuilder = new nanoAssemblyBuilder(assemblyDefinition, classNamesToExclude, false);
 
             using (var stream = File.Open(
-                Path.ChangeExtension(fileToCompile, "tmp"),
-                FileMode.Create,
-                FileAccess.ReadWrite))
+                       Path.ChangeExtension(fileToCompile, "tmp"),
+                       FileMode.Create,
+                       FileAccess.ReadWrite))
             using (var writer = new BinaryWriter(stream))
             {
                 assemblyBuilder.Write(GetBinaryWriter(writer));
@@ -87,12 +102,11 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
                 false);
 
             skeletonGenerator.GenerateSkeleton();
+        }
 
-            // read generated stub file and look for the function declaration
-            string generatedFile = File.ReadAllText($"{stubPath}\\StubsGenerationTestNFApp_StubsGenerationTestNFApp_NativeMethodGeneration.cpp");
-
-            Assert.IsTrue(generatedFile.Contains(NativeMethodGenerationDeclaration));
-
+        [TestCleanup]
+        public void DeleteStubs()
+        {
             Directory.Delete(stubPath, true);
         }
 
