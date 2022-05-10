@@ -190,7 +190,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                                             parameterDeclaration.Type = parameterType;
 
                                             parameterDeclaration.Declaration = 
-                                                $"{parameterType} {parameterDeclaration.Name};" + Environment.NewLine +
+                                                $"{parameterType} {parameterDeclaration.Name} = 0x0;" + Environment.NewLine +
                                                 $"        uint8_t heapblock{parameterIndex}[CLR_RT_HEAP_BLOCK_SIZE];";
 
                                             parameterDeclaration.MarshallingDeclaration = $"Interop_Marshal_{parameterTypeClr}_ByRef( stack, heapblock{(parameterIndex /*+ (m.IsStatic ? 0 : 1)*/ )}, {parameterDeclaration.Name} )";
