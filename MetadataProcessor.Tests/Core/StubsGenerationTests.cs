@@ -55,6 +55,9 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
     NANOCLR_NOCLEANUP();
 }";
 
+        private const string NativeHeaderMethodGenerationDeclaration =
+            "static void NativeMethodWithReferenceParameters( uint8_t& param0, uint16_t& param1, HRESULT &hr );";
+
         private string stubPath;
 
         [TestMethod]
@@ -76,6 +79,16 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
                     $"{stubPath}\\StubsGenerationTestNFApp_StubsGenerationTestNFApp_NativeMethodGeneration_mshl.cpp");
 
             Assert.IsTrue(generatedFile.Contains(NativeMarshallingMethodGenerationDeclaration));
+        }
+
+        [TestMethod]
+        public void GeneratingHeaderStubsFromNFAppTest()
+        {
+            var generatedFile =
+                File.ReadAllText(
+                    $"{stubPath}\\StubsGenerationTestNFApp_StubsGenerationTestNFApp_NativeMethodGeneration.h");
+
+            Assert.IsTrue(generatedFile.Contains(NativeHeaderMethodGenerationDeclaration));
         }
 
         [TestInitialize]
