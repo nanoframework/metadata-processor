@@ -42,11 +42,11 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
 
         uint8_t *param0;
         uint8_t heapblock0[CLR_RT_HEAP_BLOCK_SIZE];
-        NANOCLR_CHECK_HRESULT( Interop_Marshal_UINT8_ByRef( stack, heapblock0, 0, param0 ) );
+        NANOCLR_CHECK_HRESULT( Interop_Marshal_UINT8_ByRef( stack, heapblock0, 1, param0 ) );
 
         uint16_t *param1;
         uint8_t heapblock1[CLR_RT_HEAP_BLOCK_SIZE];
-        NANOCLR_CHECK_HRESULT( Interop_Marshal_UINT16_ByRef( stack, heapblock1, 1, param1 ) );
+        NANOCLR_CHECK_HRESULT( Interop_Marshal_UINT16_ByRef( stack, heapblock1, 2, param1 ) );
 
         NativeMethodGeneration::NativeMethodWithReferenceParameters( *param0, *param1, hr );
         NANOCLR_CHECK_HRESULT( hr );
@@ -89,6 +89,112 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
                     $"{stubPath}\\StubsGenerationTestNFApp_StubsGenerationTestNFApp_NativeMethodGeneration.h");
 
             Assert.IsTrue(generatedFile.Contains(NativeHeaderMethodGenerationDeclaration));
+        }
+
+        private const string StaticMethodWithoutParameterHeaderGeneration =
+            @"static void NativeStaticMethod(  HRESULT &hr );";
+        private const string StaticMethodWithoutParameterMarshallGeneration =
+            @"HRESULT Library_StubsGenerationTestNFApp_StubsGenerationTestNFApp_NativeMethodGeneration::NativeStaticMethod___STATIC__VOID( CLR_RT_StackFrame& stack )
+{
+    NANOCLR_HEADER(); hr = S_OK;
+    {
+
+        NativeMethodGeneration::NativeStaticMethod(  hr );
+        NANOCLR_CHECK_HRESULT( hr );
+
+    }
+    NANOCLR_NOCLEANUP();
+}";
+        private const string StaticMethodWithoutParameterImplementationGeneration =
+            @"void NativeMethodGeneration::NativeStaticMethod(  HRESULT &hr )
+{
+
+    (void)hr;
+
+
+    ////////////////////////////////
+    // implementation starts here //
+
+
+    // implementation ends here   //
+    ////////////////////////////////
+
+
+}";
+
+        [TestMethod]
+        public void GeneratingStaticMethodWithoutParams()
+        {
+            var generatedHeaderFile =
+                File.ReadAllText(
+                    $"{stubPath}\\StubsGenerationTestNFApp_StubsGenerationTestNFApp_NativeMethodGeneration.h");
+
+            var generatedMarshallFile =
+                File.ReadAllText(
+                    $"{stubPath}\\StubsGenerationTestNFApp_StubsGenerationTestNFApp_NativeMethodGeneration_mshl.cpp");
+
+            var generatedImplementationFile =
+                File.ReadAllText(
+                    $"{stubPath}\\StubsGenerationTestNFApp_StubsGenerationTestNFApp_NativeMethodGeneration.cpp");
+
+            Assert.IsTrue(generatedHeaderFile.Contains(StaticMethodWithoutParameterHeaderGeneration));
+            Assert.IsTrue(generatedMarshallFile.Contains(StaticMethodWithoutParameterMarshallGeneration));
+            Assert.IsTrue(generatedImplementationFile.Contains(StaticMethodWithoutParameterImplementationGeneration));
+        }
+
+        private const string StaticMethodHeaderGeneration =
+            @"static uint8_t NativeStaticMethodReturningByte( char param0, HRESULT &hr );";
+        private const string StaticMethodMarshallGeneration =
+            @"HRESULT Library_StubsGenerationTestNFApp_StubsGenerationTestNFApp_NativeMethodGeneration::NativeStaticMethodReturningByte___STATIC__U1__CHAR( CLR_RT_StackFrame& stack )
+{
+    NANOCLR_HEADER(); hr = S_OK;
+    {
+
+        char param0;
+        NANOCLR_CHECK_HRESULT( Interop_Marshal_CHAR( stack, 0, param0 ) );
+
+        uint8_t retValue = NativeMethodGeneration::NativeStaticMethodReturningByte( param0, hr );
+        NANOCLR_CHECK_HRESULT( hr );
+        SetResult_UINT8( stack, retValue );
+    }
+    NANOCLR_NOCLEANUP();
+}";
+        private const string StaticMethodImplementationGeneration =
+            @"uint8_t NativeMethodGeneration::NativeStaticMethodReturningByte( char param0, HRESULT &hr )
+{
+
+    (void)param0;
+    (void)hr;
+    uint8_t retValue = 0;
+
+    ////////////////////////////////
+    // implementation starts here //
+
+
+    // implementation ends here   //
+    ////////////////////////////////
+
+    return retValue;
+}";
+
+        [TestMethod]
+        public void GeneratingStaticMethod()
+        {
+            var generatedHeaderFile =
+                File.ReadAllText(
+                    $"{stubPath}\\StubsGenerationTestNFApp_StubsGenerationTestNFApp_NativeMethodGeneration.h");
+
+            var generatedMarshallFile =
+                File.ReadAllText(
+                    $"{stubPath}\\StubsGenerationTestNFApp_StubsGenerationTestNFApp_NativeMethodGeneration_mshl.cpp");
+
+            var generatedImplementationFile =
+                File.ReadAllText(
+                    $"{stubPath}\\StubsGenerationTestNFApp_StubsGenerationTestNFApp_NativeMethodGeneration.cpp");
+
+            Assert.IsTrue(generatedHeaderFile.Contains(StaticMethodHeaderGeneration));
+            Assert.IsTrue(generatedMarshallFile.Contains(StaticMethodMarshallGeneration));
+            Assert.IsTrue(generatedImplementationFile.Contains(StaticMethodImplementationGeneration));
         }
 
         [TestInitialize]
