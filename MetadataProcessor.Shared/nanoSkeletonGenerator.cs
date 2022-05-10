@@ -203,7 +203,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                                                 $"{parameterTypeWORef} *{parameterDeclaration.Name};" + Environment.NewLine +
                                                 $"        uint8_t heapblock{parameterIndex}[CLR_RT_HEAP_BLOCK_SIZE];";
 
-                                            parameterDeclaration.MarshallingDeclaration = $"Interop_Marshal_{parameterTypeClr}_ByRef( stack, heapblock{(parameterIndex /*+ (m.IsStatic ? 0 : 1)*/ )}, {parameterIndex}, {parameterDeclaration.Name} )";
+                                            parameterDeclaration.MarshallingDeclaration = $"Interop_Marshal_{parameterTypeClr}_ByRef( stack, heapblock{parameterIndex}, {parameterIndex}, {parameterDeclaration.Name} )";
 
                                         }
                                         else if (item.ParameterType.IsArray)
@@ -213,7 +213,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
                                             parameterDeclaration.Type = parameterType;
                                             parameterDeclaration.Declaration = $"{parameterType} {parameterDeclaration.Name};";
-                                            parameterDeclaration.MarshallingDeclaration = $"Interop_Marshal_{parameterTypeClr}( stack, {(parameterIndex + (m.IsStatic ? 0 : 1)).ToString()}, {parameterDeclaration.Name} )";
+                                            parameterDeclaration.MarshallingDeclaration = $"Interop_Marshal_{parameterTypeClr}( stack, {parameterIndex}, {parameterDeclaration.Name} )";
                                         }
                                         else
                                         {
@@ -222,7 +222,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
                                             parameterDeclaration.Type = parameterType;
                                             parameterDeclaration.Declaration = $"{parameterType} {parameterDeclaration.Name};";
-                                            parameterDeclaration.MarshallingDeclaration = $"Interop_Marshal_{parameterTypeClr}( stack, {(parameterIndex + (m.IsStatic ? 0 : 1)).ToString()}, {parameterDeclaration.Name} )";
+                                            parameterDeclaration.MarshallingDeclaration = $"Interop_Marshal_{parameterTypeClr}( stack, {parameterIndex}, {parameterDeclaration.Name} )";
                                         }
                                         newMethod.ParameterDeclaration.Add(parameterDeclaration);
                                         parameterIndex++;
