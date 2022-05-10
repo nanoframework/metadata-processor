@@ -31,7 +31,9 @@ When adding a project to the solution the following points have to be kept in mi
 
 - nanoFramework projects (.nfproj) have to be build in `AnyCPU` configuration.
 - DLLs for msbuild tasks have to be build in `x64` because Visual Studio uses this architecture since VS2022.
-- Any nanoFramework projects (.nfproj) that are required for Unit Tests have to have theyr build configuration changed so they don't build. Building those has to be added to the pre-build event of the Unit Test project that will be using it. See the [prebuild event](https://github.com/KasperJSdeVries/metadata-processor/blob/ad91245f85dee8683670ef81c3f1f9556ecb2ac0/MetadataProcessor.Tests/MetadataProcessor.Tests.csproj#L118) for the MetadataProcessor.Tests project.
+- Any nanoFramework projects (.nfproj) that are required for Unit Tests have to have their build configuration changed so they don't build. Building those has to be added to the pre-build event of the Unit Test project that will be using it. See the [prebuild event](https://github.com/nanoframework/metadata-processor/blob/bcb82f6c9153cdc3863abf6fcc5b589437408b28/MetadataProcessor.Tests/MetadataProcessor.Tests.csproj#L118-L128) for the MetadataProcessor.Tests project. When adding nanoFramework projects to the pre-build event it is important to add the `-nr=False` flag<sup>[1]</sup>.
+
+1. This flag disables "nodeReuse", this is needed as a custom MsBuildTask is used which also gets rebuilt. "NodeReuse" keeps instances of MsBuild running which interferes with the rebuilding of the custom MsBuildTask.
 
 ## Feedback and documentation
 
