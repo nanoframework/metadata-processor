@@ -32,8 +32,8 @@ namespace nanoFramework.Tools.MetadataProcessor
 {{/if}}
 {{#newline}}
 
-#ifndef _{{ShortNameUpper}}_H_{{#newline}}
-#define _{{ShortNameUpper}}_H_{{#newline}}
+#ifndef {{ShortNameUpper}}_H{{#newline}}
+#define {{ShortNameUpper}}_H{{#newline}}
 {{#newline}}
 
 #include <nanoCLR_Interop.h>{{#newline}}
@@ -78,13 +78,12 @@ struct Library_{{AssemblyName}}_{{Name}}{{#newline}}
 {{#if Methods}}{{#newline}}{{/if}}
 
     //--//{{#newline}}
-{{#newline}}
 };{{#newline}}
 {{#newline}}
 {{/each}}
 extern const CLR_RT_NativeAssemblyData g_CLR_AssemblyNative_{{Name}};{{#newline}}
 {{#newline}}
-#endif  //_{{ShortNameUpper}}_H_{{#newline}}
+#endif // {{ShortNameUpper}}_H{{#newline}}
 ";
 
         internal const string AssemblyLookupTemplate =
@@ -204,8 +203,8 @@ using namespace {{RootNamespace}}::{{ProjectName}};
 //
 //-----------------------------------------------------------------------------
 
-#ifndef _{{ShortNameUpper}}_H_
-#define _{{ShortNameUpper}}_H_
+#ifndef {{ShortNameUpper}}_H
+#define {{ShortNameUpper}}_H
 
 namespace {{RootNamespace}}
 {
@@ -222,7 +221,7 @@ namespace {{RootNamespace}}
     }
 }
 
-#endif //_{{ShortNameUpper}}_H_
+#endif // {{ShortNameUpper}}_H
 ";
 
         internal const string ClassMarshallingCodeTemplate =
@@ -297,7 +296,9 @@ set({{AssemblyName}}_SRCS
 )
 
 foreach(SRC_FILE ${{{AssemblyName}}_SRCS})
+
     set({{AssemblyName}}_SRC_FILE SRC_FILE-NOTFOUND)
+
     find_file({{AssemblyName}}_SRC_FILE ${SRC_FILE}
         PATHS
 	        ${BASE_PATH_FOR_THIS_MODULE}
@@ -306,8 +307,13 @@ foreach(SRC_FILE ${{{AssemblyName}}_SRCS})
 
 	    CMAKE_FIND_ROOT_PATH_BOTH
     )
-    # message(""${SRC_FILE} >> ${{{AssemblyName}}_SRC_FILE}"") # debug helper
+
+    if (BUILD_VERBOSE)
+        message(""${SRC_FILE} >> ${{{AssemblyName}}_SRC_FILE}"")
+    endif()
+
     list(APPEND {{AssemblyName}}_SOURCES ${{{AssemblyName}}_SRC_FILE})
+
 endforeach()
 
 include(FindPackageHandleStandardArgs)
