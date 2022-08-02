@@ -79,9 +79,16 @@ namespace nanoFramework.Tools.MetadataProcessor
 
                         if (kind == ResourceKind.Bitmap)
                         {
+                            // Bitmaps at this stage are byte arrays with a 4 byte length prefix
                             using (var stream = new MemoryStream(resourceData.Length))
                             {
-                                var bitmapProcessor = new nanoBitmapProcessor((Bitmap)resource.Value);
+                                byte[] subset = new byte[resourceData.Length - 4];
+                                Array.Copy(resourceData, 4, subset, 0, subset.Length);
+                                MemoryStream ms = new MemoryStream(subset);
+
+                                Bitmap recreatedBitmap = new Bitmap(ms);
+
+                                var bitmapProcessor = new nanoBitmapProcessor(recreatedBitmap);
                                 bitmapProcessor.Process(writer.GetMemoryBasedClone(stream));
                                 resourceData = stream.ToArray();
                             }
@@ -165,12 +172,23 @@ namespace nanoFramework.Tools.MetadataProcessor
                 return ResourceKind.String;
             }
 
-            if (resourceType.StartsWith("System.Drawing.Bitmap"))
+            // Check if the data is a bitmap, failure just means it is not.
+            try
             {
+                byte[] subset = new byte[resourceData.Length - 4];
+                Array.Copy(resourceData, 4,subset, 0,subset.Length);
+                MemoryStream ms = new MemoryStream(subset);
+
+                Bitmap bitmapImage = Image.FromStream(ms) as Bitmap;
                 return ResourceKind.Bitmap;
             }
+            catch
+            {
+                // Ignore error if not a bitmap
+            }
 
-            using(var stream = new MemoryStream(resourceData))
+            // None of the above, assume binary
+            using (var stream = new MemoryStream(resourceData))
             using (var reader = new BinaryReader(stream))
             {
                 var size = reader.ReadUInt32();
