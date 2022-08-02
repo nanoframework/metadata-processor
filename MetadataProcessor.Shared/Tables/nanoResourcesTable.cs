@@ -184,10 +184,11 @@ namespace nanoFramework.Tools.MetadataProcessor
             }
             catch
             {
-            } // Ignore error if not a bitmap
+                // Ignore error if not a bitmap
+            }
 
             // None of the above, assume binary
-            using(var stream = new MemoryStream(resourceData))
+            using (var stream = new MemoryStream(resourceData))
             using (var reader = new BinaryReader(stream))
             {
                 var size = reader.ReadUInt32();

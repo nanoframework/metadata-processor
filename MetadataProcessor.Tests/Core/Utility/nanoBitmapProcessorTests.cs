@@ -12,12 +12,6 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
     public class nanoBitmapProcessorTests
     {
         [TestMethod]
-        public void ProcessBmpTest()
-        {
-       //     DoProcessTest("bmp.bmp", "bmp_expected_result.bin");
-        }
-
-        [TestMethod]
         public void ProcessJpegTest()
         {
             DoProcessTest("jpeg.jpg", "jpeg_expected_result.bin");
