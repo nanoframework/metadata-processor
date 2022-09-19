@@ -26,9 +26,9 @@
       },
       "Nerdbank.GitVersioning": {
         "type": "Direct",
-        "requested": "[3.5.103, )",
-        "resolved": "3.5.103",
-        "contentHash": "gMzXNdd/cQWBTp+zaYmHaoTVSOQwOuFKGD26wJJSdJ95aQeMcNYzKW5KGlZj/HnyHJSMMa2xAO+7Y0FKdZuv0g=="
+        "requested": "[3.5.109, )",
+        "resolved": "3.5.109",
+        "contentHash": "tKA1XJ5U2Ytk+u2/5sGNa04Pw6z9noYmqbpmHpjvbwJTtIalqsQjnwT4RQKSDTTIznHBbKxzv3HVh8QD28Qk+g=="
       },
       "Microsoft.Build.Tasks.Git": {
         "type": "Transitive",
