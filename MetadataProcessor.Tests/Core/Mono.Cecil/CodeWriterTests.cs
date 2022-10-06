@@ -400,7 +400,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.MonoCecil
             oneClassOverAllTypeDefinition.Methods.Add(methodDefinition);
 
 
-            var bytesWritten = TestObjectHelper.DoWithNanoBinaryWriter((bw) => nanoBinaryWriter.CreateLittleEndianBinaryWriter(bw), (ms, bw, writer) =>
+            var bytesWritten = TestObjectHelper.ExecuteWithNanoBinaryWriter((bw) => nanoBinaryWriter.CreateLittleEndianBinaryWriter(bw), (ms, bw, writer) =>
             {
                 var iut = new CodeWriter(methodDefinition, writer, nanoTablesContext.StringTable, nanoTablesContext);
 
@@ -425,7 +425,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.MonoCecil
             var oneClassOverAllTypeDefinition = TestObjectHelper.GetTestNFAppOneClassOverAllTypeDefinition(nanoTablesContext.AssemblyDefinition);
             var methodDefinition = TestObjectHelper.GetTestNFAppOneClassOverAllUglyAddMethodDefinition(oneClassOverAllTypeDefinition);
 
-            var bytesWritten = TestObjectHelper.DoWithNanoBinaryWriter((bw) => nanoBinaryWriter.CreateLittleEndianBinaryWriter(bw), (ms, bw, writer) =>
+            var bytesWritten = TestObjectHelper.ExecuteWithNanoBinaryWriter((bw) => nanoBinaryWriter.CreateLittleEndianBinaryWriter(bw), (ms, bw, writer) =>
             {
                 var iut = new CodeWriter(methodDefinition, writer, nanoTablesContext.StringTable, nanoTablesContext);
 

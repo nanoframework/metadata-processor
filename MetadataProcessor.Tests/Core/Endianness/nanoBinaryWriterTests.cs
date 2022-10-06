@@ -284,7 +284,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Endianness
 
         private void DoWriterWriteTest(Func<BinaryWriter, nanoBinaryWriter> writerCreatorFunc, Action<nanoBinaryWriter> writerAction, byte[] expectedBytesWritten)
         {
-            var bytesWritten = TestObjectHelper.DoWithNanoBinaryWriter(writerCreatorFunc, (ms, bw, writer) => writerAction(writer));
+            var bytesWritten = TestObjectHelper.ExecuteWithNanoBinaryWriter(writerCreatorFunc, (ms, bw, writer) => writerAction(writer));
             CollectionAssert.AreEqual(expectedBytesWritten, bytesWritten, BitConverter.ToString(bytesWritten));
         }
 
@@ -303,7 +303,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Endianness
 
         private void DoWriterGetMemoryBasedCloneTest(Func<BinaryWriter, nanoBinaryWriter> writerCreatorFunc)
         {
-            TestObjectHelper.DoWithNanoBinaryWriter(writerCreatorFunc, (ms, bw, iut) =>
+            TestObjectHelper.ExecuteWithNanoBinaryWriter(writerCreatorFunc, (ms, bw, iut) =>
             {
                 using (var ms2 = new MemoryStream())
                 {
@@ -332,7 +332,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Endianness
 
         private void DoWriterBaseStreamTest(Func<BinaryWriter, nanoBinaryWriter> writerCreatorFunc)
         {
-            TestObjectHelper.DoWithNanoBinaryWriter(writerCreatorFunc, (ms, bw, iut) =>
+            TestObjectHelper.ExecuteWithNanoBinaryWriter(writerCreatorFunc, (ms, bw, iut) =>
             {
                 // test
                 Assert.AreSame(ms, iut.BaseStream);
@@ -355,7 +355,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Endianness
 
         private void DoWriterIsBigEndianTest(Func<BinaryWriter, nanoBinaryWriter> writerCreatorFunc, bool expectedIsBigEndianValue)
         {
-            TestObjectHelper.DoWithNanoBinaryWriter(writerCreatorFunc, (ms, bw, iut) =>
+            TestObjectHelper.ExecuteWithNanoBinaryWriter(writerCreatorFunc, (ms, bw, iut) =>
                 {
                     // test
                     Assert.AreEqual(expectedIsBigEndianValue, iut.IsBigEndian);

@@ -54,7 +54,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
             // test
             iut.RemoveUnusedItems(referencedMetadataTokens);
 
-            var bytesWritten = TestObjectHelper.DoWithNanoBinaryWriter((bw) => nanoBinaryWriter.CreateLittleEndianBinaryWriter(bw), (ms, bw, writer) =>
+            var bytesWritten = TestObjectHelper.ExecuteWithNanoBinaryWriter((bw) => nanoBinaryWriter.CreateLittleEndianBinaryWriter(bw), (ms, bw, writer) =>
             {
                 // test
                 iut.Write(writer);
@@ -102,7 +102,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
             // test
             iut.RemoveUnusedItems(referencedMetadataTokens);
 
-            var bytesWritten = TestObjectHelper.DoWithNanoBinaryWriter((bw) => nanoBinaryWriter.CreateLittleEndianBinaryWriter(bw), (ms, bw, writer) =>
+            var bytesWritten = TestObjectHelper.ExecuteWithNanoBinaryWriter((bw) => nanoBinaryWriter.CreateLittleEndianBinaryWriter(bw), (ms, bw, writer) =>
             {
                 // test
                 iut.Write(writer);
@@ -148,7 +148,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
             // test
             iut.RemoveUnusedItems(referencedMetadataTokens);
 
-            var bytesWritten = TestObjectHelper.DoWithNanoBinaryWriter((bw) => nanoBinaryWriter.CreateLittleEndianBinaryWriter(bw), (ms, bw, writer) =>
+            var bytesWritten = TestObjectHelper.ExecuteWithNanoBinaryWriter((bw) => nanoBinaryWriter.CreateLittleEndianBinaryWriter(bw), (ms, bw, writer) =>
             {
                 // test
                 iut.Write(writer);

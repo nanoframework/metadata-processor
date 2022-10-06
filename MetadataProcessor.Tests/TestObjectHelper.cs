@@ -91,6 +91,18 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
             }
         }
 
+        public static string NFAppWithResourcesFullPath
+        {
+            get
+            {
+                return Path.Combine(
+                    TestExecutionLocation,
+                    "..\\..\\TestNFAppWithResources\\bin",
+                    _configuration,
+                    "TestNFAppWithResources.exe");
+            }
+        }
+
         public static string TestNFAppLocation
         {
             get
@@ -344,7 +356,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
             return ret;
         }
 
-        public static byte[] DoWithNanoBinaryWriter(Func<BinaryWriter, nanoBinaryWriter> writerCreatorFunc, Action<MemoryStream, BinaryWriter, nanoBinaryWriter> actionToDo)
+        public static byte[] ExecuteWithNanoBinaryWriter(Func<BinaryWriter, nanoBinaryWriter> writerCreatorFunc, Action<MemoryStream, BinaryWriter, nanoBinaryWriter> actionToDo)
         {
             byte[] ret = null;
 

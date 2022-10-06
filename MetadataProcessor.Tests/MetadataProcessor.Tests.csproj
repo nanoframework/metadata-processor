@@ -81,11 +81,13 @@
     <EmbeddedResource Include="bmp_expected_result.bin" />
     <EmbeddedResource Include="gif_expected_result.bin" />
     <EmbeddedResource Include="jpeg_expected_result.bin" />
+    <EmbeddedResource Include="favicon_expected_result.bin" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="bmp.bmp" />
     <EmbeddedResource Include="gif.gif" />
     <EmbeddedResource Include="jpeg.jpg" />
+    <EmbeddedResource Include="favicon.ico" />
     <Content Include="PdbxSorter.xslt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -121,10 +123,13 @@
       "$(MSBuildBinPath)\msbuild" "$(ProjectDir)TestNFClassLibrary\TestNFClassLibrary\TestNFClassLibrary.nfproj" -t:Build -nr:False -p:Configuration=$(Configuration) -p:NF_MDP_MSBUILDTASK_PATH="$(ProjectDir)..\MetadataProcessor.MsBuildTask\bin\$(Configuration)\net472"
       "$(MSBuildBinPath)\msbuild" "$(ProjectDir)TestNFApp\TestNFApp.nfproj" -t:Build -nr:False -p:Configuration=$(Configuration) -p:NF_MDP_MSBUILDTASK_PATH="$(ProjectDir)..\MetadataProcessor.MsBuildTask\bin\$(Configuration)\net472"
       "$(MSBuildBinPath)\msbuild" "$(ProjectDir)StubsGenerationTestNFApp\StubsGenerationTestNFApp.nfproj" -t:Build -nr:False -p:Configuration=$(Configuration) -p:NF_MDP_MSBUILDTASK_PATH="$(ProjectDir)..\MetadataProcessor.MsBuildTask\bin\$(Configuration)\net472"
+      "$(MSBuildBinPath)\msbuild" "$(ProjectDir)TestNFAppWithResources\TestNFAppWithResources.nfproj" -t:Build -nr:False -p:Configuration=$(Configuration) -p:NF_MDP_MSBUILDTASK_PATH="$(ProjectDir)..\MetadataProcessor.MsBuildTask\bin\$(Configuration)\net472"
       mkdir "$(TargetDir)\TestNFApp"
       mkdir "$(TargetDir)\StubsGenerationTestNFApp"
+      mkdir "$(TargetDir)\TestNFAppWithResources"
       copy /y "$(ProjectDir)TestNFApp\$(OutDir)\*" "$(TargetDir)\TestNFApp"
       copy /y "$(ProjectDir)StubsGenerationTestNFApp\$(OutDir)\*" "$(TargetDir)\StubsGenerationTestNFApp"
+      copy /y "$(ProjectDir)TestNFAppWithResources\$(OutDir)\*" "$(TargetDir)\TestNFApp"
     </PreBuildEvent>
   </PropertyGroup>
   <Target Name="SetNFClrLocation" AfterTargets="Build">

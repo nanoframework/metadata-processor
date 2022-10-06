@@ -40,6 +40,26 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.MsbuildTask
             ProcessAssembly(loadHints, classNamesToExclude, fileToParse, fileToCompiler);
         }
 
+        [TestMethod]
+        public void ProcessAppWithResources()
+        {
+            // setup load hints
+            var loadHints = new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["mscorlib"] = Path.Combine(Directory.GetParent(TestObjectHelper.NFAppWithResourcesFullPath).FullName, "mscorlib.dll"),
+                ["nanoFramework.Graphics"] = Path.Combine(Directory.GetParent(TestObjectHelper.NFAppWithResourcesFullPath).FullName, "nanoFramework.Graphics.dll"),
+                ["nanoFramework.ResourceManager"] = Path.Combine(Directory.GetParent(TestObjectHelper.NFAppWithResourcesFullPath).FullName, "nanoFramework.ResourceManager.dll"),
+                ["nanoFramework.Runtime.Events"] = Path.Combine(Directory.GetParent(TestObjectHelper.NFAppWithResourcesFullPath).FullName, "nanoFramework.Runtime.Events.dll"),
+                ["nanoFramework.Runtime.Native"] = Path.Combine(Directory.GetParent(TestObjectHelper.NFAppWithResourcesFullPath).FullName, "nanoFramework.Runtime.Native.dll"),
+                ["nanoFramework.System.Collections"] = Path.Combine(Directory.GetParent(TestObjectHelper.NFAppWithResourcesFullPath).FullName, "nanoFramework.System.Collections.dll")
+            };
+
+            var fileToParse = TestObjectHelper.NFAppWithResourcesFullPath;
+            var fileToCompiler = Path.ChangeExtension(fileToParse, "pe");
+
+            ProcessAssembly(loadHints, new List<string>(), fileToParse, fileToCompiler);
+        }
+
         private void ProcessAssembly(
             Dictionary<string, string> loadHints,
             List<string> classNamesToExclude,
