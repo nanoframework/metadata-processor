@@ -582,12 +582,11 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
         private int GetNestedFieldsCount(TypeDefinition c)
         {
-            ushort tt;
-
             int fieldCount = 0;
 
             if (c.BaseType != null &&
-                c.BaseType.FullName != "System.Object")
+                c.BaseType.FullName != "System.Object" &&
+                c.BaseType.FullName != "System.MarshalByRefObject")
             {
                 // get parent type fields count
                 fieldCount = GetNestedFieldsCount(c.BaseType.Resolve());
