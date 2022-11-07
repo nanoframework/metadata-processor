@@ -131,7 +131,7 @@ jobs:
 
   - template: azure-pipelines-templates/install-nuget.yml@templates  
 
-  - task: InstallnFBuildComponents@1
+  - task: InstallNanoMSBuildComponents@1
     condition: ne( variables['StartReleaseCandidate'], true )
     displayName: Install nanoFramework MSBuild components
     env:
@@ -326,7 +326,7 @@ jobs:
     condition: succeeded()
     displayName: Set build number
 
-  - task: InstallnFBuildComponents@1
+  - task: InstallNanoMSBuildComponents@1
     condition: succeeded()
     displayName: Install nanoFramework MSBuild components
     env:
