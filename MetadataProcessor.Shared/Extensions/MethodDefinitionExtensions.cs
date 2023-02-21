@@ -14,7 +14,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
     {
         public static string FullName(this MethodDefinition value)
         {
-            if(value.GenericParameters.Count == 0)
+            if (value.GenericParameters.Count == 0)
             {
                 return value.Name;
             }
@@ -23,7 +23,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
                 StringBuilder name = new StringBuilder(value.Name);
                 name.Append("<");
 
-                foreach(var p in value.GenericParameters)
+                foreach (var p in value.GenericParameters)
                 {
                     name.Append(p.Name);
                     if (!p.Equals(value.GenericParameters.Last()))

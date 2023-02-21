@@ -13,7 +13,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
     {
         public static string TypeToString(this ParameterDefinition parameter)
         {
-            if(parameter.ParameterType is ByReferenceType byReference)
+            if (parameter.ParameterType is ByReferenceType byReference)
             {
                 // pointer to native type
                 return " *" + byReference.TypeSignatureAsString();

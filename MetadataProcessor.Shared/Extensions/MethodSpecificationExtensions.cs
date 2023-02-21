@@ -12,7 +12,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
 {
     internal static class MethodSpecificationExtensions
     {
-         public static ushort ToEncodedNanoMethodToken(this MethodSpecification value)
+        public static ushort ToEncodedNanoMethodToken(this MethodSpecification value)
         {
             // implements .NET nanoFramework encoding for MethodToken
             // encodes Method to be decoded with CLR_UncompressMethodToken

@@ -15,7 +15,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
         {
             StringBuilder output = new StringBuilder();
 
-            foreach(byte b in buffer)
+            foreach (byte b in buffer)
             {
                 output.Append(b.ToString("X2"));
             }
