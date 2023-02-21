@@ -29,8 +29,8 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
         private string _fileName;
 
         public nanoDependencyGenerator(
-            AssemblyDefinition assemblyDefinition, 
-            nanoTablesContext tablesContext, 
+            AssemblyDefinition assemblyDefinition,
+            nanoTablesContext tablesContext,
             string fileName)
         {
             _assemblyDefinition = assemblyDefinition;

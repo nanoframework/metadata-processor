@@ -52,7 +52,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
         public void GenerateSkeleton()
         {
             // check if there are any native methods
-            if(_tablesContext.NativeMethodsCrc.CurrentCrc > 0)
+            if (_tablesContext.NativeMethodsCrc.CurrentCrc > 0)
             {
                 // create <assembly>.h with the structs declarations
                 GenerateAssemblyHeader();
@@ -89,7 +89,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
             foreach (var c in _tablesContext.TypeDefinitionTable.Items)
             {
-                if (c.IncludeInStub() && 
+                if (c.IncludeInStub() &&
                     !c.IsToExclude())
                 {
                     var className = NativeMethodsCrc.GetClassName(c);
@@ -124,13 +124,13 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                                 Declaration = $"Library_{_safeProjectName}_{className}::{NativeMethodsCrc.GetMethodName(m)}"
                             };
 
-                            if(!_withoutInteropCode)
+                            if (!_withoutInteropCode)
                             {
                                 // process with Interop code
 
                                 newMethod.IsStatic = m.IsStatic;
                                 newMethod.HasReturnType = (
-                                    m.MethodReturnType != null && 
+                                    m.MethodReturnType != null &&
                                     m.MethodReturnType.ReturnType.FullName != "System.Void");
 
                                 StringBuilder declaration = new StringBuilder();
@@ -169,7 +169,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                                             Name = $"param{parameterIndex.ToString()}",
                                         };
 
-                                        if(item.ParameterType.IsByReference)
+                                        if (item.ParameterType.IsByReference)
                                         {
                                             // declaration like
                                             // INT8 param1;
@@ -177,7 +177,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
                                             parameterDeclaration.Type = parameterType;
 
-                                            parameterDeclaration.Declaration = 
+                                            parameterDeclaration.Declaration =
                                                 $"{parameterType} {parameterDeclaration.Name};" + Environment.NewLine +
                                                 $"        UINT8 heapblock{parameterIndex.ToString()}[CLR_RT_HEAP_BLOCK_SIZE];";
 
@@ -201,7 +201,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                                             parameterDeclaration.Type = parameterType;
                                             parameterDeclaration.Declaration = $"{parameterType} {parameterDeclaration.Name};";
                                             parameterDeclaration.MarshallingDeclaration = $"Interop_Marshal_{parameterTypeCLR}( stack, {(parameterIndex + (m.IsStatic ? 0 : 1)).ToString()}, {parameterDeclaration.Name} )";
-                                       }
+                                        }
                                         newMethod.ParameterDeclaration.Add(parameterDeclaration);
                                         parameterIndex++;
                                     }
@@ -414,15 +414,15 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
             var assemblyData = new AssemblyDeclaration()
             {
-                Name = _assemblyName, 
-                ShortName = _safeProjectName, 
+                Name = _assemblyName,
+                ShortName = _safeProjectName,
                 ShortNameUpper = _safeProjectName.ToUpperInvariant(),
                 IsCoreLib = _isCoreLib
             };
 
             foreach (var c in _tablesContext.TypeDefinitionTable.Items)
             {
-                if (c.IncludeInStub() && 
+                if (c.IncludeInStub() &&
                     !c.IsToExclude())
                 {
                     var classData = new Class()
@@ -489,13 +489,13 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                     }
 
                     // methods
-                    if(c.HasMethods)
+                    if (c.HasMethods)
                     {
                         foreach (var m in nanoTablesContext.GetOrderedMethods(c.Methods))
                         {
                             var rva = _tablesContext.ByteCodeTable.GetMethodRva(m);
 
-                            if( rva == 0xFFFF &&
+                            if (rva == 0xFFFF &&
                                 !m.IsAbstract)
                             {
                                 classData.Methods.Add(new MethodStub()
@@ -520,7 +520,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
             foreach (var e in _tablesContext.TypeDefinitionTable.EnumDeclarations)
             {
                 // check if enum is to exclude
-                if(nanoTablesContext.ClassNamesToExclude.Contains(e.FullName) ||
+                if (nanoTablesContext.ClassNamesToExclude.Contains(e.FullName) ||
                     nanoTablesContext.ClassNamesToExclude.Contains(e.Name))
                 {
                     continue;
@@ -546,7 +546,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
         private int GetInstanceFieldsOffset(TypeDefinition c)
         {
             // check if this type has a base type different from System.Object
-            if( c.BaseType != null &&
+            if (c.BaseType != null &&
                 c.BaseType.FullName != "System.Object")
             {
                 // get base parent type fields count

@@ -110,7 +110,7 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             // assemblyName
             writer.WriteUInt16(isPreAllocationCall
-                ? (ushort) 0x0000
+                ? (ushort)0x0000
                 : _context.StringTable.GetOrCreateStringId(_context.AssemblyDefinition.Name.Name));
 
             // string table version
@@ -157,7 +157,7 @@ namespace nanoFramework.Tools.MetadataProcessor
 
                 var assemblyCrc32 = ComputeCrc32(
                     writer.BaseStream,
-                    _headerSize, 
+                    _headerSize,
                     writer.BaseStream.Length - _headerSize);
                 writer.WriteUInt32(assemblyCrc32);
 
@@ -165,7 +165,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                 writer.BaseStream.Seek(c_HeaderCrc32Position, SeekOrigin.Begin);
 
                 var headerCrc32 = ComputeCrc32(
-                    writer.BaseStream, 
+                    writer.BaseStream,
                     0,
                     _headerSize);
                 writer.WriteUInt32(headerCrc32);
