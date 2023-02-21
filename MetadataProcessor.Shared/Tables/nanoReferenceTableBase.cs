@@ -176,7 +176,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         public virtual void AddItem(T value, int index = -1)
         {
             // sanity check 
-            if(_idsByItemsDictionary.ContainsKey(value))
+            if (_idsByItemsDictionary.ContainsKey(value))
             {
                 // already there
                 return;
@@ -200,7 +200,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             else
             {
                 // no index specified, so just add it
-                copyOfItems.Add (value);
+                copyOfItems.Add(value);
             }
 
             // rebuild dictionary

@@ -15,9 +15,6 @@ namespace nanoFramework.Tools.MetadataProcessor
 {
     public sealed class nanoTablesContext
     {
-        internal readonly bool _verbose;
-        internal readonly bool _isCoreLibrary;
-
         internal static HashSet<string> IgnoringAttributes { get; } = new HashSet<string>(StringComparer.Ordinal)
             {
                 // Assembly-level attributes
@@ -78,8 +75,6 @@ namespace nanoFramework.Tools.MetadataProcessor
             AssemblyDefinition = assemblyDefinition;
 
             ClassNamesToExclude = classNamesToExclude;
-            _verbose = verbose;
-            _isCoreLibrary = isCoreLibrary;
 
             // check CustomAttributes against list of classes to exclude
             foreach (var item in assemblyDefinition.CustomAttributes)
@@ -95,9 +90,9 @@ namespace nanoFramework.Tools.MetadataProcessor
             }
 
             // check ignoring attributes against ClassNamesToExclude 
-            foreach(var className in ClassNamesToExclude)
+            foreach (var className in ClassNamesToExclude)
             {
-                if(!IgnoringAttributes.Contains(className))
+                if (!IgnoringAttributes.Contains(className))
                 {
                     IgnoringAttributes.Add(className);
                 }
@@ -120,8 +115,8 @@ namespace nanoFramework.Tools.MetadataProcessor
                 StringComparer.Ordinal);
 
             var memberReferences = mainModule.GetMemberReferences()
-                .Where(item => 
-                    (typeReferencesNames.Contains(item.DeclaringType.FullName) || 
+                .Where(item =>
+                    (typeReferencesNames.Contains(item.DeclaringType.FullName) ||
                     item.DeclaringType.GetElementType().IsPrimitive ||
                     item.ContainsGenericParameter ||
                     item.DeclaringType.IsGenericInstance))
@@ -139,7 +134,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             var types = GetOrderedTypes(mainModule, explicitTypesOrder);
 
             TypeDefinitionTable = new nanoTypeDefinitionTable(types, this);
-            
+
             var fields = types
                 .SelectMany(item => GetOrderedFields(item.Fields.Where(field => !field.HasConstant)))
                 .ToList();
@@ -204,7 +199,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             foreach (var item in memberReferences)
             {
                 StringTable.GetOrCreateStringId(item.Name);
-                
+
                 var fieldReference = item as FieldReference;
                 if (fieldReference != null)
                 {
@@ -273,7 +268,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                     // find MethodDef for this 
                     var methodRef = MethodReferencesTable.Items.FirstOrDefault(m => m.DeclaringType.MetadataToken == memberReference.DeclaringType.MetadataToken && m.Name == memberReference.Name);
 
-                    if(!MethodReferencesTable.TryGetMethodReferenceId(methodRef, out referenceId))
+                    if (!MethodReferencesTable.TryGetMethodReferenceId(methodRef, out referenceId))
                     {
                         Debug.Fail($"Can't find MethodRef for {memberReference}");
                     }
@@ -386,10 +381,10 @@ namespace nanoFramework.Tools.MetadataProcessor
                 // is TypeSpec
                 ownerTable = NanoCLRTable.TBL_TypeSpec;
             }
-            else if (typeReference is GenericParameter) 
+            else if (typeReference is GenericParameter)
             {
                 // is GenericParameter
-                if(TypeSpecificationsTable.TryGetTypeReferenceId(typeReference, out referenceId))
+                if (TypeSpecificationsTable.TryGetTypeReferenceId(typeReference, out referenceId))
                 {
                     // found it!
                     ownerTable = NanoCLRTable.TBL_TypeSpec;
@@ -445,7 +440,7 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             List<GenericParameterConstraint> constraints = new List<GenericParameterConstraint>();
 
-            foreach(var g in genericsWithConstraints)
+            foreach (var g in genericsWithConstraints)
             {
                 constraints.AddRange(g.Constraints);
             }
@@ -507,7 +502,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                         .Where(attr => !IsAttribute(attr.AttributeType))
                         .OrderByDescending(attr => attr.AttributeType.FullName)
                         .Select(attr => new Tuple<CustomAttribute, ushort>(attr, (ushort)index)));
-                
+
             }
             return types.SelectMany(
                 (item, index) => item.CustomAttributes

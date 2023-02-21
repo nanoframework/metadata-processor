@@ -50,7 +50,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         private List<TypeDefinition> TypeDefinitions;
 
         public List<EnumDeclaration> EnumDeclarations { get; }
-        
+
         public NanoCLRTable TableIndex => NanoCLRTable.TBL_TypeDef;
 
         /// <summary>
@@ -279,10 +279,10 @@ namespace nanoFramework.Tools.MetadataProcessor
             writer.WriteUInt16(firstInstanceFieldId);
 
             // StaticFieldsCount
-            writer.WriteByte((byte) staticFieldsCount);
+            writer.WriteByte((byte)staticFieldsCount);
 
             // InstanceFieldsCount
-            writer.WriteByte((byte) instanceFieldsCount);
+            writer.WriteByte((byte)instanceFieldsCount);
         }
 
         private void WriteMethodBodies(
@@ -357,7 +357,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                 {
                     // is TypeRef
 
-                    return  (ushort)(typeReference.ToEncodedNanoTypeDefOrRefToken() | referenceId);
+                    return (ushort)(typeReference.ToEncodedNanoTypeDefOrRefToken() | referenceId);
                 }
             }
 
@@ -466,13 +466,13 @@ namespace nanoFramework.Tools.MetadataProcessor
             }
 
             var baseType = definition.BaseType;
-            if (baseType != null && 
+            if (baseType != null &&
                 baseType.FullName == "System.MulticastDelegate")
             {
                 flags |= nanoTypeDefinitionFlags.TD_MulticastDelegate;
             }
 
-            if (baseType != null && 
+            if (baseType != null &&
                 baseType.FullName == "System.Delegate" &&
                 definition.FullName != "System.MulticastDelegate")
             {

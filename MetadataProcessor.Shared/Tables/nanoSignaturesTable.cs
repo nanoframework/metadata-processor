@@ -90,7 +90,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// </summary>
         private ushort _lastAvailableId;
 
-        public nanoCLRTable TableIndex => nanoCLRTable.TBL_Signatures;
+        public NanoCLRTable TableIndex => NanoCLRTable.TBL_Signatures;
 
         /// <summary>
         /// Creates new instance of <see cref="nanoSignaturesTable"/> object.

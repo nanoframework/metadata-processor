@@ -153,9 +153,9 @@ namespace nanoFramework.Tools.MetadataProcessor
                 return new byte[0];
             }
 
-            using(var stream = new MemoryStream())
+            using (var stream = new MemoryStream())
             {
-                var codeWriter = new  CodeWriter(
+                var codeWriter = new CodeWriter(
                     method, writer.GetMemoryBasedClone(stream),
                     _context.StringTable, _context);
                 codeWriter.WriteMethodBody();

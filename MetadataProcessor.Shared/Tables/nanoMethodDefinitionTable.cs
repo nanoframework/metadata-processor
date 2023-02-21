@@ -46,7 +46,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         public nanoMethodDefinitionTable(
             IEnumerable<MethodDefinition> items,
             nanoTablesContext context)
-            :base(items, new MethodDefinitionComparer(), context)
+            : base(items, new MethodDefinitionComparer(), context)
         {
         }
 
@@ -125,8 +125,8 @@ namespace nanoFramework.Tools.MetadataProcessor
             }
             else
             {
-                if( item.IsAbstract ||
-                    item.IsRuntime  || 
+                if (item.IsAbstract ||
+                    item.IsRuntime ||
                     item.IsInternalCall)
                 {
                     writer.WriteUInt16(0x0000);
@@ -161,45 +161,45 @@ namespace nanoFramework.Tools.MetadataProcessor
 
         public static uint GetFlags(MethodDefinition method)
         {
-            const uint MD_Scope_Private =           0x00000001; // Accessible only by the parent type.
-            const uint MD_Scope_FamANDAssem =       0x00000002; // Accessible by sub-types only in this Assembly.
-            const uint MD_Scope_Assem =             0x00000003; // Accessibly by anyone in the Assembly.
-            const uint MD_Scope_Family =            0x00000004; // Accessible only by type and sub-types.
-            const uint MD_Scope_FamORAssem =        0x00000005; // Accessibly by sub-types anywhere, plus anyone in assembly.
-            const uint MD_Scope_Public =            0x00000006; // Accessibly by anyone who has visibility to this scope.
+            const uint MD_Scope_Private = 0x00000001; // Accessible only by the parent type.
+            const uint MD_Scope_FamANDAssem = 0x00000002; // Accessible by sub-types only in this Assembly.
+            const uint MD_Scope_Assem = 0x00000003; // Accessibly by anyone in the Assembly.
+            const uint MD_Scope_Family = 0x00000004; // Accessible only by type and sub-types.
+            const uint MD_Scope_FamORAssem = 0x00000005; // Accessibly by sub-types anywhere, plus anyone in assembly.
+            const uint MD_Scope_Public = 0x00000006; // Accessibly by anyone who has visibility to this scope.
 
-            const uint MD_Static =                  0x00000010; // Defined on type, else per instance.
-            const uint MD_Final =                   0x00000020; // Method may not be overridden.
-            const uint MD_Virtual =                 0x00000040; // Method virtual.
-            const uint MD_HideBySig =               0x00000080; // Method hides by name+sig, else just by name.
+            const uint MD_Static = 0x00000010; // Defined on type, else per instance.
+            const uint MD_Final = 0x00000020; // Method may not be overridden.
+            const uint MD_Virtual = 0x00000040; // Method virtual.
+            const uint MD_HideBySig = 0x00000080; // Method hides by name+sig, else just by name.
 
-            const uint MD_ReuseSlot =               0x00000000; // The default.
-            const uint MD_NewSlot =                 0x00000100; // Method always gets a new slot in the vtable.
-            const uint MD_Abstract =                0x00000200; // Method does not provide an implementation.
-            const uint MD_SpecialName =             0x00000400; // Method is special.  Name describes how.
-            const uint MD_NativeProfiled =          0x00000800;
+            const uint MD_ReuseSlot = 0x00000000; // The default.
+            const uint MD_NewSlot = 0x00000100; // Method always gets a new slot in the vtable.
+            const uint MD_Abstract = 0x00000200; // Method does not provide an implementation.
+            const uint MD_SpecialName = 0x00000400; // Method is special.  Name describes how.
+            const uint MD_NativeProfiled = 0x00000800;
 
-            const uint MD_Constructor =             0x00001000;
-            const uint MD_StaticConstructor =       0x00002000;
-            const uint MD_Finalizer =               0x00004000;
+            const uint MD_Constructor = 0x00001000;
+            const uint MD_StaticConstructor = 0x00002000;
+            const uint MD_Finalizer = 0x00004000;
 
-            const uint MD_DelegateConstructor =     0x00010000;
-            const uint MD_DelegateInvoke =          0x00020000;
-            const uint MD_DelegateBeginInvoke =     0x00040000;
-            const uint MD_DelegateEndInvoke =       0x00080000;
+            const uint MD_DelegateConstructor = 0x00010000;
+            const uint MD_DelegateInvoke = 0x00020000;
+            const uint MD_DelegateBeginInvoke = 0x00040000;
+            const uint MD_DelegateEndInvoke = 0x00080000;
 
-            const uint MD_IsGenericInstance =           0x00100000;
-            const uint MD_ContainsGenericParameter =    0x00200000;
+            const uint MD_IsGenericInstance = 0x00100000;
+            const uint MD_ContainsGenericParameter = 0x00200000;
 
-            const uint MD_Synchronized =            0x01000000;
-            const uint MD_GloballySynchronized =    0x02000000;
-            const uint MD_Patched =                 0x04000000;
-            const uint MD_EntryPoint =              0x08000000;
+            const uint MD_Synchronized = 0x01000000;
+            const uint MD_GloballySynchronized = 0x02000000;
+            const uint MD_Patched = 0x04000000;
+            const uint MD_EntryPoint = 0x08000000;
 
-            const uint MD_RequireSecObject =        0x10000000; // Method calls another method containing security code.
-            const uint MD_HasSecurity =             0x20000000; // Method has security associate with it.
-            const uint MD_HasExceptionHandlers =    0x40000000;
-            const uint MD_HasAttributes =           0x80000000;
+            const uint MD_RequireSecObject = 0x10000000; // Method calls another method containing security code.
+            const uint MD_HasSecurity = 0x20000000; // Method has security associate with it.
+            const uint MD_HasExceptionHandlers = 0x40000000;
+            const uint MD_HasAttributes = 0x80000000;
 
             uint flag = 0;
             if (method.IsPrivate)

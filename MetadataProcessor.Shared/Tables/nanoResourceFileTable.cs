@@ -68,7 +68,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                 writer.WriteUInt32(0x08); // Size of resouce header
 
                 writer.WriteUInt32(item.Item2);
-                
+
                 writer.WriteUInt16(item.Item1);
                 writer.WriteUInt16(0x0); // paddding
 

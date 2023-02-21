@@ -57,12 +57,15 @@
     <Compile Include="$(MSBuildThisFileDirectory)Tables\nanoAssemblyReferenceTable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tables\nanoAttributesTable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tables\nanoByteCodeTable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tables\nanoClrTable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tables\nanoEmptyTable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tables\nanoFieldDefinitionTable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tables\nanoFieldReferenceTable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tables\nanoGenericParamTable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tables\nanoMemberReferenceTable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tables\nanoMethodDefinitionTable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tables\nanoMethodReferenceTable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tables\nanoMethodSpecificationTable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tables\nanoReferenceTableBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tables\nanoResourceDataTable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tables\nanoResourceFileTable.cs" />

@@ -70,11 +70,11 @@ namespace nanoFramework.Tools.MetadataProcessor
             nanoTablesContext context)
             : base(items, new GenericParameterComparer(), context)
         {
-            foreach(var gp in items)
+            foreach (var gp in items)
             {
                 var methodWithGenericParam = _context.MethodDefinitionTable.Items.SingleOrDefault(m => m.GenericParameters.Contains(gp));
 
-                if(methodWithGenericParam != null)
+                if (methodWithGenericParam != null)
                 {
                     // get the first method specification that matches this type AND name
                     var instanceMethod = _context.MethodSpecificationTable.Items.FirstOrDefault(
@@ -89,9 +89,9 @@ namespace nanoFramework.Tools.MetadataProcessor
                 {
                     var typeWithGenericParam = _context.TypeDefinitionTable.Items.SingleOrDefault(t => t.GenericParameters.Contains(gp));
 
-                    if(typeWithGenericParam != null)
+                    if (typeWithGenericParam != null)
                     {
-                        if(_context.MethodReferencesTable.Items.Any())
+                        if (_context.MethodReferencesTable.Items.Any())
                         {
                             var genericInstance = _context.MethodReferencesTable.Items.FirstOrDefault(
                                 mr => mr.DeclaringType.GetElementType() == typeWithGenericParam)

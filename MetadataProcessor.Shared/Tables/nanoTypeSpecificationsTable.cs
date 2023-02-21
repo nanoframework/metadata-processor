@@ -91,12 +91,12 @@ namespace nanoFramework.Tools.MetadataProcessor
             nanoTablesContext context)
         {
             _context = context;
-            
+
             _idByTypeSpecifications = new Dictionary<TypeReference, ushort>(new TypeReferenceEqualityComparer(context));
 
             FillTypeSpecsFromTypes();
 
-            FillTypeSpecsFromMemberReferences();        
+            FillTypeSpecsFromMemberReferences();
         }
 
         /// <summary>
@@ -109,7 +109,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             TypeReference typeReference,
             out ushort referenceId)
         {
-            if(_idByTypeSpecifications.TryGetValue(typeReference, out referenceId))
+            if (_idByTypeSpecifications.TryGetValue(typeReference, out referenceId))
             {
                 referenceId = (ushort)Array.IndexOf(_idByTypeSpecifications.Values.ToArray(), referenceId);
 
@@ -182,7 +182,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         {
             foreach (var t in _context.TypeDefinitionTable.Items)
             {
-                foreach(var m in t.Methods.Where(i => i.HasBody))
+                foreach (var m in t.Methods.Where(i => i.HasBody))
                 {
                     foreach (var i in m.Body.Instructions.Where(i => (i.Operand is GenericParameter) || (i.OpCode.OperandType is OperandType.InlineType && ((TypeReference)i.Operand).IsArray)))
                     {
