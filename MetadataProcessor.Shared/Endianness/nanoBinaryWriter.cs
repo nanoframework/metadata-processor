@@ -316,7 +316,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         {
             if (value <= 0x7F)
             {
-                WriteByte((byte) value);
+                WriteByte((byte)value);
             }
             else if (value <= 0x3FFF)
             {
