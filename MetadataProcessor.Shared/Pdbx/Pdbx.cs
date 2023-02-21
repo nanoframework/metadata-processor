@@ -75,7 +75,7 @@ namespace nanoFramework.Tools.MetadataProcessor
     public partial class GenericParam
     {
         public Token Token { get; set; }
-       
+
         public string Name { get; set; }
     }
 

@@ -145,7 +145,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             }
         }
     }
-   
+
     public partial class Field
     {
         public Field(nanoTablesContext context, FieldDefinition field)
@@ -165,7 +165,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             Token = new Token(clrToken, nanoToken);
         }
     }
-    
+
     public partial class GenericParam
     {
         public GenericParam(nanoTablesContext context, GenericParameter item, uint nanoToken)
