@@ -1,0 +1,86 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.32014.148
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MetadataProcessor.Core", "MetadataProcessor.Core\MetadataProcessor.Core.csproj", "{E32F7D15-2499-440C-8026-4D5EE1C5EC3A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MetadataProcessor.Console", "MetadataProcessor.Console\MetadataProcessor.Console.csproj", "{A9E02E14-7321-4B12-8AB5-9A0408ED8FD0}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{BFDB4F1F-D22B-4BDE-AA52-AD2EA3EDBBFF}"
+	ProjectSection(SolutionItems) = preProject
+		NuGet.Config = NuGet.Config
+		version.json = version.json
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MetadataProcessor.Tests", "MetadataProcessor.Tests\MetadataProcessor.Tests.csproj", "{C57A07D9-3293-46ED-9EB7-E05B7965B016}"
+	ProjectSection(ProjectDependencies) = postProject
+		{9B18784E-1BF2-47D1-BDD1-85B678F883F9} = {9B18784E-1BF2-47D1-BDD1-85B678F883F9}
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MetadataProcessor.MsBuildTask", "MetadataProcessor.MsBuildTask\MetadataProcessor.MsBuildTask.csproj", "{9B18784E-1BF2-47D1-BDD1-85B678F883F9}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TestProjects", "TestProjects", "{65BB4122-2D2E-4CC2-9C28-42845B1A496B}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "MetadataProcessor.Shared", "MetadataProcessor.Shared\MetadataProcessor.Shared.shproj", "{EFE862A2-8AA5-4E4D-8AA2-7FE9A8C22069}"
+EndProject
+Project("{11A8DD76-328B-46DF-9F39-F559912D0360}") = "TestNFApp", "MetadataProcessor.Tests\TestNFApp\TestNFApp.nfproj", "{9E5E0766-701D-4266-9EBA-7B3E4338ED21}"
+EndProject
+Project("{11A8DD76-328B-46DF-9F39-F559912D0360}") = "TestNFClassLibrary", "MetadataProcessor.Tests\TestNFClassLibrary\TestNFClassLibrary\TestNFClassLibrary.nfproj", "{4DFB8601-824B-4E4C-8D95-E292CB53760E}"
+EndProject
+Project("{11A8DD76-328B-46DF-9F39-F559912D0360}") = "CoreLibrary", "MetadataProcessor.Tests\mscorlib\nanoFramework.CoreLibrary\CoreLibrary.nfproj", "{BE7B95D5-087C-45F8-8197-4B438BEDFE11}"
+EndProject
+Project("{11A8DD76-328B-46DF-9F39-F559912D0360}") = "StubsGenerationTestNFApp", "MetadataProcessor.Tests\StubsGenerationTestNFApp\StubsGenerationTestNFApp.nfproj", "{06589FF8-1FB2-4513-B2C8-FDA351D57BF9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E32F7D15-2499-440C-8026-4D5EE1C5EC3A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E32F7D15-2499-440C-8026-4D5EE1C5EC3A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E32F7D15-2499-440C-8026-4D5EE1C5EC3A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E32F7D15-2499-440C-8026-4D5EE1C5EC3A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A9E02E14-7321-4B12-8AB5-9A0408ED8FD0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A9E02E14-7321-4B12-8AB5-9A0408ED8FD0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A9E02E14-7321-4B12-8AB5-9A0408ED8FD0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A9E02E14-7321-4B12-8AB5-9A0408ED8FD0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C57A07D9-3293-46ED-9EB7-E05B7965B016}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C57A07D9-3293-46ED-9EB7-E05B7965B016}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C57A07D9-3293-46ED-9EB7-E05B7965B016}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C57A07D9-3293-46ED-9EB7-E05B7965B016}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9B18784E-1BF2-47D1-BDD1-85B678F883F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9B18784E-1BF2-47D1-BDD1-85B678F883F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9B18784E-1BF2-47D1-BDD1-85B678F883F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9B18784E-1BF2-47D1-BDD1-85B678F883F9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9E5E0766-701D-4266-9EBA-7B3E4338ED21}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9E5E0766-701D-4266-9EBA-7B3E4338ED21}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4DFB8601-824B-4E4C-8D95-E292CB53760E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4DFB8601-824B-4E4C-8D95-E292CB53760E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BE7B95D5-087C-45F8-8197-4B438BEDFE11}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BE7B95D5-087C-45F8-8197-4B438BEDFE11}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{06589FF8-1FB2-4513-B2C8-FDA351D57BF9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{06589FF8-1FB2-4513-B2C8-FDA351D57BF9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{9E5E0766-701D-4266-9EBA-7B3E4338ED21} = {65BB4122-2D2E-4CC2-9C28-42845B1A496B}
+		{4DFB8601-824B-4E4C-8D95-E292CB53760E} = {65BB4122-2D2E-4CC2-9C28-42845B1A496B}
+		{BE7B95D5-087C-45F8-8197-4B438BEDFE11} = {65BB4122-2D2E-4CC2-9C28-42845B1A496B}
+		{06589FF8-1FB2-4513-B2C8-FDA351D57BF9} = {65BB4122-2D2E-4CC2-9C28-42845B1A496B}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {31412224-888D-40FC-AE73-2FF5468E59CD}
+	EndGlobalSection
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		MetadataProcessor.Shared\MetadataProcessor.Shared.projitems*{9b18784e-1bf2-47d1-bdd1-85b678f883f9}*SharedItemsImports = 5
+		MetadataProcessor.Shared\MetadataProcessor.Shared.projitems*{e32f7d15-2499-440c-8026-4d5ee1c5ec3a}*SharedItemsImports = 4
+		MetadataProcessor.Shared\MetadataProcessor.Shared.projitems*{efe862a2-8aa5-4e4d-8aa2-7fe9a8c22069}*SharedItemsImports = 13
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		StartupItem = MFMetaDataProcessor.Core\MFMetaDataProcessor.Core.csproj
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,181 @@
+﻿//
+// Copyright (c) .NET Foundation and Contributors
+// See LICENSE file in the project root for full license information.
+//
+
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
+using System.Collections.Generic;
+
+namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
+{
+    [TestClass]
+    public class LoadHintsAssemblyResolverTests
+    {
+        [TestMethod]
+        public void ConstructorTest()
+        {
+            // test
+            using (var iut = new LoadHintsAssemblyResolver(new Dictionary<string, string>()))
+            {
+                // no op
+            };
+        }
+
+        [TestMethod]
+        public void ResolveSomethingKnownTest()
+        {
+            DoResolveSomethingKnownTest((iut, assemblyNameReference) =>
+            {
+                // test
+                Mono.Cecil.AssemblyDefinition ret = iut.Resolve(assemblyNameReference);
+                return ret;
+            });
+
+        }
+
+        [TestMethod]
+        public void ResolveSomethingKnownWithReaderParamTest()
+        {
+            DoResolveSomethingKnownTest((iut, assemblyNameReference) =>
+            {
+                Mono.Cecil.AssemblyDefinition ret = null;
+
+                var readerParameters = new Mono.Cecil.ReaderParameters();
+
+                // test
+                ret = iut.Resolve(assemblyNameReference, readerParameters);
+
+                return ret;
+            });
+        }
+
+        private void DoResolveSomethingKnownTest(Func<LoadHintsAssemblyResolver, Mono.Cecil.AssemblyNameReference, Mono.Cecil.AssemblyDefinition> resolveFuncToTest)
+        {
+            var thisAssemblyName = this.GetType().Assembly.GetName();
+            var assemblyNameReference = new Mono.Cecil.AssemblyNameReference(thisAssemblyName.Name, thisAssemblyName.Version);
+
+            var loadHints = new Dictionary<string, string>();
+            loadHints.Add(thisAssemblyName.Name, this.GetType().Assembly.Location);
+
+            using (var iut = new LoadHintsAssemblyResolver(loadHints))
+            {
+                var r = resolveFuncToTest(iut, assemblyNameReference);
+
+                Assert.IsNotNull(r);
+                Assert.AreEqual(thisAssemblyName.FullName, r.FullName);
+            }
+        }
+
+        [TestMethod]
+        public void ResolveSomethingWeirdTest()
+        {
+            DoResolveSomethingWeirdTest((iut, assemblyNameReference) =>
+            {
+                // test
+                Mono.Cecil.AssemblyDefinition ret = iut.Resolve(assemblyNameReference);
+                return ret;
+            });
+        }
+
+        [TestMethod]
+        public void ResolveSomethingWeirdWithReaderParamTest()
+        {
+            DoResolveSomethingWeirdTest((iut, assemblyNameReference) =>
+            {
+                Mono.Cecil.AssemblyDefinition ret = null;
+
+                var readerParameters = new Mono.Cecil.ReaderParameters();
+
+                // test
+                ret = iut.Resolve(assemblyNameReference, readerParameters);
+
+                return ret;
+            });
+        }
+
+        [TestMethod]
+        public void ResolveSomethingInReferencedClassTest()
+        {
+            DoResolveSomethingInReferencedClassTest((iut, assemblyNameReference) =>
+            {
+                Mono.Cecil.AssemblyDefinition ret = null;
+
+                var readerParameters = new Mono.Cecil.ReaderParameters();
+
+                // test
+                ret = iut.Resolve(assemblyNameReference, readerParameters);
+
+                return ret;
+            });
+        }
+
+        private void DoResolveSomethingWeirdTest(Func<LoadHintsAssemblyResolver, Mono.Cecil.AssemblyNameReference, Mono.Cecil.AssemblyDefinition> resolveFuncToTest)
+        {
+            var weirdAssemblyName = Guid.NewGuid().ToString("N");
+            var thisAssembly = this.GetType().Assembly;
+            var loadHints = new Dictionary<string, string>();
+
+            var assemblyNameReference = new Mono.Cecil.AssemblyNameReference(weirdAssemblyName, new Version(999, 999));
+
+            using (var iut = new LoadHintsAssemblyResolver(loadHints))
+            {
+                try
+                {
+                    var r = resolveFuncToTest(iut, assemblyNameReference);
+                    Assert.Fail("no exception thrown");
+                }
+                catch
+                {
+                    // no op
+                }
+            }
+
+            loadHints.Add(weirdAssemblyName, thisAssembly.Location);
+
+            using (var iut = new LoadHintsAssemblyResolver(loadHints))
+            {
+                // test
+                var r = resolveFuncToTest(iut, assemblyNameReference);
+
+                Assert.IsNotNull(r);
+                Assert.AreEqual(r.FullName, thisAssembly.FullName);
+            }
+        }
+
+
+        private void DoResolveSomethingInReferencedClassTest(Func<LoadHintsAssemblyResolver, Mono.Cecil.AssemblyNameReference, Mono.Cecil.AssemblyDefinition> resolveFuncToTest)
+        {
+            var referencedClassAssemblyName = "TestNFClassLibrary";
+            var thisAssembly = this.GetType().Assembly;
+            var loadHints = new Dictionary<string, string>();
+
+            var assemblyNameReference = new Mono.Cecil.AssemblyNameReference(referencedClassAssemblyName, new Version(999, 999));
+
+            using (var iut = new LoadHintsAssemblyResolver(loadHints))
+            {
+                try
+                {
+                    var r = resolveFuncToTest(iut, assemblyNameReference);
+                    Assert.Fail("no exception thrown");
+                }
+                catch
+                {
+                    // no op
+                }
+            }
+
+            loadHints.Add(referencedClassAssemblyName, thisAssembly.Location);
+
+            using (var iut = new LoadHintsAssemblyResolver(loadHints))
+            {
+                // test
+                var r = resolveFuncToTest(iut, assemblyNameReference);
+
+                Assert.IsNotNull(r);
+                Assert.AreEqual(r.FullName, thisAssembly.FullName);
+            }
+        }
+
+    }
+}

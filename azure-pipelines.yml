@@ -1,20 +1,27 @@
+# Copyright (c) .NET Foundation and Contributors
+# See LICENSE file in the project root for full license information.
+
 trigger:
   branches:
     include:
-    - master
-    - develop
-    - release/*
+      - main
+      - develop
+      - release-*
   paths:
     exclude:
-    - /*.md
-    - .gitignore
+      - .github_changelog_generator
+      - .gitignore
+      - CHANGELOG.md
+      - CODE_OF_CONDUCT.md
+      - LICENSE.md
+      - README.md
+      - NuGet.Config
+      - assets/*
+      - config/*
+      - .github/*
 
+# PR always trigger build
 pr:
-  branches:
-    include:
-    - master
-    - develop
-    - release/*
   autoCancel: true
 
 # add nf-tools repo to resources (for Azure Pipelines templates)
@@ -28,17 +35,82 @@ resources:
 jobs:
 
 ##############################
+- job: Get_Build_Flags
+  pool:
+    vmImage: 'windows-latest'
 
+  steps:
+  - checkout: self
+    fetchDepth: 1
+    
+
+  # get commit message
+  - powershell: |
+
+      # default to false
+      $update = $false
+
+      if($env:Build_Reason -eq 'PullRequest')
+      {
+        # PR build, nothing interesting in commit message
+      }
+      else
+      {
+        # build is not from a PR
+
+        # get commit ID
+        $commitId = git rev-parse HEAD
+        
+        # get PR associate with commit
+        $prUrl = "https://api.github.com/repos/nanoframework/metadata-processor/commits/$commitId/pulls"
+        $commit = Invoke-RestMethod -Uri $prUrl -ContentType "application/json" -Headers @{"Accept"="application/vnd.github.groot-preview+json"} -Method GET
+
+        if($commit -ne $null)
+        {
+          # there is a PR, check labels
+          $updateDependents = $commit.labels | where {$_.Name -eq 'CI: Update Dependents'}
+          if($updateDependents -ne $null)
+          {
+            $update = $true
+          }
+        }
+        else
+        {
+          # not a PR, get subject and commit message for commit
+          $commitMessage = git log --format='%B' -1
+
+          # need to flatten message by removing new lines
+          $commitMessage = $commitMessage -replace "`r`n", " "
+
+          if($commitMessage -like "***UPDATE_DEPENDENTS***")
+          {
+            $update = $true
+          }
+        }
+      }
+
+      # set variable to foward to jobs
+      echo "##vso[task.setvariable variable=RUN_UPDATE_DEPENDENTS;isOutput=true]$update"
+    name: GetPRLabels
+    displayName:  Check build labels
+
+##############################
 # build MDP
 - job: Build_MDP
+  condition: eq(variables['UPDATE_DEPENDENTS'], 'false')
+
+  dependsOn:
+    - Get_Build_Flags
 
   pool:
-    vmImage: 'VS2017-Win2016'
+    vmImage: 'windows-latest'
 
   variables:
+    DOTNET_NOLOGO: true
     buildPlatform: 'Any CPU'
     buildConfiguration: 'Release'
-    solution: 'source\nanoFramework.Tools.MetadataProcessor.sln'
+    solution: 'nanoFramework.Tools.MetadataProcessor.sln'
+    NF_MDP_MSBUILDTASK_PATH: '$(System.DefaultWorkingDirectory)/MetadataProcessor.MsBuildTask/bin/Release/net472'
 
   steps:
 
@@ -48,124 +120,226 @@ jobs:
     submodules: true
 
   - script: |
+      cd $(System.DefaultWorkingDirectory)/MetadataProcessor.Tests/mscorlib
+      git submodule update --init --recursive
+    displayName: Update mscorlib sub-module
+
+  - script: |
       git config --global user.email "nanoframework@outlook.com"
       git config --global user.name "nfbot"
     displayName: Setup git identity
 
-  - task: NuGetToolInstaller@0
-    inputs:
-      versionSpec: '4.9.3'
-    condition: not(variables['StartReleaseCandidate'])
-    displayName: 'Install specific version of NuGet'
+  - template: azure-pipelines-templates/install-nuget.yml@templates  
+
+  - task: InstallNanoMSBuildComponents@1
+    condition: ne( variables['StartReleaseCandidate'], true )
+    displayName: Install nanoFramework MSBuild components
+    env:
+      GITHUB_TOKEN: $(GitHubToken)
 
   - task: NuGetCommand@2
+    displayName: NuGet restore
     inputs:
       restoreSolution: '$(solution)'
-
+      feedsToUse: config
+      nugetConfigPath: 'NuGet.config'
+  
   - task: VSBuild@1
     inputs:
       solution: '$(solution)'
       platform: '$(buildPlatform)'
+      msbuildArchitecture: x64
       msbuildArgs: '/p:PublicRelease=true'
       configuration: '$(buildConfiguration)'
 
-  - powershell: |
-      # get subject and commit message for commit
-      $commitMessage = git log --format='%B' -1
+  - task: PowerShell@2
+    displayName: Remove nano Test Adapter
+    inputs:
+      targetType: 'inline'
+      script: |
+        Get-ChildItem -Path $env:System_DefaultWorkingDirectory -Include "nanoFramework.TestAdapter.dll" -Recurse |
+        Foreach-object {
+            Remove-Item -Path $_.fullname
+        }
 
-      # need to flatten message by removing new lines
-      $commitMessage = $commitMessage -replace "`r`n", " "
-
-      if($commitMessage -like "*PUBLISH_RELEASE*")
-      {
-        # set variable
-        Write-Host "$("##vso[task.setvariable variable=RELEASE_DRAFT;isOutput=true]")False"
-        Write-Host "$("##vso[task.setvariable variable=RELEASE_VERSION;isOutput=true]")True"
-        Write-Host "Release draft: FALSE"
-      }
-      else
-      {
-        # set variable
-        Write-Host "$("##vso[task.setvariable variable=RELEASE_DRAFT;isOutput=true]")True"
-        Write-Host "$("##vso[task.setvariable variable=RELEASE_VERSION;isOutput=true]")False"
-        Write-Host "Release draft: TRUE"
-      }
-    name: SetReleaseDraftVar
+  - task: VisualStudioTestPlatformInstaller@1
     condition: succeeded()
-    displayName: Set release draft var
+    displayName: 'Visual Studio Test Platform Installer'
+    inputs:
+      versionSelector: latestStable
+
+  - task: VSTest@2
+    condition: succeeded()
+    displayName: 'Running tests'
+    inputs:
+      testSelector: 'testAssemblies'
+      pathtoCustomTestAdapters: 
+      testAssemblyVer2: |
+        **\*Tests*.dll
+        !**\*TestAdapter*.dll
+        !**\*TestFramework*.dll
+        !**\obj\**
+      searchFolder: '$(System.DefaultWorkingDirectory)'
+      platform: '$(BuildPlatform)'
+      configuration: '$(BuildConfiguration)'
+      diagnosticsEnabled: true
+      vsTestVersion: toolsInstaller
+      codeCoverageEnabled: true  
 
   - task: CopyFiles@1
+    condition: failed()
+    displayName: Collecting test results
+    inputs:
+      Contents: |
+        **\TestResults\*.trx
+      TargetFolder: '$(Build.ArtifactStagingDirectory)'
+      flattenFolders: true
+
+  - task: CopyFiles@1
+    condition: succeeded()
+    displayName: Collecting deployable artifacts
     inputs:
       sourceFolder: $(Build.SourcesDirectory)
       Contents: |
         **\bin\Release\nanoFramework.Tools.MetaDataProcessor.exe
+        **\bin\Release\nanoFramework.Tools.MetadataProcessor.MsBuildTask.dll
       TargetFolder: '$(Build.ArtifactStagingDirectory)'
       flattenFolders: true
-    condition: succeeded()
-    displayName: Collecting deployable artifacts
-
-  # update could build number (only possible if this is not a PR from a fork)
-  - task: PowerShell@2
-    inputs:
-        targetType: 'inline'
-        script: Write-Host "$("##vso[build.updatebuildnumber]")$env:NBGV_NuGetPackageVersion"
-    condition: and( succeeded(), ne(variables['system.pullrequest.isfork'], true) )
-    displayName: Update cloud build number
-
-  - task: NuGetCommand@2
-    inputs:
-      command: 'custom' 
-      arguments: 'pack source\Tools.MetaDataProcessor\package.nuspec -Version $(NBGV_NuGetPackageVersion)'
-    condition: succeeded()
-    displayName: Pack NuGet with MDP tool
 
   - task: CopyFiles@1
+    condition: succeeded()
+    displayName: Collecting NuGet package artifact
     inputs:
       sourceFolder: $(Build.SourcesDirectory)
       Contents: |
-        **\nanoFramework*.nupkg
+        **\nanoFramework.Tools*.nupkg
       TargetFolder: '$(Build.ArtifactStagingDirectory)'
       flattenFolders: true
-    condition: succeeded()
-    displayName: Collecting NuGet package artifact
 
+  - task: DotNetCoreCLI@2
+    displayName: Install SignTool tool
+    condition: and( succeeded(), eq(variables['System.PullRequest.PullRequestId'], '') )
+    inputs:
+      command: custom
+      custom: tool
+      arguments: install --tool-path . SignClient
+  
+  - pwsh: |
+      .\SignClient "Sign" `
+      --baseDirectory "$(Build.ArtifactStagingDirectory)" `
+      --input "**/*.nupkg" `
+      --config "$(Build.Repository.LocalPath)\config\SignClient.json" `
+      --filelist "$(Build.Repository.LocalPath)\config\filelist.txt" `
+      --user "$(SignClientUser)" `
+      --secret '$(SignClientSecret)' `
+      --name ".NET nanoFramework Metadata Processor" `
+      --description ".NET nanoFramework Metadata Processor" `
+      --descriptionUrl "https://github.com/$env:Build_Repository_Name"
+    displayName: Sign packages
+    continueOnError: true
+    condition: and( succeeded(), eq(variables['System.PullRequest.PullRequestId'], '') )
+    
   # publish artifacts (only possible if this is not a PR originated on a fork)
   - task: PublishBuildArtifacts@1
+    displayName: Publish deployables artifacts
     inputs:
       PathtoPublish: '$(Build.ArtifactStagingDirectory)'
       ArtifactName: deployables
       ArtifactType: Container
-    condition: and( succeeded(), ne(variables['system.pullrequest.isfork'], true) )
-    displayName: Publish deployables artifacts
 
+  # set cloud build vars again as they've been overriten by the tests run
+  - script: nbgv cloud -a -c
+    condition: succeeded()
+    displayName: Set build number
+  
   # push NuGet packages to Azure Artifacts feed (always happens except on PR builds)
   - task: NuGetCommand@2
+    displayName: Push NuGet packages to Azure Artifacts
+    condition: and( succeeded(), eq(variables['System.PullRequest.PullRequestId'], '') )
+    continueOnError: true
     inputs:
       command: push
       nuGetFeedType: external
       packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
       publishFeedCredentials: 'AzureArtifacts'
-    condition: succeeded()
-    displayName: Push NuGet packages to Azure Artifacts
+      allowPackageConflicts: true
 
   # create or update GitHub release
-  - task: GitHubReleasePublish@1
-    inputs:
-      githubEndpoint: 'nanoFramework'
-      githubOwner: 'nanoframework'
-      githubRepositoryName: 'metadata-processor'
-      githubTag: v$(GitBuildVersionSimple)
-      githubReleaseTitle: 'nanoFramework Metadata Processor v$(GitBuildVersionSimple)'
-      githubReleaseNotes: 'add description here'
-      githubTargetCommitsh: $(Build.SourceVersion)
-      githubReleaseDraft: $(RELEASE_DRAFT)
-      githubReleasePrerelease: false
-      githubReuseDraftOnly: true
-      githubReuseRelease: true
-      githubEditRelease: true
-      githubReleaseAsset: '$(Build.ArtifactStagingDirectory)/*.exe'
-    condition: and( succeeded(), not( startsWith(variables['Build.SourceBranch'], 'refs/pull') ), not( startsWith(variables['Build.SourceBranch'], 'refs/tags/v') ) )
+  - task: GithubRelease@1
+    condition: >-
+      and(
+        succeeded(),
+        eq(variables['System.PullRequest.PullRequestId'], ''),
+        startsWith(variables['Build.SourceBranch'], 'refs/heads/develop'),
+        eq(variables['UPDATE_DEPENDENTS'], 'false')
+      )
     displayName: Create/Update GitHub release
+    inputs:
+      action: edit
+      gitHubConnection: 'github.com_nano-$(System.TeamProject)'
+      tagSource: userSpecifiedTag
+      tag: v$(NBGV_NuGetPackageVersion)
+      title: 'nanoFramework Metadata Processor v$(NBGV_NuGetPackageVersion)'
+      assets: '$(Build.ArtifactStagingDirectory)/*'
+      isPreRelease: false
+      isDraft: false
+      addChangeLog: true
+      changeLogLabels: |
+        [
+          { "label" : "Type: bug", "displayName" : "Bugs fixed", "state" : "closed" },
+          { "label" : "Type: enhancement", "displayName" : "Enhancements and new features", "state" : "closed" },
+          { "label" : "Breaking-Change", "displayName" : "Breaking Changes", "state" : "closed" }
+          { "label" : "Type: dependencies", "displayName" : "Dependencies updated", "state" : "closed" },
+          { "label" : "Type: documentation", "displayName" : "Documentation", "state" : "closed" }
+        ]
+
+##############################
+- job: Update_Dependents
+  condition: >-
+    and(
+      or(
+        eq(dependencies.Get_Build_Flags.outputs['GetPRLabels.RUN_UPDATE_DEPENDENTS'], 'true'),
+        eq(variables['UPDATE_DEPENDENTS'], 'true')
+      ),
+      not(startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))
+    )
+
+  dependsOn:
+    - Get_Build_Flags
+    - Build_MDP
+
+  pool:
+    vmImage: 'windows-latest'
+
+  variables:
+    DOTNET_NOLOGO: true
+
+  steps:
+  # need this here in order to persist GitHub credentials 
+  - checkout: self
+    fetchDepth: 100
+    persistCredentials: true
+  
+  - template: azure-pipelines-templates/install-nuget.yml@templates  
+
+  - script: nbgv cloud -a -c
+    condition: succeeded()
+    displayName: Set build number
+
+  - task: InstallNanoMSBuildComponents@1
+    condition: succeeded()
+    displayName: Install nanoFramework MSBuild components
+    env:
+      GITHUB_TOKEN: $(GitHubToken)
+
+  # update dependencies
+  - task: PowerShell@2
+    displayName: Update dependent class libs
+    inputs:
+      targetType: filePath
+      filePath: azure-pipelines/update-dependencies.ps1
+    env:
+      MY_GITHUB_TOKEN: $(GitHubToken)
 
 ##################################
 # report build failure to Discord
@@ -175,7 +349,7 @@ jobs:
   condition: failed('Build_MDP')
 
   pool:
-    vmImage: 'VS2017-Win2016'
+    vmImage: 'windows-latest'
 
   steps:
 

@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>nanoFramework.Tools.MetadataProcessor.Core</id>
+    <title>nanoFramework.Tools.MetadataProcessor.Core</title>
+    <version>$version$</version>
+    <authors>nanoFramework project contributors</authors>
+    <owners>nanoframework,dotnetfoundation</owners>
+    <description>Metadata Processor tool to be used internally by the VS nanoFramework extension.</description>
+    <releaseNotes>
+    </releaseNotes>
+    <readme>docs\README.md</readme>
+    <projectUrl>https://github.com/nanoframework/metadata-processor</projectUrl>
+    <icon>images\nf-logo.png</icon>
+    <license type="file">LICENSE.md</license>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <repository type="git" url="https://github.com/nanoframework/metadata-processor" commit="$commit$" />
+    <copyright>Copyright (c) .NET Foundation and Contributors</copyright>
+    <references></references>
+    <tags>nanoFramework, nano Framework, NETNF, NETMF, Micro Framework, .net</tags>
+    <dependencies>
+      <dependency id="Mono.Cecil" version="0.11.3" />
+      <dependency id="mustache-sharp" version="1.0.0" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="bin\Release\nanoFramework.Tools.MetadataProcessor.Core.dll" target="lib/net472" />
+    <file src="nanoFramework.Tools.MetaDataProcessor.Core.targets" target="build" />
+    <file src="..\nf-logo.png" target="images\" />
+    <file src="..\LICENSE.md" target="" />
+    <file src="..\README.md" target="docs\" />
+  </files>
+</package>
