@@ -44,7 +44,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         {
             get
             {
-                if(_methodsWithNativeImplementation > 0)
+                if (_methodsWithNativeImplementation > 0)
                 {
                     return _currentCrc;
                 }
@@ -60,7 +60,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             var type = method.DeclaringType;
 
             if (type.IncludeInStub() &&
-                (method.RVA == 0 && !method.IsAbstract) )
+                (method.RVA == 0 && !method.IsAbstract))
             {
                 _currentCrc = Crc32.Compute(_name, CurrentCrc);
                 _currentCrc = Crc32.Compute(Encoding.ASCII.GetBytes(GetClassName(type)), CurrentCrc);
@@ -116,7 +116,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             bool continueProcessing = true;
 
             // special processing for arrays
-            if(parameterType.IsArray)
+            if (parameterType.IsArray)
             {
                 typeName += NanoCLRDataType.DATATYPE_SZARRAY + "_" + GetParameterType(parameterType.GetElementType());
                 continueProcessing = false;
@@ -137,7 +137,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                 }
                 continueProcessing = false;
             }
-            else if(!parameterType.IsPrimitive)
+            else if (!parameterType.IsPrimitive)
             {
                 // TBD
                 continueProcessing = true;
@@ -158,7 +158,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             // try getting primitive type
 
             NanoCLRDataType myType;
-            if(nanoSignaturesTable.PrimitiveTypes.TryGetValue(parameterType.FullName, out myType))
+            if (nanoSignaturesTable.PrimitiveTypes.TryGetValue(parameterType.FullName, out myType))
             {
                 if (myType == NanoCLRDataType.DATATYPE_LAST_PRIMITIVE)
                 {
@@ -184,14 +184,14 @@ namespace nanoFramework.Tools.MetadataProcessor
             else
             {
                 // type is not primitive
-                
+
                 if (parameterType.IsGenericParameter)
                 {
                     // check if it's generic
                     return "DATATYPE_GENERICTYPE";
                 }
                 else
-                { 
+                {
                     // this is not a generic, get full qualified type name
                     return parameterType.FullName.Replace(".", String.Empty);
                 }

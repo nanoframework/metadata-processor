@@ -74,7 +74,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                 throw new ArgumentNullException(nameof(obj));
             }
 
-            if(obj is TypeSpecification)
+            if (obj is TypeSpecification)
             {
                 ushort xSignatureId = _context.SignaturesTable.GetOrCreateSignatureId(obj);
 

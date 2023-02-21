@@ -32,7 +32,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             _id = id;
 
             // get token type
-            switch(token.TokenType)
+            switch (token.TokenType)
             {
                 case TokenType.AssemblyRef:
                     _clrTable = NanoCLRTable.TBL_AssemblyRef;

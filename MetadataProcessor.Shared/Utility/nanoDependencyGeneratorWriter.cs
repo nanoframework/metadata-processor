@@ -19,15 +19,15 @@ namespace nanoFramework.Tools.MetadataProcessor
         private readonly AssemblyDefinition _assemblyDefinition;
 
         public nanoDependencyGeneratorWriter(
-            AssemblyDefinition assemblyDefinition, 
+            AssemblyDefinition assemblyDefinition,
             nanoTablesContext context)
         {
             _context = context;
             _assemblyDefinition = assemblyDefinition;
-    }
+        }
 
-    public void Write(
-            XmlWriter writer)
+        public void Write(
+                XmlWriter writer)
         {
             writer.WriteStartElement("AssemblyGraph");
 
@@ -38,7 +38,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             writer.WriteAttributeString("Flags", "0x00000000");
 
             // references
-            foreach(var a in _context.AssemblyDefinition.MainModule.AssemblyReferences)
+            foreach (var a in _context.AssemblyDefinition.MainModule.AssemblyReferences)
             {
                 writer.WriteStartElement("AssemblyRef");
                 writer.WriteAttributeString("Name", a.Name);
@@ -105,7 +105,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             //writer.WriteStartElement("Classes");
             //_context.TypeDefinitionTable.ForEachItems((token, item) => WriteClassInfo(writer, token, item));
 
-            writer.WriteEndDocument();            
+            writer.WriteEndDocument();
         }
 
         private string ComputeAssemblyHash(ModuleDefinition module)

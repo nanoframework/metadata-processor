@@ -76,16 +76,19 @@
     <Compile Include="$(MSBuildThisFileDirectory)Tables\nanoTypeDefinitionTable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tables\nanoTypeReferenceTable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tables\nanoTypeSpecificationsTable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utility\CompressTokenHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utility\Crc32.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utility\FixTypeNames.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utility\LoadHintsAssemblyResolver.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utility\nanoBitmapProcessor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utility\nanoCLR_DataType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utility\nanoDependencyGeneratorWriter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utility\nanoFontProcessor.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Utility\nanoPdbxFileWriter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utility\nanoMetadataToken.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utility\nanoSerializationType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utility\nanoStringsConstants.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utility\nanoTypeDefinitionFlags.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utility\NativeMethodsCrc.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utility\TypeReferenceEqualityComparer.cs" />
   </ItemGroup>
 </Project>

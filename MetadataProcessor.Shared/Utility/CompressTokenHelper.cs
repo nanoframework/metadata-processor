@@ -140,7 +140,7 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             var mask = 0xFFFF;
 
-            while(requiredBits-- > 0)
+            while (requiredBits-- > 0)
             {
                 mask = mask >> 1;
             }
