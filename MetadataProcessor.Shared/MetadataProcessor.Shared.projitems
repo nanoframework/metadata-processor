@@ -17,6 +17,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)DumpGenerator\ExceptionHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DumpGenerator\FieldDef.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DumpGenerator\GenericParam.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DumpGenerator\HeapString.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DumpGenerator\ILCode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DumpGenerator\InterfaceDef.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DumpGenerator\LocalDef.cs" />
@@ -24,6 +25,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)DumpGenerator\MethodDef.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DumpGenerator\TypeDef.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DumpGenerator\TypeRef.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DumpGenerator\TypeSpec.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DumpGenerator\UserString.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Endianness\nanoBinaryWriter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\ByteArrayExtensions.cs" />

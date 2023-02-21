@@ -8,7 +8,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
     public class UserString
     {
         public string ReferenceId;
-        
+
         public string Length;
 
         public string Content;

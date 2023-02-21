@@ -15,6 +15,6 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
         public string TypeToken;
 
-        public List<AttFixedArgs> FixedArgs = new List<AttFixedArgs>();   
+        public List<AttFixedArgs> FixedArgs = new List<AttFixedArgs>();
     }
 }
