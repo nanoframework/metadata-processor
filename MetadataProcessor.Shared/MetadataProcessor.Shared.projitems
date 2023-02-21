@@ -38,6 +38,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)nanoDependencyGenerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)nanoDumperGenerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)nanoSkeletonGenerator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Pdbx\nanoPdbxFileWriter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Pdbx\Pdbx.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Pdbx\PdbxFileHelpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SkeletonGenerator\AssemblyClass.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SkeletonGenerator\AssemblyClassStubs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SkeletonGenerator\AssemblyClassTable.cs" />
