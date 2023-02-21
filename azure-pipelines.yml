@@ -270,7 +270,7 @@ jobs:
       and(
         succeeded(),
         eq(variables['System.PullRequest.PullRequestId'], ''),
-        startsWith(variables['Build.SourceBranch'], 'refs/heads/develop'),
+        startsWith(variables['Build.SourceBranch'], 'refs/heads/main'),
         eq(variables['UPDATE_DEPENDENTS'], 'false')
       )
     displayName: Create/Update GitHub release
