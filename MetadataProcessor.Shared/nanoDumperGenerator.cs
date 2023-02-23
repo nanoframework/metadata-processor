@@ -75,7 +75,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                         {
                             foreach (var value in ma.CustomAttributes[0].ConstructorArguments)
                             {
-                                attribute.FixedArgs.Add(BuildFixedArgsAttribute(value));
+                                attribute.FixedArgs.AddRange(BuildFixedArgsAttribute(value));
                             }
                         }
 
@@ -98,7 +98,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                         {
                             foreach (var value in fa.CustomAttributes[0].ConstructorArguments)
                             {
-                                attribute.FixedArgs.Add(BuildFixedArgsAttribute(value));
+                                attribute.FixedArgs.AddRange(BuildFixedArgsAttribute(value));
                             }
                         }
 
@@ -117,7 +117,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                 {
                     foreach (var value in a.CustomAttributes[0].ConstructorArguments)
                     {
-                        attribute1.FixedArgs.Add(BuildFixedArgsAttribute(value));
+                        attribute1.FixedArgs.AddRange(BuildFixedArgsAttribute(value));
                     }
                 }
 
@@ -125,8 +125,20 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
             }
         }
 
-        private AttFixedArgs BuildFixedArgsAttribute(CustomAttributeArgument value)
+        private List<AttFixedArgs> BuildFixedArgsAttribute(CustomAttributeArgument value)
         {
+            if (value.Type.IsArray && value.Type.GetElementType().FullName == "System.Object")
+            {
+                var attArgs = new List<AttFixedArgs>();
+
+                foreach (var attributeArgument in (CustomAttributeArgument[])value.Value)
+                {
+                    attArgs.AddRange(BuildFixedArgsAttribute((CustomAttributeArgument)attributeArgument.Value));
+                }
+
+                return attArgs;
+            }
+
             var serializationType = value.Type.ToSerializationType();
 
             var newArg = new AttFixedArgs()
@@ -151,7 +163,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                     break;
             }
 
-            return newArg;
+            return new List<AttFixedArgs>() { newArg };
         }
 
         private void DumpStringHeap(DumpAllTable dumpTable)
