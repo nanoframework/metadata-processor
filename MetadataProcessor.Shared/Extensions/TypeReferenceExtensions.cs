@@ -63,6 +63,15 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
                 }
             }
 
+            if (type.MetadataType == MetadataType.Class)
+            {
+                StringBuilder classSig = new StringBuilder("CLASS [");
+                classSig.Append(type.MetadataToken.ToInt32().ToString("x8"));
+                classSig.Append("]");
+
+                return classSig.ToString();
+            }
+
             if (type.MetadataType == MetadataType.ValueType)
             {
                 StringBuilder valueTypeSig = new StringBuilder("VALUETYPE [");
