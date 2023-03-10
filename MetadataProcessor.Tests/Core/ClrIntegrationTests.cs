@@ -1,19 +1,71 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using CliWrap;
+using CliWrap.Buffered;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
 {
     [TestClass]
     public class CLRIntegrationTests
     {
+        public static bool NanoClrIsInstalled { get; private set; } = false;
+
+        [ClassInitialize]
+        public static void InstallNanoClr(TestContext context)
+        {
+            Console.WriteLine("Install/upate nanoclr tool");
+
+            var cmd = Cli.Wrap("dotnet")
+                .WithArguments("tool update -g nanoclr")
+                .WithValidation(CommandResultValidation.None);
+
+            // setup cancellation token with a timeout of 1 minute
+            using (var cts = new CancellationTokenSource())
+            {
+                cts.CancelAfter(TimeSpan.FromMinutes(1));
+
+                var cliResult = cmd.ExecuteBufferedAsync(cts.Token).Task.Result;
+
+                if (cliResult.ExitCode == 0)
+                {
+                    var regexResult = Regex.Match(cliResult.StandardOutput, @"((?>\(version ')(?'version'\d+\.\d+\.\d+)(?>'\)))");
+
+                    if (regexResult.Success)
+                    {
+                        Console.WriteLine($"Install/update successful. Running v{regexResult.Groups["version"].Value}");
+
+                        NanoClrIsInstalled = true;
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Failed to install/update nanoclr. {cliResult.StandardOutput}.");
+
+                        NanoClrIsInstalled = false;
+                    }
+                }
+                else
+                {
+                    Console.WriteLine($"Failed to install/update nanoclr. Exit code {cliResult.ExitCode}.");
+                    Console.WriteLine($"*** WON'T BE ABLE TO RUN UNITS TEST REQUIRING IT.");
+
+                    NanoClrIsInstalled = false;
+                }
+            }
+        }
+
         [TestMethod]
         public void RunBCLTest()
         {
+            if(!NanoClrIsInstalled)
+            {
+                Assert.Inconclusive("nanoclr is not installed, can't run this test");
+            }
+
             var workingDirectory = TestObjectHelper.GetTestNFAppLocation();
             var mscorlibLocation = Path.Combine(workingDirectory, "mscorlib.pe");
 
@@ -55,6 +107,11 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
         [TestMethod]
         public void RunTestNFAppTest()
         {
+            if (!NanoClrIsInstalled)
+            {
+                Assert.Inconclusive("nanoclr is not installed, can't run this test");
+            }
+
             // 5 seconds
             int runTimeout = 5000;
 
