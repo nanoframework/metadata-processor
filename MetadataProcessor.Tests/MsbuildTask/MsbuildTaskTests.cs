@@ -110,11 +110,12 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.MsbuildTask
                 _assemblyBuilder.Write(GetBinaryWriter(writer));
             }
 
-            // output PDBX
-            using (var writer = XmlWriter.Create(Path.ChangeExtension(fileToCompile, "pdbx")))
-            {
-                _assemblyBuilder.Write(writer);
-            }
+            // TODO
+            //// output PDBX
+            //using (var writer = XmlWriter.Create(Path.ChangeExtension(fileToCompile, "pdbx")))
+            //{
+            //    _assemblyBuilder.Write(writer);
+            //}
 
             // output assembly metadata
             dumpFile = Path.ChangeExtension(fileToCompile, "dump.txt");
