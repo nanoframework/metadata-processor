@@ -26,11 +26,11 @@ namespace nanoFramework.Tools.Utilities
             if (!string.IsNullOrEmpty(isToEnablePauseForDebug) 
                 && isToEnablePauseForDebug.Equals("1", StringComparison.Ordinal))
             {
-                // output helper messsage to console, hopefully to be read by a human
-                Console.WriteLine($".NET nanoFramework Metadata Processor msbuild task debugging is enabled. Waiting {timeoutSeconds} seconds for debugger to attach...");
-
                 var currentProcessId = Process.GetCurrentProcess().Id;
                 var currentProcessName = Process.GetProcessById(currentProcessId).ProcessName;
+
+                // output helper message to console, hopefully to be read by a human
+                Console.WriteLine($".NET nanoFramework Metadata Processor msbuild task debugging is enabled. Waiting {timeoutSeconds} seconds for debugger to attach on Process Id: {currentProcessId} Name: {currentProcessName}...");
 
                 logger.LogMessage(MessageImportance.Normal, $"Debugging of .NET nanoFramework Metadata Processor msbuild task is enabled. Waiting {timeoutSeconds} seconds for debugger attachment on Process Id: {currentProcessId} Name: {currentProcessName}...");
 

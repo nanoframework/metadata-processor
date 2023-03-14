@@ -8,6 +8,6 @@ namespace nanoFramework.Tools
 {
     internal class TasksConstants
     {
-        public const string BuildTaskDebugVar = "NFBUILD_TASKS_DEBUG";
+        public const string BuildTaskDebugVar = "NF_MDP_MSBUILD_TASK_DEBUG";
     }
 }
