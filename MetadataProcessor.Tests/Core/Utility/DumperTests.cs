@@ -34,35 +34,35 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
             // search for bits
 
             // AssemblyRefs
-            Assert.IsTrue(dumpFileContent.Contains("AssemblyRefProps [23000001]: Flags: 00000000 'mscorlib'"));
-            Assert.IsTrue(dumpFileContent.Contains("AssemblyRefProps [23000002]: Flags: 00000000 'TestNFClassLibrary'"));
+            Assert.IsTrue(dumpFileContent.Contains("AssemblyRef [00000000] /*23000001*/\r\n-------------------------------------------------------\r\n'mscorlib'"));
+            Assert.IsTrue(dumpFileContent.Contains("AssemblyRef [00000001] /*23000002*/\r\n-------------------------------------------------------\r\n'TestNFClassLibrary'"));
 
             // TypeRefs
-            Assert.IsTrue(dumpFileContent.Contains("TypeRefProps [01000001]: Scope: 23000001 'System.Diagnostics.DebuggableAttribute'"));
-            Assert.IsTrue(dumpFileContent.Contains(": Scope: 23000002 'TestNFClassLibrary.ClassOnAnotherAssembly'"));
+            Assert.IsTrue(dumpFileContent.Contains("TypeRef [01000000] /*01000001*/\r\n-------------------------------------------------------\r\nScope: [0000] /*01000001*/\r\n    'System.Diagnostics.DebuggableAttribute'"));
+            Assert.IsTrue(dumpFileContent.Contains("TypeRef [01000016] /*01000017*/\r\n-------------------------------------------------------\r\nScope: [0001] /*01000017*/\r\n    'TestNFClassLibrary.ClassOnAnotherAssembly'"));
 
-            Assert.IsTrue(dumpFileContent.Contains(": Flags: 00001001 Extends: 0100000d Enclosed: 02000000 'TestNFApp.DummyCustomAttribute1'"));
+            Assert.IsTrue(dumpFileContent.Contains("TypeDef [0400000E] /*02000004*/\r\n-------------------------------------------------------\r\n    'TestNFApp.DummyCustomAttribute1'\r\n    Flags: 00001001\r\n    Extends: System.Attribute[0100000C] /*0100000D*/\r\n    Enclosed: (none)"));
 
-            Assert.IsTrue(dumpFileContent.Contains(": Flags: 00001001 Extends: 0100000d Enclosed: 02000000 'TestNFApp.DummyCustomAttribute2'"));
+            Assert.IsTrue(dumpFileContent.Contains("TypeDef [0400000F] /*02000005*/\r\n-------------------------------------------------------\r\n    'TestNFApp.DummyCustomAttribute2'\r\n    Flags: 00001001\r\n    Extends: System.Attribute[0100000C] /*0100000D*/\r\n    Enclosed: (none)"));
 
-            Assert.IsTrue(dumpFileContent.Contains(": Flags: 00000061 Extends: 01000000 Enclosed: 02000000 'TestNFApp.IOneClassOverAll'"));
-            Assert.IsTrue(dumpFileContent.Contains(": Flags: 000007c6 Impl: 00000000 RVA: 00000000 'get_DummyProperty' [I4(   )]"));
-            Assert.IsTrue(dumpFileContent.Contains(": Flags: 000007c6 Impl: 00000000 RVA: 00000000 'set_DummyProperty' [VOID( I4 )]"));
-            Assert.IsTrue(dumpFileContent.Contains(": Flags: 000003c6 Impl: 00000000 RVA: 00000000 'DummyMethod' [VOID(   )]"));
+            Assert.IsTrue(dumpFileContent.Contains("TypeDef [04000013] /*02000007*/\r\n-------------------------------------------------------\r\n    'TestNFApp.IOneClassOverAll'\r\n    Flags: 00000061\r\n    Extends: (none)\r\n    Enclosed: (none)"));
+            Assert.IsTrue(dumpFileContent.Contains("    MethodDef [0300003A] /*0600003B*/\r\n    -------------------------------------------------------\r\n        'get_DummyProperty'\r\n        Flags: 000005E6\r\n        Impl: 00000000\r\n        RVA: 0000FFFF\r\n        [I4(   )]\r\n"));
+            Assert.IsTrue(dumpFileContent.Contains("    MethodDef [0300003B] /*0600003C*/\r\n    -------------------------------------------------------\r\n        'set_DummyProperty'\r\n        Flags: 000005E6\r\n        Impl: 00000000\r\n        RVA: 0000FFFF\r\n        [VOID( I4 )]"));
+            Assert.IsTrue(dumpFileContent.Contains("    MethodDef [0300003C] /*0600003D*/\r\n    -------------------------------------------------------\r\n        'DummyMethod'\r\n        Flags: 800001E6\r\n        Impl: 00000000\r\n        RVA: 0000FFFF\r\n        [VOID(   )]"));
 
-            Assert.IsTrue(dumpFileContent.Contains("Enclosed: 02000000 'TestNFApp.OneClassOverAll'"));
-            Assert.IsTrue(dumpFileContent.Contains(": Attr: 00000001 Flags: 00000001 'dummyField' [STRING]"));
-            Assert.IsTrue(dumpFileContent.Contains(": Attr: 00000001 Flags: 00000001 '<DummyProperty>k__BackingField' [I4]"));
-            Assert.IsTrue(dumpFileContent.Contains(": Flags: 00000086 Impl: 00000000 RVA: 00000000 'DummyExternMethod' [VOID(   )]"));
+            Assert.IsTrue(dumpFileContent.Contains("TypeDef [04000013] /*02000007*/\r\n-------------------------------------------------------\r\n    'TestNFApp.IOneClassOverAll'\r\n    Flags: 00000061\r\n    Extends: (none)\r\n    Enclosed: (none)"));
+            Assert.IsTrue(dumpFileContent.Contains("    FieldDef [01000000] /*0400000D*/    -------------------------------------------------------\r\n    Attr: 00000001\r\n    Flags: 00000001\r\n    'dummyField'\r\n    [STRING]\r\n"));
+            Assert.IsTrue(dumpFileContent.Contains("    FieldDef [01000000] /*0400000C*/    -------------------------------------------------------\r\n    Attr: 00000001\r\n    Flags: 00000001\r\n    '<DummyProperty>k__BackingField'\r\n    [I4]\r\n"));
+            Assert.IsTrue(dumpFileContent.Contains("    MethodDef [0300003F] /*06000043*/\r\n    -------------------------------------------------------\r\n        'DummyExternMethod'\r\n        Flags: 00000086\r\n        Impl: 00000000\r\n        RVA: 0000FFFF\r\n        [VOID(   )]\r\n"));
 
-            Assert.IsTrue(dumpFileContent.Contains("'TestNFApp.Program'"));
+            Assert.IsTrue(dumpFileContent.Contains("TypeDef [04000018] /*02000019*/\r\n-------------------------------------------------------\r\n    'TestNFApp.Program'\r\n    Flags: 00001001\r\n    Extends: System.Object[01000011] /*01000012*/\r\n    Enclosed: (none)\r\n"));
 
-            Assert.IsTrue(dumpFileContent.Contains("'SubClass'"));
+            Assert.IsTrue(dumpFileContent.Contains("TypeDef [04000017] /*0200001A*/\r\n-------------------------------------------------------\r\n    'SubClass'\r\n    Flags: 00001002\r\n    Extends: System.Object[01000011] /*01000012*/\r\n    Enclosed: TestNFApp.OneClassOverAll[04000000] /*02000018*/\r\n"));
 
             // UserStrings
-            Assert.IsTrue(dumpFileContent.Contains(": 'TestNFClassLibrary'"));
-            Assert.IsTrue(dumpFileContent.Contains(": 'get_DummyProperty'"));
-            Assert.IsTrue(dumpFileContent.Contains(": 'blabla'"));
+            Assert.IsTrue(dumpFileContent.Contains("0D000001 : (12) \"TestNFClassLibrary\""));
+            Assert.IsTrue(dumpFileContent.Contains("0D000208 : (11) \"get_DummyProperty\""));
+            Assert.IsTrue(dumpFileContent.Contains("0D0002EF : (06) \"blabla\""));
         }
     }
 }
