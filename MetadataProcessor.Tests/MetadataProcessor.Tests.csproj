@@ -19,6 +19,7 @@
     <TestProjectType>UnitTest</TestProjectType>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <NF_MDP_MSBUILDTASK_PATH>$(ProjectDir)..\MetadataProcessor.MsBuildTask\bin\$(Configuration)\net472</NF_MDP_MSBUILDTASK_PATH>    
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
