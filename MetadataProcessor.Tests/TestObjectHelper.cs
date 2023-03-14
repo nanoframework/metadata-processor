@@ -1,4 +1,8 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿//
+// Copyright (c) .NET Foundation and Contributors
+// See LICENSE file in the project root for full license information.
+//
+
 using Mono.Cecil;
 using System;
 using System.Collections.Generic;
@@ -6,12 +10,19 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace nanoFramework.Tools.MetadataProcessor.Tests
 {
     public static class TestObjectHelper
     {
+        private static string _testExecutionLocation;
+        private static string _testNFAppLocation;
+        private static string _nfAppProjectLocation;
+        private static string _testNFClassLibLocation;
+        private static string _nanoClrLocation;
+        private static string _configuration;
+        private static string _StubsGenerationTestNFAppLocation;
+
         public static nanoTablesContext GetTestNFAppNanoTablesContext()
         {
             nanoTablesContext ret = null;
@@ -19,7 +30,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
             var assemblyDefinition = GetTestNFAppAssemblyDefinition();
 
             ret = new nanoTablesContext(
-                assemblyDefinition, 
+                assemblyDefinition,
                 null,
                 new List<string>(),
                 null,
@@ -30,47 +41,154 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
             return ret;
         }
 
-        public static string GetTestNFAppLocation()
-        {
-            var thisAssemblyDir = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-            var testNfAppDir = Path.Combine(thisAssemblyDir, "TestNFApp");
+        public static string Configuration => _configuration;
 
-            return testNfAppDir;
+        public static string TestExecutionLocation
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(_testExecutionLocation))
+                {
+                    _testExecutionLocation = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+
+                    if (_testExecutionLocation.Contains("Debug"))
+                    {
+                        _configuration = "Debug";
+                    }
+                    else if (_testExecutionLocation.Contains("Release"))
+                    {
+                        _configuration = "Release";
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException("Expecting configuration to be 'Debug' or 'Release'");
+                    }
+                }
+
+                return _testExecutionLocation;
+            }
         }
 
-        public static string GetPathOfTestNFApp()
+        public static string TestNFAppFullPath
         {
-            var thisAssemblyDir = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-            var testNfAppDir = Path.Combine(thisAssemblyDir, "TestNFApp");
-            var testNfAppExePath = Path.Combine(testNfAppDir, "TestNFApp.exe");
-
-            return testNfAppExePath;
+            get
+            {
+                return Path.Combine(
+                        TestNFAppLocation,
+                        "TestNFApp.exe");
+            }
         }
 
-        public static string GetPathOfTestNFClassLib()
+        public static string NFAppFullPath
         {
-            var thisAssemblyDir = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-            var testNfAppDir = Path.Combine(thisAssemblyDir, "TestNFApp");
-            var testNfClassLibPath = Path.Combine(testNfAppDir, "TestNFClassLibrary.dll");
-
-            return testNfClassLibPath;
+            get
+            {
+                return Path.Combine(
+                    TestExecutionLocation,
+                    "..\\..\\TestNFApp\\bin",
+                    _configuration,
+                    "TestNFApp.exe");
+            }
         }
 
-        public static string GetNanoCLRLocation()
+        public static string TestNFAppLocation
         {
-            var thisAssemblyDir = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-            var nanoCLRDir = Path.Combine(thisAssemblyDir, "nanoCLR");
-            var nanoCLRFullPath = Path.Combine(nanoCLRDir, "nanoFramework.nanoCLR.exe");
+            get
+            {
+                if (string.IsNullOrEmpty(_testNFAppLocation))
+                {
+                    _testNFAppLocation = Path.Combine(
+                        TestExecutionLocation,
+                        "TestNFApp");
+                }
 
-            return nanoCLRFullPath;
+                return _testNFAppLocation;
+            }
+        }
+
+        public static string TestNFClassLibFullPath
+        {
+            get
+            {
+                return Path.Combine(
+                        TestNFAppLocation,
+                        "TestNFClassLibrary.dll");
+            }
+        }
+
+        public static string TestNFClassLibLocation
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(_testNFClassLibLocation))
+                {
+                    _testNFClassLibLocation = Path.Combine(
+                        TestExecutionLocation,
+                        "TestNFApp");
+                }
+
+                return _testNFClassLibLocation;
+            }
+        }
+
+        public static string NanoClrLocation
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(_nanoClrLocation))
+                {
+                    _nanoClrLocation = Path.Combine(
+                        TestExecutionLocation,
+                        "nanoClr",
+                        "nanoFramework.nanoCLR.exe");
+                }
+
+                return _nanoClrLocation;
+            }
+        }
+
+        public static string GenerationNFAppFullPath
+        {
+            get
+            {
+                return Path.Combine(
+                    TestExecutionLocation,
+                    "..\\..\\StubsGenerationTestNFApp\\bin",
+                    _configuration,
+                    "StubsGenerationTestNFApp.exe");
+            }
+        }
+
+        public static string StubsGenerationTestNFAppFullPath
+        {
+            get
+            {
+                return Path.Combine(
+                    StubsGenerationTestNFAppLocation,
+                    "StubsGenerationTestNFApp.exe");
+            }
+        }
+
+        public static string StubsGenerationTestNFAppLocation
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(_StubsGenerationTestNFAppLocation))
+                {
+                    _StubsGenerationTestNFAppLocation = Path.Combine(
+                        TestExecutionLocation,
+                        "StubsGenerationTestNFApp");
+                }
+
+                return _StubsGenerationTestNFAppLocation;
+            }
         }
 
         public static AssemblyDefinition GetTestNFAppAssemblyDefinition()
         {
             AssemblyDefinition ret = null;
 
-
-            ret = AssemblyDefinition.ReadAssembly(GetPathOfTestNFApp());
+            ret = AssemblyDefinition.ReadAssembly(TestNFAppFullPath);
 
             return ret;
         }
@@ -78,7 +196,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
         {
             AssemblyDefinition ret = null;
 
-            ret = AssemblyDefinition.ReadAssembly(GetPathOfTestNFClassLib());
+            ret = AssemblyDefinition.ReadAssembly(TestNFClassLibFullPath);
 
             return ret;
         }
@@ -126,7 +244,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
 
             return ret;
         }
-        
+
 
         public static MethodDefinition GetTestNFAppOneClassOverAllDummyStaticMethodDefinition(TypeDefinition oneClassOverAllTypeDefinition)
         {
