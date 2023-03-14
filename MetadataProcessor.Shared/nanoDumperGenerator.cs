@@ -105,23 +105,6 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                         dumpTable.Attributes.Add(attribute);
                     }
                 }
-
-                var attribute1 = new AttributeCustom()
-                {
-                    Name = a.Module.Assembly.Name.Name,
-                    ReferenceId = a.MetadataToken.ToInt32().ToString("X8"),
-                    TypeToken = a.CustomAttributes[0].Constructor.MetadataToken.ToInt32().ToString("X8")
-                };
-
-                if (a.CustomAttributes[0].HasConstructorArguments)
-                {
-                    foreach (var value in a.CustomAttributes[0].ConstructorArguments)
-                    {
-                        attribute1.FixedArgs.AddRange(BuildFixedArgsAttribute(value));
-                    }
-                }
-
-                dumpTable.Attributes.Add(attribute1);
             }
         }
 
@@ -144,7 +127,6 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
             var newArg = new AttFixedArgs()
             {
                 Options = ((byte)serializationType).ToString("X2"),
-                Numeric = 0.ToString("X16"),
                 Text = "",
             };
 
@@ -158,8 +140,44 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                     newArg.Text = (string)value.Value;
                     break;
 
-                default:
+                case nanoSerializationType.ELEMENT_TYPE_OBJECT:
+                    newArg.Text = (string)value.Value;
+                    break;
+
+                case nanoSerializationType.ELEMENT_TYPE_I1:
+                    newArg.Numeric = ((sbyte)value.Value).ToString("X16");
+                    break;
+
+                case nanoSerializationType.ELEMENT_TYPE_I2:
+                    newArg.Numeric = ((short)value.Value).ToString("X16");
+                    break;
+
+                case nanoSerializationType.ELEMENT_TYPE_I4:
                     newArg.Numeric = ((int)value.Value).ToString("X16");
+                    break;
+
+                case nanoSerializationType.ELEMENT_TYPE_I8:
+                    newArg.Numeric = ((long)value.Value).ToString("X16");
+                    break;
+
+                case nanoSerializationType.ELEMENT_TYPE_U1:
+                    newArg.Numeric = ((byte)value.Value).ToString("X16");
+                    break;
+
+                case nanoSerializationType.ELEMENT_TYPE_U2:
+                    newArg.Numeric = ((ushort)value.Value).ToString("X16");
+                    break;
+
+                case nanoSerializationType.ELEMENT_TYPE_U4:
+                    newArg.Numeric = ((uint)value.Value).ToString("X16");
+                    break;
+
+                case nanoSerializationType.ELEMENT_TYPE_U8:
+                    newArg.Numeric = ((ulong)value.Value).ToString("X16");
+                    break;
+
+                default:
+                    newArg.Text = value.Value.ToString();
                     break;
             }
 
