@@ -133,11 +133,5 @@
       copy /y "$(ProjectDir)TestNFApp\$(OutDir)\*" "$(TargetDir)\TestNFApp"
       copy /y "$(ProjectDir)StubsGenerationTestNFApp\$(OutDir)\*" "$(TargetDir)\StubsGenerationTestNFApp"
     </PreBuildEvent>
-  </PropertyGroup>  
-  <PropertyGroup>
-    <PreBuildEvent>
-      mkdir "$(TargetDir)\TestNFApp"
-      copy /y "$(ProjectDir)\TestNFApp\$(OutDir)\*" "$(TargetDir)\TestNFApp"
-    </PreBuildEvent>
   </PropertyGroup>
 </Project>
