@@ -116,8 +116,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
                 Assert.Inconclusive("nanoclr is not installed, can't run this test");
             }
 
-            var workingDirectory = TestObjectHelper.NanoClrLocation;
-            var mscorlibPeLocation = Path.Combine(workingDirectory, "mscorlib.pe");
+            var mscorlibPeLocation = Path.Combine(TestObjectHelper.TestNFAppLocation, "mscorlib.pe");
             var nfTestAppPeLocation = TestObjectHelper.NFAppFullPath.Replace("exe", "pe");
             var nfTestClassLibPeLocation = TestObjectHelper.TestNFClassLibFullPath.Replace("dll", "pe");
 
