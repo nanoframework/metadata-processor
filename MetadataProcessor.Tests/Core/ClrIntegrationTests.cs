@@ -1,4 +1,9 @@
-﻿using CliWrap;
+﻿//
+// Copyright (c) .NET Foundation and Contributors
+// See LICENSE file in the project root for full license information.
+//
+
+using CliWrap;
 using CliWrap.Buffered;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
