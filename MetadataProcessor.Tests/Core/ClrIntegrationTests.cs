@@ -75,7 +75,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
             var mscorlibPeLocation = Path.Combine(TestObjectHelper.TestNFAppLocation, "mscorlib.pe");
 
             // prepare launch of nanoCLR CLI
-            string arguments = $"run --assemblies {mscorlibPeLocation} {_localClrInstancePath}";
+            string arguments = $"run --assemblies {mscorlibPeLocation} {_localClrInstancePath} -v diag";
 
             Console.WriteLine($"Launching nanoclr with these arguments: '{arguments}'");
 
@@ -122,7 +122,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
             var nfTestClassLibPeLocation = TestObjectHelper.TestNFClassLibFullPath.Replace("dll", "pe");
 
             // prepare launch of nanoCLR CLI
-            string arguments = $"instance -assemblies {mscorlibPeLocation} {nfTestAppPeLocation} {nfTestClassLibPeLocation} {_localClrInstancePath}";
+            string arguments = $"run --assemblies {mscorlibPeLocation} {nfTestAppPeLocation} {nfTestClassLibPeLocation} {_localClrInstancePath} -v diag";
 
             Console.WriteLine($"Launching nanoclr with these arguments: '{arguments}'");
 
