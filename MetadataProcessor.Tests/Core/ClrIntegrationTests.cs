@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
 {
@@ -59,20 +60,17 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
         }
 
         [TestMethod]
-        public void RunBCLTest()
+        public async Task RunBCLTest()
         {
             if (!NanoClrIsInstalled)
             {
                 Assert.Inconclusive("nanoclr is not installed, can't run this test");
             }
 
-            var testAppExecutable = TestObjectHelper.NFAppFullPath;
-            var appPeLocation = testAppExecutable.Replace(".exe", ".pe");
             var mscorlibPeLocation = Path.Combine(TestObjectHelper.TestNFAppLocation, "mscorlib.pe");
-            var nfTestClassLibPeLocation = TestObjectHelper.TestNFClassLibFullPath.Replace("dll", "pe");
 
             // prepare launch of nanoCLR CLI
-            string arguments = $"run --assemblies {mscorlibPeLocation} {appPeLocation} {nfTestClassLibPeLocation} {_localClrInstancePath}";
+            string arguments = $"run --assemblies {mscorlibPeLocation} {_localClrInstancePath}";
 
             Console.WriteLine($"Launching nanoclr with these arguments: '{arguments}'");
 
@@ -85,13 +83,13 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
             {
                 cts.CancelAfter(TimeSpan.FromSeconds(5));
 
-                var cliResult = cmd.ExecuteBufferedAsync(cts.Token).Task.Result;
+                var cliResult = await cmd.ExecuteBufferedAsync(cts.Token);
+                var exitCode = cliResult.ExitCode;
+                // read standard output
+                var output = cliResult.StandardOutput;
 
-                if (cliResult.ExitCode == 0)
+                if (exitCode == 0)
                 {
-                    // read standard output
-                    var output = cliResult.StandardOutput;
-
                     // look for any error message 
                     Assert.IsFalse(output.Contains("Error:"), "Unexpected error message in output of NanoCLR");
 
@@ -100,13 +98,13 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
                 }
                 else
                 {
-                    Assert.Fail("nanoCLR hasn't completed execution");
+                    Assert.Fail($"nanoCLR ended with '{exitCode}' exit code.\r\n>>>>>>>>>>>>>\r\n{output}\r\n>>>>>>>>>>>>>");
                 }
             }
         }
 
         [TestMethod]
-        public void RunTestNFAppTest()
+        public async Task RunTestNFAppTest()
         {
             if (!NanoClrIsInstalled)
             {
@@ -132,30 +130,30 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
             {
                 cts.CancelAfter(TimeSpan.FromSeconds(5));
 
-                var cliResult = cmd.ExecuteBufferedAsync(cts.Token).Task.Result;
+                var cliResult = await cmd.ExecuteBufferedAsync(cts.Token);
+                var exitCode = cliResult.ExitCode;
+                // read standard output
+                var output = cliResult.StandardOutput;
 
-                if (cliResult.ExitCode == 0)
+                if (exitCode == 0)
                 {
-                    // read standard output
-                    var outputOfTest = cliResult.StandardOutput;
-
                     // look for standard messages
-                    Assert.IsTrue(outputOfTest.Contains("Ready."), $"Failed to find READY message.{Environment.NewLine}Output is:{Environment.NewLine}{outputOfTest}");
-                    Assert.IsTrue(outputOfTest.Contains("Done."), $"Failed to find DONE message.{Environment.NewLine}Output is:{Environment.NewLine}{outputOfTest}");
-                    Assert.IsTrue(outputOfTest.Contains("Exiting."), $"Failed to find EXITING message.{Environment.NewLine}Output is:{Environment.NewLine}{outputOfTest}");
+                    Assert.IsTrue(output.Contains("Ready."), $"Failed to find READY message.{Environment.NewLine}Output is:{Environment.NewLine}{output}");
+                    Assert.IsTrue(output.Contains("Done."), $"Failed to find DONE message.{Environment.NewLine}Output is:{Environment.NewLine}{output}");
+                    Assert.IsTrue(output.Contains("Exiting."), $"Failed to find EXITING message.{Environment.NewLine}Output is:{Environment.NewLine}{output}");
 
                     // look for any exceptions
-                    Assert.IsFalse(outputOfTest.Contains("++++ Exception "), $"Exception thrown by TestNFApp application.{Environment.NewLine}Output is:{Environment.NewLine}{outputOfTest}");
+                    Assert.IsFalse(output.Contains("++++ Exception "), $"Exception thrown by TestNFApp application.{Environment.NewLine}Output is:{Environment.NewLine}{output}");
 
                     // look for any error message 
-                    Assert.IsFalse(outputOfTest.Contains("Error:"), "Unexpected error message in output of NanoCLR");
+                    Assert.IsFalse(output.Contains("Error:"), "Unexpected error message in output of NanoCLR");
 
                     // look for the error message reporting that there is no entry point
-                    Assert.IsTrue(outputOfTest.Contains("Cannot find any entrypoint!"));
+                    Assert.IsFalse(output.Contains("Cannot find any entrypoint!"));
                 }
                 else
                 {
-                    Assert.Fail("nanoCLR hasn't completed execution");
+                    Assert.Fail($"nanoCLR ended with '{exitCode}' exit code.\r\n>>>>>>>>>>>>>\r\n{output}\r\n>>>>>>>>>>>>>");
                 }
             }
         }
