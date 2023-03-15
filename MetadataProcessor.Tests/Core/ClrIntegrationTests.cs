@@ -39,7 +39,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
 
                 if (cliResult.ExitCode == 0)
                 {
-                    var regexResult = Regex.Match(cliResult.StandardOutput, @"((?>\(version ')(?'version'\d+\.\d+\.\d+)(?>'\)))");
+                    var regexResult = Regex.Match(cliResult.StandardOutput, @"((?>version ')(?'version'\d+\.\d+\.\d+)(?>'))");
 
                     if (regexResult.Success)
                     {
