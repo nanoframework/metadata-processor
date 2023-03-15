@@ -45,7 +45,7 @@ TypeDef {{ReferenceId}}{{#newline}}
 {{/if}}
 
 {{#each FieldDefinitions}}
-    FieldDef {{ReferenceId}}
+    FieldDef {{ReferenceId}}{{#newline}}
     -------------------------------------------------------{{#newline}}
     Attr: {{Attributes}}{{#newline}}
     Flags: {{Flags}}{{#newline}}
