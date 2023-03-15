@@ -12,7 +12,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
     public class CLRIntegrationTests
     {
         private static string _localClrInstancePath = $" --localinstance \"E:\\GitHub\\nf-interpreter\\build\\bin\\Debug\\net6.0\\NanoCLR\\nanoFramework.nanoCLR.dll";
-        
+
         public static bool NanoClrIsInstalled { get; private set; } = false;
 
         [ClassInitialize]
@@ -61,19 +61,23 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
         [TestMethod]
         public void RunBCLTest()
         {
-            if(!NanoClrIsInstalled)
+            if (!NanoClrIsInstalled)
             {
                 Assert.Inconclusive("nanoclr is not installed, can't run this test");
             }
 
-            var testAppExecutable = TestObjectHelper.GetPathOfTestNFApp();
+            var testAppExecutable = TestObjectHelper.NFAppFullPath;
             var appPeLocation = testAppExecutable.Replace(".exe", ".pe");
-            var mscorlibPeLocation = Path.Combine(TestObjectHelper.GetTestNFAppLocation(), "mscorlib.pe");
+            var mscorlibPeLocation = Path.Combine(TestObjectHelper.TestNFAppLocation, "mscorlib.pe");
+            var nfTestClassLibPeLocation = TestObjectHelper.TestNFClassLibFullPath.Replace("dll", "pe");
 
             // prepare launch of nanoCLR CLI
+            string arguments = $"run --assemblies {mscorlibPeLocation} {appPeLocation} {nfTestClassLibPeLocation} {_localClrInstancePath}";
+
+            Console.WriteLine($"Launching nanoclr with these arguments: '{arguments}'");
 
             var cmd = Cli.Wrap("nanoclr")
-                .WithArguments($"run --assemblies {mscorlibPeLocation} {appPeLocation} {_localClrInstancePath}")
+                .WithArguments(arguments)
                 .WithValidation(CommandResultValidation.None);
 
             // setup cancellation token with a timeout of 5 seconds
@@ -98,7 +102,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
                 {
                     Assert.Fail("nanoCLR hasn't completed execution");
                 }
-            }    
+            }
         }
 
         [TestMethod]
@@ -109,14 +113,18 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
                 Assert.Inconclusive("nanoclr is not installed, can't run this test");
             }
 
-            var workingDirectory = TestObjectHelper.GetTestNFAppLocation();
+            var workingDirectory = TestObjectHelper.NanoClrLocation;
             var mscorlibPeLocation = Path.Combine(workingDirectory, "mscorlib.pe");
-            var nfTestAppPeLocation = TestObjectHelper.GetPathOfTestNFApp().Replace("exe", "pe");
-            var nfTestClassLibPeLocation = TestObjectHelper.GetPathOfTestNFClassLib().Replace("dll", "pe");
+            var nfTestAppPeLocation = TestObjectHelper.NFAppFullPath.Replace("exe", "pe");
+            var nfTestClassLibPeLocation = TestObjectHelper.TestNFClassLibFullPath.Replace("dll", "pe");
 
             // prepare launch of nanoCLR CLI
+            string arguments = $"instance -assemblies {mscorlibPeLocation} {nfTestAppPeLocation} {nfTestClassLibPeLocation} {_localClrInstancePath}";
+
+            Console.WriteLine($"Launching nanoclr with these arguments: '{arguments}'");
+
             var cmd = Cli.Wrap("nanoclr")
-                .WithArguments($"instance -assemblies {mscorlibPeLocation} {nfTestAppPeLocation} {nfTestClassLibPeLocation} {_localClrInstancePath}")
+                .WithArguments(arguments)
                 .WithValidation(CommandResultValidation.None);
 
             // setup cancellation token with a timeout of 5 seconds
