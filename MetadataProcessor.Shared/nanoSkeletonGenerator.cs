@@ -64,9 +64,9 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                 GenerateStubs();
 
                 // output native checksum so it shows in build log
-                Console.WriteLine("++++++++++++++++++++++++++++++++++++++++++++");
+                Console.WriteLine("+++++++++++++++++++++++++++++++++++++++++++");
                 Console.WriteLine($"+ Native declaration checksum: 0x{_tablesContext.NativeMethodsCrc.CurrentCrc.ToString("X8")} +");
-                Console.WriteLine("++++++++++++++++++++++++++++++++++++++++++++");
+                Console.WriteLine("+++++++++++++++++++++++++++++++++++++++++++");
             }
             else
             {
