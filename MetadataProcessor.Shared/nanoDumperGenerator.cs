@@ -334,6 +334,12 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                         Signature = PrintSignatureForMethod(m)
                     };
 
+                    // check for entry point
+                    if(m == m.Module.EntryPoint)
+                    {
+                        methodDef.ReferenceId += " [ENTRYPOINT]";
+                    }
+
                     var methodFlags = nanoMethodDefinitionTable.GetFlags(m);
                     methodDef.Flags = methodFlags.ToString("X8");
 
