@@ -747,6 +747,12 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
             foreach (var l in variables)
             {
+                // ident locals after the 1st one
+                if(l.Index > 0)
+                {
+                    sig.Append("                ");
+                }
+
                 sig.Append($"[{l.Index}] ");
 
                 if (l.VariableType.MetadataType == MetadataType.Class)
