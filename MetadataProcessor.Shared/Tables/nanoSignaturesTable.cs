@@ -115,7 +115,10 @@ namespace nanoFramework.Tools.MetadataProcessor
             var sig = GetSignature(fieldDefinition.FieldType, true);
             var sigId = GetOrCreateSignatureIdImpl(sig);
 
-            if (_verbose) Console.WriteLine($"{fieldDefinition.MetadataToken.ToInt32()} -> {sig.BufferToHexString()} -> {sigId.ToString("X4")}");
+            if (_verbose)
+            {
+                Console.WriteLine($"{fieldDefinition.MetadataToken.ToInt32():X8} -> {sig.BufferToHexString()} -> {sigId:X4}");
+            }
 
             return sigId;
         }
@@ -144,7 +147,10 @@ namespace nanoFramework.Tools.MetadataProcessor
             var sig = GetSignature(fieldReference);
             var sigId = GetOrCreateSignatureIdImpl(sig);
 
-            if (_verbose) Console.WriteLine($"{fieldReference.MetadataToken.ToInt32()} -> {sig.BufferToHexString()} -> {sigId.ToString("X4")}");
+            if (_verbose)
+            {
+                Console.WriteLine($"{fieldReference.MetadataToken.ToInt32():X8} -> {sig.BufferToHexString()} -> {sigId:X4}");
+            }
 
             return sigId;
         }
@@ -159,7 +165,10 @@ namespace nanoFramework.Tools.MetadataProcessor
             var sig = GetSignature(methodDefinition);
             var sigId = GetOrCreateSignatureIdImpl(sig);
 
-            if (_verbose) Console.WriteLine($"{methodDefinition.MetadataToken.ToInt32()} -> {sig.BufferToHexString()} -> {sigId.ToString("X4")}");
+            if (_verbose)
+            {
+                Console.WriteLine($"{methodDefinition.MetadataToken.ToInt32():X8} -> {sig.BufferToHexString()} -> {sigId:X4}");
+            }
 
             return sigId;
         }
@@ -174,7 +183,10 @@ namespace nanoFramework.Tools.MetadataProcessor
             var sig = GetSignature(methodReference);
             var sigId = GetOrCreateSignatureIdImpl(sig);
 
-            if (_verbose) Console.WriteLine($"{methodReference.MetadataToken.ToInt32()} -> {sig.BufferToHexString()} -> {sigId.ToString("X4")}");
+            if (_verbose)
+            {
+                Console.WriteLine($"{methodReference.MetadataToken.ToInt32():X8} -> {sig.BufferToHexString()} -> {sigId:X4}");
+            }
 
             return sigId;
         }
@@ -189,7 +201,10 @@ namespace nanoFramework.Tools.MetadataProcessor
             var sig = GetSignature(methodSpecification);
             var sigId = GetOrCreateSignatureIdImpl(sig);
 
-            if (_verbose) Console.WriteLine($"{methodSpecification.MetadataToken.ToInt32()} -> {sig.BufferToHexString()} -> {sigId.ToString("X4")}");
+            if (_verbose)
+            {
+                Console.WriteLine($"{methodSpecification.MetadataToken.ToInt32():X8} -> {sig.BufferToHexString()} -> {sigId:X4}");
+            }
 
             return sigId;
         }
@@ -249,7 +264,10 @@ namespace nanoFramework.Tools.MetadataProcessor
             var sig = GetSignature(interfaceImplementation, false);
             var sigId = GetOrCreateSignatureIdImpl(sig);
 
-            if (_verbose) Console.WriteLine($"{interfaceImplementation.MetadataToken.ToInt32()} -> {sig.BufferToHexString()} -> {sigId.ToString("X4")}");
+            if (_verbose)
+            {
+                Console.WriteLine($"{interfaceImplementation.MetadataToken.ToInt32():X8} -> {sig.BufferToHexString()} -> {sigId:X4}");
+            }
 
             return sigId;
         }
@@ -264,7 +282,10 @@ namespace nanoFramework.Tools.MetadataProcessor
             var sig = GetSignature(typeReference, false);
             var sigId = GetOrCreateSignatureIdImpl(sig);
 
-            if (_verbose) Console.WriteLine($"{typeReference.MetadataToken.ToInt32()} -> {sig.BufferToHexString()} -> {sigId.ToString("X4")}");
+            if (_verbose)
+            {
+                Console.WriteLine($"{typeReference.MetadataToken.ToInt32():X8} -> {sig.BufferToHexString()} -> {sigId:X4}");
+            }
 
             return sigId;
         }
@@ -278,7 +299,10 @@ namespace nanoFramework.Tools.MetadataProcessor
             var sig = GetSignature(customAttribute);
             var sigId = GetOrCreateSignatureIdImpl(sig);
 
-            if (_verbose) Console.WriteLine($"{customAttribute.ToString()} -> {sig.BufferToHexString()} -> {sigId.ToString("X4")}");
+            if (_verbose)
+            {
+                Console.WriteLine($"{customAttribute} -> {sig.BufferToHexString()} -> {sigId:X4}");
+            }
 
             return sigId;
         }
@@ -744,7 +768,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             if (_context.GenericParamsTable.TryGetParameterId(parameter, out ushort referenceId))
             {
                 writer.Write((byte)nanoSerializationType.ELEMENT_TYPE_GENERICINST);
-                
+
                 // OK to use byte because we are not supporting more than 0x7F generic parameters
                 writer.Write((byte)referenceId);
             }
