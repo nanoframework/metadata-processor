@@ -18,14 +18,17 @@ namespace TestNFApp
 
             ///////////////////////////////////////////////////////////////////
             // referenced class
-            Debug.WriteLine("Referenced class");
+            Debug.WriteLine("++++++++++++++++++++++++++++");
+            Debug.WriteLine("++ Referenced class tests ++");
+            Debug.WriteLine("++++++++++++++++++++++++++++");
+            Debug.WriteLine("");
 
             // instantiating a class on another assembly
             ClassOnAnotherAssembly anotherClass = new ClassOnAnotherAssembly();
 
             //////////////////////////////
             // accessing property on class
-            var dummyMirror1 = anotherClass.DummyProperty;
+            _ = anotherClass.DummyProperty;
 
             /////////////////////////////////////////////////////////////////////////
             // instantiating a class on another assembly with a constructor parameter
@@ -33,25 +36,25 @@ namespace TestNFApp
 
             //////////////////////////////
             // accessing property on class
-            dummyMirror1 = anotherClass.DummyProperty;
+            _ = anotherClass.DummyProperty;
 
             /////////////////////////////
             // Reflection Tests
             ReflectionTests();
             
             ///////////////////////////////////////////////////////////////////
-            // Generics 
-            Debug.WriteLine("Generics");
-
-            var cut = new GenericClassTests();
+            // Generics Tests
+            _ = new GenericClassTests();
 
             Debug.WriteLine("Exiting TestNFApp");
         }
 
         public static void ReflectionTests()
         {
+            Debug.WriteLine("++++++++++++++++++++++");
+            Debug.WriteLine("++ Reflection tests ++");
+            Debug.WriteLine("++++++++++++++++++++++");
             Debug.WriteLine("");
-            Debug.WriteLine("+++Starting ReflectionTests");
 
             // Get the type of MyClass1.
             Type myType = typeof(MyClass1);

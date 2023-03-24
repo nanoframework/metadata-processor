@@ -110,7 +110,7 @@ namespace TestNFApp
         {
             T v = t;
 
-            Debug.WriteLine($"{nameof(InstanceGenericDoOne)}-> {v}");
+            Debug.WriteLine($"{nameof(InstanceGenericDoOne)} --> {v}");
         }
 
         public void InstanceGenericDoTwo<T2>(T p1, T2 p2)
@@ -118,14 +118,14 @@ namespace TestNFApp
             T v1 = p1;
             T2 v2 = p2;
 
-            Debug.WriteLine($"{nameof(InstanceGenericDoTwo)}-> {v1},{v2}");
+            Debug.WriteLine($"{nameof(InstanceGenericDoTwo)}<{v2.GetType()}> --> {v1},{v2}");
         }
 
         public void InstanceGenericDoOneOther<T1>(T1 t)
         {
             T1 v1 = t;
 
-            Debug.WriteLine($"{nameof(InstanceGenericDoOneOther)}-> {v1}");
+            Debug.WriteLine($"{nameof(InstanceGenericDoOneOther)}<{v1.GetType()}> --> {v1}");
         }
     }
 
@@ -133,7 +133,7 @@ namespace TestNFApp
     {
         private static void StaticGenericDo<T1, T2>(T1 val, T2 val2) where T1 : IDo where T2 : IDo
         {
-            Debug.WriteLine($">>{nameof(StaticGenericDo)}");
+            Debug.WriteLine($">> {nameof(StaticGenericDo)}<{val.GetType()},{val2.GetType()}>");
 
             val.Do1();
             val.Do2();
@@ -143,7 +143,7 @@ namespace TestNFApp
 
         private static void StaticGenericDoThisAndThat<T1, T2>(T1 val, T2 val2) where T1 : ClassDoThis, IDo where T2 : ClassDoThatInt
         {
-            Debug.WriteLine($">>{nameof(StaticGenericDoThisAndThat)}");
+            Debug.WriteLine($">> {nameof(StaticGenericDoThisAndThat)}<{val.GetType()},{val2.GetType()}>");
 
             val.DoThis1();
             val.DoThis2();
