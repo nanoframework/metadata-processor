@@ -89,7 +89,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// Gets assembly reference ID by assembly name reference in Mono.Cecil format.
         /// </summary>
         /// <param name="assemblyNameReference">Assembly name reference in Mono.Cecil format.</param>
-        /// <returns>Refernce ID for passed <paramref name="assemblyNameReference"/> item.</returns>
+        /// <returns>Reference ID for passed <paramref name="assemblyNameReference"/> item.</returns>
         public ushort GetReferenceId(
             AssemblyNameReference assemblyNameReference)
         {
