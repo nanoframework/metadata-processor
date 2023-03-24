@@ -19,6 +19,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// Tables to encode NanoTypeToken.
         /// </summary>
         public readonly static List<NanoCLRTable> NanoTypeTokenTables = new List<NanoCLRTable>() {
+             // order matters and has to match CLR_UncompressTypeToken in native nanoCLR_Types.h
                 NanoCLRTable.TBL_TypeDef,
                 NanoCLRTable.TBL_TypeRef,
                 NanoCLRTable.TBL_TypeSpec,
@@ -37,6 +38,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// Tables to encode NanoMemberRefToken.
         /// </summary>
         public readonly static List<NanoCLRTable> NanoMemberRefTokenTables = new List<NanoCLRTable>() {
+             // order matters and has to match CLR_UncompressMethodToken in native nanoCLR_Types.h
                 NanoCLRTable.TBL_MethodDef,
                 NanoCLRTable.TBL_MethodRef,
                 NanoCLRTable.TBL_TypeSpec,
@@ -71,6 +73,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// Tables to encode CLR_TypeRefOrSpec.
         /// </summary>
         public readonly static List<NanoCLRTable> CLR_TypeRefOrSpecTables = new List<NanoCLRTable>() {
+                // order matters and has to match decoder Owner() in native nanoCLR_Types.h
                 NanoCLRTable.TBL_TypeRef,
                 NanoCLRTable.TBL_TypeSpec
             };
