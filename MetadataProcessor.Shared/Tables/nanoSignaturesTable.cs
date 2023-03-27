@@ -117,7 +117,7 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             if (_verbose)
             {
-                Console.WriteLine($"{fieldDefinition.MetadataToken.ToInt32():X8} -> {sig.BufferToHexString()} -> {sigId:X4}");
+                Console.WriteLine($"{fieldDefinition.MetadataToken} ({fieldDefinition.FullName}) {fieldDefinition.MetadataToken.ToInt32():X8} -> {sig.BufferToHexString()} -> {sigId:X4}");
             }
 
             return sigId;
@@ -149,7 +149,7 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             if (_verbose)
             {
-                Console.WriteLine($"{fieldReference.MetadataToken.ToInt32():X8} -> {sig.BufferToHexString()} -> {sigId:X4}");
+                Console.WriteLine($"{fieldReference.MetadataToken} ({fieldReference.FullName}) {fieldReference.MetadataToken.ToInt32():X8} -> {sig.BufferToHexString()} -> {sigId:X4}");
             }
 
             return sigId;
@@ -167,7 +167,7 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             if (_verbose)
             {
-                Console.WriteLine($"{methodDefinition.MetadataToken.ToInt32():X8} -> {sig.BufferToHexString()} -> {sigId:X4}");
+                Console.WriteLine($"{methodDefinition.MetadataToken} ({methodDefinition.FullName}) {methodDefinition.MetadataToken.ToInt32():X8} -> {sig.BufferToHexString()} -> {sigId:X4}");
             }
 
             return sigId;
@@ -185,7 +185,7 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             if (_verbose)
             {
-                Console.WriteLine($"{methodReference.MetadataToken.ToInt32():X8} -> {sig.BufferToHexString()} -> {sigId:X4}");
+                Console.WriteLine($"{methodReference.MetadataToken} ({methodReference.FullName}) {methodReference.MetadataToken.ToInt32():X8} -> {sig.BufferToHexString()} -> {sigId:X4}");
             }
 
             return sigId;
@@ -203,7 +203,7 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             if (_verbose)
             {
-                Console.WriteLine($"{methodSpecification.MetadataToken.ToInt32():X8} -> {sig.BufferToHexString()} -> {sigId:X4}");
+                Console.WriteLine($"{methodSpecification.MetadataToken} ({methodSpecification.FullName}) {methodSpecification.MetadataToken.ToInt32():X8} -> {sig.BufferToHexString()} -> {sigId:X4}");
             }
 
             return sigId;
@@ -266,7 +266,7 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             if (_verbose)
             {
-                Console.WriteLine($"{interfaceImplementation.MetadataToken.ToInt32():X8} -> {sig.BufferToHexString()} -> {sigId:X4}");
+                Console.WriteLine($"{interfaceImplementation.MetadataToken} ({interfaceImplementation.InterfaceType.FullName}) {interfaceImplementation.MetadataToken.ToInt32():X8} -> {sig.BufferToHexString()} -> {sigId:X4}");
             }
 
             return sigId;
@@ -284,7 +284,7 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             if (_verbose)
             {
-                Console.WriteLine($"{typeReference.MetadataToken.ToInt32():X8} -> {sig.BufferToHexString()} -> {sigId:X4}");
+                Console.WriteLine($"{typeReference.MetadataToken} ({typeReference.FullName}) {typeReference.MetadataToken.ToInt32():X8} -> {sig.BufferToHexString()} -> {sigId:X4}");
             }
 
             return sigId;
