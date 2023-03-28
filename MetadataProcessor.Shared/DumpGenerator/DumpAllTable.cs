@@ -18,5 +18,6 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
         public List<AttributeCustom> Attributes = new List<AttributeCustom>();
         public List<HeapString> StringHeap = new List<HeapString>();
         public List<UserString> UserStrings = new List<UserString>();
+        public List<GenericParam> GenericParams= new List<GenericParam>();
     }
 }

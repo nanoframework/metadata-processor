@@ -101,6 +101,13 @@ TypeSpec {{ReferenceId}}{{#newline}}
 {{#newline}}
 {{/each}}
 
+Generic Parameters{{#newline}}
+-------------------------------------------------------{{#newline}}
+{{#each GenericParams}}
+{{Position}} {{Name}} {{Owner}}{{#newline}}
+{{/each}}
+{{#newline}}
+
 {{#each Attributes}}
 Attribute: {{Name}}::[{{ReferenceId}} {{TypeToken}}]{{#newline}}
 -------------------------------------------------------{{#newline}}

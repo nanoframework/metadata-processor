@@ -42,6 +42,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
             DumpTypeReferences(dumpTable);
             DumpTypeDefinitions(dumpTable);
             _tablesContext.TypeSpecificationsTable.ForEachItems((index, typeReference) => DumpTypeSpecifications(typeReference, dumpTable));
+            _tablesContext.GenericParamsTable.ForEachItems((index, genericParameter) => DumpGenericParams(genericParameter, dumpTable));
             DumpCustomAttributes(dumpTable);
             DumpStringHeap(dumpTable);
             DumpUserStrings(dumpTable);
@@ -54,6 +55,33 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                 var output = generator.Render(dumpTable);
                 dumpFile.Write(output);
             }
+        }
+
+        private void DumpGenericParams(GenericParameter genericParameter, DumpAllTable dumpTable)
+        {
+            _tablesContext.GenericParamsTable.TryGetParameterId(genericParameter, out ushort referenceId);
+
+            var genericParam = new GenericParam()
+            {
+                Position = referenceId.ToString(),
+                Owner = genericParameter.Owner.ToString(),
+                Name = genericParameter.Name
+            };
+
+            if (genericParameter.Owner is TypeDefinition && _tablesContext.TypeDefinitionTable.TryGetTypeReferenceId((TypeDefinition)genericParameter.Owner, out ushort typeRefId))
+            {
+                string realToken = genericParameter.MetadataToken.ToInt32().ToString("X8");
+
+                genericParam.Owner = $"Owner: {genericParameter.Owner} [{new nanoMetadataToken(genericParameter.Owner.MetadataToken, typeRefId)}] /*{realToken}*/";
+            }
+            else if (_tablesContext.MethodDefinitionTable.TryGetMethodReferenceId((MethodDefinition)genericParameter.Owner, out ushort refId))
+            {
+                string realToken = genericParameter.Owner.MetadataToken.ToInt32().ToString("X8");
+
+                genericParam.Owner = $"Owner: {((MethodDefinition)genericParameter.Owner)} [{new nanoMetadataToken(genericParameter.Owner.MetadataToken, refId)}] /*{realToken}*/";
+            }
+
+            dumpTable.GenericParams.Add(genericParam);
         }
 
         private void DumpCustomAttributes(DumpAllTable dumpTable)
@@ -335,7 +363,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                     };
 
                     // check for entry point
-                    if(m == m.Module.EntryPoint)
+                    if (m == m.Module.EntryPoint)
                     {
                         methodDef.ReferenceId += " [ENTRYPOINT]";
                     }
@@ -748,7 +776,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
             foreach (var l in variables)
             {
                 // ident locals after the 1st one
-                if(l.Index > 0)
+                if (l.Index > 0)
                 {
                     sig.Append("                ");
                 }
