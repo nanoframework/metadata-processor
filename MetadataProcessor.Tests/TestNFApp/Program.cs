@@ -41,7 +41,7 @@ namespace TestNFApp
             /////////////////////////////
             // Reflection Tests
             ReflectionTests();
-            
+
             ///////////////////////////////////////////////////////////////////
             // Generics Tests
             _ = new GenericClassTests();
@@ -78,17 +78,17 @@ namespace TestNFApp
 
             // Get the methods associated with MyClass1.
             MemberInfo[] myMethods = myType.GetMethods();
-            
-            //Debug.WriteLine("");
-            //Debug.WriteLine($"'{myType.Name}' type has '{myMethods.Length}' methods");
+
+            Debug.WriteLine("");
+            Debug.WriteLine($"'{myType.Name}' type has '{myMethods.Length}' methods");
 
             // Display the attributes for each of the methods of MyClass1.
             for (int i = 0; i < myMethods.Length; i++)
             {
                 var methodName = myMethods[i].Name;
 
-                //Debug.WriteLine("");
-                //Debug.WriteLine($"Getting custom attributes for '{methodName}'");
+                Debug.WriteLine("");
+                Debug.WriteLine($"Getting custom attributes for '{methodName}'");
 
                 myAttributes = myMethods[i].GetCustomAttributes(true);
 
@@ -161,7 +161,6 @@ namespace TestNFApp
             Debug.WriteLine("");
             Debug.WriteLine("+++ReflectionTests completed");
             Debug.WriteLine("");
-
         }
     }
 }
