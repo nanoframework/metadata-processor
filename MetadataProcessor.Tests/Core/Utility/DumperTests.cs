@@ -60,15 +60,23 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
             Assert.IsTrue(dumpFileContent.Contains("TypeDef [04000017] /*0200001A*/\r\n-------------------------------------------------------\r\n    'SubClass'\r\n    Flags: 00001002\r\n    Extends: System.Object[01000011] /*01000012*/\r\n    Enclosed: TestNFApp.OneClassOverAll[04000000] /*02000018*/\r\n"));
 
             // String heap
-            Assert.IsTrue(dumpFileContent.Contains("00000001: TestNFClassLibrary"));
-            Assert.IsTrue(dumpFileContent.Contains("0000019C: <Arguments>k__BackingField"));
-            Assert.IsTrue(dumpFileContent.Contains("00000433: DummyMethodWithUglyParams"));
-            Assert.IsTrue(dumpFileContent.Contains("0000081D: Another string"));
+            foreach (var stringKey in nanoTablesContext.StringTable.GetItems().Keys)
+            {
+                // skip initial empty string
+                if (string.IsNullOrEmpty(stringKey))
+                {
+                    continue;
+                }
+
+                var expectedString = $"{nanoTablesContext.StringTable.GetItems()[stringKey]:X8}: {stringKey}";
+
+                Assert.IsTrue(dumpFileContent.Contains(expectedString));
+            }
 
             // UserStrings
-            Assert.IsTrue(dumpFileContent.Contains("0D0004D2 : (14) \"++ Generics Tests ++\""));
-            Assert.IsTrue(dumpFileContent.Contains("0D000569 : (11) \"Exiting TestNFApp\""));
-            Assert.IsTrue(dumpFileContent.Contains("0D00081D : (0e) \"Another string\""));
+            Assert.IsTrue(dumpFileContent.Contains("0D0002D8 : (14) \"++ Generics Tests ++\""));
+            Assert.IsTrue(dumpFileContent.Contains("0D00036F : (11) \"Exiting TestNFApp\""));
+            Assert.IsTrue(dumpFileContent.Contains("0D00061A : (1c) \"+++ReflectionTests completed\""));
         }
     }
 }
