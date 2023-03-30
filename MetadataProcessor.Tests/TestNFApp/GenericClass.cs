@@ -1,4 +1,9 @@
-﻿using System.Diagnostics;
+﻿//
+// Copyright (c) .NET Foundation and Contributors
+// See LICENSE file in the project root for full license information.
+//
+
+using System.Diagnostics;
 
 namespace TestNFApp
 {
@@ -129,6 +134,38 @@ namespace TestNFApp
         }
     }
 
+    class AnotherGenericClass<T, T1>
+    {
+        public int NativeField;
+
+        public T GenericField;
+        public T1 AnotherGenericField;
+
+        public void InstanceGenericDoOne(T t)
+        {
+            T v = t;
+
+            Debug.WriteLine($"{nameof(InstanceGenericDoOne)} --> {v}");
+        }
+
+        public void InstanceGenericDoTwo<T2>(T p1, T1 p2, T2 p3)
+        {
+            T v1 = p1;
+            T1 v2 = p2;
+            T2 v3 = p3;
+
+            Debug.WriteLine($"{nameof(InstanceGenericDoTwo)}<{v3.GetType()}> --> {v1},{v2},{v3}");
+        }
+
+        public void InstanceGenericDoOneOther<T2>(T1 p1, T2 p2)
+        {
+            T1 v1 = p1;
+            T2 v2 = p2;
+
+            Debug.WriteLine($"{nameof(InstanceGenericDoOneOther)}<{v1.GetType()}> --> {v1},{v2}");
+        }
+    }
+
     public class GenericClassTests
     {
         private static void StaticGenericDo<T1, T2>(T1 val, T2 val2) where T1 : IDo where T2 : IDo
@@ -169,6 +206,12 @@ namespace TestNFApp
             gc1.InstanceGenericDoOneOther(false);
             gc1.GenericField = 10;
 
+            var agc1 = new AnotherGenericClass<byte, bool>();
+            agc1.InstanceGenericDoOne(22);
+            agc1.InstanceGenericDoTwo(33, false, "NINE");
+            agc1.InstanceGenericDoOneOther(true, 44);
+            agc1.GenericField = 11;
+            agc1.AnotherGenericField = false;
 
             var gc2 = new GenericClass<string>();
             gc2.InstanceGenericDoOne("ONE");
