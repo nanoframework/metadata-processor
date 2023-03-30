@@ -376,7 +376,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                                 // need to add a NULL entry for it
                                 assemblyLookup.LookupTable.Add(new MethodStub()
                                 {
-                                    Declaration = "NULL"
+                                    Declaration = "nullptr"
                                     //Declaration = $"**Library_{_safeProjectName}_{NativeMethodsCrc.GetClassName(c)}::{NativeMethodsCrc.GetMethodName(m)}"
                                 });
                             }
@@ -390,7 +390,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                         {
                             assemblyLookup.LookupTable.Add(new MethodStub()
                             {
-                                Declaration = "NULL"
+                                Declaration = "nullptr"
                                 //Declaration = $"**Library_{_safeProjectName}_{NativeMethodsCrc.GetClassName(c)}::{NativeMethodsCrc.GetMethodName(m)}"
                             });
                         }

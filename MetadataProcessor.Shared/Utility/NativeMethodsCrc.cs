@@ -19,7 +19,7 @@ namespace nanoFramework.Tools.MetadataProcessor
     /// </summary>
     public sealed class NativeMethodsCrc
     {
-        private readonly byte[] _null = Encoding.ASCII.GetBytes("NULL");
+        private readonly byte[] _null = Encoding.ASCII.GetBytes("nullptr");
 
         private readonly byte[] _name;
 
