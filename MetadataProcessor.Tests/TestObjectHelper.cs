@@ -3,9 +3,11 @@
 // See LICENSE file in the project root for full license information.
 //
 
+using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 using Mono.Cecil;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -15,6 +17,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
 {
     public static class TestObjectHelper
     {
+        private const string _varNameForLocalNanoCLRInstancePath = "MDP_TEST_NANOCLR_INSTANCE_PATH";
         private static string _testExecutionLocation;
         private static string _testNFAppLocation;
         private static string _nfAppProjectLocation;
@@ -374,6 +377,11 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
                 offset += instruction.GetSize();
             }
         }
+
+        // no need to check if path exists as this validation is performed by nanoclr
+        public static string NanoClrLocalInstance => Environment.GetEnvironmentVariable(
+            _varNameForLocalNanoCLRInstancePath,
+            EnvironmentVariableTarget.User);
 
     }
 }

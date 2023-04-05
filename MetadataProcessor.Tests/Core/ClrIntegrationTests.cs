@@ -8,6 +8,7 @@ using CliWrap.Buffered;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.IO;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,7 +22,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
 #if DEBUG
         // path to local instance of nanoCLR DLL (to be used when debugging)
         private static string _localClrInstancePath = $" --localinstance \"E:\\GitHub\\nf-interpreter\\build\\bin\\Debug\\net6.0\\NanoCLR\\nanoFramework.nanoCLR.dll\"";
-#endif 
+#endif
 
         public static bool NanoClrIsInstalled { get; private set; } = false;
 
@@ -79,7 +80,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
             var mscorlibPeLocation = Path.Combine(TestObjectHelper.TestNFAppLocation, "mscorlib.pe");
 
             // prepare launch of nanoCLR CLI
-            string arguments = $"run --assemblies {mscorlibPeLocation} {_localClrInstancePath} -v diag";
+            string arguments = $"run --assemblies {mscorlibPeLocation} {ComposeLocalClrInstancePath()} -v diag";
 
             Console.WriteLine($"Launching nanoclr with these arguments: '{arguments}'");
 
@@ -125,7 +126,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
             var nfTestClassLibPeLocation = TestObjectHelper.TestNFClassLibFullPath.Replace("dll", "pe");
 
             // prepare launch of nanoCLR CLI
-            string arguments = $"run --assemblies {mscorlibPeLocation} {nfTestAppPeLocation} {nfTestClassLibPeLocation} {_localClrInstancePath} -v diag";
+            string arguments = $"run --assemblies {mscorlibPeLocation} {nfTestAppPeLocation} {nfTestClassLibPeLocation} {ComposeLocalClrInstancePath()} -v diag";
 
             Console.WriteLine($"Launching nanoclr with these arguments: '{arguments}'");
 
@@ -164,6 +165,27 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
                     Assert.Fail($"nanoCLR ended with '{exitCode}' exit code.\r\n>>>>>>>>>>>>>\r\n{output}\r\n>>>>>>>>>>>>>");
                 }
             }
+        }
+
+        private object ComposeLocalClrInstancePath()
+        {
+            StringBuilder arguments = new StringBuilder(" --localinstance");
+
+            if (string.IsNullOrEmpty(TestObjectHelper.NanoClrLocalInstance))
+            {
+                return null;
+            }
+            else
+            {
+#if DEBUG
+                arguments.Append($" \"{_localClrInstancePath}\"");
+
+#else
+                arguments.Append($" \"{TestObjectHelper.NanoClrLocalInstance}\"");
+#endif
+            }
+
+            return arguments.ToString();
         }
     }
 }
