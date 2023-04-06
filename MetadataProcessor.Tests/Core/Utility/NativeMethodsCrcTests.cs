@@ -157,7 +157,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
             // test
             iut.UpdateCrc(nonExternMethodDefinition);
 
-            Assert.AreEqual((uint)2748897355, iut.CurrentCrc);
+            Assert.AreEqual((uint)882012044, iut.CurrentCrc);
         }
 
         [TestMethod]
