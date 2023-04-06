@@ -6,8 +6,10 @@
 using CliWrap;
 using CliWrap.Buffered;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 using System;
 using System.IO;
+using System.Runtime;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -21,7 +23,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
 
 #if DEBUG
         // path to local instance of nanoCLR DLL (to be used when debugging)
-        private static string _localClrInstancePath = $" --localinstance \"E:\\GitHub\\nf-interpreter\\build\\bin\\Debug\\net6.0\\NanoCLR\\nanoFramework.nanoCLR.dll\"";
+        private static string _localClrInstancePath = "E:\\GitHub\\nf-interpreter\\build\\bin\\Debug\\net6.0\\NanoCLR\\nanoFramework.nanoCLR.dll";
 #endif
 
         public static bool NanoClrIsInstalled { get; private set; } = false;
@@ -65,6 +67,41 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
                     Console.WriteLine($"*** WON'T BE ABLE TO RUN UNITS TEST REQUIRING IT.");
 
                     NanoClrIsInstalled = false;
+                }
+            }
+
+            // upon successful install, update nanoCLR instance
+            var arguments = "instance --update";
+
+            cmd = Cli.Wrap("nanoclr")
+                .WithArguments(arguments)
+                .WithValidation(CommandResultValidation.None);
+
+            // setup cancellation token with a timeout of 1 minute
+            using (var cts = new CancellationTokenSource(TimeSpan.FromMinutes(1)))
+            {
+                var cliResult = cmd.ExecuteBufferedAsync(cts.Token).Task.Result;
+
+                if (cliResult.ExitCode == 0)
+                {
+                    // this will be either (on update): 
+                    // Updated to v1.8.1.102
+                    // or (on same version):
+                    // Already at v1.8.1.102
+                    var regexResult = Regex.Match(cliResult.StandardOutput, @"((?>version )(?'version'\d+\.\d+\.\d+))");
+
+                    if (regexResult.Success)
+                    {
+                        Console.WriteLine($"Install/update successful. Running v{regexResult.Groups["version"].Value}");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"*** Failed to update nanoCLR instance. {cliResult.StandardOutput}.");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine($"Failed to update nanoCLR instance. Exit code {cliResult.ExitCode}.");
                 }
             }
         }
@@ -171,19 +208,19 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
         {
             StringBuilder arguments = new StringBuilder(" --localinstance");
 
+#if DEBUG
+            arguments.Append($" \"{_localClrInstancePath}\"");
+
+#else
             if (string.IsNullOrEmpty(TestObjectHelper.NanoClrLocalInstance))
             {
                 return null;
             }
             else
             {
-#if DEBUG
-                arguments.Append($" \"{_localClrInstancePath}\"");
-
-#else
                 arguments.Append($" \"{TestObjectHelper.NanoClrLocalInstance}\"");
-#endif
             }
+#endif
 
             return arguments.ToString();
         }
