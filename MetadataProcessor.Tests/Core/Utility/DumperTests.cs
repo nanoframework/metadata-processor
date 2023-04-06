@@ -4,15 +4,20 @@
 //
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Mono.Cecil;
 using nanoFramework.Tools.MetadataProcessor.Core;
+using nanoFramework.Tools.MetadataProcessor.Core.Extensions;
 using System;
 using System.IO;
+using System.Linq;
 
 namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
 {
     [TestClass]
     public class DumperTests
     {
+        private ushort refId;
+
         [TestMethod]
         public void DumpAssemblyTest()
         {
@@ -41,23 +46,75 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
             Assert.IsTrue(dumpFileContent.Contains("TypeRef [01000000] /*01000001*/\r\n-------------------------------------------------------\r\nScope: [0000] /*01000001*/\r\n    'System.Diagnostics.DebuggableAttribute'"));
             Assert.IsTrue(dumpFileContent.Contains("TypeRef [01000016] /*01000017*/\r\n-------------------------------------------------------\r\nScope: [0001] /*01000017*/\r\n    'TestNFClassLibrary.ClassOnAnotherAssembly'"));
 
-            Assert.IsTrue(dumpFileContent.Contains("TypeDef [0400000E] /*02000004*/\r\n-------------------------------------------------------\r\n    'TestNFApp.DummyCustomAttribute1'\r\n    Flags: 00001001\r\n    Extends: System.Attribute[0100000C] /*0100000D*/\r\n    Enclosed: (none)"));
+            // TestNFApp.DummyCustomAttribute1
+            string typeName = "TestNFApp.DummyCustomAttribute1";
+            TypeDefinition type1 = nanoTablesContext.TypeDefinitionTable.Items.FirstOrDefault(t => t.FullName == typeName);
+            nanoTablesContext.TypeDefinitionTable.TryGetTypeReferenceId(type1, out ushort typeRefId);
+            nanoTablesContext.TypeReferencesTable.TryGetTypeReferenceId(type1.BaseType, out ushort baseTypeReferenceId);
+            uint typeFlags = (uint)nanoTypeDefinitionTable.GetFlags(type1, nanoTablesContext.MethodDefinitionTable);
 
-            Assert.IsTrue(dumpFileContent.Contains("TypeDef [0400000F] /*02000005*/\r\n-------------------------------------------------------\r\n    'TestNFApp.DummyCustomAttribute2'\r\n    Flags: 00001001\r\n    Extends: System.Attribute[0100000C] /*0100000D*/\r\n    Enclosed: (none)"));
+            Assert.IsTrue(dumpFileContent.Contains($"TypeDef {nanoDumperGenerator.TypeDefRefIdToString(type1, typeRefId)}\r\n-------------------------------------------------------\r\n    '{typeName}'\r\n    Flags: {typeFlags:X8}\r\n    Extends: {nanoDumperGenerator.TypeDefExtendsTypeToString(type1.BaseType, baseTypeReferenceId)}\r\n    Enclosed: (none)"));
 
-            Assert.IsTrue(dumpFileContent.Contains("TypeDef [04000013] /*02000007*/\r\n-------------------------------------------------------\r\n    'TestNFApp.IOneClassOverAll'\r\n    Flags: 00000061\r\n    Extends: (none)\r\n    Enclosed: (none)"));
-            Assert.IsTrue(dumpFileContent.Contains("    MethodDef [0300003A] /*0600003B*/\r\n    -------------------------------------------------------\r\n        'get_DummyProperty'\r\n        Flags: 000005E6\r\n        Impl: 00000000\r\n        RVA: 0000FFFF\r\n        [I4(   )]\r\n"));
-            Assert.IsTrue(dumpFileContent.Contains("    MethodDef [0300003B] /*0600003C*/\r\n    -------------------------------------------------------\r\n        'set_DummyProperty'\r\n        Flags: 000005E6\r\n        Impl: 00000000\r\n        RVA: 0000FFFF\r\n        [VOID( I4 )]"));
-            Assert.IsTrue(dumpFileContent.Contains("    MethodDef [0300003C] /*0600003D*/\r\n    -------------------------------------------------------\r\n        'DummyMethod'\r\n        Flags: 800001E6\r\n        Impl: 00000000\r\n        RVA: 0000FFFF\r\n        [VOID(   )]"));
+            // TestNFApp.DummyCustomAttribute2
+            typeName = "TestNFApp.DummyCustomAttribute2";
+            type1 = nanoTablesContext.TypeDefinitionTable.Items.FirstOrDefault(t => t.FullName == typeName);
+            nanoTablesContext.TypeDefinitionTable.TryGetTypeReferenceId(type1, out typeRefId);
+            nanoTablesContext.TypeReferencesTable.TryGetTypeReferenceId(type1.BaseType, out baseTypeReferenceId);
+            typeFlags = (uint)nanoTypeDefinitionTable.GetFlags(type1, nanoTablesContext.MethodDefinitionTable);
 
-            Assert.IsTrue(dumpFileContent.Contains("TypeDef [04000013] /*02000007*/\r\n-------------------------------------------------------\r\n    'TestNFApp.IOneClassOverAll'\r\n    Flags: 00000061\r\n    Extends: (none)\r\n    Enclosed: (none)"));
-            Assert.IsTrue(dumpFileContent.Contains("    FieldDef [01000000] /*0400000D*/\r\n    -------------------------------------------------------\r\n    Attr: 00000001\r\n    Flags: 00000001\r\n    'dummyField'\r\n    [STRING]\r\n"));
-            Assert.IsTrue(dumpFileContent.Contains("    FieldDef [01000000] /*0400000C*/\r\n    -------------------------------------------------------\r\n    Attr: 00000001\r\n    Flags: 00000001\r\n    '<DummyProperty>k__BackingField'\r\n    [I4]\r\n"));
-            Assert.IsTrue(dumpFileContent.Contains("    MethodDef [0300003F] /*06000043*/\r\n    -------------------------------------------------------\r\n        'DummyExternMethod'\r\n        Flags: 00000086\r\n        Impl: 00000000\r\n        RVA: 0000FFFF\r\n        [VOID(   )]\r\n"));
+            Assert.IsTrue(dumpFileContent.Contains($"TypeDef {nanoDumperGenerator.TypeDefRefIdToString(type1, typeRefId)}\r\n-------------------------------------------------------\r\n    '{typeName}'\r\n    Flags: {typeFlags:X8}\r\n    Extends: {nanoDumperGenerator.TypeDefExtendsTypeToString(type1.BaseType, baseTypeReferenceId)}\r\n    Enclosed: (none)"));
 
-            Assert.IsTrue(dumpFileContent.Contains("TypeDef [04000018] /*02000019*/\r\n-------------------------------------------------------\r\n    'TestNFApp.Program'\r\n    Flags: 00001001\r\n    Extends: System.Object[01000011] /*01000012*/\r\n    Enclosed: (none)\r\n"));
+            // TestNFApp.IOneClassOverAll
+            typeName = "TestNFApp.IOneClassOverAll";
+            type1 = nanoTablesContext.TypeDefinitionTable.Items.FirstOrDefault(t => t.FullName == typeName);
+            nanoTablesContext.TypeDefinitionTable.TryGetTypeReferenceId(type1, out typeRefId);
+            typeFlags = (uint)nanoTypeDefinitionTable.GetFlags(type1, nanoTablesContext.MethodDefinitionTable);
 
-            Assert.IsTrue(dumpFileContent.Contains("TypeDef [04000017] /*0200001A*/\r\n-------------------------------------------------------\r\n    'SubClass'\r\n    Flags: 00001002\r\n    Extends: System.Object[01000011] /*01000012*/\r\n    Enclosed: TestNFApp.OneClassOverAll[04000000] /*02000018*/\r\n"));
+            Assert.IsTrue(dumpFileContent.Contains($"TypeDef {nanoDumperGenerator.TypeDefRefIdToString(type1, typeRefId)}\r\n-------------------------------------------------------\r\n    '{typeName}'\r\n    Flags: {typeFlags:X8}\r\n    Extends: (none)\r\n    Enclosed: (none)"));
+
+            foreach (var m in type1.Methods)
+            {
+                _ = nanoTablesContext.MethodDefinitionTable.TryGetMethodReferenceId(m, out ushort methodReferenceId);
+
+                Assert.IsTrue(dumpFileContent.Contains($"    MethodDef {nanoDumperGenerator.MethodRefIdToString(m, methodReferenceId)}\r\n    -------------------------------------------------------\r\n        '{m.FullName()}'\r\n        Flags: {nanoMethodDefinitionTable.GetFlags(m):X8}\r\n        Impl: 00000000\r\n        RVA: 0000FFFF\r\n        [{nanoDumperGenerator.PrintSignatureForMethod(m)}]"));
+            }
+
+            // TestNFApp.ComplexAttribute
+            typeName = "TestNFApp.ComplexAttribute";
+            type1 = nanoTablesContext.TypeDefinitionTable.Items.FirstOrDefault(t => t.FullName == typeName);
+            nanoTablesContext.TypeDefinitionTable.TryGetTypeReferenceId(type1, out typeRefId);
+            nanoTablesContext.TypeReferencesTable.TryGetTypeReferenceId(type1.BaseType, out baseTypeReferenceId);
+            typeFlags = (uint)nanoTypeDefinitionTable.GetFlags(type1, nanoTablesContext.MethodDefinitionTable);
+
+            Assert.IsTrue(dumpFileContent.Contains($"TypeDef {nanoDumperGenerator.TypeDefRefIdToString(type1, typeRefId)}\r\n-------------------------------------------------------\r\n    '{typeName}'\r\n    Flags: {typeFlags:X8}\r\n    Extends: {nanoDumperGenerator.TypeDefExtendsTypeToString(type1.BaseType, baseTypeReferenceId)}\r\n    Enclosed: (none)"));
+            Assert.IsTrue(dumpFileContent.Contains("    FieldDef [01000000] /*04000004*/\r\n    -------------------------------------------------------\r\n    Attr: 00000021\r\n    Flags: 00000021\r\n    '_max'\r\n    [U4]\r\n"));
+            Assert.IsTrue(dumpFileContent.Contains("    FieldDef [01000000] /*04000005*/\r\n    -------------------------------------------------------\r\n    Attr: 00000021\r\n    Flags: 00000021\r\n    '_s'\r\n    [STRING]\r\n"));
+            Assert.IsTrue(dumpFileContent.Contains("    FieldDef [01000000] /*04000006*/\r\n    -------------------------------------------------------\r\n    Attr: 00000021\r\n    Flags: 00000021\r\n    '_b'\r\n    [BOOLEAN]\r\n"));
+
+            foreach (var m in type1.Methods)
+            {
+                _ = nanoTablesContext.MethodDefinitionTable.TryGetMethodReferenceId(m, out ushort methodReferenceId);
+
+                Assert.IsTrue(dumpFileContent.Contains($"    MethodDef {nanoDumperGenerator.MethodRefIdToString(m, methodReferenceId)}\r\n    -------------------------------------------------------\r\n        '{m.FullName()}'\r\n        Flags: {nanoMethodDefinitionTable.GetFlags(m):X8}\r\n        Impl: 00000000\r\n        RVA: 0000FFFF\r\n        [{nanoDumperGenerator.PrintSignatureForMethod(m)}]"));
+            }
+
+            // TestNFApp.Program
+            typeName = "TestNFApp.Program";
+            type1 = nanoTablesContext.TypeDefinitionTable.Items.FirstOrDefault(t => t.FullName == typeName);
+            nanoTablesContext.TypeDefinitionTable.TryGetTypeReferenceId(type1, out typeRefId);
+            nanoTablesContext.TypeReferencesTable.TryGetTypeReferenceId(type1.BaseType, out baseTypeReferenceId);
+            typeFlags = (uint)nanoTypeDefinitionTable.GetFlags(type1, nanoTablesContext.MethodDefinitionTable);
+
+            Assert.IsTrue(dumpFileContent.Contains($"TypeDef {nanoDumperGenerator.TypeDefRefIdToString(type1, typeRefId)}\r\n-------------------------------------------------------\r\n    '{typeName}'\r\n    Flags: {typeFlags:X8}\r\n    Extends: {nanoDumperGenerator.TypeDefExtendsTypeToString(type1.BaseType, baseTypeReferenceId)}\r\n    Enclosed: (none)"));
+
+            // OneClassOverAll/SubClass
+            typeName = "TestNFApp.OneClassOverAll/SubClass";
+            type1 = nanoTablesContext.TypeDefinitionTable.Items.FirstOrDefault(t => t.FullName == typeName);
+            nanoTablesContext.TypeDefinitionTable.TryGetTypeReferenceId(type1, out typeRefId);
+            nanoTablesContext.TypeReferencesTable.TryGetTypeReferenceId(type1.BaseType, out baseTypeReferenceId);
+            typeFlags = (uint)nanoTypeDefinitionTable.GetFlags(type1, nanoTablesContext.MethodDefinitionTable);
+
+            Assert.IsTrue(dumpFileContent.Contains($"TypeDef {nanoDumperGenerator.TypeDefRefIdToString(type1, typeRefId)}\r\n-------------------------------------------------------\r\n    '{type1.Name}'\r\n    Flags: {typeFlags:X8}\r\n    Extends: {nanoDumperGenerator.TypeDefExtendsTypeToString(type1.BaseType, baseTypeReferenceId)}\r\n    Enclosed: TestNFApp.OneClassOverAll[04000000] /*02000019*/"));
 
             // String heap
             foreach (var stringKey in nanoTablesContext.StringTable.GetItems().Keys)
@@ -74,9 +131,8 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
             }
 
             // UserStrings
-            Assert.IsTrue(dumpFileContent.Contains("0D0002D8 : (14) \"++ Generics Tests ++\""));
-            Assert.IsTrue(dumpFileContent.Contains("0D00036F : (11) \"Exiting TestNFApp\""));
-            Assert.IsTrue(dumpFileContent.Contains("0D00061A : (1c) \"+++ReflectionTests completed\""));
+            var lastStringEntry = nanoTablesContext.StringTable.GetItems().OrderBy(i => i.Value).Last();
+            Assert.IsTrue(dumpFileContent.Contains($"{new nanoMetadataToken(NanoCLRTable.TBL_Strings, nanoTablesContext.StringTable.GetOrCreateStringId(lastStringEntry.Key, true))} : ({lastStringEntry.Key.Length:x2}) \"{lastStringEntry.Key}\""));
         }
     }
 }
