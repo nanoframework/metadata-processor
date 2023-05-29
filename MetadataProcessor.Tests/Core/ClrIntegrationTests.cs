@@ -7,10 +7,13 @@ using CliWrap;
 using CliWrap.Buffered;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
+using Newtonsoft.Json;
 using System;
 using System.IO;
+using System.Net;
 using System.Runtime;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -33,32 +36,76 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
         {
             Console.WriteLine("Install/upate nanoclr tool");
 
-            var cmd = Cli.Wrap("dotnet")
-                .WithArguments("tool update -g nanoclr")
+            // get installed tool version (if installed)
+            var cmd = Cli.Wrap("nanoclr")
+                .WithArguments("--help")
                 .WithValidation(CommandResultValidation.None);
 
-            // setup cancellation token with a timeout of 1 minute
-            using (var cts = new CancellationTokenSource())
-            {
-                cts.CancelAfter(TimeSpan.FromMinutes(1));
+            bool performInstallUpdate = false;
 
+            // setup cancellation token with a timeout of 1 minute
+            using (var cts = new CancellationTokenSource(TimeSpan.FromMinutes(1)))
+            {
                 var cliResult = cmd.ExecuteBufferedAsync(cts.Token).Task.Result;
 
                 if (cliResult.ExitCode == 0)
                 {
-                    var regexResult = Regex.Match(cliResult.StandardOutput, @"((?>version ')(?'version'\d+\.\d+\.\d+)(?>'))");
+                    var regexResult = Regex.Match(cliResult.StandardOutput, @"(?'version'\d+\.\d+\.\d+)", RegexOptions.RightToLeft);
 
                     if (regexResult.Success)
                     {
-                        Console.WriteLine($"Install/update successful. Running v{regexResult.Groups["version"].Value}");
+                        Console.WriteLine($"Running nanoclr v{regexResult.Groups["version"].Value}");
+
+                        // compose version
+                        Version installedVersion = new Version(regexResult.Groups[1].Value);
 
                         NanoClrIsInstalled = true;
+                        string responseContent = null;
+
+                        // check latest version
+                        using (System.Net.WebClient client = new WebClient())
+                        {
+                            try
+                            {
+                                // Set the user agent string to identify the client.
+                                client.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36");
+
+                                // Set any additional headers, if needed.
+                                client.Headers.Add("Content-Type", "application/json");
+
+                                // Set the URL to request.
+                                string url = "https://api.nuget.org/v3-flatcontainer/nanoclr/index.json";
+
+                                // Make the HTTP request and retrieve the response.
+                                responseContent = client.DownloadString(url);
+                            }
+                            catch (WebException e)
+                            {
+                                // Handle any exceptions that occurred during the request.
+                                Console.WriteLine(e.Message);
+                            }
+                        }
+
+                        var package = JsonConvert.DeserializeObject<NuGetPackage>(responseContent);
+                        Version latestPackageVersion = new Version(package.Versions[package.Versions.Length - 1]);
+
+                        // check if we are running the latest one
+                        if (latestPackageVersion > installedVersion)
+                        {
+                            // need to update
+                            performInstallUpdate = true;
+                        }
+                        else
+                        {
+                            Console.WriteLine($"No need to update. Running v{latestPackageVersion}");
+
+                            performInstallUpdate = false;
+                        }
                     }
                     else
                     {
-                        Console.WriteLine($"Failed to install/update nanoclr. {cliResult.StandardOutput}.");
-
-                        NanoClrIsInstalled = false;
+                        // something wrong with the output, can't proceed
+                        Console.WriteLine("Failed to parse current nanoCLR CLI version!");
                     }
                 }
                 else
@@ -70,40 +117,106 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
                 }
             }
 
-            // upon successful install, update nanoCLR instance
-            var arguments = "instance --update";
-
-            cmd = Cli.Wrap("nanoclr")
-                .WithArguments(arguments)
+            if (performInstallUpdate)
+            {
+                cmd = Cli.Wrap("dotnet")
+                .WithArguments("tool update -g nanoclr")
                 .WithValidation(CommandResultValidation.None);
 
-            // setup cancellation token with a timeout of 1 minute
-            using (var cts = new CancellationTokenSource(TimeSpan.FromMinutes(1)))
-            {
-                var cliResult = cmd.ExecuteBufferedAsync(cts.Token).Task.Result;
-
-                if (cliResult.ExitCode == 0)
+                // setup cancellation token with a timeout of 1 minute
+                using (var cts1 = new CancellationTokenSource(TimeSpan.FromMinutes(1)))
                 {
-                    // this will be either (on update): 
-                    // Updated to v1.8.1.102
-                    // or (on same version):
-                    // Already at v1.8.1.102
-                    var regexResult = Regex.Match(cliResult.StandardOutput, @"((?>version )(?'version'\d+\.\d+\.\d+))");
+                    var cliResult = cmd.ExecuteBufferedAsync(cts1.Token).Task.Result;
 
-                    if (regexResult.Success)
+                    if (cliResult.ExitCode == 0)
                     {
-                        Console.WriteLine($"Install/update successful. Running v{regexResult.Groups["version"].Value}");
+                        // this will be either (on update): 
+                        // Tool 'nanoclr' was successfully updated from version '1.0.205' to version '1.0.208'.
+                        // or (update becoming reinstall with same version, if there is no new version):
+                        // Tool 'nanoclr' was reinstalled with the latest stable version (version '1.0.208').
+                        var regexResult = Regex.Match(cliResult.StandardOutput, @"((?>version ')(?'version'\d+\.\d+\.\d+)(?>'))");
+
+                        if (regexResult.Success)
+                        {
+                            Console.WriteLine($"Install/update successful. Running v{regexResult.Groups["version"].Value}");
+
+                            NanoClrIsInstalled = true;
+                        }
+                        else
+                        {
+                            Console.WriteLine($"*** Failed to install/update nanoclr *** {Environment.NewLine} {cliResult.StandardOutput}");
+
+                            NanoClrIsInstalled = false;
+                        }
                     }
                     else
                     {
-                        Console.WriteLine($"*** Failed to update nanoCLR instance. {cliResult.StandardOutput}.");
+                        Console.WriteLine(
+                            $"Failed to install/update nanoclr. Exit code {cliResult.ExitCode}."
+                            + Environment.NewLine
+                            + Environment.NewLine
+                            + "****************************************"
+                            + Environment.NewLine
+                            + "*** WON'T BE ABLE TO RUN UNITS TESTS ***"
+                            + Environment.NewLine
+                            + "****************************************");
+
+                        NanoClrIsInstalled = false;
                     }
                 }
-                else
+            }
+
+#if DEBUG
+            if (!string.IsNullOrEmpty(_localClrInstancePath))
+            {
+                // done here as we are using a local instance of nanoCLR DLL
+                return;
+            }
+            else
+#endif
+            if (!string.IsNullOrEmpty(TestObjectHelper.NanoClrLocalInstance))
+            {
+                // done here as we are using a local instance of nanoCLR DLL
+                return;
+            }
+            else
+            {
+                // update nanoCLR instance
+                var arguments = "instance --update";
+
+                cmd = Cli.Wrap("nanoclr")
+                    .WithArguments(arguments)
+                    .WithValidation(CommandResultValidation.None);
+
+                // setup cancellation token with a timeout of 1 minute
+                using (var cts = new CancellationTokenSource(TimeSpan.FromMinutes(1)))
                 {
-                    Console.WriteLine($"Failed to update nanoCLR instance. Exit code {cliResult.ExitCode}.");
+                    var cliResult = cmd.ExecuteBufferedAsync(cts.Token).Task.Result;
+
+                    if (cliResult.ExitCode == 0)
+                    {
+                        // this will be either (on update): 
+                        // Updated to v1.8.1.102
+                        // or (on same version):
+                        // Already at v1.8.1.102
+                        var regexResult = Regex.Match(cliResult.StandardOutput, @"((?>version )(?'version'\d+\.\d+\.\d+))");
+
+                        if (regexResult.Success)
+                        {
+                            Console.WriteLine($"Install/update successful. Running v{regexResult.Groups["version"].Value}");
+                        }
+                        else
+                        {
+                            Console.WriteLine($"*** Failed to update nanoCLR instance. {cliResult.StandardOutput}.");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Failed to update nanoCLR instance. Exit code {cliResult.ExitCode}.");
+                    }
                 }
             }
+
         }
 
         [TestMethod]
@@ -204,7 +317,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
             }
         }
 
-        private object ComposeLocalClrInstancePath()
+        private string ComposeLocalClrInstancePath()
         {
             StringBuilder arguments = new StringBuilder(" --localinstance");
 
@@ -223,6 +336,11 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
 #endif
 
             return arguments.ToString();
+        }
+
+        internal class NuGetPackage
+        {
+            public string[] Versions { get; set; }
         }
     }
 }
