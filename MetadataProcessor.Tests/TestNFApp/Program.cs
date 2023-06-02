@@ -46,7 +46,20 @@ namespace TestNFApp
             // Generics Tests
             _ = new GenericClassTests();
 
+            /////////////////////////////////////////////////////////////////// 
+            // Miscelaneous Tests
+            MiscelaneousTests();
+
             Debug.WriteLine("Exiting TestNFApp");
+        }
+
+        private static void MiscelaneousTests()
+        {
+            var type = typeof(short[]);
+            if (type.Name != "System.Int16[]")
+            {
+                throw new Exception("Type name is wrong, should be System.Int16[]");
+            }
         }
 
         public static void ReflectionTests()

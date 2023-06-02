@@ -190,7 +190,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             {
                 foreach (var m in t.Methods.Where(i => i.HasBody))
                 {
-                    foreach (var i in m.Body.Instructions.Where(i => (i.Operand is GenericParameter) || (i.OpCode.OperandType is OperandType.InlineType && ((TypeReference)i.Operand).IsArray)))
+                    foreach (var i in m.Body.Instructions.Where(i => (i.Operand is GenericParameter) || (i.OpCode.OperandType is OperandType.InlineType && ((TypeReference)i.Operand).IsArray) || (i.OpCode.OperandType is OperandType.InlineTok)))
                     {
                         // get index of signature for the TypeSpecification 
                         ushort signatureId;
