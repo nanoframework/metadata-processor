@@ -2,13 +2,13 @@
 
 # compute authorization header in format "AUTHORIZATION: basic 'encoded token'"
 # 'encoded token' is the Base64 of the string "nfbot:personal-token"
-$auth = "basic $([System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes("nfbot:$env:MY_GITHUB_TOKEN"))))"
+$auth = "basic $([System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes("nfbot:$env:GH_TOKEN")))"
 
 # init/reset these
-$commitMessage = ""
 $prTitle = ""
 $newBranchName = "develop-nfbot/update-dependencies/" + [guid]::NewGuid().ToString()
-$packageTargetVersion = $env:NBGV_NuGetPackageVersion
+$packageTargetVersion = gh release view --json tagName --jq .tagName
+$packageTargetVersion = $packageTargetVersion -replace "v"
 
 # working directory is agent temp directory
 Write-Debug "Changing working directory to $env:Agent_TempDirectory"
@@ -33,10 +33,12 @@ git checkout --quiet develop | Out-Null
 "*****************************************************************************************************" | Write-Host
 "Updating nanoFramework.Tools.MetadataProcessor.MsBuildTask.Net package in VS2019 & VS2022 solution..." | Write-Host
 
+dotnet restore
 dotnet remove VisualStudio.Extension-2019/VisualStudio.Extension-vs2019.csproj package nanoFramework.Tools.MetadataProcessor.MsBuildTask
 dotnet add VisualStudio.Extension-2019/VisualStudio.Extension-vs2019.csproj package nanoFramework.Tools.MetadataProcessor.MsBuildTask
 dotnet remove VisualStudio.Extension-2022/VisualStudio.Extension-vs2022.csproj package nanoFramework.Tools.MetadataProcessor.MsBuildTask
 dotnet add VisualStudio.Extension-2022/VisualStudio.Extension-vs2022.csproj package nanoFramework.Tools.MetadataProcessor.MsBuildTask
+nuget restore -uselockfile
 
 "Bumping nanoFramework.Tools.MetadataProcessor.MsBuildTask to $packageTargetVersion." | Write-Host -ForegroundColor Cyan                
 

@@ -317,20 +317,9 @@ jobs:
   steps:
   # need this here in order to persist GitHub credentials 
   - checkout: self
-    fetchDepth: 100
-    persistCredentials: true
+    fetchDepth: 1
   
   - template: azure-pipelines-templates/install-nuget.yml@templates  
-
-  - script: nbgv cloud -a -c
-    condition: succeeded()
-    displayName: Set build number
-
-  - task: InstallNanoMSBuildComponents@1
-    condition: succeeded()
-    displayName: Install nanoFramework MSBuild components
-    env:
-      GITHUB_TOKEN: $(GitHubToken)
 
   # update dependencies
   - task: PowerShell@2
@@ -339,7 +328,7 @@ jobs:
       targetType: filePath
       filePath: azure-pipelines/update-dependencies.ps1
     env:
-      MY_GITHUB_TOKEN: $(GitHubToken)
+      GH_TOKEN: $(GitHubToken)
 
 ##################################
 # report build failure to Discord
