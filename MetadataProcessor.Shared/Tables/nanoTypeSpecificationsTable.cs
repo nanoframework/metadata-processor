@@ -101,14 +101,22 @@ namespace nanoFramework.Tools.MetadataProcessor
             TypeReference typeReference,
             out ushort referenceId)
         {
-            return _idByTypeSpecifications.TryGetValue(typeReference, out referenceId);
+            if (typeReference == null) // This case is possible for encoding 'nested inside' case
+            {
+                referenceId = 0xFFFF;
+                return true;
+            }
+
+            referenceId = GetOrCreateTypeSpecificationId(typeReference);
+
+            return true;
         }
 
         public TypeReference TryGetTypeSpecification(MetadataToken token)
         {
             foreach (var t in _idByTypeSpecifications)
             {
-                if(t.Key.MetadataToken == token)
+                if (t.Key.MetadataToken == token)
                 {
                     return t.Key;
                 }
