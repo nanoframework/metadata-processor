@@ -56,9 +56,9 @@ namespace TestNFApp
         private static void MiscelaneousTests()
         {
             var type = typeof(short[]);
-            if (type.Name != "System.Int16[]")
+            if (type.FullName != "System.Int16[]")
             {
-                throw new Exception("Type name is wrong, should be System.Int16[]");
+                throw new Exception($"Type name is wrong. Got '{type.FullName}' should be System.Int16[]");
             }
         }
 
