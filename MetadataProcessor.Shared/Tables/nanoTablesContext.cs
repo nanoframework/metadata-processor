@@ -353,7 +353,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                     return (uint)0x04000000 | referenceId;
                 case TokenType.TypeSpec:
                     TypeSpecificationsTable.TryGetTypeReferenceId((TypeReference)token, out referenceId);
-                    return (uint)0x08000000 | referenceId;
+                    return (uint)0x09000000 | referenceId;
                 case TokenType.Field:
                     FieldsTable.TryGetFieldReferenceId((FieldDefinition)token, false, out referenceId);
                     return (uint)0x05000000 | referenceId;
