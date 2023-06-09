@@ -111,6 +111,11 @@ namespace TestNFApp
 
         public T GenericField;
 
+        public void NoGenerics()
+        {
+            int v = 1;
+        }
+
         public void InstanceGenericDoOne(T t)
         {
             T v = t;
@@ -201,6 +206,7 @@ namespace TestNFApp
             other.Do2();
 
             var gc1 = new GenericClass<int>();
+            gc1.NoGenerics();
             gc1.InstanceGenericDoOne(1);
             gc1.InstanceGenericDoTwo(1, "TWO");
             gc1.InstanceGenericDoOneOther(false);
