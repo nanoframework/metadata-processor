@@ -352,7 +352,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
                     var methodDef = new MethodDef()
                     {
-                        ReferenceId = MethodRefIdToString(m, referenceId),
+                        ReferenceId = MethodDefIdToString(m, referenceId),
                         Name = m.FullName(),
                         RVA = _tablesContext.ByteCodeTable.GetMethodRva(m).ToString("X8"),
                         Implementation = "00000000",
@@ -837,7 +837,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
             return $"[{new nanoMetadataToken(typeDef.MetadataToken, referenceId)}] /*{realToken}*/";
         }
 
-        internal static string MethodRefIdToString(
+        internal static string MethodDefIdToString(
             MethodReference methodRef,
             ushort referenceId)
         {
