@@ -20,6 +20,9 @@
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
     <NF_MDP_MSBUILDTASK_PATH>$(ProjectDir)..\MetadataProcessor.MsBuildTask\bin\$(Configuration)\net472</NF_MDP_MSBUILDTASK_PATH>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -102,7 +105,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="CliWrap">
-      <Version>3.6.0</Version>
+      <Version>3.6.3</Version>
     </PackageReference>
     <PackageReference Include="Mono.Cecil">
       <Version>0.11.4</Version>
@@ -112,11 +115,6 @@
     </PackageReference>
     <PackageReference Include="MSTest.TestFramework">
       <Version>2.2.8</Version>
-    </PackageReference>
-    <PackageReference Include="nanoFramework.nanoCLR.Win32" GeneratePathProperty="true">
-      <Version>1.7.4-preview.42</Version>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json">
       <Version>13.0.3</Version>
