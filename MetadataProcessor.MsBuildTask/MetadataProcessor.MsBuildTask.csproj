@@ -15,6 +15,8 @@
 		<RepositoryType>git</RepositoryType>
 		<PackageIcon>nf-logo.png</PackageIcon>
 		<PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+		<AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+		<GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
 	</PropertyGroup>
 
 	<PropertyGroup>
@@ -62,7 +64,7 @@
 		<PackageReference Include="Mono.Cecil" Version="0.11.4" PrivateAssets="All" />
 		<PackageReference Include="mustache-sharp" Version="1.0.0" PrivateAssets="All" />
 		<PackageReference Include="System.Drawing.Common" Version="6.0.0" PrivateAssets="All" />
-		<PackageReference Include="System.Text.Json" Version="5.0.1" />
+		<PackageReference Include="System.Text.Json" Version="7.0.2" />
 	</ItemGroup>
 	
   <Target Name="PackTaskDependencies" BeforeTargets="GenerateNuspec">
