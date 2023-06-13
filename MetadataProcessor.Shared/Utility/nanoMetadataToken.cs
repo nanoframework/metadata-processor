@@ -47,7 +47,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                     break;
 
                 case TokenType.Method:
-                    _clrTable = NanoCLRTable.TBL_MethodRef;
+                    _clrTable = NanoCLRTable.TBL_MethodDef;
                     break;
 
                 case TokenType.TypeDef:
