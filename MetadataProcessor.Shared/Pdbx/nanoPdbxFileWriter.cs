@@ -3,19 +3,9 @@
 // See LICENSE file in the project root for full license information.
 //
 
-using Mono.Cecil;
-using nanoFramework.Tools.MetadataProcessor.Core;
-using nanoFramework.Tools.MetadataProcessor.Core.Extensions;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
-using System.Xml;
 
 namespace nanoFramework.Tools.MetadataProcessor
 {
