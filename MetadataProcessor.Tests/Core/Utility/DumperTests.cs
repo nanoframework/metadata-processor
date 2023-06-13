@@ -76,7 +76,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
             {
                 _ = nanoTablesContext.MethodDefinitionTable.TryGetMethodReferenceId(m, out ushort methodReferenceId);
 
-                Assert.IsTrue(dumpFileContent.Contains($"    MethodDef {nanoDumperGenerator.MethodRefIdToString(m, methodReferenceId)}\r\n    -------------------------------------------------------\r\n        '{m.FullName()}'\r\n        Flags: {nanoMethodDefinitionTable.GetFlags(m):X8}\r\n        Impl: 00000000\r\n        RVA: 0000FFFF\r\n        [{nanoDumperGenerator.PrintSignatureForMethod(m)}]"));
+                Assert.IsTrue(dumpFileContent.Contains($"    MethodDef {nanoDumperGenerator.MethodDefIdToString(m, methodReferenceId)}\r\n    -------------------------------------------------------\r\n        '{m.FullName()}'\r\n        Flags: {nanoMethodDefinitionTable.GetFlags(m):X8}\r\n        Impl: 00000000\r\n        RVA: 0000FFFF\r\n        [{nanoDumperGenerator.PrintSignatureForMethod(m)}]"));
             }
 
             // TestNFApp.ComplexAttribute
@@ -95,7 +95,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
             {
                 _ = nanoTablesContext.MethodDefinitionTable.TryGetMethodReferenceId(m, out ushort methodReferenceId);
 
-                Assert.IsTrue(dumpFileContent.Contains($"    MethodDef {nanoDumperGenerator.MethodRefIdToString(m, methodReferenceId)}\r\n    -------------------------------------------------------\r\n        '{m.FullName()}'\r\n        Flags: {nanoMethodDefinitionTable.GetFlags(m):X8}\r\n        Impl: 00000000\r\n        RVA: 0000FFFF\r\n        [{nanoDumperGenerator.PrintSignatureForMethod(m)}]"));
+                Assert.IsTrue(dumpFileContent.Contains($"    MethodDef {nanoDumperGenerator.MethodDefIdToString(m, methodReferenceId)}\r\n    -------------------------------------------------------\r\n        '{m.FullName()}'\r\n        Flags: {nanoMethodDefinitionTable.GetFlags(m):X8}\r\n        Impl: 00000000\r\n        RVA: 0000FFFF\r\n        [{nanoDumperGenerator.PrintSignatureForMethod(m)}]"));
             }
 
             // TestNFApp.Program

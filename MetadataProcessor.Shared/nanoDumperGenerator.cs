@@ -330,11 +330,11 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                     uint att = (uint)f.Attributes;
 
                     string realToken = f.MetadataToken.ToInt32().ToString("X8");
-                    _tablesContext.TypeReferencesTable.TryGetTypeReferenceId(f.FieldType, out referenceId);
+                    _tablesContext.FieldsTable.TryGetFieldReferenceId(f, false, out referenceId);
 
                     var fieldDef = new FieldDef()
                     {
-                        ReferenceId = $"[{new nanoMetadataToken(f.FieldType.MetadataToken, referenceId)}] /*{realToken}*/",
+                        ReferenceId = $"[{new nanoMetadataToken(f.MetadataToken, referenceId)}] /*{realToken}*/",
                         Name = f.Name,
                         Flags = att.ToString("X8"),
                         Attributes = att.ToString("X8"),
