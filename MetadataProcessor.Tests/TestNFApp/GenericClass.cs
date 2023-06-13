@@ -23,22 +23,22 @@ namespace TestNFApp
     {
         public void Do1()
         {
-            Debug.WriteLine($"{nameof(ClassDoThis.Do1)}");
+            Debug.WriteLine($"{nameof(Do1)}");
         }
 
         public void Do2()
         {
-            Debug.WriteLine($"{nameof(ClassDoThis.Do2)}");
+            Debug.WriteLine($"{nameof(Do2)}");
         }
 
         public void DoThis1()
         {
-            Debug.WriteLine($"{nameof(ClassDoThis.DoThis1)}");
+            Debug.WriteLine($"{nameof(DoThis1)}");
         }
 
         public void DoThis2()
         {
-            Debug.WriteLine($"{nameof(ClassDoThis.DoThis2)}");
+            Debug.WriteLine($"{nameof(DoThis2)}");
         }
     }
 
@@ -46,12 +46,12 @@ namespace TestNFApp
     {
         public void Do1()
         {
-            Debug.WriteLine($"{nameof(ClassDoInt.Do1)}");
+            Debug.WriteLine($"{nameof(Do1)}");
         }
 
         public void Do2()
         {
-            Debug.WriteLine($"{nameof(ClassDoInt.Do2)}");
+            Debug.WriteLine($"{nameof(Do2)}");
         }
     }
 
@@ -59,22 +59,22 @@ namespace TestNFApp
     {
         public void Do1()
         {
-            Debug.WriteLine($"{nameof(ClassDoThatInt.Do1)}");
+            Debug.WriteLine($"{nameof(Do1)}");
         }
 
         public void Do2()
         {
-            Debug.WriteLine($"{nameof(ClassDoThatInt.Do2)}");
+            Debug.WriteLine($"{nameof(Do2)}");
         }
 
         public void DoThat1()
         {
-            Debug.WriteLine($"{nameof(ClassDoThatInt.DoThat1)}");
+            Debug.WriteLine($"{nameof(DoThat1)}");
         }
 
         public void DoThat2()
         {
-            Debug.WriteLine($"{nameof(ClassDoThatInt.DoThat2)}");
+            Debug.WriteLine($"{nameof(DoThat2)}");
         }
 
     }
@@ -83,12 +83,12 @@ namespace TestNFApp
     {
         public void DoThat1()
         {
-            Debug.WriteLine($"{nameof(ClassDoThisAndThat.DoThat1)}");
+            Debug.WriteLine($"{nameof(DoThat1)}");
         }
 
         public void DoThat2()
         {
-            Debug.WriteLine($"{nameof(ClassDoThisAndThat.DoThat2)}");
+            Debug.WriteLine($"{nameof(DoThat2)}");
         }
     }
 
@@ -96,12 +96,12 @@ namespace TestNFApp
     {
         public void Do1()
         {
-            Debug.WriteLine($"{nameof(ClassDoString.Do1)}");
+            Debug.WriteLine($"{nameof(Do1)}");
         }
 
         public void Do2()
         {
-            Debug.WriteLine($"{nameof(ClassDoString.Do2)}");
+            Debug.WriteLine($"{nameof(Do2)}");
         }
     }
 
