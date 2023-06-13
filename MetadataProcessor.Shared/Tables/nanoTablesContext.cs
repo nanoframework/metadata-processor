@@ -357,6 +357,9 @@ namespace nanoFramework.Tools.MetadataProcessor
                 case TokenType.Field:
                     FieldsTable.TryGetFieldReferenceId((FieldDefinition)token, false, out referenceId);
                     return (uint)0x05000000 | referenceId;
+                case TokenType.GenericParam:
+                    GenericParamsTable.TryGetParameterId((GenericParameter)token, out referenceId);
+                    return (uint)0x07000000 | referenceId;
 
                 default:
                     System.Diagnostics.Debug.Fail("Unsupported TokenType");
