@@ -120,7 +120,7 @@ namespace TestNFApp
         {
             T v = t;
 
-            Debug.WriteLine($"{nameof(InstanceGenericDoOne)} --> {v}");
+            Debug.WriteLine($"{nameof(InstanceGenericDoOne)} --> {v} is <{v.GetType()}>");
         }
 
         public void InstanceGenericDoTwo<T2>(T p1, T2 p2)
@@ -128,14 +128,14 @@ namespace TestNFApp
             T v1 = p1;
             T2 v2 = p2;
 
-            Debug.WriteLine($"{nameof(InstanceGenericDoTwo)}<{v2.GetType()}> --> {v1},{v2}");
+            Debug.WriteLine($"{nameof(InstanceGenericDoTwo)}<{v2.GetType()}> --> {v1},{v2} is <{v1.GetType()},{v2.GetType()}>");
         }
 
         public void InstanceGenericDoOneOther<T1>(T1 t)
         {
             T1 v1 = t;
 
-            Debug.WriteLine($"{nameof(InstanceGenericDoOneOther)}<{v1.GetType()}> --> {v1}");
+            Debug.WriteLine($"{nameof(InstanceGenericDoOneOther)}<{v1.GetType()}> --> {v1} is <{v1.GetType()}>");
         }
     }
 
@@ -150,7 +150,7 @@ namespace TestNFApp
         {
             T v = t;
 
-            Debug.WriteLine($"{nameof(InstanceGenericDoOne)} --> {v}");
+            Debug.WriteLine($"{nameof(InstanceGenericDoOne)} --> {v} is <{typeof(T).FullName}>");
         }
 
         public void InstanceGenericDoTwo<T2>(T p1, T1 p2, T2 p3)
@@ -159,7 +159,7 @@ namespace TestNFApp
             T1 v2 = p2;
             T2 v3 = p3;
 
-            Debug.WriteLine($"{nameof(InstanceGenericDoTwo)}<{v3.GetType()}> --> {v1},{v2},{v3}");
+            Debug.WriteLine($"{nameof(InstanceGenericDoTwo)}<{v3.GetType()}> --> {v1},{v2},{v3} is <{v1.GetType()},{v2.GetType()},{v3.GetType()}>");
         }
 
         public void InstanceGenericDoOneOther<T2>(T1 p1, T2 p2)
@@ -167,7 +167,7 @@ namespace TestNFApp
             T1 v1 = p1;
             T2 v2 = p2;
 
-            Debug.WriteLine($"{nameof(InstanceGenericDoOneOther)}<{v1.GetType()}> --> {v1},{v2}");
+            Debug.WriteLine($"{nameof(InstanceGenericDoOneOther)}<{v1.GetType()}> --> {v1},{v2} is <{typeof(T1).FullName},{typeof(T2).FullName}>");
         }
     }
 
