@@ -795,6 +795,21 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                     _tablesContext.TypeSpecificationsTable.TryGetTypeReferenceId(l.VariableType as TypeSpecification, out ushort referenceId);
 
                     sig.Append($"[{new nanoMetadataToken(NanoCLRTable.TBL_TypeSpec, referenceId)}] /*{l.VariableType.GetElementType().MetadataToken.ToInt32().ToString("X8")}*/");
+
+                    // now the generic parameters
+                    sig.Append("<");
+
+                    foreach (var p in l.VariableType.GenericParameters)
+                    {
+                        sig.Append(p.Name);
+
+                        if (!p.Equals(l.VariableType.GenericParameters.Last()))
+                        {
+                            sig.Append(",");
+                        }
+                    }
+
+                    sig.Append(">");
                 }
                 else
                 {
