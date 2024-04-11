@@ -119,7 +119,7 @@ namespace nanoFramework.Tools.MetadataProcessor.MsBuildTask
         public override bool Execute()
         {
             // report to VS output window what step the build is 
-            Log.LogCommandLine(MessageImportance.Normal, "Starting nanoFramework MetadataProcessor...");
+            Log.LogCommandLine(MessageImportance.Normal, "Starting nanoFramework MetadataProcessor..");
 
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // developer note: to debug this task set an environment variable like this:
@@ -137,7 +137,7 @@ namespace nanoFramework.Tools.MetadataProcessor.MsBuildTask
                 if (LoadHints != null &&
                     LoadHints.Any())
                 {
-                    if (Verbose) Log.LogCommandLine(MessageImportance.Normal, "Processing load hints...");
+                    if (Verbose) Log.LogCommandLine(MessageImportance.Normal, "Processing load hints..");
 
                     foreach (var hint in LoadHints)
                     {
@@ -154,7 +154,7 @@ namespace nanoFramework.Tools.MetadataProcessor.MsBuildTask
                 if (ExcludeClassByName != null &&
                     ExcludeClassByName.Any())
                 {
-                    if (Verbose) Log.LogCommandLine(MessageImportance.Normal, "Processing class exclusion list...");
+                    if (Verbose) Log.LogCommandLine(MessageImportance.Normal, "Processing class exclusion list..");
 
                     foreach (var className in ExcludeClassByName)
                     {
@@ -167,7 +167,7 @@ namespace nanoFramework.Tools.MetadataProcessor.MsBuildTask
                 // Analyses a .NET assembly
                 if (!string.IsNullOrEmpty(Parse))
                 {
-                    if (Verbose) Log.LogCommandLine(MessageImportance.Normal, $"Analysing .NET assembly {Path.GetFileNameWithoutExtension(Parse)}...");
+                    if (Verbose) Log.LogCommandLine(MessageImportance.Normal, $"Analysing .NET assembly {Path.GetFileNameWithoutExtension(Parse)}..");
 
                     ExecuteParse(Parse);
                 }
@@ -183,7 +183,7 @@ namespace nanoFramework.Tools.MetadataProcessor.MsBuildTask
                     }
                     else
                     {
-                        if (Verbose) Log.LogCommandLine(MessageImportance.Normal, $"Compiling {Path.GetFileNameWithoutExtension(Compile)} into nanoCLR format...");
+                        if (Verbose) Log.LogCommandLine(MessageImportance.Normal, $"Compiling {Path.GetFileNameWithoutExtension(Compile)} into nanoCLR format..");
 
                         ExecuteCompile(Compile);
                     }
@@ -280,14 +280,14 @@ namespace nanoFramework.Tools.MetadataProcessor.MsBuildTask
         {
             try
             {
-                if (Verbose) Log.LogCommandLine(MessageImportance.Normal, "Parsing assembly...");
+                if (Verbose) Log.LogCommandLine(MessageImportance.Normal, "Parsing assembly..");
 
                 _assemblyDefinition = AssemblyDefinition.ReadAssembly(fileName,
                     new ReaderParameters { AssemblyResolver = new LoadHintsAssemblyResolver(_loadHints) });
             }
             catch (Exception)
             {
-                Log.LogError($"Unable to parse input assembly file '{fileName}' - check if path and file exists.");
+                Log.LogError($"Unable to parse input assembly file '{fileName}' - check if path and file exists");
             }
         }
 
@@ -317,7 +317,7 @@ namespace nanoFramework.Tools.MetadataProcessor.MsBuildTask
             try
             {
                 // compile assembly (1st pass)
-                if (Verbose) Log.LogCommandLine(MessageImportance.Normal, "Compiling assembly...");
+                if (Verbose) Log.LogCommandLine(MessageImportance.Normal, "Compiling assembly..");
 
                 _assemblyBuilder = new nanoAssemblyBuilder(
                     _assemblyDefinition,
@@ -333,7 +333,7 @@ namespace nanoFramework.Tools.MetadataProcessor.MsBuildTask
             }
             catch (Exception)
             {
-                Log.LogError($"Unable to compile output assembly file '{fileName}' - check parse command results.");
+                Log.LogError($"Unable to compile output assembly file '{fileName}' - check parse command results");
 
                 if (Verbose)
                 {
@@ -350,12 +350,12 @@ namespace nanoFramework.Tools.MetadataProcessor.MsBuildTask
                 File.Delete(Path.ChangeExtension(fileName, "tmp"));
 
                 // minimize (has to be called after the 1st compile pass)
-                if (Verbose) Log.LogCommandLine(MessageImportance.Normal, "Minimizing assembly...");
+                if (Verbose) Log.LogCommandLine(MessageImportance.Normal, "Minimizing assembly..");
 
                 _assemblyBuilder.Minimize();
 
                 // compile assembly (2nd pass after minimize)
-                if (Verbose) Log.LogCommandLine(MessageImportance.Normal, "Recompiling assembly...");
+                if (Verbose) Log.LogCommandLine(MessageImportance.Normal, "Recompiling assembly..");
 
                 using (var stream = File.Open(fileName, FileMode.Create, FileAccess.ReadWrite))
                 using (var writer = new BinaryWriter(stream))
@@ -369,7 +369,7 @@ namespace nanoFramework.Tools.MetadataProcessor.MsBuildTask
                 // output assembly metadata
                 if (DumpMetadata)
                 {
-                    if (Verbose) Log.LogCommandLine(MessageImportance.Normal, "Dumping assembly metadata...");
+                    if (Verbose) Log.LogCommandLine(MessageImportance.Normal, "Dumping assembly metadata..");
 
                     DumpFile = Path.ChangeExtension(fileName, "dump.txt");
 
@@ -387,11 +387,11 @@ namespace nanoFramework.Tools.MetadataProcessor.MsBuildTask
             }
             catch (ArgumentException ex)
             {
-                Log.LogError($"Exception minimizing assembly: {ex.Message}.");
+                Log.LogError($"Exception minimizing assembly: {ex.Message}");
             }
             catch (Exception)
             {
-                Log.LogError($"Exception minimizing assembly.");
+                Log.LogError($"Exception minimizing assembly");
                 throw;
             }
             finally
@@ -418,7 +418,7 @@ namespace nanoFramework.Tools.MetadataProcessor.MsBuildTask
         {
             try
             {
-                if (Verbose) Log.LogCommandLine(MessageImportance.Normal, "Generating skeleton files...");
+                if (Verbose) Log.LogCommandLine(MessageImportance.Normal, "Generating skeleton files..");
 
                 var skeletonGenerator = new nanoSkeletonGenerator(
                     _assemblyBuilder.TablesContext,
@@ -455,7 +455,7 @@ namespace nanoFramework.Tools.MetadataProcessor.MsBuildTask
             }
             catch (Exception)
             {
-                Log.LogError($"Unable to generate and write dependency graph for assembly file '{fileName}'.");
+                Log.LogError($"Unable to generate and write dependency graph for assembly file '{fileName}'");
 
                 throw;
             }
