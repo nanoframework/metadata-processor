@@ -93,9 +93,9 @@ namespace nanoFramework.Tools.MetadataProcessor
             }
 
             // check ignoring attributes against ClassNamesToExclude 
-            foreach(var className in ClassNamesToExclude)
+            foreach (var className in ClassNamesToExclude)
             {
-                if(!IgnoringAttributes.Contains(className))
+                if (!IgnoringAttributes.Contains(className))
                 {
                     IgnoringAttributes.Add(className);
                 }
@@ -118,8 +118,8 @@ namespace nanoFramework.Tools.MetadataProcessor
                 StringComparer.Ordinal);
 
             var memberReferences = mainModule.GetMemberReferences()
-                .Where(item => 
-                    (typeReferencesNames.Contains(item.DeclaringType.FullName) || 
+                .Where(item =>
+                    (typeReferencesNames.Contains(item.DeclaringType.FullName) ||
                     item.DeclaringType.GetElementType().IsPrimitive ||
                     item.ContainsGenericParameter ||
                     item.DeclaringType.IsGenericInstance))
@@ -130,13 +130,13 @@ namespace nanoFramework.Tools.MetadataProcessor
                 memberReferences.OfType<FieldReference>(), this);
             MethodReferencesTable = new nanoMethodReferenceTable(
                 memberReferences.OfType<MethodReference>(), this);
-           
+
             // Internal types definitions
 
             var types = GetOrderedTypes(mainModule, explicitTypesOrder);
 
             TypeDefinitionTable = new nanoTypeDefinitionTable(types, this);
-            
+
             var fields = types
                 .SelectMany(item => GetOrderedFields(item.Fields.Where(field => !field.HasConstant)))
                 .ToList();
@@ -203,7 +203,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             foreach (var item in memberReferences)
             {
                 StringTable.GetOrCreateStringId(item.Name);
-                
+
                 var fieldReference = item as FieldReference;
                 if (fieldReference != null)
                 {
@@ -288,7 +288,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                         .Where(attr => !IsAttribute(attr.AttributeType))
                         .OrderByDescending(attr => attr.AttributeType.FullName)
                         .Select(attr => new Tuple<CustomAttribute, ushort>(attr, (ushort)index)));
-                
+
             }
             return types.SelectMany(
                 (item, index) => item.CustomAttributes

@@ -222,8 +222,8 @@ namespace nanoFramework.Tools.MetadataProcessor
             writer.WriteUInt16(firstStaticFieldId);
             writer.WriteUInt16(firstInstanceFieldId);
 
-            writer.WriteByte((byte) staticFieldsCount);
-            writer.WriteByte((byte) instanceFieldsCount);
+            writer.WriteByte((byte)staticFieldsCount);
+            writer.WriteByte((byte)instanceFieldsCount);
         }
 
         private void WriteMethodBodies(
@@ -390,13 +390,13 @@ namespace nanoFramework.Tools.MetadataProcessor
             }
 
             var baseType = definition.BaseType;
-            if (baseType != null && 
+            if (baseType != null &&
                 baseType.FullName == "System.MulticastDelegate")
             {
                 flags |= nanoTypeDefinitionFlags.TD_MulticastDelegate;
             }
 
-            if (baseType != null && 
+            if (baseType != null &&
                 baseType.FullName == "System.Delegate" &&
                 definition.FullName != "System.MulticastDelegate")
             {

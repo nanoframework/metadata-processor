@@ -114,7 +114,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             // try to get string from id table
             var output = _idsByStrings.FirstOrDefault(s => s.Value == id).Key;
 
-            if(output == null)
+            if (output == null)
             {
                 // try to find string in string constant table
                 output = nanoStringsConstants.TryGetString(id);
@@ -162,7 +162,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             // remove the ones that are used
             foreach (var t in items)
             {
-                if(setAll.Remove(t))
+                if (setAll.Remove(t))
                 {
                     usedStrings.Add(TryGetString((ushort)t.ToUInt32()));
                 }
@@ -170,7 +170,7 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             // reset dictionary
             _idsByStrings = new Dictionary<string, ushort>(StringComparer.Ordinal);
-            
+
             // and last ID too
             _lastAvailableId = 0;
 
