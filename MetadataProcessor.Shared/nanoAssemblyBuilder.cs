@@ -713,7 +713,16 @@ namespace nanoFramework.Tools.MetadataProcessor
                         {
                             if (v.VariableType.DeclaringType != null)
                             {
-                                set.Add(v.VariableType.DeclaringType.MetadataToken);
+                                var resolvedType = v.VariableType.Resolve();
+
+                                if (resolvedType != null && resolvedType.IsEnum)
+                                {
+                                    set.Add(v.VariableType.MetadataToken);
+                                }
+                                else
+                                {
+                                    set.Add(v.VariableType.DeclaringType.MetadataToken);
+                                }
                             }
                             else if (v.VariableType.MetadataType == MetadataType.Class)
                             {
