@@ -5,6 +5,7 @@
 
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Reflection;
 using TestNFClassLibrary;
 
@@ -49,6 +50,26 @@ namespace TestNFApp
             /////////////////////////////////////////////////////////////////// 
             // Miscelaneous Tests
             MiscelaneousTests();
+
+            ////////////////////////////////////////////////
+            // Test enum in another assembly, same namespace
+            var enumTest = new TestEnumInAnotherAssembly();
+            enumTest.CallTestEnumInAnotherAssembly();
+
+            /////////////////////////////////////
+            // reference enum in another assembly
+            var x = (IAmAClassWithAnEnum.EnumA)1;
+
+            var messageType = (IAmAClassWithAnEnum.EnumA)0;
+            switch (messageType)
+            {
+                case IAmAClassWithAnEnum.EnumA.Test:
+                    Console.WriteLine("all good");
+                    break;
+
+                default:
+                    break;
+            }
 
             Debug.WriteLine("Exiting TestNFApp");
         }
