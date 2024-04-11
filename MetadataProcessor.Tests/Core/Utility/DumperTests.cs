@@ -45,7 +45,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
 
             Assert.IsTrue(dumpFileContent.Contains(": Flags: 00001001 Extends: 0100000d Enclosed: 02000000 'TestNFApp.DummyCustomAttribute2'"));
 
-            Assert.IsTrue(dumpFileContent.Contains(": Flags: 00000061 Extends: 01000000 Enclosed: 02000000 'TestNFApp.IOneClassOverAll'"));
+            Assert.IsTrue(dumpFileContent.Contains(": Flags: 00001061 Extends: 01000000 Enclosed: 02000000 'TestNFApp.IOneClassOverAll'"));
             Assert.IsTrue(dumpFileContent.Contains(": Flags: 000007c6 Impl: 00000000 RVA: 00000000 'get_DummyProperty' [I4(   )]"));
             Assert.IsTrue(dumpFileContent.Contains(": Flags: 000007c6 Impl: 00000000 RVA: 00000000 'set_DummyProperty' [VOID( I4 )]"));
             Assert.IsTrue(dumpFileContent.Contains(": Flags: 000003c6 Impl: 00000000 RVA: 00000000 'DummyMethod' [VOID(   )]"));
