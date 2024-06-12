@@ -101,6 +101,13 @@ namespace nanoFramework.Tools.MetadataProcessor
                 id = _lastAvailableId;
                 _idsByStrings.Add(value, id);
                 var length = Encoding.UTF8.GetBytes(value).Length + 1;
+
+                // sanity check for ID overflow
+                if (_lastAvailableId + length > ushort.MaxValue)
+                {
+                    throw new InvalidOperationException($"String table overflow in assembly '{_context.AssemblyDefinition.Name}'. Can't use so many strings.");
+                }
+
                 _lastAvailableId += (ushort)(length);
             }
             return id;
