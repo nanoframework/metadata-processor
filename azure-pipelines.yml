@@ -225,7 +225,7 @@ jobs:
     inputs:
       command: custom
       custom: tool
-      arguments: install --tool-path . sign --version 0.9.1-beta.23530.1
+      arguments: install --tool-path . sign --version 0.9.1-beta.24170.3
     
   - pwsh: |
       .\sign code azure-key-vault `
@@ -249,12 +249,11 @@ jobs:
       )
     
   # publish artifacts (only possible if this is not a PR originated on a fork)
-  - task: PublishBuildArtifacts@1
+  - task: PublishPipelineArtifact@1
     displayName: Publish deployables artifacts
     inputs:
-      PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-      ArtifactName: deployables
-      ArtifactType: Container
+      targetPath: '$(Build.ArtifactStagingDirectory)'
+      artifactName: deployables
 
   # set cloud build vars again as they've been overriten by the tests run
   - script: nbgv cloud -a -c
@@ -297,6 +296,7 @@ jobs:
       isPreRelease: false
       isDraft: false
       addChangeLog: true
+      changeLogType: issueBased
       changeLogLabels: |
         [
           { "label" : "Type: bug", "displayName" : "Bugs fixed", "state" : "closed" },
@@ -310,6 +310,10 @@ jobs:
 - job: Update_Dependents
   condition: >-
     and(
+      or(
+        succeeded('Build_MDP'),
+        not(in(dependencies.PreviousJob.result, 'Succeeded', 'Failed', 'Canceled'))
+      ),
       or(
         eq(dependencies.Get_Build_Flags.outputs['GetPRLabels.RUN_UPDATE_DEPENDENTS'], 'true'),
         eq(variables['UPDATE_DEPENDENTS'], 'true')
