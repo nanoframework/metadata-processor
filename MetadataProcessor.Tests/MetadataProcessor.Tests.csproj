@@ -98,16 +98,16 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Mono.Cecil">
-      <Version>0.11.4</Version>
+      <Version>0.11.5</Version>
     </PackageReference>
     <PackageReference Include="MSTest.TestAdapter">
-      <Version>2.2.10</Version>
+      <Version>3.4.3</Version>
     </PackageReference>
     <PackageReference Include="MSTest.TestFramework">
-      <Version>2.2.10</Version>
+      <Version>3.4.3</Version>
     </PackageReference>
     <PackageReference Include="nanoFramework.nanoCLR.Win32" GeneratePathProperty="true">
-      <Version>1.8.0.513</Version>
+      <Version>1.9.1.181</Version>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
