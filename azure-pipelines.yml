@@ -232,7 +232,7 @@ jobs:
       "**/*.nupkg" `
       --base-directory "$(Build.ArtifactStagingDirectory)" `
       --file-list "$(Build.Repository.LocalPath)\config\filelist.txt" `
-      --description "$(nugetPackageName)" `
+      --description ".NET nanoFramework MDP" `
       --description-url "https://github.com/$env:Build_Repository_Name" `
       --azure-key-vault-tenant-id "$(SignTenantId)" `
       --azure-key-vault-client-id "$(SignClientId)" `
