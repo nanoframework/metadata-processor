@@ -261,17 +261,21 @@ jobs:
     condition: succeeded()
     displayName: Set build number
   
-  # push NuGet packages to Azure Artifacts feed (always happens except on PR builds)
+  # push NuGet packages to NuGet (always happens except on PR builds)
   - task: NuGetCommand@2
-    displayName: Push NuGet packages to Azure Artifacts
-    condition: and( succeeded(), eq(variables['System.PullRequest.PullRequestId'], '') )
+    displayName: Push NuGet packages to NuGet
+    condition: >-
+      and(
+        succeeded(),
+        eq(variables['System.PullRequest.PullRequestId'], '')
+      )
     continueOnError: true
     inputs:
       command: push
       nuGetFeedType: external
-      packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
-      publishFeedCredentials: 'AzureArtifacts'
       allowPackageConflicts: true
+      packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
+      publishFeedCredentials: 'NuGet-$(System.TeamProject)'
 
   # create or update GitHub release
   - task: GithubRelease@1
