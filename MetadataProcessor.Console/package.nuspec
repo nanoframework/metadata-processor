@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>nanoFramework.Tools.MetadataProcessor.CLI</id>
+    <title>nanoFramework.Tools.MetadataProcessor.CLI</title>
+    <version>$version$</version>
+    <authors>nanoframework</authors>
+    <description>Command line interface to the Metadata Processor that is used internally by nanoFramework tooling and VS extensions. It is not needed for regular nanoFramework projects, but there are a few use cases where this tool is required.</description>
+    <releaseNotes>
+    </releaseNotes>
+    <readme>docs\README.md</readme>
+    <projectUrl>https://github.com/nanoframework/metadata-processor</projectUrl>
+    <icon>images\nf-logo.png</icon>
+    <license type="file">LICENSE.md</license>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <repository type="git" url="https://github.com/nanoframework/metadata-processor" commit="$commit$" />
+    <copyright>Copyright (c) .NET Foundation and Contributors</copyright>
+    <references></references>
+    <tags>nanoFramework</tags>
+	<contentFiles>
+		<files include="any\any\MetadataProcessor\**" buildAction="None" copyToOutput="true"/>
+	</contentFiles>
+  </metadata>
+  <files>
+    <file src="..\assets\nf-logo.png" target="images\" />
+    <file src="..\LICENSE.md" target="" />
+    <file src="..\README.md" target="docs\" />
+	<!-- Installation via packages.json -->
+    <file src="bin\Release\*.dll" target="content/MetadataProcessor" />
+    <file src="bin\Release\*.exe" target="content/MetadataProcessor" />
+    <file src="bin\Release\*.exe.config" target="content/MetadataProcessor" />
+	<!-- Installation via PackageReference -->
+    <file src="bin\Release\*.dll" target="/contentFiles/any/any/MetadataProcessor" />
+    <file src="bin\Release\*.exe" target="/contentFiles/any/any/MetadataProcessor" />
+    <file src="bin\Release\*.exe.config" target="/contentFiles/any/any/MetadataProcessor" />
+  </files>
+</package>
