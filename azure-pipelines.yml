@@ -209,6 +209,25 @@ jobs:
       TargetFolder: '$(Build.ArtifactStagingDirectory)'
       flattenFolders: true
 
+  # set cloud build vars again as they've been overriten by the tests run
+  - script: nbgv cloud -a -c
+    condition: succeeded()
+    displayName: Set build number
+ 
+  - task: PowerShell@2
+    condition: succeeded()
+    displayName: Save cloud build number
+    inputs:
+      targetType: 'inline'
+      script: Write-Host "$("##vso[build.updatebuildnumber]")$env:NBGV_NuGetPackageVersion"
+
+  - task: NuGetCommand@2
+    condition: succeeded()
+    displayName: Pack NuGet with MetadataProcessor Console
+    inputs:
+      command: 'custom'
+      arguments: 'pack MetadataProcessor.Console\package.nuspec -Version $(NBGV_NuGetPackageVersion) -properties commit="$(Build.SourceVersion)" -properties NoWarn=NU5100'
+
   - task: CopyFiles@1
     condition: succeeded()
     displayName: Collecting NuGet package artifact
@@ -255,11 +274,6 @@ jobs:
       targetPath: '$(Build.ArtifactStagingDirectory)'
       artifactName: deployables
 
-  # set cloud build vars again as they've been overriten by the tests run
-  - script: nbgv cloud -a -c
-    condition: succeeded()
-    displayName: Set build number
-  
   # push NuGet packages to NuGet (always happens except on PR builds)
   - task: NuGetCommand@2
     displayName: Push NuGet packages to NuGet
