@@ -213,13 +213,13 @@ jobs:
   - script: nbgv cloud -a -c
     condition: succeeded()
     displayName: Set build number
-  
+ 
   - task: PowerShell@2
     condition: succeeded()
     displayName: Save cloud build number
     inputs:
-        targetType: 'inline'
-        script: Write-Host "$("##vso[build.updatebuildnumber]")$env:NBGV_NuGetPackageVersion"
+      targetType: 'inline'
+      script: Write-Host "$("##vso[build.updatebuildnumber]")$env:NBGV_NuGetPackageVersion"
 
   - task: NuGetCommand@2
     condition: succeeded()
