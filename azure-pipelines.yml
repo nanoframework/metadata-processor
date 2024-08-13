@@ -225,7 +225,7 @@ jobs:
     condition: succeeded()
     displayName: Pack NuGet with MetadataProcessor Console
     inputs:
-      command: 'custom' 
+      command: 'custom'
       arguments: 'pack MetadataProcessor.Console\package.nuspec -Version $(NBGV_NuGetPackageVersion) -properties commit="$(Build.SourceVersion)" -properties NoWarn=NU5100'
 
   - task: CopyFiles@1
