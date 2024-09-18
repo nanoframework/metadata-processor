@@ -43,6 +43,10 @@ namespace TestNFApp
             // Reflection Tests
             ReflectionTests();
 
+            ///////////////////////////////////////
+            // Delegate and MulticastDelegate tests
+            _ = new TestingDelegates();
+            
             ///////////////////////////////////////////////////////////////////
             // Generics Tests
             _ = new GenericClassTests();
