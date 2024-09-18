@@ -375,5 +375,23 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
             }
         }
 
+        internal static TypeDefinition GetTestNFAppTestingDelegatesTypeDefinition(AssemblyDefinition assemblyDefinition)
+        {
+            TypeDefinition ret = null;
+
+            var module = assemblyDefinition.Modules[0];
+            ret = module.Types.First(i => i.FullName == "TestNFApp.TestingDelegates");
+
+            return ret;
+        }
+
+        internal static MethodDefinition GetMethodDefinition(
+            TypeDefinition typeDefinition,
+            string delegateName,
+            string methodName)
+        {
+            var delegateType = typeDefinition.NestedTypes.First(nt => nt.Name == delegateName);
+            return delegateType.Methods.First(m => m.Name == methodName);
+        }
     }
 }
