@@ -37,6 +37,10 @@ namespace TestNFApp
             // Reflection Tests
             ReflectionTests();
 
+            ///////////////////////////////////////
+            // Delegate and MulticastDelegate tests
+            _ = new TestingDelegates();
+
             ////////////////////////////////////////////////
             // Test enum in another assembly, same namespace
             var enumTest = new TestEnumInAnotherAssembly();

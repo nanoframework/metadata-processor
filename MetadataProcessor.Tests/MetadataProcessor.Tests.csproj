@@ -60,6 +60,7 @@
     <Compile Include="Core\Mono.Cecil\CodeWriterTests.cs" />
     <Compile Include="Core\Tables\nanoAssemblyReferenceTableTests.cs" />
     <Compile Include="Core\Tables\nanoAttributesTableTests.cs" />
+    <Compile Include="Core\Tables\nanoMethodDefinitionTableTests.cs" />
     <Compile Include="Core\Tables\nanoReferenceTableBaseTests.cs" />
     <Compile Include="Core\ClrIntegrationTests.cs" />
     <Compile Include="Core\Utility\DumperTests.cs" />
