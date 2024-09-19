@@ -320,6 +320,16 @@ jobs:
     fetchDepth: 100
     persistCredentials: true
   
+  # Conditional delay step
+  - powershell: |
+      if ($env:BUILD_MDP_RESULT -eq 'Succeeded') {
+        Write-Host "Build_MDP succeeded, waiting for 10 minutes for the NuGet package to be processed before starting the job..."
+        Start-Sleep -Seconds 600
+      }
+    displayName: 'Waiting for NuGet being published'
+    env:
+      BUILD_MDP_RESULT: $(Build.MDP.result)
+
   - template: azure-pipelines-templates/install-nuget.yml@templates  
 
   - script: nbgv cloud -a -c
