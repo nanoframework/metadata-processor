@@ -5,6 +5,7 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Mono.Cecil;
+using System.Linq;
 
 namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
 {
@@ -12,12 +13,18 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
     public class nanoMethodDefinitionTableTests
     {
         private TypeDefinition _testDelegatesClassTypeDefinition;
+        private TypeDefinition _destructorTestClassTypeDefinition;
+        private TypeDefinition _destructorAnotherTestClassTypeDefinition;
+        private TypeDefinition _destructorAnotherBaseClassTypeDefinition;
 
         [TestInitialize]
         public void Setup()
         {
             var nanoTablesContext = TestObjectHelper.GetTestNFAppNanoTablesContext();
             _testDelegatesClassTypeDefinition = TestObjectHelper.GetTestNFAppTestingDelegatesTypeDefinition(nanoTablesContext.AssemblyDefinition);
+            _destructorTestClassTypeDefinition = TestObjectHelper.GetTestNFAppDestructorsTestClassTypeDefinition(nanoTablesContext.AssemblyDefinition);
+            _destructorAnotherTestClassTypeDefinition = TestObjectHelper.GetTestNFAppDestructorsTestAnotherClassTypeDefinition(nanoTablesContext.AssemblyDefinition);
+            _destructorAnotherBaseClassTypeDefinition = TestObjectHelper.GetTestNFAppDestructorsTestAnotherClassBaseTypeDefinition(nanoTablesContext.AssemblyDefinition);
         }
 
         #region delegate method flags
@@ -72,6 +79,46 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
             // Assert
             const uint expectedFlag = 0x00080000; // MD_DelegateEndInvoke
             Assert.IsTrue((flags & expectedFlag) == expectedFlag, "Expected flag not set for EndInvoke method.");
+        }
+
+        #endregion
+
+        #region finalizer method flags
+
+        [DataRow("DestructorsTestClass")]
+        [DataRow("DestructorsTestAnotherClass")]
+        [DataRow("DestructorsTestAnotherClassBase")]
+        [TestMethod]
+        public void TestFinalizerMethodReturnsFinalizerFlag(string className)
+        {
+            // Arrange
+            MethodDefinition methodDefinition = null;
+
+            if (className == "DestructorsTestClass")
+            {
+                methodDefinition = _destructorTestClassTypeDefinition.Methods.First(m => m.Name == "Finalize");
+            }
+            else if (className == "DestructorsTestAnotherClass")
+            {
+                methodDefinition = _destructorAnotherTestClassTypeDefinition.Methods.First(m => m.Name == "Finalize");
+            }
+            else if (className == "DestructorsTestAnotherClassBase")
+            {
+                methodDefinition = _destructorAnotherBaseClassTypeDefinition.Methods.First(m => m.Name == "Finalize");
+            }
+            else
+            {
+                Assert.Fail("Invalid class name.");
+            }
+
+            Assert.IsNotNull(methodDefinition, "Finalizer method not found.");
+
+            // Act
+            uint flags = nanoMethodDefinitionTable.GetFlags(methodDefinition);
+
+            // Assert
+            const uint expectedFlag = 0x00004000; // MD_Finalizer
+            Assert.IsTrue((flags & expectedFlag) == expectedFlag, "Expected flag not set for Finalizer method.");
         }
 
         #endregion
