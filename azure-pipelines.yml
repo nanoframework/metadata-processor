@@ -313,11 +313,11 @@ jobs:
       changeLogType: issueBased
       changeLogLabels: |
         [
-          { "label" : "Type: bug", "displayName" : "Bugs fixed", "state" : "closed" },
-          { "label" : "Type: enhancement", "displayName" : "Enhancements and new features", "state" : "closed" },
-          { "label" : "Breaking-Change", "displayName" : "Breaking Changes", "state" : "closed" }
-          { "label" : "Type: dependencies", "displayName" : "Dependencies updated", "state" : "closed" },
-          { "label" : "Type: documentation", "displayName" : "Documentation", "state" : "closed" }
+          { "label": "Type: bug", "displayName": "Bugs fixed", "state": "closed" },
+          { "label": "Type: enhancement", "displayName": "Enhancements and new features", "state": "closed" },
+          { "label": "Breaking-Change", "displayName": "Breaking Changes", "state": "closed" },
+          { "label": "Type: dependencies", "displayName": "Dependencies updated", "state": "closed" },
+          { "label": "Type: documentation", "displayName": "Documentation", "state": "closed" }
         ]
 
 ##############################
