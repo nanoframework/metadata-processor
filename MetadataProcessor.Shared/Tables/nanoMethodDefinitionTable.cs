@@ -242,6 +242,13 @@ namespace nanoFramework.Tools.MetadataProcessor
                 flag |= (method.IsStatic ? MD_StaticConstructor : MD_Constructor);
             }
 
+            if(method.Name == "Finalize"
+               && method.ReturnType.FullName == "System.Void"
+               && method.Parameters.Count == 0)
+            {
+                flag |= MD_Finalizer;
+            }
+
             if (method.IsSynchronized)
             {
                 flag |= MD_Synchronized;

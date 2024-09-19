@@ -385,6 +385,46 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
             return ret;
         }
 
+        internal static TypeDefinition GetTestNFAppTestingDestructorsTypeDefinition(AssemblyDefinition assemblyDefinition)
+        {
+            TypeDefinition ret = null;
+
+            var module = assemblyDefinition.Modules[0];
+            ret = module.Types.First(i => i.FullName == "TestNFApp.TestingDestructors");
+
+            return ret;
+        }
+
+        internal static TypeDefinition GetTestNFAppDestructorsTestClassTypeDefinition(AssemblyDefinition assemblyDefinition)
+        {
+            TypeDefinition ret = null;
+
+            var module = assemblyDefinition.Modules[0];
+            ret = module.Types.First(i => i.FullName == "TestNFApp.DestructorsTestClass");
+
+            return ret;
+        }
+
+        internal static TypeDefinition GetTestNFAppDestructorsTestAnotherClassBaseTypeDefinition(AssemblyDefinition assemblyDefinition)
+        {
+            TypeDefinition ret = null;
+
+            var module = assemblyDefinition.Modules[0];
+            ret = module.Types.First(i => i.FullName == "TestNFApp.DestructorsTestAnotherClassBase");
+
+            return ret;
+        }
+
+        internal static TypeDefinition GetTestNFAppDestructorsTestAnotherClassTypeDefinition(AssemblyDefinition assemblyDefinition)
+        {
+            TypeDefinition ret = null;
+
+            var module = assemblyDefinition.Modules[0];
+            ret = module.Types.First(i => i.FullName == "TestNFApp.DestructorsTestAnotherClass");
+
+            return ret;
+        }
+
         internal static MethodDefinition GetMethodDefinition(
             TypeDefinition typeDefinition,
             string delegateName,
@@ -392,6 +432,13 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
         {
             var delegateType = typeDefinition.NestedTypes.First(nt => nt.Name == delegateName);
             return delegateType.Methods.First(m => m.Name == methodName);
+        }
+
+        internal static MethodDefinition GetMethodDefinition(
+            TypeDefinition typeDefinition,
+            string methodName)
+        {
+            return typeDefinition.Methods.First(m => m.Name == methodName);
         }
     }
 }
