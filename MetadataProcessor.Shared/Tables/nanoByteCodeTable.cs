@@ -167,4 +167,3 @@ namespace nanoFramework.Tools.MetadataProcessor
         }
     }
 }
-
