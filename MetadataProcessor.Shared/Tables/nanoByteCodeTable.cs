@@ -85,6 +85,12 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             var byteCode = CreateByteCode(method);
 
+            // sanity check for RVA overflow
+            if (_lastAvailableRva + byteCode.Length > ushort.MaxValue)
+            {
+                throw new InvalidOperationException($"Byte code table overflow in assembly '{_context.AssemblyDefinition.Name}'. It's impossible to compile such a large assembly.");
+            }
+
             _methods.Add(method);
             _lastAvailableRva += (ushort)byteCode.Length;
 
@@ -164,3 +170,4 @@ namespace nanoFramework.Tools.MetadataProcessor
         }
     }
 }
+
