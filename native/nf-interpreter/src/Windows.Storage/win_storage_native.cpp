@@ -1,28 +1,14 @@
 ﻿//
-// Copyright (c) 2018 The nanoFramework project contributors
+// Copyright (c) .NET Foundation and Contributors
 // See LICENSE file in the project root for full license information.
 //
 
 #include "win_storage_native.h"
 
+// clang-format off
 
 static const CLR_RT_MethodHandler method_lookup[] =
 {
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-    NULL,
     NULL,
     NULL,
     NULL,
@@ -34,10 +20,24 @@ static const CLR_RT_MethodHandler method_lookup[] =
     NULL,
     NULL,
     NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
     Library_win_storage_native_Windows_Storage_FileIO::WriteBytes___STATIC__VOID__WindowsStorageIStorageFile__SZARRAY_U1,
     Library_win_storage_native_Windows_Storage_FileIO::WriteText___STATIC__VOID__WindowsStorageIStorageFile__STRING,
     Library_win_storage_native_Windows_Storage_FileIO::ReadBufferNative___STATIC__VOID__WindowsStorageIStorageFile__BYREF_SZARRAY_U1,
     Library_win_storage_native_Windows_Storage_FileIO::ReadTextNative___STATIC__VOID__WindowsStorageIStorageFile__BYREF_STRING,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
     NULL,
     NULL,
     NULL,
@@ -99,13 +99,16 @@ static const CLR_RT_MethodHandler method_lookup[] =
     Library_win_storage_native_Windows_Storage_StorageFolder::GetFolderNative___WindowsStorageStorageFolder__STRING,
     NULL,
     NULL,
+    Library_win_storage_native_Windows_Storage_StorageProvider::FormatVolume___VOID__STRING,
     NULL,
 };
 
 const CLR_RT_NativeAssemblyData g_CLR_AssemblyNative_Windows_Storage =
 {
-    "Windows.Storage", 
-    0x8D8C8026,
+    "Windows.Storage",
+    0xF0C37E1B,
     method_lookup,
-    { 100, 0, 1, 0 }
+    { 100, 0, 3, 0 }
 };
+
+// clang-format on

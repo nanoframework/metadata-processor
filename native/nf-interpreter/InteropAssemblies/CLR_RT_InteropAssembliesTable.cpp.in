@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2017 The nanoFramework project contributors
+// Copyright (c) .NET Foundation and Contributors
 // See LICENSE file in the project root for full license information.
 //
 
@@ -21,3 +21,5 @@ const CLR_RT_NativeAssemblyData *g_CLR_InteropAssembliesNativeData[] =
     @CLR_RT_NativeAssemblyDataTableEntries@
     NULL
 };
+
+const uint16_t g_CLR_InteropAssembliesCount = (@CLR_RT_NativeAssembliesCount@ + 2);

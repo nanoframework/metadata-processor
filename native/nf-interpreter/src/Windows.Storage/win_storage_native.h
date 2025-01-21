@@ -1,56 +1,29 @@
 //
-// Copyright (c) 2019 The nanoFramework project contributors
+// Copyright (c) .NET Foundation and Contributors
 // See LICENSE file in the project root for full license information.
 //
 
-
-#ifndef _WIN_STORAGE_NATIVE_H_
-#define _WIN_STORAGE_NATIVE_H_
+#ifndef WIN_STORAGE_NATIVE_H
+#define WIN_STORAGE_NATIVE_H
 
 #include <nanoCLR_Interop.h>
 #include <nanoCLR_Runtime.h>
 
-struct Library_win_storage_native_Windows_Storage_RemovableDeviceEventArgs
+typedef enum __nfpack KnownFolderId
 {
-    static const int FIELD___path = 1;
-    static const int FIELD___event = 2;
-
-
-    //--//
-
-};
-
-struct Library_win_storage_native_Windows_Storage_StorageEventManager
-{
-    static const int FIELD_STATIC__RemovableDeviceInserted = 0;
-    static const int FIELD_STATIC__RemovableDeviceRemoved = 1;
-
-
-    //--//
-
-};
-
-struct Library_win_storage_native_Windows_Storage_StorageEventManager__StorageEvent
-{
-    static const int FIELD__EventType = 3;
-    static const int FIELD__DriveIndex = 4;
-    static const int FIELD__Time = 5;
-
-
-    //--//
-
-};
+    KnownFolderId_RemovableDevices = 10,
+    KnownFolderId_InternalDevices = 14,
+} KnownFolderId;
 
 struct Library_win_storage_native_Windows_Storage_Devices_SDCard
 {
-    static const int FIELD_STATIC___mounted = 2;
+    static const int FIELD_STATIC___mounted = 0;
 
     NANOCLR_NATIVE_DECLARE(MountMMCNative___STATIC__VOID__BOOLEAN);
     NANOCLR_NATIVE_DECLARE(MountSpiNative___STATIC__VOID__I4__I4);
     NANOCLR_NATIVE_DECLARE(UnmountNative___STATIC__VOID);
 
     //--//
-
 };
 
 struct Library_win_storage_native_Windows_Storage_FileIO
@@ -61,7 +34,31 @@ struct Library_win_storage_native_Windows_Storage_FileIO
     NANOCLR_NATIVE_DECLARE(ReadTextNative___STATIC__VOID__WindowsStorageIStorageFile__BYREF_STRING);
 
     //--//
+};
 
+struct Library_win_storage_native_Windows_Storage_RemovableDeviceEventArgs
+{
+    static const int FIELD___path = 1;
+    static const int FIELD___event = 2;
+
+    //--//
+};
+
+struct Library_win_storage_native_Windows_Storage_StorageEventManager
+{
+    static const int FIELD_STATIC__RemovableDeviceInserted = 1;
+    static const int FIELD_STATIC__RemovableDeviceRemoved = 2;
+
+    //--//
+};
+
+struct Library_win_storage_native_Windows_Storage_StorageEventManager__StorageEvent
+{
+    static const int FIELD__EventType = 3;
+    static const int FIELD__DriveIndex = 4;
+    static const int FIELD__Time = 5;
+
+    //--//
 };
 
 struct Library_win_storage_native_Windows_Storage_StorageFile
@@ -75,7 +72,6 @@ struct Library_win_storage_native_Windows_Storage_StorageFile
     NANOCLR_NATIVE_DECLARE(GetFileFromPathNative___STATIC__WindowsStorageStorageFile__STRING__STRING);
 
     //--//
-
 };
 
 struct Library_win_storage_native_Windows_Storage_StorageFolder
@@ -96,7 +92,6 @@ struct Library_win_storage_native_Windows_Storage_StorageFolder
     NANOCLR_NATIVE_DECLARE(GetFolderNative___WindowsStorageStorageFolder__STRING);
 
     //--//
-
 };
 
 struct Library_win_storage_native_Windows_Storage_StorageProvider
@@ -104,11 +99,11 @@ struct Library_win_storage_native_Windows_Storage_StorageProvider
     static const int FIELD___displayName = 1;
     static const int FIELD___id = 2;
 
+    NANOCLR_NATIVE_DECLARE(FormatVolume___VOID__STRING);
 
     //--//
-
 };
 
 extern const CLR_RT_NativeAssemblyData g_CLR_AssemblyNative_Windows_Storage;
 
-#endif  //_WIN_STORAGE_NATIVE_H_
+#endif // WIN_STORAGE_NATIVE_H

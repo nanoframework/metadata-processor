@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2017 The nanoFramework project contributors
+// Copyright (c) .NET Foundation and Contributors
 // Portions Copyright (c) Microsoft Corporation.  All rights reserved.
 // See LICENSE file in the project root for full license information.
 //
@@ -54,8 +54,9 @@ bool HAL_CONTINUATION::Dequeue_And_Execute()
     // helpfull to make the call to release the global mutext happens 
     bool result;
 
+    HAL_CONTINUATION* ptr = NULL;
     GLOBAL_LOCK();
-    HAL_CONTINUATION* ptr = g_HAL_Continuation_List.ExtractFirstNode();
+    ptr = g_HAL_Continuation_List.ExtractFirstNode();
     GLOBAL_UNLOCK();
 
     if(ptr == NULL )

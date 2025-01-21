@@ -1,93 +1,89 @@
-# Copyright (c) 2018 The nanoFramework project contributors
+# Copyright (c) .NET Foundation and Contributors
 # See LICENSE file in the project root for full license information.
 
 steps:
-  - task: PowerShell@2
+  # cache IDF tools folder
+  - task: Cache@2
+    displayName: Cache ESP32 tools
     inputs:
-        targetType: 'inline'
-        script: |
-            Write-Host "Downloading Xtensa ESP32 toolchain..."
-            $url = "https://dl.espressif.com/dl/xtensa-esp32-elf-win32-1.22.0-80-g6c4433a-5.2.0.zip"
-            $output = "$PSScriptRoot\xtensa-esp32-elf-win32.zip"
-            (New-Object Net.WebClient).DownloadFile($url, $output)
-        errorActionPreference: 'stop'
-        failOnStderr: 'true'
-    displayName: Download xtensa ESP32 toolchain
+      key: 'esp32_tools | "$(IDF_TAG)"'
+      path: $(UserProfile)\.espressif\tools
+      cacheHitVar: ESP32_TOOLS_CACHE_RESTORED
 
-  - task: ExtractFiles@1
+  # cache pip packages
+  - task: Cache@2
+    displayName: Cache pip packages
     inputs:
-      archiveFilePatterns: '$(Agent.TempDirectory)\xtensa-esp32-elf-win32.zip' 
-      destinationFolder: '$(Agent.TempDirectory)\ESP32_Tools'
-      cleanDestinationFolder: false
-    displayName: Extracting xtensa ESP32 toolchain
+      key: 'python | "$(Agent.OS)" | $(Agent.BuildDirectory)\s\esp-idf\tools\requirements\requirements.core.txt'
+      restoreKeys: python | "$(Agent.OS)" | $(Agent.BuildDirectory)\s\esp-idf\tools\requirements\requirements.core.txt
+      path: $(PIP_CACHE_DIR)
+      cacheHitVar: PIP_PACKAGES_RESTORED
 
-  - task: PowerShell@2
-    inputs:
-        targetType: 'inline'
-        script: |
-            Write-Host "Downloading ESP32 pre-compiled libs..."
-            $url = "https://bintray.com/nfbot/internal-build-tools/download_file?file_path=IDF_libs-v3.3.zip"
-            $output = "$PSScriptRoot\IDF_libs-v3.3.zip"
-            (New-Object Net.WebClient).DownloadFile($url, $output)
-        errorActionPreference: 'stop'
-        failOnStderr: 'true'
-    displayName: Downloading ESP32 pre-compiled libs
-
-  - task: ExtractFiles@1
-    inputs:
-      archiveFilePatterns: '$(Agent.TempDirectory)\IDF_libs-v3.3.zip' 
-      destinationFolder: '$(Agent.TempDirectory)\ESP32_Tools\libs-v3.3'
-      cleanDestinationFolder: false
-    displayName: Installing ESP32 pre-compiled libs
-
-  - task: PowerShell@2
-    inputs:
-        targetType: 'inline'
-        script: |
-            Write-Host "Downloading ESP32 IDF..."
-            $url = "https://github.com/espressif/esp-idf/releases/download/v3.3/esp-idf-v3.3.zip"
-            $output = "$PSScriptRoot\esp-idf-v3.3.zip"
-            (New-Object Net.WebClient).DownloadFile($url, $output)
-        errorActionPreference: 'stop'
-        failOnStderr: 'true'
-    displayName: Downloading ESP32 IDF
-
-  - task: ExtractFiles@1
-    inputs:
-      archiveFilePatterns: '$(Agent.TempDirectory)\esp-idf-v3.3.zip' 
-      destinationFolder: '$(Agent.TempDirectory)\ESP32_Tools'
-      cleanDestinationFolder: false
-    displayName: Installing Espressif IDF
-
-  # Use Python Version 3.7 and add it to path
+  # Use Python Version 3.11 and add it to path
   - task: UsePythonVersion@0
+    displayName: Set Python to v3.11
     inputs:
-      versionSpec: '3.7' 
-      addToPath: true 
-    displayName: Set Python to v3.7
-
-  # in this one have to call Python with full path otherwise it can fail
-  - task: PowerShell@2
-    inputs:
-        targetType: 'inline'
-        script: python -m pip install pyserial
-        # the below settings are required as the script is installing an outdated version of pyserial
-        errorActionPreference: 'silentlyContinue' 
-        failOnStderr: false
-        ignoreLASTEXITCODE: false
-    displayName: Installing python pyserial
+      versionSpec: "3.11"
+      addToPath: true
 
   - task: PowerShell@2
+    displayName: Fix install.ps1
     inputs:
-        targetType: 'inline'
-        script: |
-            # need to replace forward slash for paths to work with GCC and CMake
-            $tempDirPath = "$env:Agent_TempDirectory".Replace('\','/')
-            Write-Host "$("##vso[task.setvariable variable=ESP32_LIBS_PATH]")$tempDirPath/ESP32_Tools/libs-v3.3"
-            Write-Host "$("##vso[task.setvariable variable=ESP32_IDF_PATH]")$tempDirPath/ESP32_Tools/esp-idf-v3.3"
-        errorActionPreference: 'stop'
-        failOnStderr: 'true'
-    displayName: Adjust paths
+      targetType: "inline"
+      workingDirectory: $(Agent.BuildDirectory)\s\esp-idf
+      script: |
+        $filecontent = Get-Content('install.ps1')
+        attrib $file -r
+        $filecontent -replace '--features=${FEATURES}' , ' ' | Out-File 'install.ps1' -Encoding utf8
+
+  # run IDF installers
+  - task: PowerShell@2
+    displayName: Install IDF (step 1)
+    inputs:
+      targetType: "filePath"
+      filePath: $(Agent.BuildDirectory)\s\esp-idf\install.ps1
+      workingDirectory: $(Agent.BuildDirectory)\s\esp-idf
+
+  - task: PowerShell@2
+    displayName: Install IDF (step 2)
+    inputs:
+      targetType: "inline"
+      workingDirectory: $(Agent.BuildDirectory)\s\esp-idf\tools\requirements
+      script: |
+        python -m pip install -r requirements.core.txt
+
+  - task: PowerShell@2
+    displayName: Install IDF (step 3)
+    inputs:
+      targetType: "filePath"
+      filePath: $(Agent.BuildDirectory)\s\esp-idf\export.ps1
+      workingDirectory: $(Agent.BuildDirectory)\s\esp-idf
+
+  - task: PowerShell@2
+    displayName: Update PATH with IDF tools
+    inputs:
+      targetType: "inline"
+      workingDirectory: $(Agent.BuildDirectory)\s\esp-idf
+      script: |
+        $ErrorActionPreference = 'SilentlyContinue'
+        $envars_raw = python tools/idf_tools.py export --format key-value 2>$null
+
+        # find element the PATH collection
+        $pathElement = 0
+
+        foreach ($element in $envars_raw) {
+            if ($element.StartsWith('PATH=')) {
+                break
+            }
+            $pathElement++
+        }
+
+        # go through the output and grab what has to be appended to the PATH
+        # need to remove the entry for IDF CMake because it's using an older version of CMake, OK to remove after they update it to >3.24.0
+        $newPath = $envars_raw[$pathElement].ToString().Replace('PATH=', '').Replace(';%PATH%', '').Replace('C:\Users\VssAdministrator\.espressif\tools\cmake\3.24.0\bin;', '')
+
+        # append to path
+        Write-Host "##vso[task.prependpath]$newPath"
 
   - script: echo "##vso[task.prependpath]C:\Windows\System32"
     displayName: Tweak PATH to reach cmd

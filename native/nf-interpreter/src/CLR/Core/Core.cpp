@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2017 The nanoFramework project contributors
+// Copyright (c) .NET Foundation and Contributors
 // Portions Copyright (c) Microsoft Corporation.  All rights reserved.
 // See LICENSE file in the project root for full license information.
 //
@@ -78,10 +78,5 @@ CLR_HW_Hardware            g_CLR_HW_Hardware;
 //    { 978, -208 },
 //    { 995, -105 },
 //};
-
-// UNDONE: FIXME: the Arm 3.0 compiler drags in a bunch of ABI methods (for initialization) if struct arrays are not initialized
-CLR_UINT32        g_scratchDebugger         [ sizeof(CLR_DBG_Debugger) ];
-CLR_UINT32        g_scratchDebuggerMessaging[ sizeof(CLR_Messaging) ];
-CLR_DBG_Debugger *g_CLR_DBG_Debugger;
 
 //--//
