@@ -53,13 +53,13 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Nerdbank.GitVersioning" Version="3.6.139">
+		<PackageReference Include="Nerdbank.GitVersioning" Version="3.7.115">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="Microsoft.Build.Framework" Version="16.10.0" PrivateAssets="All" />
 		<PackageReference Include="Microsoft.Build.Utilities.Core" Version="16.10.0" PrivateAssets="All" />
-		<PackageReference Include="Mono.Cecil" Version="0.11.5" PrivateAssets="All" />
+		<PackageReference Include="Mono.Cecil" Version="0.11.6" PrivateAssets="All" />
 		<PackageReference Include="mustache-sharp" Version="1.0.0" PrivateAssets="All" />
 		<PackageReference Include="System.Drawing.Common" Version="6.0.0" PrivateAssets="All" />
 	</ItemGroup>
