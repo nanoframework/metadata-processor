@@ -99,13 +99,13 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Mono.Cecil">
-      <Version>0.11.5</Version>
+      <Version>0.11.6</Version>
     </PackageReference>
     <PackageReference Include="MSTest.TestAdapter">
-      <Version>3.4.3</Version>
+      <Version>3.7.2</Version>
     </PackageReference>
     <PackageReference Include="MSTest.TestFramework">
-      <Version>3.4.3</Version>
+      <Version>3.7.2</Version>
     </PackageReference>
     <PackageReference Include="nanoFramework.nanoCLR.Win32" GeneratePathProperty="true">
       <Version>1.9.1.181</Version>
