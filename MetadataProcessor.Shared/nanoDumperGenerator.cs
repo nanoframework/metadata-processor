@@ -13,7 +13,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace nanoFramework.Tools.MetadataProcessor.Core
 {
@@ -85,7 +84,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
                 foreach (var fa in a.Fields)
                 {
-                    if(fa.HasCustomAttributes)
+                    if (fa.HasCustomAttributes)
                     {
                         var attribute = new AttributeCustom()
                         {
@@ -192,7 +191,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
             foreach (var s in _tablesContext.StringTable.GetItems().OrderBy(i => i.Value).Where(i => i.Value > _tablesContext.StringTable.LastPreAllocatedId))
             {
                 // don't output the empty string
-                if(s.Value == 0)
+                if (s.Value == 0)
                 {
                     continue;
                 }
@@ -205,7 +204,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                     {
                         ReferenceId = stringMetadataToken.ToInt32().ToString("x8"),
                         Content = s.Key
-                });
+                    });
             }
         }
 
@@ -216,10 +215,10 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                 // fill type definition
                 var typeDef = new TypeDef()
                 {
-                   ReferenceId = t.MetadataToken.ToInt32().ToString("x8"),
+                    ReferenceId = t.MetadataToken.ToInt32().ToString("x8"),
                 };
 
-                if(t.IsNested)
+                if (t.IsNested)
                 {
                     typeDef.Name = t.Name;
                 }
@@ -243,8 +242,8 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                     var token = new MetadataToken(TokenType.TypeRef, 0);
                     typeDef.ExtendsType = token.ToInt32().ToString("x8");
                 }
-                
-                if(t.DeclaringType != null)
+
+                if (t.DeclaringType != null)
                 {
                     typeDef.EnclosedType = t.DeclaringType.MetadataToken.ToInt32().ToString("x8");
                 }
@@ -318,7 +317,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                                 $"{eh.TryStart?.Offset.ToString("x8")}->{eh.TryEnd?.Offset.ToString("x8")} " +
                                 $"{eh.HandlerStart?.Offset.ToString("x8")}->{eh.HandlerEnd?.Offset.ToString("x8")} ";
 
-                            if(eh.CatchType != null)
+                            if (eh.CatchType != null)
                             {
                                 h.Handler += $"{eh.CatchType.MetadataToken.ToInt32().ToString("x8")}";
                             }
@@ -404,7 +403,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                 }
 
                 // list member refs               
-                foreach(var m in _tablesContext.MethodReferencesTable.Items.Where(mr => mr.DeclaringType == t))
+                foreach (var m in _tablesContext.MethodReferencesTable.Items.Where(mr => mr.DeclaringType == t))
                 {
                     var memberRef = new MemberRef()
                     {
@@ -431,7 +430,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
         private void DumpAssemblyReferences(DumpAllTable dumpTable)
         {
-            foreach(var a in _tablesContext.AssemblyReferenceTable.Items)
+            foreach (var a in _tablesContext.AssemblyReferenceTable.Items)
             {
                 dumpTable.AssemblyReferences.Add(new AssemblyRef()
                 {
@@ -449,7 +448,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
             sig.Append("( ");
 
-            foreach(var p in method.Parameters)
+            foreach (var p in method.Parameters)
             {
                 sig.Append(p.ParameterType.TypeSignatureAsString());
                 sig.Append(", ");

@@ -29,15 +29,15 @@ namespace nanoFramework.Tools.MetadataProcessor
             WindowsBmp = 3,
             // Not supported or unknown bitmap type
             UnKnown = 255
-         }
+        }
 
-    public nanoBitmapProcessor(
-            Bitmap bitmap)
+        public nanoBitmapProcessor(
+                Bitmap bitmap)
         {
             _bitmap = bitmap;
         }
 
-        public void Process( 
+        public void Process(
             nanoBinaryWriter writer)
         {
             // CLR_GFX_BitmapDescription header as required by the native side
@@ -87,7 +87,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             }
         }
 
-        private BitmapType GetnanoImageFormat( 
+        private BitmapType GetnanoImageFormat(
             ImageFormat rawFormat)
         {
             // Any windows bitmap format is marked for conversion to nanoCLRBitmap ( i.e. Format16bppRgb565 ) 

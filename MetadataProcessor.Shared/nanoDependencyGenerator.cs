@@ -4,11 +4,6 @@
 //
 
 using Mono.Cecil;
-using nanoFramework.Tools.MetadataProcessor.Core.Extensions;
-using System;
-using System.IO;
-using System.Linq;
-using System.Text;
 using System.Xml;
 
 namespace nanoFramework.Tools.MetadataProcessor.Core
@@ -29,8 +24,8 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
         private string _fileName;
 
         public nanoDependencyGenerator(
-            AssemblyDefinition assemblyDefinition, 
-            nanoTablesContext tablesContext, 
+            AssemblyDefinition assemblyDefinition,
+            nanoTablesContext tablesContext,
             string fileName)
         {
             _assemblyDefinition = assemblyDefinition;

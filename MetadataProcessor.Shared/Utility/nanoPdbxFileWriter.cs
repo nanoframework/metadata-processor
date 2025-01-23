@@ -38,7 +38,7 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             _context.TypeDefinitionTable.ForEachItems((token, item) => WriteClassInfo(writer, token, item));
 
-            writer.WriteEndDocument();            
+            writer.WriteEndDocument();
         }
 
         private void WriteVersionInfo(

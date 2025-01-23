@@ -5,7 +5,6 @@
 //
 
 using System.IO;
-using System.Linq;
 
 namespace nanoFramework.Tools.MetadataProcessor
 {
@@ -84,12 +83,12 @@ namespace nanoFramework.Tools.MetadataProcessor
             writer.WriteUInt32(0);
 
             // assembly CRC32
-            writer.WriteUInt32(0); 
+            writer.WriteUInt32(0);
 
             // current builds are for little endian targets only
             // keeping this here for now, just for compatibility
             writer.WriteUInt32(0);
-            
+
             writer.WriteUInt32(_context.NativeMethodsCrc.CurrentCrc);
 
             // Native methods offset
@@ -98,7 +97,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             writer.WriteVersion(_context.AssemblyDefinition.Name.Version);
 
             writer.WriteUInt16(isPreAllocationCall
-                ? (ushort) 0x0000
+                ? (ushort)0x0000
                 : _context.StringTable.GetOrCreateStringId(_context.AssemblyDefinition.Name.Name));
             writer.WriteUInt16(1); // String table version
 
@@ -135,7 +134,7 @@ namespace nanoFramework.Tools.MetadataProcessor
 
                 var assemblyCrc32 = ComputeCrc32(
                     writer.BaseStream,
-                    _paddingsOffset, 
+                    _paddingsOffset,
                     writer.BaseStream.Length - _paddingsOffset);
                 writer.WriteUInt32(assemblyCrc32);
 
@@ -143,8 +142,8 @@ namespace nanoFramework.Tools.MetadataProcessor
                 writer.BaseStream.Seek(c_HeaderCrc32Position, SeekOrigin.Begin);
 
                 var headerCrc32 = ComputeCrc32(
-                    writer.BaseStream, 
-                    0, 
+                    writer.BaseStream,
+                    0,
                     _paddingsOffset);
                 writer.WriteUInt32(headerCrc32);
             }

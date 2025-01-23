@@ -46,7 +46,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                     return null;
                 }
             }
-            catch(System.IO.DirectoryNotFoundException)
+            catch (System.IO.DirectoryNotFoundException)
             {
                 Console.Error.WriteLine(
                     $"Unable to find assembly '{name.Name}' in load hints collection.");
@@ -58,7 +58,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                 throw;
             }
         }
-       
+
         /// <inheritdoc/>
         public override AssemblyDefinition Resolve(AssemblyNameReference name, ReaderParameters parameters)
         {

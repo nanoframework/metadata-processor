@@ -903,7 +903,7 @@ namespace nanoFramework.Tools.MetadataProcessor
              /* 035A */ "value__",
              /* 035B */ "yearMonthPattern",
         }
-            .Select((value, index) => new {value, index = (ushort) (0xFFFF - index)})
+            .Select((value, index) => new { value, index = (ushort)(0xFFFF - index) })
             .ToDictionary(item => item.value, item => item.index, StringComparer.Ordinal);
     }
 }
