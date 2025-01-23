@@ -67,7 +67,9 @@ struct Library_{{AssemblyName}}_{{Name}}{{#newline}}
 {{#if StaticFields}}{{#newline}}{{/if}}
 
 {{#each InstanceFields}}
-{{#if FieldWarning}}{{FieldWarning}}{{/if}}
+{{#if FieldWarning}}
+    {{FieldWarning}}{{#newline}}
+{{/if}}
     static const int FIELD__{{Name}} = {{ReferenceIndex}};{{#newline}}
 {{/each}}
 {{#if InstanceFields}}{{#newline}}{{/if}}

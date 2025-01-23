@@ -12,6 +12,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace nanoFramework.Tools.MetadataProcessor.Core
 {
@@ -465,27 +466,27 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                     fieldCount = 0;
                     foreach (var f in c.Fields.Where(f => !f.IsStatic && !f.IsLiteral))
                     {
-                        // sanity check for field name
-                        // like auto-vars and such
-                        if (f.Name.IndexOfAny(new char[] { '<', '>' }) > 0)
+                        // rename auto-properties backing field to a valid C++ identifier
+                        string fixedFieldName = string.Empty;
+                        string fieldWarning = string.Empty;
+
+                        if (Regex.IsMatch(f.Name, @"<\w+>k__BackingField"))
+                        {
+                            fixedFieldName = $"{f.Name.Replace("<", "").Replace(">", "_")}";
+                            fieldWarning = $"// auto-property backing field renamed to '{fixedFieldName}'";
+                        }
+
+                        if (_tablesContext.FieldsTable.TryGetFieldReferenceId(f, false, out ushort fieldRefId))
                         {
                             classData.InstanceFields.Add(new InstanceField()
                             {
-                                FieldWarning = $"*** Something wrong with field '{f.Name}'. Possibly its backing field is missing (mandatory for nanoFramework).\n"
+                                Name = string.IsNullOrEmpty(fixedFieldName) ? f.Name : fixedFieldName,
+                                ReferenceIndex = firstInstanceFieldId++,
+                                FieldWarning = fieldWarning
                             });
                         }
-                        else
-                        {
-                            if (_tablesContext.FieldsTable.TryGetFieldReferenceId(f, false, out ushort fieldRefId))
-                            {
-                                classData.InstanceFields.Add(new InstanceField()
-                                {
-                                    Name = f.Name,
-                                    ReferenceIndex = firstInstanceFieldId++
-                                });
-                            }
-                            fieldCount++;
-                        }
+
+                        fieldCount++;
                     }
 
                     // methods
