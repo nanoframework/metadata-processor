@@ -19,6 +19,7 @@
   <Import Project="$(NanoFrameworkProjectSystemPath)NFProjectSystem.props" Condition="Exists('$(NanoFrameworkProjectSystemPath)NFProjectSystem.props')" />
   <ItemGroup>
     <Compile Include="AuthorAttribute.cs" />
+    <Compile Include="ClassWithNullAttribs.cs" />
     <Compile Include="DataRowAttribute.cs" />
     <Compile Include="DummyCustomAttribute1.cs" />
     <Compile Include="DummyCustomAttribute2.cs" />

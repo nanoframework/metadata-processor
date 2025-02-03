@@ -61,6 +61,9 @@ namespace TestNFApp
                     break;
             }
 
+            // null attributes tests
+            _ = new ClassWithNullAttribs();
+
             Debug.WriteLine("Exiting TestNFApp");
         }
 

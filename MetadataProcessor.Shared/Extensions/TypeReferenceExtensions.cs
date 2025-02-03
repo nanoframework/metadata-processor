@@ -4,15 +4,28 @@
 //
 
 using Mono.Cecil;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
 {
     internal static class TypeReferenceExtensions
     {
+        internal static readonly List<string> NameSpacesToExclude = new List<string>
+        {
+            "System.Diagnostics.CodeAnalysis"
+        };
+
         public static bool IsToInclude(this TypeReference value)
         {
-            return !nanoTablesContext.IgnoringAttributes.Contains(value.FullName);
+            // check list of known attributes to ignore
+            bool ignoreFromList = nanoTablesContext.IgnoringAttributes.Contains(value.FullName);
+
+            // is this attribute in the list of namespaces to exclude
+            bool ignoreFromCodeAnalysis = NameSpacesToExclude.Any(ns => value.FullName.StartsWith(ns));
+
+            return !(ignoreFromList || ignoreFromCodeAnalysis);
         }
 
         public static string TypeSignatureAsString(this TypeReference type)
