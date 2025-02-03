@@ -1,4 +1,4 @@
-//
+﻿//
 // Copyright (c) .NET Foundation and Contributors
 // Portions Copyright (c) Microsoft Corporation.  All rights reserved.
 // See LICENSE file in the project root for full license information.
@@ -1726,11 +1726,20 @@ HRESULT CLR_RT_Assembly::CreateInstance(const CLR_RECORD_ASSEMBLY *header, CLR_R
                                header->SizeOfTable(TBL_MethodDef) + header->SizeOfTable(TBL_Attributes) +
                                header->SizeOfTable(TBL_TypeSpec) + header->SizeOfTable(TBL_Signatures);
 
-            CLR_Debug::Printf(
-                " (%d RAM - %d ROM - %d METADATA)\r\n\r\n",
-                iTotalRamSize,
-                header->TotalSize(),
-                iMetaData);
+            CLR_Debug::Printf(" (%d RAM - %d ROM - %d METADATA)", iTotalRamSize, header->TotalSize(), iMetaData);
+
+#if defined(NANOCLR_GC_VERBOSE)
+            if (s_CLR_RT_fTrace_Memory >= c_CLR_RT_Trace_Info)
+            {
+#ifdef _WIN64
+
+                CLR_Debug::Printf(" @ 0x%016" PRIxPTR "", (uintptr_t)assm);
+#else
+                CLR_Debug::Printf(" @ 0x%08 PRIxPTR ", (uintptr_t)assm);
+#endif
+            }
+#endif
+            CLR_Debug::Printf("\r\n\r\n");
 
             CLR_Debug::Printf(
                 "   AssemblyRef    = %8d bytes (%8d elements)\r\n",
@@ -4644,7 +4653,6 @@ HRESULT CLR_RT_AttributeParser::Next(Value *&res)
 
         m_lastValue.m_mode = Value::c_DefaultConstructor;
         m_lastValue.m_name = NULL;
-        memset(&m_lastValue.m_value, 0, sizeof(struct CLR_RT_HeapBlock));
 
         NANOCLR_CHECK_HRESULT(g_CLR_RT_ExecutionEngine.NewObject(m_lastValue.m_value, m_td));
 
@@ -4660,7 +4668,6 @@ HRESULT CLR_RT_AttributeParser::Next(Value *&res)
 
         m_lastValue.m_mode = Value::c_ConstructorArgument;
         m_lastValue.m_name = NULL;
-        memset(&m_lastValue.m_value, 0, sizeof(struct CLR_RT_HeapBlock));
 
         // get type
         NANOCLR_CHECK_HRESULT(m_parser.Advance(m_res));
