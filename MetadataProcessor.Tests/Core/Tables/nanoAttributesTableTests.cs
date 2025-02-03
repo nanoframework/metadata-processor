@@ -5,9 +5,12 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Mono.Cecil;
+using nanoFramework.Tools.MetadataProcessor.Core.Extensions;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using CustomAttribute = Mono.Cecil.CustomAttribute;
 
 namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
 {
@@ -167,7 +170,28 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
                 bytesWritten,
                 String.Join(", ", bytesWritten.Select(i => i.ToString("X"))));
         }
+
+        [TestMethod]
+        public void TestCodeAnalysisAttributes()
+        {
+            var assemblyDefinition = TestObjectHelper.GetTestNFAppAssemblyDefinitionWithLoadHints();
+            var assemblyBuilder = new nanoAssemblyBuilder(assemblyDefinition, new List<string>(), false);
+
+            using (var stream = File.Open(Path.GetTempFileName(), FileMode.Create, FileAccess.ReadWrite))
+            using (var writer = new BinaryWriter(stream))
+            {
+                // test
+                assemblyBuilder.Write(nanoBinaryWriter.CreateLittleEndianBinaryWriter(writer));
+            }
+
+            // minimize the assembly, following the first pass
+            assemblyBuilder.Minimize();
+
+            // Assert that TypeReferencesTable doesn't contain any of the items in NameSpacesToExclude
+            foreach (var item in assemblyBuilder.TablesContext.TypeReferencesTable.Items)
+            {
+                Assert.IsFalse(TypeReferenceExtensions.NameSpacesToExclude.Any(ns => item.FullName.StartsWith(ns)), $"TypeRef table includes {item.FullName} when it shouldn't.");
+            }
+        }
     }
-
-
 }

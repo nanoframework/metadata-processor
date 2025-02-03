@@ -195,6 +195,21 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
 
             return ret;
         }
+
+        public static AssemblyDefinition GetTestNFAppAssemblyDefinitionWithLoadHints()
+        {
+            IDictionary<string, string> loadHints = new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["mscorlib"] = GetmscorlibAssemblyDefinition().MainModule.FileName,
+                ["TestNFClassLibrary"] = GetTestNFClassLibraryDefinition().MainModule.FileName
+            };
+
+            return AssemblyDefinition.ReadAssembly(
+                TestNFAppFullPath,
+                new ReaderParameters { AssemblyResolver = new LoadHintsAssemblyResolver(loadHints) });
+        }
+
+
         public static AssemblyDefinition GetTestNFClassLibraryDefinition()
         {
             AssemblyDefinition ret = null;
