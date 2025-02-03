@@ -156,14 +156,11 @@ jobs:
       configuration: '$(buildConfiguration)'
 
   - task: PowerShell@2
-    displayName: Remove nano Test Adapter
+    displayName: Remove test framework from mscorlib
     inputs:
       targetType: 'inline'
       script: |
-        Get-ChildItem -Path $env:System_DefaultWorkingDirectory -Include "nanoFramework.TestAdapter.dll" -Recurse |
-        Foreach-object {
-            Remove-Item -Path $_.fullname
-        }
+        Remove-Item -Path $env:System_DefaultWorkingDirectory\MetadataProcessor.Tests\mscorlib\nanoFramework.TestFramework -Recurse -Force
 
   - task: VisualStudioTestPlatformInstaller@1
     condition: succeeded()
@@ -178,10 +175,12 @@ jobs:
       testSelector: 'testAssemblies'
       pathtoCustomTestAdapters: 
       testAssemblyVer2: |
+        **\NFUnitTest.dll
         **\*Tests*.dll
-        !**\*TestAdapter*.dll
-        !**\*TestFramework*.dll
         !**\obj\**
+        !**\TestAdapter\**
+        !**\NFUnitTest_DummyAdapter\**
+        !**\nanoFramework.TestFramework\**
       searchFolder: '$(System.DefaultWorkingDirectory)'
       platform: '$(BuildPlatform)'
       configuration: '$(BuildConfiguration)'
