@@ -17,6 +17,10 @@ trigger:
       - config/*
       - .github/*
 
+  tags:
+    include:
+      - v*
+
 # PR always trigger build
 pr:
   autoCancel: true
@@ -29,6 +33,12 @@ resources:
       name: nanoframework/nf-tools
       endpoint: nanoframework
 
+variables:
+  - name: DOTNET_NOLOGO
+    value: true
+  - name: nugetPackageName
+    value: 'nanoFramework.Tools.MetadataProcessor.MsBuildTask'
+      
 jobs:
 
 ##############################
@@ -94,7 +104,11 @@ jobs:
 ##############################
 # build MDP
 - job: Build_MDP
-  condition: eq(variables['UPDATE_DEPENDENTS'], 'false')
+  condition: 
+    and(
+      not(startsWith(variables['Build.SourceBranch'], 'refs/tags/v')),
+      eq(variables['UPDATE_DEPENDENTS'], 'false')
+    )    
 
   dependsOn:
     - Get_Build_Flags
@@ -104,8 +118,6 @@ jobs:
 
   variables:
     - group: sign-client-credentials
-    - name: DOTNET_NOLOGO
-      value: true  
     - name: buildPlatform
       value: 'Any CPU'  
     - name: buildConfiguration
@@ -249,7 +261,6 @@ jobs:
       .\sign code azure-key-vault `
       "**/*.nupkg" `
       --base-directory "$(Build.ArtifactStagingDirectory)" `
-      --file-list "$(Build.Repository.LocalPath)\config\filelist.txt" `
       --description ".NET nanoFramework MDP" `
       --description-url "https://github.com/$env:Build_Repository_Name" `
       --azure-key-vault-tenant-id "$(SignTenantId)" `
@@ -322,16 +333,9 @@ jobs:
 ##############################
 - job: Update_Dependents
   condition: >-
-    and(
-      or(
-        succeeded('Build_MDP'),
-        not(in(dependencies.PreviousJob.result, 'Succeeded', 'Failed', 'Canceled'))
-      ),
-      or(
-        eq(dependencies.Get_Build_Flags.outputs['GetPRLabels.RUN_UPDATE_DEPENDENTS'], 'true'),
-        eq(variables['UPDATE_DEPENDENTS'], 'true')
-      ),
-      not(startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))
+    or(
+      startsWith(variables['Build.SourceBranch'], 'refs/tags/v'),
+      eq(variables['UPDATE_DEPENDENTS'], 'true')
     )
 
   dependsOn:
@@ -341,25 +345,17 @@ jobs:
   pool:
     vmImage: 'windows-latest'
 
-  variables:
-    DOTNET_NOLOGO: true
-
   steps:
   # need this here in order to persist GitHub credentials 
   - checkout: self
     fetchDepth: 1
-  
-  # Conditional delay step
-  - powershell: |
-      if ($env:BUILD_MDP_RESULT -eq 'Succeeded') {
-        Write-Host "Build_MDP succeeded, waiting for 10 minutes for the NuGet package to be processed before starting the job..."
-        Start-Sleep -Seconds 600
-      }
-    displayName: 'Waiting for NuGet being published'
-    env:
-      BUILD_MDP_RESULT: $(Build.MDP.result)
 
-  - template: azure-pipelines-templates/install-nuget.yml@templates  
+  # update dependents
+  # use this to make sure nuget package is published
+  - template: azure-pipelines-templates/update-dependents.yml@templates  
+    parameters:
+      packageName: '$(nugetPackageName)'
+      repositoriesToUpdate:
 
   # update dependencies
   - task: PowerShell@2
