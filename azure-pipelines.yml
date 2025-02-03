@@ -20,6 +20,10 @@ trigger:
       - config/*
       - .github/*
 
+  tags:
+    include:
+      - v*
+
 # PR always trigger build
 pr:
   autoCancel: true
@@ -32,6 +36,12 @@ resources:
       name: nanoframework/nf-tools
       endpoint: nanoframework
 
+variables:
+  - name: DOTNET_NOLOGO
+    value: true
+  - name: nugetPackageName
+    value: 'nanoFramework.Tools.MetadataProcessor.MsBuildTask'
+      
 jobs:
 
 ##############################
@@ -97,7 +107,11 @@ jobs:
 ##############################
 # build MDP
 - job: Build_MDP
-  condition: eq(variables['UPDATE_DEPENDENTS'], 'false')
+  condition: 
+    and(
+      not(startsWith(variables['Build.SourceBranch'], 'refs/tags/v')),
+      eq(variables['UPDATE_DEPENDENTS'], 'false')
+    )    
 
   dependsOn:
     - Get_Build_Flags
@@ -106,11 +120,15 @@ jobs:
     vmImage: 'windows-latest'
 
   variables:
-    DOTNET_NOLOGO: true
-    buildPlatform: 'Any CPU'
-    buildConfiguration: 'Release'
-    solution: 'nanoFramework.Tools.MetadataProcessor.sln'
-    NF_MDP_MSBUILDTASK_PATH: '$(System.DefaultWorkingDirectory)/MetadataProcessor.MsBuildTask/bin/Release/net472'
+    - group: sign-client-credentials
+    - name: buildPlatform
+      value: 'Any CPU'  
+    - name: buildConfiguration
+      value: 'Release'
+    - name: solution
+      value: 'nanoFramework.Tools.MetadataProcessor.sln'
+    - name: NF_MDP_MSBUILDTASK_PATH
+      value: '$(System.DefaultWorkingDirectory)/MetadataProcessor.MsBuildTask/bin/Release/net472'
 
   steps:
 
@@ -224,16 +242,17 @@ jobs:
       arguments: install --tool-path . SignClient
   
   - pwsh: |
-      .\SignClient "Sign" `
-      --baseDirectory "$(Build.ArtifactStagingDirectory)" `
-      --input "**/*.nupkg" `
-      --config "$(Build.Repository.LocalPath)\config\SignClient.json" `
-      --filelist "$(Build.Repository.LocalPath)\config\filelist.txt" `
-      --user "$(SignClientUser)" `
-      --secret '$(SignClientSecret)' `
-      --name ".NET nanoFramework Metadata Processor" `
-      --description ".NET nanoFramework Metadata Processor" `
-      --descriptionUrl "https://github.com/$env:Build_Repository_Name"
+      .\sign code azure-key-vault `
+      "**/*.nupkg" `
+      --base-directory "$(Build.ArtifactStagingDirectory)" `
+      --description ".NET nanoFramework MDP" `
+      --description-url "https://github.com/$env:Build_Repository_Name" `
+      --azure-key-vault-tenant-id "$(SignTenantId)" `
+      --azure-key-vault-client-id "$(SignClientId)" `
+      --azure-key-vault-client-secret "$(SignClientSecret)" `
+      --azure-key-vault-certificate "$(SignKeyVaultCertificate)" `
+      --azure-key-vault-url "$(SignKeyVaultUrl)" `
+      --timestamp-url http://timestamp.digicert.com
     displayName: Sign packages
     continueOnError: true
     condition: and( succeeded(), eq(variables['System.PullRequest.PullRequestId'], '') )
@@ -295,12 +314,9 @@ jobs:
 ##############################
 - job: Update_Dependents
   condition: >-
-    and(
-      or(
-        eq(dependencies.Get_Build_Flags.outputs['GetPRLabels.RUN_UPDATE_DEPENDENTS'], 'true'),
-        eq(variables['UPDATE_DEPENDENTS'], 'true')
-      ),
-      not(startsWith(variables['Build.SourceBranch'], 'refs/tags/v'))
+    or(
+      startsWith(variables['Build.SourceBranch'], 'refs/tags/v'),
+      eq(variables['UPDATE_DEPENDENTS'], 'true')
     )
 
   dependsOn:
@@ -310,26 +326,17 @@ jobs:
   pool:
     vmImage: 'windows-latest'
 
-  variables:
-    DOTNET_NOLOGO: true
-
   steps:
   # need this here in order to persist GitHub credentials 
   - checkout: self
-    fetchDepth: 100
-    persistCredentials: true
-  
-  # Conditional delay step
-  - powershell: |
-      if ($env:BUILD_MDP_RESULT -eq 'Succeeded') {
-        Write-Host "Build_MDP succeeded, waiting for 10 minutes for the NuGet package to be processed before starting the job..."
-        Start-Sleep -Seconds 600
-      }
-    displayName: 'Waiting for NuGet being published'
-    env:
-      BUILD_MDP_RESULT: $(Build.MDP.result)
+    fetchDepth: 1
 
-  - template: azure-pipelines-templates/install-nuget.yml@templates  
+  # update dependents
+  # use this to make sure nuget package is published
+  - template: azure-pipelines-templates/update-dependents.yml@templates  
+    parameters:
+      packageName: '$(nugetPackageName)'
+      repositoriesToUpdate:
 
   - script: nbgv cloud -a -c
     condition: succeeded()
