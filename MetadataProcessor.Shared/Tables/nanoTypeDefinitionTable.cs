@@ -161,7 +161,12 @@ namespace nanoFramework.Tools.MetadataProcessor
                         }
                     }
 
-                    WriteMethodBodies(item.Methods, item.Interfaces, writer);
+                    WriteMethodBodies(
+                        item.FullName,
+                        item.Methods,
+                        item.Interfaces,
+                        writer
+                    );
 
                     // Interfaces
                     _context.SignaturesTable.WriteDataType(item, writer, false, true, true);
@@ -291,6 +296,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         }
 
         private void WriteMethodBodies(
+            string typeName,
             Collection<MethodDefinition> methods,
             Collection<InterfaceImplementation> iInterfaces,
             nanoBinaryWriter writer)
@@ -330,6 +336,22 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             // FirstMethod
             writer.WriteUInt16(firstMethodId);
+
+            // sanity checks
+            if (virtualMethodsCount > byte.MaxValue)
+            {
+                throw new InvalidOperationException($"Fatal error processing '{typeName}', virtual methods count ({virtualMethodsCount}) exceeds maximum supported (255).");
+            }
+
+            if (instanceMethodsCount > byte.MaxValue)
+            {
+                throw new InvalidOperationException($"Fatal error processing '{typeName}', instance methods count ({instanceMethodsCount}) exceeds maximum supported (255).");
+            }
+
+            if (staticMethodsCount > byte.MaxValue)
+            {
+                throw new InvalidOperationException($"Fatal error processing '{typeName}', static methods count ({staticMethodsCount}) exceeds maximum supported (255).");
+            }
 
             // VirtualMethodCount
             writer.WriteByte((byte)virtualMethodsCount);
