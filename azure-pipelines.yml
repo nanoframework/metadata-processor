@@ -9,7 +9,6 @@ trigger:
       - release-*
   paths:
     exclude:
-      - .github_changelog_generator
       - .gitignore
       - .editorconfig
       - .gitattributes
@@ -103,7 +102,7 @@ jobs:
         }
       }
 
-      # set variable to foward to jobs
+      # set variable to forward to jobs
       echo "##vso[task.setvariable variable=RUN_UPDATE_DEPENDENTS;isOutput=true]$update"
     name: GetPRLabels
     displayName:  Check build labels
@@ -243,8 +242,8 @@ jobs:
     inputs:
       command: custom
       custom: tool
-      arguments: install --tool-path . SignClient
-  
+      arguments: install --tool-path . sign --version 0.9.1-beta.24170.3
+    
   - pwsh: |
       .\sign code azure-key-vault `
       "**/*.nupkg" `
@@ -259,7 +258,11 @@ jobs:
       --timestamp-url http://timestamp.digicert.com
     displayName: Sign packages
     continueOnError: true
-    condition: and( succeeded(), eq(variables['System.PullRequest.PullRequestId'], '') )
+    condition: >-
+      and(
+        succeeded(),
+        eq(variables['System.PullRequest.PullRequestId'], '')
+      )
     
   # publish artifacts (only possible if this is not a PR originated on a fork)
   - task: PublishBuildArtifacts@1
@@ -320,7 +323,8 @@ jobs:
   condition: >-
     or(
       startsWith(variables['Build.SourceBranch'], 'refs/tags/v'),
-      eq(variables['UPDATE_DEPENDENTS'], 'true')
+      eq(variables['UPDATE_DEPENDENTS'], 'true'),
+      eq(dependencies.Get_Build_Flags.outputs['GetPRLabels.RUN_UPDATE_DEPENDENTS'], 'true')
     )
 
   dependsOn:
