@@ -22,6 +22,7 @@ trigger:
       - .github/*
       - azure-pipelines-templates/*
       - native/*
+      - MetadataProcessor.Tests/mscorlib/*
 
   tags:
     include:
