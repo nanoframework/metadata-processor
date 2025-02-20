@@ -15,27 +15,18 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="win_storage_native.cpp">
+    <ClCompile Include="sys_dev_spi_native_System_Device_Spi_SpiBusInfo_stubs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="win_storage_native_Windows_Storage_Devices_SDCard_stubs.cpp">
+    <ClCompile Include="sys_dev_spi_native_System_Device_Spi_SpiDevice_stubs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="win_storage_native_Windows_Storage_FileIO_stubs.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="win_storage_native_Windows_Storage_StorageFile_stubs.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="win_storage_native_Windows_Storage_StorageFolder_stubs.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="win_storage_native_Windows_Storage_StorageProvider_stubs.cpp">
+    <ClCompile Include="sys_dev_spi_native.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="win_storage_native.h">
+    <ClInclude Include="sys_dev_spi_native.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
