@@ -23,33 +23,33 @@
     <ProjectGuid>{80209A7E-B9F0-4143-BCD1-B1891236A3CF}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>MetaDataProcessor</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <ProjectName>Tools.MetaDataProcessor</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -94,9 +94,11 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;METADATAPROCESSOR;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\Tools.Parser;..\nf-interpreter\src\CLR\CorLib;..\nf-interpreter\targets\os\win32\Include;..\nf-interpreter\src\PAL\Include;..\nf-interpreter\src\HAL\Include;..\nf-interpreter\src\CLR\Include;..\nf-interpreter\src\CLR\Core;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>VIRTUAL_DEVICE;WIN32;METADATAPROCESSOR;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\nf-interpreter\targets\win32\Include\;..\include;..\nf-interpreter\src\CLR\CorLib;..\nf-interpreter\targets\os\win32\Include;..\nf-interpreter\src\PAL\Include;..\nf-interpreter\src\HAL\Include;..\nf-interpreter\src\CLR\Include;..\nf-interpreter\src\CLR\Core;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -108,8 +110,10 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\nf-interpreter\src\CLR\CorLib;..\nf-interpreter\targets\os\win32\Include;..\nf-interpreter\src\PAL\Include;..\nf-interpreter\src\HAL\Include;..\nf-interpreter\src\CLR\Include;..\nf-interpreter\src\CLR\Core;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>VIRTUAL_DEVICE;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\nf-interpreter\targets\win32\Include\;..\include;..\nf-interpreter\src\CLR\CorLib;..\nf-interpreter\targets\os\win32\Include;..\nf-interpreter\src\PAL\Include;..\nf-interpreter\src\HAL\Include;..\nf-interpreter\src\CLR\Include;..\nf-interpreter\src\CLR\Core;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -122,9 +126,11 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;METADATAPROCESSOR;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\Tools.Parser;..\nf-interpreter\src\CLR\CorLib;..\nf-interpreter\targets\os\win32\Include;..\nf-interpreter\src\PAL\Include;..\nf-interpreter\src\HAL\Include;..\nf-interpreter\src\CLR\Include;..\nf-interpreter\src\CLR\Core;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>VIRTUAL_DEVICE;WIN32;METADATAPROCESSOR;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\nf-interpreter\targets\win32\Include\;..\include;..\nf-interpreter\src\CLR\CorLib;..\nf-interpreter\targets\os\win32\Include;..\nf-interpreter\src\PAL\Include;..\nf-interpreter\src\HAL\Include;..\nf-interpreter\src\CLR\Include;..\nf-interpreter\src\CLR\Core;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -141,8 +147,10 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\nf-interpreter\src\CLR\CorLib;..\nf-interpreter\targets\os\win32\Include;..\nf-interpreter\src\PAL\Include;..\nf-interpreter\src\HAL\Include;..\nf-interpreter\src\CLR\Include;..\nf-interpreter\src\CLR\Core;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>VIRTUAL_DEVICE;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\nf-interpreter\targets\win32\Include\;..\include;..\nf-interpreter\src\CLR\CorLib;..\nf-interpreter\targets\os\win32\Include;..\nf-interpreter\src\PAL\Include;..\nf-interpreter\src\HAL\Include;..\nf-interpreter\src\CLR\Include;..\nf-interpreter\src\CLR\Core;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -151,28 +159,21 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="AssemblyParser.h" />
-    <ClInclude Include="AssemblyReparser.h" />
-    <ClInclude Include="cor.h" />
-    <ClInclude Include="corerror.h" />
-    <ClInclude Include="corhdr.h" />
-    <ClInclude Include="corhlpr.h" />
-    <ClInclude Include="corsym.h" />
     <ClInclude Include="HAL_Windows.h" />
     <ClInclude Include="ManagedElementTypes_Win32.h" />
     <ClInclude Include="stdafx.h" />
-    <ClInclude Include="WatchAssemblyBuilder.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\nf-interpreter\src\HAL\nanoHAL_Time.cpp" />
     <ClCompile Include="..\nf-interpreter\src\CLR\Core\NativeEventDispatcher\NativeEventDispatcher_stub.cpp" />
-    <ClCompile Include="..\nf-interpreter\targets\os\win32\nanoCLR\Events.cpp" />
-    <ClCompile Include="..\nf-interpreter\targets\os\win32\nanoCLR\PAL\blockstorageList_stubs.cpp" />
-    <ClCompile Include="..\nf-interpreter\targets\os\win32\nanoCLR\PAL\COMDirector_stubs.cpp" />
-    <ClCompile Include="..\nf-interpreter\targets\os\win32\nanoCLR\PAL\ConfigHelper_stubs.cpp" />
-    <ClCompile Include="..\nf-interpreter\targets\os\win32\nanoCLR\PAL\time_stubs.cpp" />
-    <ClCompile Include="..\nf-interpreter\targets\os\win32\nanoCLR\platform_heap.cpp" />
-    <ClCompile Include="..\nf-interpreter\targets\os\win32\nanoCLR\Target_BlockStorage.cpp" />
-    <ClCompile Include="..\nf-interpreter\targets\os\win32\nanoCLR\targetHAL_Time.cpp" />
+    <ClCompile Include="..\nf-interpreter\targets\win32\nanoCLR\PAL\blockstorageList_stubs.cpp" />
+    <ClCompile Include="..\nf-interpreter\targets\win32\nanoCLR\PAL\COMDirector_stubs.cpp" />
+    <ClCompile Include="..\nf-interpreter\targets\win32\nanoCLR\PAL\ConfigHelper_stubs.cpp" />
+    <ClCompile Include="..\nf-interpreter\targets\win32\nanoCLR\PAL\time_stubs.cpp" />
+    <ClCompile Include="..\nf-interpreter\targets\win32\nanoCLR\targetPAL_Events.cpp" />
+    <ClCompile Include="..\nf-interpreter\targets\win32\nanoCLR\platform_heap.cpp" />
+    <ClCompile Include="..\nf-interpreter\targets\win32\nanoCLR\Target_BlockStorage.cpp" />
+    <ClCompile Include="..\nf-interpreter\targets\win32\nanoCLR\targetHAL_Time.cpp" />
     <ClCompile Include="corlib_native.cpp" />
     <ClCompile Include="Info_Win32.cpp" />
     <ClCompile Include="ManagedElementTypes_Win32.cpp" />
@@ -192,11 +193,11 @@
     <ClCompile Include="XmlUtil.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\nf-interpreter\src\CLR\Core\Hardware\Hardware_stub.vcxproj">
+      <Project>{31253d7f-147e-49a3-bc0d-e0ade6cf040b}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\nf-interpreter\src\CLR\Core\Core.vcxproj">
       <Project>{89cf8bdb-9c8a-4d18-bc3e-4312c5bd34b1}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\nf-interpreter\src\CLR\Core\Hardware\Hardware.vcxproj">
-      <Project>{5d50772e-dac8-407d-972f-37deb4450b72}</Project>
     </ProjectReference>
     <ProjectReference Include="..\nf-interpreter\src\CLR\Core\InterruptHandler\InterruptHandler.vcxproj">
       <Project>{d32ee397-7e49-452d-ac95-afcb3c962e3d}</Project>

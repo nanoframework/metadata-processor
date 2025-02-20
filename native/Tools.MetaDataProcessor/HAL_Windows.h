@@ -8,5 +8,5 @@
 
 struct HAL_Windows
 {
-	static HRESULT Memory_Resize(unsigned int               size);
+    static HRESULT Memory_Resize(unsigned int size);
 };

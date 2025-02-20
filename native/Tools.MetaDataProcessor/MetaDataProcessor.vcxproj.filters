@@ -18,30 +18,6 @@
     <ClInclude Include="stdafx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="cor.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="corhdr.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="corhlpr.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="corerror.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AssemblyParser.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AssemblyReparser.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="corsym.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="WatchAssemblyBuilder.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ManagedElementTypes_Win32.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -56,25 +32,13 @@
     <ClCompile Include="MetaDataProcessor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\nf-interpreter\targets\os\win32\nanoCLR\PAL\time_stubs.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Info_Win32.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ManagedElementTypes_Win32.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\nf-interpreter\targets\os\win32\nanoCLR\targetHAL_Time.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ParseOptions_Win32.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\nf-interpreter\targets\os\win32\nanoCLR\PAL\blockstorageList_stubs.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\nf-interpreter\targets\os\win32\nanoCLR\PAL\ConfigHelper_stubs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="corlib_native.cpp">
@@ -89,18 +53,6 @@
     <ClCompile Include="StubWinHal.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\nf-interpreter\targets\os\win32\nanoCLR\Events.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\nf-interpreter\targets\os\win32\nanoCLR\Target_BlockStorage.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\nf-interpreter\targets\os\win32\nanoCLR\platform_heap.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\nf-interpreter\targets\os\win32\nanoCLR\PAL\COMDirector_stubs.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="XmlUtil.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -111,6 +63,33 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="nanoHAL_Watchdog_stubs.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\nf-interpreter\targets\win32\nanoCLR\PAL\blockstorageList_stubs.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\nf-interpreter\targets\win32\nanoCLR\PAL\COMDirector_stubs.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\nf-interpreter\targets\win32\nanoCLR\PAL\ConfigHelper_stubs.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\nf-interpreter\targets\win32\nanoCLR\PAL\time_stubs.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\nf-interpreter\targets\win32\nanoCLR\targetPAL_Events.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\nf-interpreter\targets\win32\nanoCLR\platform_heap.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\nf-interpreter\targets\win32\nanoCLR\Target_BlockStorage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\nf-interpreter\targets\win32\nanoCLR\targetHAL_Time.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\nf-interpreter\src\HAL\nanoHAL_Time.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
