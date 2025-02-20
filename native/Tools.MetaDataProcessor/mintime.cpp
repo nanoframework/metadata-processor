@@ -6,22 +6,22 @@
 
 #include <stdafx.h>
 
-//UINT64 HAL_Time_CurrentTicks()
+// UINT64 HAL_Time_CurrentTicks()
 //{
 //	return 0; //This method is currently not implemented
-//}
+// }
 
-//INT64 HAL_Time_TicksToTime(UINT64 Ticks)
+// INT64 HAL_Time_TicksToTime(UINT64 Ticks)
 //{
 //	return 0;
-//}
+// }
 
-//INT64 HAL_Time_CurrentTime()
+// INT64 HAL_Time_CurrentTime()
 //{
 //	return HAL_Time_TicksToTime(HAL_Time_CurrentTicks());
-//}
+// }
 
 unsigned __int64 HAL_Windows_GetPerformanceTicks(void)
 {
-	return 0;
+    return 0;
 }
