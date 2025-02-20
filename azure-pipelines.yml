@@ -10,12 +10,18 @@ trigger:
   paths:
     exclude:
       - .gitignore
+      - .editorconfig
+      - .gitattributes
+      - .gitmodules
+      - spelling_exclusion.dic
       - LICENSE.md
       - README.md
       - NuGet.Config
       - assets/*
       - config/*
       - .github/*
+      - azure-pipelines-templates/*
+      - native/*
 
   tags:
     include:
