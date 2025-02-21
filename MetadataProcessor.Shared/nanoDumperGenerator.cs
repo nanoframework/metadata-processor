@@ -1,18 +1,16 @@
-﻿//
-// Copyright (c) .NET Foundation and Contributors
-// See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using Mono.Cecil;
-using Mono.Cecil.Cil;
-using Mono.Collections.Generic;
-using Mustache;
-using nanoFramework.Tools.MetadataProcessor.Core.Extensions;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Mono.Cecil;
+using Mono.Cecil.Cil;
+using Mono.Collections.Generic;
+using Mustache;
+using nanoFramework.Tools.MetadataProcessor.Core.Extensions;
 
 namespace nanoFramework.Tools.MetadataProcessor.Core
 {
@@ -210,7 +208,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
         private void DumpTypeDefinitions(DumpAllTable dumpTable)
         {
-            foreach (var t in _tablesContext.TypeDefinitionTable.Items.OrderBy(tr => tr.MetadataToken.ToInt32()))
+            foreach (TypeDefinition t in _tablesContext.TypeDefinitionTable.Items.OrderBy(tr => tr.MetadataToken.ToInt32()))
             {
                 // fill type definition
                 var typeDef = new TypeDef()
@@ -227,7 +225,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                     typeDef.Name = t.FullName;
                 }
 
-                var typeFlags = (uint)nanoTypeDefinitionTable.GetFlags(
+                uint typeFlags = (uint)nanoTypeDefinitionTable.GetFlags(
                     t,
                     _tablesContext.MethodDefinitionTable);
 
@@ -254,7 +252,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                 }
 
                 // list generic parameters
-                foreach (var gp in t.GenericParameters)
+                foreach (GenericParameter gp in t.GenericParameters)
                 {
                     var genericParam = new GenericParam()
                     {
@@ -269,7 +267,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                 }
 
                 // list type fields
-                foreach (var f in t.Fields)
+                foreach (FieldDefinition f in t.Fields)
                 {
                     uint att = (uint)f.Attributes;
 
@@ -286,7 +284,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                 }
 
                 // list type methods
-                foreach (var m in t.Methods)
+                foreach (MethodDefinition m in t.Methods)
                 {
                     var methodDef = new MethodDef()
                     {
@@ -297,7 +295,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                         Signature = PrintSignatureForMethod(m)
                     };
 
-                    var methodFlags = nanoMethodDefinitionTable.GetFlags(m);
+                    uint methodFlags = nanoMethodDefinitionTable.GetFlags(m);
                     methodDef.Flags = methodFlags.ToString("x8");
 
                     if (m.HasBody)
@@ -305,11 +303,11 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                         // locals
                         if (m.Body.HasVariables)
                         {
-                            methodDef.Locals = $"{m.Body.Variables.Count.ToString()}: {PrintSignatureForLocalVar(m.Body.Variables)}";
+                            methodDef.Locals = PrintSignatureForLocalVar(m.Body.Variables);
                         }
 
                         // exceptions
-                        foreach (var eh in m.Body.ExceptionHandlers)
+                        foreach (Mono.Cecil.Cil.ExceptionHandler eh in m.Body.ExceptionHandlers)
                         {
                             var h = new ExceptionHandler();
 
@@ -332,7 +330,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                         methodDef.ILCodeInstructionsCount = m.Body.Instructions.Count.ToString();
 
                         // IL code
-                        foreach (var instruction in m.Body.Instructions)
+                        foreach (Instruction instruction in m.Body.Instructions)
                         {
                             ILCode ilCode = new ILCode();
 
@@ -340,24 +338,58 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
                             if (instruction.Operand != null)
                             {
-                                if (instruction.OpCode.OperandType == Mono.Cecil.Cil.OperandType.InlineField ||
-                                    instruction.OpCode.OperandType == Mono.Cecil.Cil.OperandType.InlineMethod ||
-                                    instruction.OpCode.OperandType == Mono.Cecil.Cil.OperandType.InlineType ||
-                                    instruction.OpCode.OperandType == Mono.Cecil.Cil.OperandType.InlineTok ||
-                                    instruction.OpCode.OperandType == Mono.Cecil.Cil.OperandType.InlineSig)
+                                if (instruction.OpCode.OperandType == OperandType.InlineTok ||
+                                    instruction.OpCode.OperandType == OperandType.InlineSig)
                                 {
-                                    ilCode.IL += $"[{((IMetadataTokenProvider)instruction.Operand).MetadataToken.ToInt32().ToString("x8")}]";
+                                    ilCode.IL += $"[{((IMetadataTokenProvider)instruction.Operand).MetadataToken.ToInt32():x8}]";
                                 }
-                                else if (instruction.OpCode.OperandType == Mono.Cecil.Cil.OperandType.InlineString)
+                                else if (instruction.OpCode.OperandType == OperandType.InlineField)
+                                {
+                                    // output the field type name
+                                    ilCode.IL += $"{((FieldReference)instruction.Operand).FieldType.FullName}";
+
+                                    // output the token
+                                    ilCode.IL += $" [{((IMetadataTokenProvider)instruction.Operand).MetadataToken.ToInt32():x8}]";
+                                }
+                                else if (instruction.OpCode.OperandType == Mono.Cecil.Cil.OperandType.InlineMethod)
+                                {
+                                    // output the method name
+                                    ilCode.IL += $"{((MethodReference)instruction.Operand).FullName}";
+
+                                    // output the token
+                                    ilCode.IL += $" [{((IMetadataTokenProvider)instruction.Operand).MetadataToken.ToInt32():x8}]";
+                                }
+                                else if (instruction.OpCode.OperandType == OperandType.InlineType)
+                                {
+                                    // Mono.Cecil.ArrayType
+                                    if (instruction.Operand is ArrayType arrayType)
+                                    {
+                                        // output the type name
+                                        ilCode.IL += $"{arrayType.ElementType.FullName}[]";
+                                    }
+                                    else
+                                    {
+                                        // output the type name
+                                        ilCode.IL += $"{((TypeReference)instruction.Operand).FullName}";
+                                    }
+
+                                    // output the token
+                                    ilCode.IL += $" [{((IMetadataTokenProvider)instruction.Operand).MetadataToken.ToInt32():x8}]";
+                                }
+                                else if (instruction.OpCode.OperandType == OperandType.InlineString)
                                 {
                                     // strings need a different processing
                                     // get string ID from table
-                                    var stringReferenceId = _tablesContext.StringTable.GetOrCreateStringId((string)instruction.Operand, true);
+                                    ushort stringReferenceId = _tablesContext.StringTable.GetOrCreateStringId((string)instruction.Operand, true);
 
                                     // fake the metadata token from the ID
-                                    var stringMetadataToken = new MetadataToken(TokenType.String, stringReferenceId);
+                                    MetadataToken stringMetadataToken = new MetadataToken(TokenType.String, stringReferenceId);
 
-                                    ilCode.IL += $"[{stringMetadataToken.ToInt32().ToString("x8")}]";
+                                    // output the string
+                                    ilCode.IL += $"\"{(string)instruction.Operand}\"";
+
+                                    // ouput the metadata token
+                                    ilCode.IL += $" [{stringMetadataToken.ToInt32():x8}]";
                                 }
 
                             }
@@ -370,7 +402,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                 }
 
                 // list interface implementations
-                foreach (var i in t.Interfaces)
+                foreach (InterfaceImplementation i in t.Interfaces)
                 {
                     typeDef.InterfaceDefinitions.Add(
                         new InterfaceDef()
@@ -446,11 +478,11 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
         {
             var sig = new StringBuilder(method.ReturnType.TypeSignatureAsString());
 
-            sig.Append("( ");
+            sig.Append('(');
 
-            foreach (var p in method.Parameters)
+            foreach (ParameterDefinition param in method.Parameters)
             {
-                sig.Append(p.ParameterType.TypeSignatureAsString());
+                sig.Append(param.ParameterType.TypeSignatureAsString());
                 sig.Append(", ");
             }
 
@@ -461,37 +493,34 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
             }
             else
             {
-                sig.Append(" ");
+                sig.Append(' ');
             }
 
-            sig.Append(" )");
+            sig.Append(')');
 
             return sig.ToString();
         }
 
-
         private string PrintSignatureForLocalVar(Collection<VariableDefinition> variables)
         {
+            const string localIdentation = "                ";
+
             StringBuilder sig = new StringBuilder();
-            sig.Append("{ ");
 
-            foreach (var l in variables)
+            sig.Append('(');
+
+            for (int localIndex = 0; localIndex < variables.Count; localIndex++)
             {
-                sig.Append(l.VariableType.TypeSignatureAsString());
-                sig.Append(", ");
+                sig.Append($"{(localIndex > 0 ? localIdentation : "")} [{localIndex}] ");
+                sig.Append(variables[localIndex].VariableType.TypeSignatureAsString());
+
+                if (localIndex < variables.Count - 1)
+                {
+                    sig.AppendLine(", ");
+                }
             }
 
-            // remove trailing", "
-            if (variables.Count > 0)
-            {
-                sig.Remove(sig.Length - 2, 2);
-            }
-            else
-            {
-                sig.Append(" ");
-            }
-
-            sig.Append(" }");
+            sig.Append(" )");
 
             return sig.ToString();
         }

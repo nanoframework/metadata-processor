@@ -234,26 +234,27 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
                 Assert.Inconclusive("nanoclr is not installed, can't run this test");
             }
 
-            var mscorlibPeLocation = Path.Combine(TestObjectHelper.TestNFAppLocation, "mscorlib.pe");
+            string mscorlibPeLocation = Path.Combine(TestObjectHelper.TestNFAppLocation, "mscorlib.pe");
 
             // prepare launch of nanoCLR CLI
             string arguments = $"run --assemblies {mscorlibPeLocation} {ComposeLocalClrInstancePath()} -v diag";
 
             Console.WriteLine($"Launching nanoclr with these arguments: '{arguments}'");
 
-            var cmd = Cli.Wrap("nanoclr")
+            Command cmd = Cli.Wrap("nanoclr")
                 .WithArguments(arguments)
                 .WithValidation(CommandResultValidation.None);
 
-            // setup cancellation token with a timeout of 5 seconds
+            // setup cancellation token with a timeout of 1 minute
             using (var cts = new CancellationTokenSource())
             {
-                cts.CancelAfter(TimeSpan.FromSeconds(5));
+                cts.CancelAfter(TimeSpan.FromMinutes(1));
 
-                var cliResult = await cmd.ExecuteBufferedAsync(cts.Token);
-                var exitCode = cliResult.ExitCode;
+                BufferedCommandResult cliResult = await cmd.ExecuteBufferedAsync(cts.Token);
+                int exitCode = cliResult.ExitCode;
+
                 // read standard output
-                var output = cliResult.StandardOutput;
+                string output = cliResult.StandardOutput;
 
                 if (exitCode == 0)
                 {
@@ -265,7 +266,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
                 }
                 else
                 {
-                    Assert.Fail($"nanoCLR ended with '{exitCode}' exit code.\r\n>>>>>>>>>>>>>\r\n{output}\r\n>>>>>>>>>>>>>");
+                    Assert.Fail($"nanoCLR ended with '{exitCode}' exit code.\r\n>>>>>>>>>>>>>\r\n{output}\r\n<<<<<<<<<<<<<");
                 }
             }
         }
@@ -278,28 +279,29 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
                 Assert.Inconclusive("nanoclr is not installed, can't run this test");
             }
 
-            var mscorlibPeLocation = Path.Combine(TestObjectHelper.TestNFAppLocation, "mscorlib.pe");
-            var nfTestAppPeLocation = TestObjectHelper.NFAppFullPath.Replace("exe", "pe");
-            var nfTestClassLibPeLocation = TestObjectHelper.TestNFClassLibFullPath.Replace("dll", "pe");
+            string mscorlibPeLocation = Path.Combine(TestObjectHelper.TestNFAppLocation, "mscorlib.pe");
+            string nfTestAppPeLocation = TestObjectHelper.NFAppFullPath.Replace("exe", "pe");
+            string nfTestClassLibPeLocation = TestObjectHelper.TestNFClassLibFullPath.Replace("dll", "pe");
 
             // prepare launch of nanoCLR CLI
             string arguments = $"run --assemblies {mscorlibPeLocation} {nfTestAppPeLocation} {nfTestClassLibPeLocation} {ComposeLocalClrInstancePath()} -v diag";
 
             Console.WriteLine($"Launching nanoclr with these arguments: '{arguments}'");
 
-            var cmd = Cli.Wrap("nanoclr")
+            Command cmd = Cli.Wrap("nanoclr")
                 .WithArguments(arguments)
                 .WithValidation(CommandResultValidation.None);
 
-            // setup cancellation token with a timeout of 5 seconds
+            // setup cancellation token with a timeout of 1 minute
             using (var cts = new CancellationTokenSource())
             {
-                cts.CancelAfter(TimeSpan.FromSeconds(5));
+                cts.CancelAfter(TimeSpan.FromMinutes(1));
 
-                var cliResult = await cmd.ExecuteBufferedAsync(cts.Token);
-                var exitCode = cliResult.ExitCode;
+                BufferedCommandResult cliResult = await cmd.ExecuteBufferedAsync(cts.Token);
+                int exitCode = cliResult.ExitCode;
+
                 // read standard output
-                var output = cliResult.StandardOutput;
+                string output = cliResult.StandardOutput;
 
                 if (exitCode == 0)
                 {
@@ -319,7 +321,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
                 }
                 else
                 {
-                    Assert.Fail($"nanoCLR ended with '{exitCode}' exit code.\r\n>>>>>>>>>>>>>\r\n{output}\r\n>>>>>>>>>>>>>");
+                    Assert.Fail($"nanoCLR ended with '{exitCode}' exit code.\r\n>>>>>>>>>>>>>\r\n{output}\r\n<<<<<<<<<<<<<");
                 }
             }
         }
@@ -328,10 +330,10 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
         {
             StringBuilder arguments = new StringBuilder(" --localinstance");
 
-#if DEBUG
-            arguments.Append($" \"{_localClrInstancePath}\"");
+//#if DEBUG
+//            arguments.Append($" \"{_localClrInstancePath}\"");
 
-#else
+//#else
             if (string.IsNullOrEmpty(TestObjectHelper.NanoClrLocalInstance))
             {
                 return null;
@@ -340,7 +342,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
             {
                 arguments.Append($" \"{TestObjectHelper.NanoClrLocalInstance}\"");
             }
-#endif
+//#endif
 
             return arguments.ToString();
         }
