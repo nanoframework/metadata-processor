@@ -1,7 +1,7 @@
-﻿//
-// Copyright (c) .NET Foundation and Contributors
-// See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+// Original work from Oleg Rakhmatulin.
 
 using System;
 using System.Collections.Generic;
@@ -131,6 +131,16 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
                 }
 
                 return _testNFClassLibLocation;
+            }
+        }
+
+        public static string MscorlibFullPath
+        {
+            get
+            {
+                return Path.Combine(
+                        TestNFAppLocation,
+                        "mscorlib.dll");
             }
         }
 
