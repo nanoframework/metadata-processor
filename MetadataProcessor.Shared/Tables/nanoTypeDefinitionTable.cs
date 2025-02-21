@@ -1,17 +1,16 @@
-﻿//
-// Copyright (c) .NET Foundation and Contributors
-// Original work from Oleg Rakhmatulin.
-// See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using Mono.Cecil;
-using Mono.Collections.Generic;
-using nanoFramework.Tools.MetadataProcessor.Core;
-using nanoFramework.Tools.MetadataProcessor.Core.Extensions;
+// Original work from Oleg Rakhmatulin.
+
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Mono.Cecil;
+using Mono.Collections.Generic;
+using nanoFramework.Tools.MetadataProcessor.Core;
+using nanoFramework.Tools.MetadataProcessor.Core.Extensions;
 
 namespace nanoFramework.Tools.MetadataProcessor
 {
@@ -150,7 +149,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                         writer
                     );
 
-                    _context.SignaturesTable.WriteDataType(item, writer, false, true, true);
+                    _context.SignaturesTable.WriteDataTypeForTypeDef(item, writer);
 
                     writer.WriteBytes(stream.ToArray());
                 }

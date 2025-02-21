@@ -1,18 +1,17 @@
-﻿//
-// Copyright (c) .NET Foundation and Contributors
-// Original work from Oleg Rakhmatulin.
-// See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using Mono.Cecil;
-using Mono.Cecil.Cil;
-using Mono.Collections.Generic;
-using nanoFramework.Tools.MetadataProcessor.Core.Extensions;
+// Original work from Oleg Rakhmatulin.
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using Mono.Cecil;
+using Mono.Cecil.Cil;
+using Mono.Collections.Generic;
+using nanoFramework.Tools.MetadataProcessor.Core.Extensions;
 
 namespace nanoFramework.Tools.MetadataProcessor
 {
@@ -41,35 +40,67 @@ namespace nanoFramework.Tools.MetadataProcessor
             }
         }
 
-        internal static readonly IDictionary<string, nanoCLR_DataType> PrimitiveTypes =
+        private static readonly IDictionary<string, nanoCLR_DataType> s_primitiveTypes =
             new Dictionary<string, nanoCLR_DataType>(StringComparer.Ordinal);
+
+        /// <summary>
+        /// Built-in types (see flags in c_CLR_RT_DataTypeLookup at CLR Core code)
+        /// </summary>
+        private static readonly IDictionary<string, nanoCLR_DataType> s_builtInTypes =
+            new Dictionary<string, nanoCLR_DataType>(StringComparer.Ordinal);
+
+        public static IDictionary<string, nanoCLR_DataType> PrimitiveTypes => s_primitiveTypes;
 
         static nanoSignaturesTable()
         {
-            PrimitiveTypes.Add(typeof(void).FullName, nanoCLR_DataType.DATATYPE_VOID);
+            s_primitiveTypes.Add(typeof(void).FullName, nanoCLR_DataType.DATATYPE_VOID);
 
-            PrimitiveTypes.Add(typeof(sbyte).FullName, nanoCLR_DataType.DATATYPE_I1);
-            PrimitiveTypes.Add(typeof(short).FullName, nanoCLR_DataType.DATATYPE_I2);
-            PrimitiveTypes.Add(typeof(int).FullName, nanoCLR_DataType.DATATYPE_I4);
-            PrimitiveTypes.Add(typeof(long).FullName, nanoCLR_DataType.DATATYPE_I8);
+            s_primitiveTypes.Add(typeof(sbyte).FullName, nanoCLR_DataType.DATATYPE_I1);
+            s_primitiveTypes.Add(typeof(short).FullName, nanoCLR_DataType.DATATYPE_I2);
+            s_primitiveTypes.Add(typeof(int).FullName, nanoCLR_DataType.DATATYPE_I4);
+            s_primitiveTypes.Add(typeof(long).FullName, nanoCLR_DataType.DATATYPE_I8);
 
-            PrimitiveTypes.Add(typeof(byte).FullName, nanoCLR_DataType.DATATYPE_U1);
-            PrimitiveTypes.Add(typeof(ushort).FullName, nanoCLR_DataType.DATATYPE_U2);
-            PrimitiveTypes.Add(typeof(uint).FullName, nanoCLR_DataType.DATATYPE_U4);
-            PrimitiveTypes.Add(typeof(ulong).FullName, nanoCLR_DataType.DATATYPE_U8);
+            s_primitiveTypes.Add(typeof(byte).FullName, nanoCLR_DataType.DATATYPE_U1);
+            s_primitiveTypes.Add(typeof(ushort).FullName, nanoCLR_DataType.DATATYPE_U2);
+            s_primitiveTypes.Add(typeof(uint).FullName, nanoCLR_DataType.DATATYPE_U4);
+            s_primitiveTypes.Add(typeof(ulong).FullName, nanoCLR_DataType.DATATYPE_U8);
 
-            PrimitiveTypes.Add(typeof(float).FullName, nanoCLR_DataType.DATATYPE_R4);
-            PrimitiveTypes.Add(typeof(double).FullName, nanoCLR_DataType.DATATYPE_R8);
+            s_primitiveTypes.Add(typeof(float).FullName, nanoCLR_DataType.DATATYPE_R4);
+            s_primitiveTypes.Add(typeof(double).FullName, nanoCLR_DataType.DATATYPE_R8);
 
-            PrimitiveTypes.Add(typeof(char).FullName, nanoCLR_DataType.DATATYPE_CHAR);
-            PrimitiveTypes.Add(typeof(string).FullName, nanoCLR_DataType.DATATYPE_STRING);
-            PrimitiveTypes.Add(typeof(bool).FullName, nanoCLR_DataType.DATATYPE_BOOLEAN);
+            s_primitiveTypes.Add(typeof(char).FullName, nanoCLR_DataType.DATATYPE_CHAR);
+            s_primitiveTypes.Add(typeof(string).FullName, nanoCLR_DataType.DATATYPE_STRING);
+            s_primitiveTypes.Add(typeof(bool).FullName, nanoCLR_DataType.DATATYPE_BOOLEAN);
 
-            PrimitiveTypes.Add(typeof(object).FullName, nanoCLR_DataType.DATATYPE_OBJECT);
-            PrimitiveTypes.Add(typeof(IntPtr).FullName, nanoCLR_DataType.DATATYPE_I4);
-            PrimitiveTypes.Add(typeof(UIntPtr).FullName, nanoCLR_DataType.DATATYPE_U4);
+            s_primitiveTypes.Add(typeof(object).FullName, nanoCLR_DataType.DATATYPE_OBJECT);
+            s_primitiveTypes.Add(typeof(IntPtr).FullName, nanoCLR_DataType.DATATYPE_I4);
+            s_primitiveTypes.Add(typeof(UIntPtr).FullName, nanoCLR_DataType.DATATYPE_U4);
 
-            PrimitiveTypes.Add(typeof(WeakReference).FullName, nanoCLR_DataType.DATATYPE_WEAKCLASS);
+            s_primitiveTypes.Add(typeof(WeakReference).FullName, nanoCLR_DataType.DATATYPE_WEAKCLASS);
+
+            // from c_CLR_RT_DataTypeLookup at CLR Core code
+            s_builtInTypes.Add(typeof(bool).FullName, nanoCLR_DataType.DATATYPE_BOOLEAN);
+            s_builtInTypes.Add(typeof(char).FullName, nanoCLR_DataType.DATATYPE_CHAR);
+            s_builtInTypes.Add(typeof(sbyte).FullName, nanoCLR_DataType.DATATYPE_I1);
+            s_builtInTypes.Add(typeof(byte).FullName, nanoCLR_DataType.DATATYPE_U1);
+            s_builtInTypes.Add(typeof(short).FullName, nanoCLR_DataType.DATATYPE_I2);
+            s_builtInTypes.Add(typeof(ushort).FullName, nanoCLR_DataType.DATATYPE_U2);
+            s_builtInTypes.Add(typeof(int).FullName, nanoCLR_DataType.DATATYPE_I4);
+            s_builtInTypes.Add(typeof(uint).FullName, nanoCLR_DataType.DATATYPE_U4);
+            s_builtInTypes.Add(typeof(long).FullName, nanoCLR_DataType.DATATYPE_I8);
+            s_builtInTypes.Add(typeof(ulong).FullName, nanoCLR_DataType.DATATYPE_U8);
+            s_builtInTypes.Add(typeof(float).FullName, nanoCLR_DataType.DATATYPE_R4);
+            s_builtInTypes.Add(typeof(double).FullName, nanoCLR_DataType.DATATYPE_R8);
+
+            s_builtInTypes.Add(typeof(DateTime).FullName, nanoCLR_DataType.DATATYPE_DATETIME);
+            s_builtInTypes.Add(typeof(TimeSpan).FullName, nanoCLR_DataType.DATATYPE_TIMESPAN);
+            s_builtInTypes.Add(typeof(string).FullName, nanoCLR_DataType.DATATYPE_STRING);
+
+            s_builtInTypes.Add("System.RuntimeTypeHandle", nanoCLR_DataType.DATATYPE_REFLECTION);
+            s_builtInTypes.Add("System.RuntimeFieldHandle", nanoCLR_DataType.DATATYPE_REFLECTION);
+            s_builtInTypes.Add("System.RuntimeMethodHandle", nanoCLR_DataType.DATATYPE_REFLECTION);
+
+            s_builtInTypes.Add(typeof(WeakReference).FullName, nanoCLR_DataType.DATATYPE_WEAKCLASS);
         }
 
         /// <summary>
@@ -273,8 +304,9 @@ namespace nanoFramework.Tools.MetadataProcessor
                 return;
             }
 
-            nanoCLR_DataType dataType;
-            if (PrimitiveTypes.TryGetValue(typeDefinition.FullName, out dataType))
+            if (s_primitiveTypes.TryGetValue(
+                typeDefinition.FullName,
+                out nanoCLR_DataType dataType))
             {
                 writer.WriteByte((byte)dataType);
                 return;
@@ -385,6 +417,51 @@ namespace nanoFramework.Tools.MetadataProcessor
             }
 
             writer.WriteByte(0x00);
+        }
+
+        /// <summary>
+        /// Writes data type for type reference.
+        /// </summary>
+        /// <param name="typeDefinition">Type reference or definition in Mono.Cecil format.</param>
+        /// <param name="writer">Target binary writer for writing signature information.</param>
+        public void WriteDataTypeForTypeDef(TypeDefinition typeDefinition, nanoBinaryWriter writer)
+        {
+            // start checking with the built-in types
+            if (s_builtInTypes.TryGetValue(
+                typeDefinition.FullName,
+                out nanoCLR_DataType dataType))
+            {
+                writer.WriteByte((byte)dataType);
+            }
+            else
+            {
+                // check order matters because some types are derived from others
+                if (typeDefinition.IsEnum)
+                {
+                    FieldDefinition baseTypeValue = typeDefinition.Fields.FirstOrDefault(item => item.IsSpecialName);
+
+                    if (baseTypeValue != null)
+                    {
+                        WriteTypeInfo(baseTypeValue.FieldType, writer);
+                    }
+                    else
+                    {
+                        writer.WriteByte((byte)nanoCLR_DataType.DATATYPE_I4);
+                    }
+                }
+                else if (typeDefinition.IsValueType)
+                {
+                    writer.WriteByte((byte)nanoCLR_DataType.DATATYPE_VALUETYPE);
+                }
+                else if (typeDefinition.IsClass || typeDefinition.IsInterface)
+                {
+                    writer.WriteByte((byte)nanoCLR_DataType.DATATYPE_CLASS);
+                }
+                else
+                {
+                    Debug.Fail("Gotcha!");
+                }
+            }
         }
 
         /// <inheritdoc/>
@@ -567,7 +644,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             CustomAttributeArgument argument)
         {
             nanoCLR_DataType dataType;
-            if (PrimitiveTypes.TryGetValue(argument.Type.FullName, out dataType))
+            if (s_primitiveTypes.TryGetValue(argument.Type.FullName, out dataType))
             {
                 switch (dataType)
                 {
