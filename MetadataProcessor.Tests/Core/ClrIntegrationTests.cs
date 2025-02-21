@@ -1,7 +1,7 @@
-﻿//
-// Copyright (c) .NET Foundation and Contributors
-// See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+// Original work from Oleg Rakhmatulin.
 
 using System;
 using System.ComponentModel;
@@ -71,7 +71,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
                                 client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36");
 
                                 // Set any additional headers, if needed.
-                                client.DefaultRequestHeaders.Add("Content-Type", "application/json");
+                                client.DefaultRequestHeaders.Add("Accept", "application/json");
 
                                 // Set the URL to request.
                                 string url = "https://api.nuget.org/v3-flatcontainer/nanoclr/index.json";
