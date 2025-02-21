@@ -15,14 +15,14 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
     [TestClass]
     public class nanoSignaturesTableTests
     {
-        [DataRow("System.DateTime", nanoCLR_DataType.DATATYPE_DATETIME)]
-        [DataRow("System.TimeSpan", nanoCLR_DataType.DATATYPE_TIMESPAN)]
-        [DataRow("System.String", nanoCLR_DataType.DATATYPE_STRING)]
-        [DataRow("System.Object", nanoCLR_DataType.DATATYPE_CLASS)]
-        [DataRow("System.IntPtr", nanoCLR_DataType.DATATYPE_VALUETYPE)]
-        [DataRow("System.WeakReference", nanoCLR_DataType.DATATYPE_WEAKCLASS)]
+        [DataRow("System.DateTime", NanoCLRDataType.DATATYPE_DATETIME)]
+        [DataRow("System.TimeSpan", NanoCLRDataType.DATATYPE_TIMESPAN)]
+        [DataRow("System.String", NanoCLRDataType.DATATYPE_STRING)]
+        [DataRow("System.Object", NanoCLRDataType.DATATYPE_CLASS)]
+        [DataRow("System.IntPtr", NanoCLRDataType.DATATYPE_VALUETYPE)]
+        [DataRow("System.WeakReference", NanoCLRDataType.DATATYPE_WEAKCLASS)]
         [TestMethod]
-        public void WriteDataTypeForTypeRef_ShouldWriteCorrectDataType(string typeFullName, nanoCLR_DataType dataType)
+        public void WriteDataTypeForTypeRef_ShouldWriteCorrectDataType(string typeFullName, NanoCLRDataType dataType)
         {
             // Arrange
             AssemblyDefinition mscorlibAssemblyDefinition = AssemblyDefinition.ReadAssembly(TestObjectHelper.MscorlibFullPath);

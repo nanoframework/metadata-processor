@@ -40,67 +40,67 @@ namespace nanoFramework.Tools.MetadataProcessor
             }
         }
 
-        private static readonly IDictionary<string, nanoCLR_DataType> s_primitiveTypes =
-            new Dictionary<string, nanoCLR_DataType>(StringComparer.Ordinal);
+        private static readonly IDictionary<string, NanoCLRDataType> s_primitiveTypes =
+            new Dictionary<string, NanoCLRDataType>(StringComparer.Ordinal);
 
         /// <summary>
         /// Built-in types (see flags in c_CLR_RT_DataTypeLookup at CLR Core code)
         /// </summary>
-        private static readonly IDictionary<string, nanoCLR_DataType> s_builtInTypes =
-            new Dictionary<string, nanoCLR_DataType>(StringComparer.Ordinal);
+        private static readonly IDictionary<string, NanoCLRDataType> s_builtInTypes =
+            new Dictionary<string, NanoCLRDataType>(StringComparer.Ordinal);
 
-        public static IDictionary<string, nanoCLR_DataType> PrimitiveTypes => s_primitiveTypes;
+        public static IDictionary<string, NanoCLRDataType> PrimitiveTypes => s_primitiveTypes;
 
         static nanoSignaturesTable()
         {
-            s_primitiveTypes.Add(typeof(void).FullName, nanoCLR_DataType.DATATYPE_VOID);
+            s_primitiveTypes.Add(typeof(void).FullName, NanoCLRDataType.DATATYPE_VOID);
 
-            s_primitiveTypes.Add(typeof(sbyte).FullName, nanoCLR_DataType.DATATYPE_I1);
-            s_primitiveTypes.Add(typeof(short).FullName, nanoCLR_DataType.DATATYPE_I2);
-            s_primitiveTypes.Add(typeof(int).FullName, nanoCLR_DataType.DATATYPE_I4);
-            s_primitiveTypes.Add(typeof(long).FullName, nanoCLR_DataType.DATATYPE_I8);
+            s_primitiveTypes.Add(typeof(sbyte).FullName, NanoCLRDataType.DATATYPE_I1);
+            s_primitiveTypes.Add(typeof(short).FullName, NanoCLRDataType.DATATYPE_I2);
+            s_primitiveTypes.Add(typeof(int).FullName, NanoCLRDataType.DATATYPE_I4);
+            s_primitiveTypes.Add(typeof(long).FullName, NanoCLRDataType.DATATYPE_I8);
 
-            s_primitiveTypes.Add(typeof(byte).FullName, nanoCLR_DataType.DATATYPE_U1);
-            s_primitiveTypes.Add(typeof(ushort).FullName, nanoCLR_DataType.DATATYPE_U2);
-            s_primitiveTypes.Add(typeof(uint).FullName, nanoCLR_DataType.DATATYPE_U4);
-            s_primitiveTypes.Add(typeof(ulong).FullName, nanoCLR_DataType.DATATYPE_U8);
+            s_primitiveTypes.Add(typeof(byte).FullName, NanoCLRDataType.DATATYPE_U1);
+            s_primitiveTypes.Add(typeof(ushort).FullName, NanoCLRDataType.DATATYPE_U2);
+            s_primitiveTypes.Add(typeof(uint).FullName, NanoCLRDataType.DATATYPE_U4);
+            s_primitiveTypes.Add(typeof(ulong).FullName, NanoCLRDataType.DATATYPE_U8);
 
-            s_primitiveTypes.Add(typeof(float).FullName, nanoCLR_DataType.DATATYPE_R4);
-            s_primitiveTypes.Add(typeof(double).FullName, nanoCLR_DataType.DATATYPE_R8);
+            s_primitiveTypes.Add(typeof(float).FullName, NanoCLRDataType.DATATYPE_R4);
+            s_primitiveTypes.Add(typeof(double).FullName, NanoCLRDataType.DATATYPE_R8);
 
-            s_primitiveTypes.Add(typeof(char).FullName, nanoCLR_DataType.DATATYPE_CHAR);
-            s_primitiveTypes.Add(typeof(string).FullName, nanoCLR_DataType.DATATYPE_STRING);
-            s_primitiveTypes.Add(typeof(bool).FullName, nanoCLR_DataType.DATATYPE_BOOLEAN);
+            s_primitiveTypes.Add(typeof(char).FullName, NanoCLRDataType.DATATYPE_CHAR);
+            s_primitiveTypes.Add(typeof(string).FullName, NanoCLRDataType.DATATYPE_STRING);
+            s_primitiveTypes.Add(typeof(bool).FullName, NanoCLRDataType.DATATYPE_BOOLEAN);
 
-            s_primitiveTypes.Add(typeof(object).FullName, nanoCLR_DataType.DATATYPE_OBJECT);
-            s_primitiveTypes.Add(typeof(IntPtr).FullName, nanoCLR_DataType.DATATYPE_I4);
-            s_primitiveTypes.Add(typeof(UIntPtr).FullName, nanoCLR_DataType.DATATYPE_U4);
+            s_primitiveTypes.Add(typeof(object).FullName, NanoCLRDataType.DATATYPE_OBJECT);
+            s_primitiveTypes.Add(typeof(IntPtr).FullName, NanoCLRDataType.DATATYPE_I4);
+            s_primitiveTypes.Add(typeof(UIntPtr).FullName, NanoCLRDataType.DATATYPE_U4);
 
-            s_primitiveTypes.Add(typeof(WeakReference).FullName, nanoCLR_DataType.DATATYPE_WEAKCLASS);
+            s_primitiveTypes.Add(typeof(WeakReference).FullName, NanoCLRDataType.DATATYPE_WEAKCLASS);
 
             // from c_CLR_RT_DataTypeLookup at CLR Core code
-            s_builtInTypes.Add(typeof(bool).FullName, nanoCLR_DataType.DATATYPE_BOOLEAN);
-            s_builtInTypes.Add(typeof(char).FullName, nanoCLR_DataType.DATATYPE_CHAR);
-            s_builtInTypes.Add(typeof(sbyte).FullName, nanoCLR_DataType.DATATYPE_I1);
-            s_builtInTypes.Add(typeof(byte).FullName, nanoCLR_DataType.DATATYPE_U1);
-            s_builtInTypes.Add(typeof(short).FullName, nanoCLR_DataType.DATATYPE_I2);
-            s_builtInTypes.Add(typeof(ushort).FullName, nanoCLR_DataType.DATATYPE_U2);
-            s_builtInTypes.Add(typeof(int).FullName, nanoCLR_DataType.DATATYPE_I4);
-            s_builtInTypes.Add(typeof(uint).FullName, nanoCLR_DataType.DATATYPE_U4);
-            s_builtInTypes.Add(typeof(long).FullName, nanoCLR_DataType.DATATYPE_I8);
-            s_builtInTypes.Add(typeof(ulong).FullName, nanoCLR_DataType.DATATYPE_U8);
-            s_builtInTypes.Add(typeof(float).FullName, nanoCLR_DataType.DATATYPE_R4);
-            s_builtInTypes.Add(typeof(double).FullName, nanoCLR_DataType.DATATYPE_R8);
+            s_builtInTypes.Add(typeof(bool).FullName, NanoCLRDataType.DATATYPE_BOOLEAN);
+            s_builtInTypes.Add(typeof(char).FullName, NanoCLRDataType.DATATYPE_CHAR);
+            s_builtInTypes.Add(typeof(sbyte).FullName, NanoCLRDataType.DATATYPE_I1);
+            s_builtInTypes.Add(typeof(byte).FullName, NanoCLRDataType.DATATYPE_U1);
+            s_builtInTypes.Add(typeof(short).FullName, NanoCLRDataType.DATATYPE_I2);
+            s_builtInTypes.Add(typeof(ushort).FullName, NanoCLRDataType.DATATYPE_U2);
+            s_builtInTypes.Add(typeof(int).FullName, NanoCLRDataType.DATATYPE_I4);
+            s_builtInTypes.Add(typeof(uint).FullName, NanoCLRDataType.DATATYPE_U4);
+            s_builtInTypes.Add(typeof(long).FullName, NanoCLRDataType.DATATYPE_I8);
+            s_builtInTypes.Add(typeof(ulong).FullName, NanoCLRDataType.DATATYPE_U8);
+            s_builtInTypes.Add(typeof(float).FullName, NanoCLRDataType.DATATYPE_R4);
+            s_builtInTypes.Add(typeof(double).FullName, NanoCLRDataType.DATATYPE_R8);
 
-            s_builtInTypes.Add(typeof(DateTime).FullName, nanoCLR_DataType.DATATYPE_DATETIME);
-            s_builtInTypes.Add(typeof(TimeSpan).FullName, nanoCLR_DataType.DATATYPE_TIMESPAN);
-            s_builtInTypes.Add(typeof(string).FullName, nanoCLR_DataType.DATATYPE_STRING);
+            s_builtInTypes.Add(typeof(DateTime).FullName, NanoCLRDataType.DATATYPE_DATETIME);
+            s_builtInTypes.Add(typeof(TimeSpan).FullName, NanoCLRDataType.DATATYPE_TIMESPAN);
+            s_builtInTypes.Add(typeof(string).FullName, NanoCLRDataType.DATATYPE_STRING);
 
-            s_builtInTypes.Add("System.RuntimeTypeHandle", nanoCLR_DataType.DATATYPE_REFLECTION);
-            s_builtInTypes.Add("System.RuntimeFieldHandle", nanoCLR_DataType.DATATYPE_REFLECTION);
-            s_builtInTypes.Add("System.RuntimeMethodHandle", nanoCLR_DataType.DATATYPE_REFLECTION);
+            s_builtInTypes.Add("System.RuntimeTypeHandle", NanoCLRDataType.DATATYPE_REFLECTION);
+            s_builtInTypes.Add("System.RuntimeFieldHandle", NanoCLRDataType.DATATYPE_REFLECTION);
+            s_builtInTypes.Add("System.RuntimeMethodHandle", NanoCLRDataType.DATATYPE_REFLECTION);
 
-            s_builtInTypes.Add(typeof(WeakReference).FullName, nanoCLR_DataType.DATATYPE_WEAKCLASS);
+            s_builtInTypes.Add(typeof(WeakReference).FullName, NanoCLRDataType.DATATYPE_WEAKCLASS);
         }
 
         /// <summary>
@@ -361,7 +361,7 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             if (s_primitiveTypes.TryGetValue(
                 typeDefinition.FullName,
-                out nanoCLR_DataType dataType))
+                out NanoCLRDataType dataType))
             {
                 writer.WriteByte((byte)dataType);
                 return;
@@ -499,7 +499,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             // start checking with the built-in types
             if (s_builtInTypes.TryGetValue(
                 typeDefinition.FullName,
-                out nanoCLR_DataType dataType))
+                out NanoCLRDataType dataType))
             {
                 writer.WriteByte((byte)dataType);
             }
@@ -516,16 +516,16 @@ namespace nanoFramework.Tools.MetadataProcessor
                     }
                     else
                     {
-                        writer.WriteByte((byte)nanoCLR_DataType.DATATYPE_I4);
+                        writer.WriteByte((byte)NanoCLRDataType.DATATYPE_I4);
                     }
                 }
                 else if (typeDefinition.IsValueType)
                 {
-                    writer.WriteByte((byte)nanoCLR_DataType.DATATYPE_VALUETYPE);
+                    writer.WriteByte((byte)NanoCLRDataType.DATATYPE_VALUETYPE);
                 }
                 else if (typeDefinition.IsClass || typeDefinition.IsInterface)
                 {
-                    writer.WriteByte((byte)nanoCLR_DataType.DATATYPE_CLASS);
+                    writer.WriteByte((byte)NanoCLRDataType.DATATYPE_CLASS);
                 }
                 else
                 {
@@ -756,7 +756,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             BinaryWriter writer,
             CustomAttributeArgument argument)
         {
-            nanoCLR_DataType dataType;
+            NanoCLRDataType dataType;
             if (s_primitiveTypes.TryGetValue(argument.Type.FullName, out dataType))
             {
                 switch (dataType)
