@@ -43,6 +43,20 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
             return ret;
         }
 
+        public static nanoTablesContext GetTestNFLibraryTablesContext()
+        {
+            AssemblyDefinition assemblyDefinition = AssemblyDefinition.ReadAssembly(TestNFClassLibFullPath);
+
+            return new nanoTablesContext(
+                assemblyDefinition,
+                null,
+                new List<string>(),
+                null,
+                false,
+                false,
+                false);
+        }
+
         public static string Configuration => _configuration;
 
         public static string TestExecutionLocation

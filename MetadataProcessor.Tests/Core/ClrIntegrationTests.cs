@@ -330,10 +330,10 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
         {
             StringBuilder arguments = new StringBuilder(" --localinstance");
 
-//#if DEBUG
-//            arguments.Append($" \"{_localClrInstancePath}\"");
+#if DEBUG
+            arguments.Append($" \"{_localClrInstancePath}\"");
 
-//#else
+#else
             if (string.IsNullOrEmpty(TestObjectHelper.NanoClrLocalInstance))
             {
                 return null;
@@ -342,7 +342,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
             {
                 arguments.Append($" \"{TestObjectHelper.NanoClrLocalInstance}\"");
             }
-//#endif
+#endif
 
             return arguments.ToString();
         }

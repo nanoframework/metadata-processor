@@ -37,6 +37,7 @@ namespace nanoFramework.Tools.MetadataProcessor.MsBuildTask
 
         public string LoadStrings { get; set; }
 
+        [Obsolete("Use ExcludeTypeAttribute instead of passing this parameter. This will be removed in a future version of MDP.")]
         public ITaskItem[] ExcludeClassByName { get; set; }
 
         public ITaskItem[] ImportResources { get; set; }
@@ -154,13 +155,16 @@ namespace nanoFramework.Tools.MetadataProcessor.MsBuildTask
                 if (ExcludeClassByName != null &&
                     ExcludeClassByName.Any())
                 {
-                    if (Verbose) Log.LogCommandLine(MessageImportance.Normal, "Processing class exclusion list..");
+                    if (Verbose) Log.LogCommandLine(MessageImportance.Normal, "Processing class exclusion list.");
 
-                    foreach (var className in ExcludeClassByName)
+                    foreach (ITaskItem className in ExcludeClassByName)
                     {
                         _classNamesToExclude.Add(className.ToString());
 
-                        if (Verbose) Log.LogCommandLine(MessageImportance.Normal, $"Adding '{className.ToString()}' to collection of classes to exclude");
+                        if (Verbose)
+                        {
+                            Log.LogCommandLine(MessageImportance.Normal, $"Adding '{className.ToString()}' to collection of classes to exclude");
+                        }
                     }
                 }
 

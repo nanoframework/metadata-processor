@@ -20,7 +20,15 @@
   <ItemGroup>
     <Compile Include="IAmAClassWithAnEnum.cs" />
     <Compile Include="ClassOnAnotherAssembly.cs" />
+    <Compile Include="IAmAnEnumToExclude.cs" />
+    <Compile Include="IAmAlsoATypeToExclude.cs" />
+    <Compile Include="IAmATypeToExclude.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <NFMDP_PE_ExcludeClassByName Include="TestNFClassLibrary.IAmATypeToExclude">
+      <InProject>false</InProject>
+    </NFMDP_PE_ExcludeClassByName>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\mscorlib\nanoFramework.CoreLibrary\CoreLibrary.nfproj" />

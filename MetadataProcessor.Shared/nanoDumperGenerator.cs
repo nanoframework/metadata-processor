@@ -91,9 +91,10 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                             TypeToken = fa.CustomAttributes[0].Constructor.MetadataToken.ToInt32().ToString("x8")
                         };
 
-                        if (fa.CustomAttributes[0].HasConstructorArguments)
+                        if (!nanoTablesContext.IgnoringAttributes.Contains(fa.CustomAttributes[0].AttributeType.FullName)
+                            && fa.CustomAttributes[0].HasConstructorArguments)
                         {
-                            foreach (var value in fa.CustomAttributes[0].ConstructorArguments)
+                            foreach (CustomAttributeArgument value in fa.CustomAttributes[0].ConstructorArguments)
                             {
                                 attribute.FixedArgs.AddRange(BuildFixedArgsAttribute(value));
                             }
