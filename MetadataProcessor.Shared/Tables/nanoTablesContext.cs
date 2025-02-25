@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Mono.Cecil;
 
 namespace nanoFramework.Tools.MetadataProcessor
 {
@@ -25,18 +26,21 @@ namespace nanoFramework.Tools.MetadataProcessor
                 "System.Runtime.InteropServices.GuidAttribute",
 
                 // Compiler-specific attributes
-                //"System.ParamArrayAttribute",
-                //"System.SerializableAttribute",
-                //"System.NonSerializedAttribute",
-                //"System.Runtime.InteropServices.StructLayoutAttribute",
-                //"System.Runtime.InteropServices.LayoutKind",
-                //"System.Runtime.InteropServices.OutAttribute",
-                //"System.Runtime.CompilerServices.ExtensionAttribute",
-                //"System.Runtime.CompilerServices.MethodImplAttribute",
-                //"System.Runtime.CompilerServices.InternalsVisibleToAttribute",
-                //"System.Runtime.CompilerServices.IndexerNameAttribute",
-                //"System.Runtime.CompilerServices.MethodImplOptions",
-                //"System.Reflection.FieldNoReflectionAttribute",
+                "System.ParamArrayAttribute",
+                "System.SerializableAttribute",
+                "System.NonSerializedAttribute",
+                "System.Runtime.InteropServices.StructLayoutAttribute",
+                "System.Runtime.InteropServices.LayoutKind",
+                "System.Runtime.InteropServices.OutAttribute",
+                "System.Runtime.CompilerServices.ExtensionAttribute",
+                "System.Runtime.CompilerServices.MethodImplAttribute",
+                "System.Runtime.CompilerServices.NullableAttribute",
+                "System.Runtime.CompilerServices.NullableContextAttribute",
+                "System.Runtime.CompilerServices.InternalsVisibleToAttribute",
+                "System.Runtime.CompilerServices.IndexerNameAttribute",
+                "System.Runtime.CompilerServices.MethodImplOptions",
+                "System.Runtime.CompilerServices.RefSafetyRulesAttribute",
+                "System.Reflection.FieldNoReflectionAttribute",
 
                 // Debugger-specific attributes
                 "System.Diagnostics.DebuggableAttribute",
@@ -57,7 +61,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                 // Intellisense filtering attributes
                 "System.ComponentModel.EditorBrowsableAttribute",
 
-                //Not supported
+                // Not supported
                 "System.Reflection.DefaultMemberAttribute",
 
                 // Not supported attributes
@@ -79,8 +83,11 @@ namespace nanoFramework.Tools.MetadataProcessor
             ClassNamesToExclude = classNamesToExclude;
             _verbose = verbose;
 
+            // add default types to exclude
+            SetDefaultTypesToExclude();
+
             // check CustomAttributes against list of classes to exclude
-            foreach (var item in assemblyDefinition.CustomAttributes)
+            foreach (CustomAttribute item in assemblyDefinition.CustomAttributes)
             {
                 // add it to ignore list, if it's not already there
                 if ((ClassNamesToExclude.Contains(item.AttributeType.FullName) ||
@@ -93,7 +100,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             }
 
             // check ignoring attributes against ClassNamesToExclude 
-            foreach (var className in ClassNamesToExclude)
+            foreach (string className in ClassNamesToExclude)
             {
                 if (!IgnoringAttributes.Contains(className))
                 {
@@ -134,9 +141,12 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             // Internal types definitions
 
-            var types = GetOrderedTypes(mainModule, explicitTypesOrder);
+            List<TypeDefinition> types = GetOrderedTypes(mainModule, explicitTypesOrder);
 
             TypeDefinitionTable = new nanoTypeDefinitionTable(types, this);
+
+            // get types to exclude from the types attributes
+            ProcessTypesToExclude(types);
 
             var fields = types
                 .SelectMany(item => GetOrderedFields(item.Fields.Where(field => !field.HasConstant)))
@@ -684,5 +694,29 @@ namespace nanoFramework.Tools.MetadataProcessor
             ResourceDataTable = new nanoResourceDataTable();
             ResourceFileTable = new nanoResourceFileTable(this);
         }
+
+        private static void ProcessTypesToExclude(List<TypeDefinition> types)
+        {
+            // loop through all types and find out which ones have the ExcludeTypeAttribute, so they are added to the exclusion lis
+            foreach (TypeDefinition type in types)
+            {
+                if (type.HasCustomAttributes)
+                {
+                    CustomAttribute excludeTypeAttribute = type.CustomAttributes.FirstOrDefault(ca => ca.AttributeType.FullName == "System.Runtime.CompilerServices.ExcludeTypeAttribute");
+                    if (excludeTypeAttribute != null)
+                    {
+                        ClassNamesToExclude.Add(type.FullName);
+                    }
+                }
+            }
+        }
+
+        private void SetDefaultTypesToExclude()
+        {
+            ClassNamesToExclude.Add("ThisAssembly");
+            ClassNamesToExclude.Add("System.Runtime.CompilerServices.RefSafetyRulesAttribute");
+            ClassNamesToExclude.Add("System.Runtime.CompilerServices.AccessedThroughPropertyAttribute");
+        }
+
     }
 }

@@ -1,4 +1,4 @@
-//
+﻿//
 // Copyright (c) .NET Foundation and Contributors
 // See LICENSE file in the project root for full license information.
 //
@@ -91,7 +91,8 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
             foreach (var c in _tablesContext.TypeDefinitionTable.Items)
             {
                 if (c.IncludeInStub() &&
-                    !c.IsToExclude())
+                    !c.IsToExclude() &&
+                    !nanoTablesContext.IgnoringAttributes.Contains(c.FullName))
                 {
                     var className = NativeMethodsCrc.GetClassName(c);
 

@@ -16,7 +16,7 @@ using System.Xml;
 namespace nanoFramework.Tools.MetadataProcessor.Console
 {
     internal static class MainClass
-	{
+    {
         private sealed class MetadataProcessor
         {
             private readonly IDictionary<string, string> _loadHints =
@@ -39,10 +39,10 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
             {
                 try
                 {
-                    if(Verbose) System.Console.WriteLine("Parsing assembly...");
+                    if (Verbose) System.Console.WriteLine("Parsing assembly...");
 
                     _assemblyDefinition = AssemblyDefinition.ReadAssembly(fileName,
-                        new ReaderParameters { AssemblyResolver = new LoadHintsAssemblyResolver(_loadHints)});
+                        new ReaderParameters { AssemblyResolver = new LoadHintsAssemblyResolver(_loadHints) });
                 }
                 catch (Exception)
                 {
@@ -202,9 +202,9 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
             {
                 var arg = args[i].ToLower(CultureInfo.InvariantCulture);
 
-                if ( (arg == "-h" ||
+                if ((arg == "-h" ||
                     arg == "-help" ||
-                    arg == "?") && 
+                    arg == "?") &&
                     (i + 1 < args.Length))
                 {
                     System.Console.WriteLine("");
@@ -240,6 +240,10 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
                 }
                 else if (arg == "-excludeclassbyname" && i + 1 < args.Length)
                 {
+                    System.Console.WriteLine("*********************************************** WARNING *************************************************");
+                    System.Console.WriteLine("Use ExcludeTypeAttribute instead of passing this option. This will be removed in a future version of MDP.");
+                    System.Console.WriteLine("*********************************************************************************************************");
+
                     md.AddClassToExclude(args[++i]);
                 }
                 else if (arg == "-verbose")
@@ -292,6 +296,6 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
                     System.Console.Error.WriteLine("Unknown command line option '{0}' ignored.", arg);
                 }
             }
-		}
+        }
     }
 }
