@@ -61,7 +61,10 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
 
             Assert.IsTrue(dumpFileContent.Contains("'SubClass'"), "Wrong entry for SubClass in type ref");
 
+            // skip this assert to locals listing as the debug build will differ as it not optimized
+#if !DEBUG
             Assert.IsTrue(Regex.IsMatch(dumpFileContent, @"Locals \( \[0\] I4, \r\n\s+\[1\] CLASS System\.Exception \[\d{8}\], \r\n\s+\[2\] CLASS System\.ApplicationException \[\d{8}\] \)"), "Wrong listing of locals in UglyAdd method");
+#endif
             Assert.IsTrue(dumpFileContent.Contains("callvirt    System.Void TestNFApp.TestingDelegates/SimpleDelegate::Invoke(System.String)"), "Wrong reference to callvirt in DelegateTests body");
             Assert.IsTrue(dumpFileContent.Contains("ldstr       \"          DataRowAttribute.Arg[{0}] has: {1}\""), "Wrong reference to ldstr in ReflectionTests body");
 
