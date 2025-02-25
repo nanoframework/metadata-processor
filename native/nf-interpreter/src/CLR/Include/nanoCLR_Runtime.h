@@ -1437,7 +1437,7 @@ struct CLR_RT_AppDomain : public CLR_RT_ObjectToEvent_Destination // EVENT HEAP 
     CLR_RT_DblLinkedList m_appDomainAssemblies;
     CLR_RT_HeapBlock *m_globalLock;                          // OBJECT HEAP - DO RELOCATION -
     CLR_RT_HeapBlock_String *m_strName;                      // OBJECT HEAP - DO RELOCATION -
-    CLR_RT_HeapBlock m_outOfMemoryException;                 // NO RELOCATION -
+    CLR_RT_HeapBlock *m_outOfMemoryException;                // OBJECT HEAP - DO RELOCATION -
     CLR_RT_AppDomainAssembly *m_appDomainAssemblyLastAccess; // EVENT HEAP  - NO RELOCATION -
     bool m_fCanBeUnloaded;
 
@@ -2915,6 +2915,9 @@ struct ThreadPriority
     /*=========================================================================
     ** Constants for thread priorities.
     =========================================================================*/
+    ///////////////////////////////////////////////////////////////////////////
+    // !!! KEEP IN SYNC with System.Threading.ThreadPriority in mscorlib !!! //
+    ///////////////////////////////////////////////////////////////////////////
     static const int Lowest = 0;
     static const int BelowNormal = 1;
     static const int Normal = 2;
@@ -3657,8 +3660,8 @@ struct CLR_RT_ExecutionEngine
     CLR_RT_Thread *m_cctorThread;             // EVENT HEAP - NO RELOCATION -
 
 #if !defined(NANOCLR_APPDOMAINS)
-    CLR_RT_HeapBlock *m_globalLock;          // OBJECT HEAP - DO RELOCATION -
-    CLR_RT_HeapBlock m_outOfMemoryException; // NO RELOCATION -
+    CLR_RT_HeapBlock *m_globalLock;           // OBJECT HEAP - DO RELOCATION -
+    CLR_RT_HeapBlock *m_outOfMemoryException; // OBJECT HEAP - DO RELOCATION -
 #endif
 
     CLR_RT_HeapBlock *m_currentUICulture; // OBJECT HEAP - DO RELOCATION -
