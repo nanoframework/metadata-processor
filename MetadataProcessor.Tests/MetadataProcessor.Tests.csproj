@@ -129,8 +129,10 @@
       "$(MSBuildBinPath)\msbuild" "$(ProjectDir)TestNFApp\TestNFApp.nfproj" -t:Build -nr:False -p:Configuration=$(Configuration) -p:NF_MDP_MSBUILDTASK_PATH="$(ProjectDir)..\MetadataProcessor.MsBuildTask\bin\$(Configuration)\net472"
       "$(MSBuildBinPath)\msbuild" "$(ProjectDir)StubsGenerationTestNFApp\StubsGenerationTestNFApp.nfproj" -t:Build -nr:False -p:Configuration=$(Configuration) -p:NF_MDP_MSBUILDTASK_PATH="$(ProjectDir)..\MetadataProcessor.MsBuildTask\bin\$(Configuration)\net472"
       mkdir "$(TargetDir)\TestNFApp"
+      mkdir "$(TargetDir)\TestNFClassLibrary"
       mkdir "$(TargetDir)\StubsGenerationTestNFApp"
       copy /y "$(ProjectDir)TestNFApp\$(OutDir)\*" "$(TargetDir)\TestNFApp"
+      copy /y "$(ProjectDir)TestNFApp\$(OutDir)\TestNFClassLibrary.*" "$(TargetDir)\TestNFClassLibrary"
       copy /y "$(ProjectDir)StubsGenerationTestNFApp\$(OutDir)\*" "$(TargetDir)\StubsGenerationTestNFApp"
     </PreBuildEvent>
   </PropertyGroup>

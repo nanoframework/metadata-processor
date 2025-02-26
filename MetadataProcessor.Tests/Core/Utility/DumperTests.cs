@@ -43,9 +43,9 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
             Assert.IsTrue(dumpFileContent.Contains("TypeRefProps [01000001]: Scope: 23000001 'System.Diagnostics.DebuggableAttribute'"), "Wrong entry for System.Diagnostics.DebuggableAttribute in type ref");
             Assert.IsTrue(dumpFileContent.Contains(": Scope: 23000002 'TestNFClassLibrary.ClassOnAnotherAssembly'"), "Wrong entry for TestNFClassLibrary.ClassOnAnotherAssembly in type ref");
 
-            Assert.IsTrue(dumpFileContent.Contains(": Flags: 00001001 Extends: 0100000f Enclosed: 02000000 'TestNFApp.DummyCustomAttribute1'"), "Wrong entry for TestNFApp.DummyCustomAttribute1 in type ref");
+            Assert.IsTrue(dumpFileContent.Contains(": Flags: 00001001 Extends: 01000010 Enclosed: 02000000 'TestNFApp.DummyCustomAttribute1'"), "Wrong entry for TestNFApp.DummyCustomAttribute1 in type ref");
 
-            Assert.IsTrue(dumpFileContent.Contains(": Flags: 00001001 Extends: 0100000f Enclosed: 02000000 'TestNFApp.DummyCustomAttribute2'"), "Wrong entry for TestNFApp.DummyCustomAttribute2 in type ref");
+            Assert.IsTrue(dumpFileContent.Contains(": Flags: 00001001 Extends: 01000010 Enclosed: 02000000 'TestNFApp.DummyCustomAttribute2'"), "Wrong entry for TestNFApp.DummyCustomAttribute2 in type ref");
 
             Assert.IsTrue(dumpFileContent.Contains(": Flags: 00001061 Extends: 01000000 Enclosed: 02000000 'TestNFApp.IOneClassOverAll'"), "Wrong entry for TestNFApp.IOneClassOverAll in type ref");
             Assert.IsTrue(dumpFileContent.Contains(": Flags: 000007c6 Impl: 00000000 RVA: 00000000 'get_DummyProperty' [I4( )]"), "Wrong entry for get_DummyProperty in type ref");

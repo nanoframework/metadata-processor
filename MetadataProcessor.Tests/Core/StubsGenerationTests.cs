@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Mono.Cecil;
 using nanoFramework.Tools.MetadataProcessor.Core;
@@ -58,7 +59,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
         private const string NativeHeaderMethodGenerationDeclaration =
             "static void NativeMethodWithReferenceParameters( uint8_t& param0, uint16_t& param1, HRESULT &hr );";
 
-        private string stubPath;
+        private string _stubsPath;
 
         [TestMethod]
         public void GeneratingStubsFromNFAppTest()
@@ -66,7 +67,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
             // read generated stub file and look for the function declaration
             var generatedFile =
                 File.ReadAllText(
-                    $"{stubPath}\\StubsGenerationTestNFApp_StubsGenerationTestNFApp_NativeMethodGeneration.cpp");
+                    $"{_stubsPath}\\StubsGenerationTestNFApp_StubsGenerationTestNFApp_NativeMethodGeneration.cpp");
 
             Assert.IsTrue(generatedFile.Contains(NativeMethodGenerationDeclaration));
         }
@@ -76,7 +77,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
         {
             var generatedFile =
                 File.ReadAllText(
-                    $"{stubPath}\\StubsGenerationTestNFApp_StubsGenerationTestNFApp_NativeMethodGeneration_mshl.cpp");
+                    $"{_stubsPath}\\StubsGenerationTestNFApp_StubsGenerationTestNFApp_NativeMethodGeneration_mshl.cpp");
 
             Assert.IsTrue(generatedFile.Contains(NativeMarshallingMethodGenerationDeclaration));
         }
@@ -86,7 +87,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
         {
             var generatedFile =
                 File.ReadAllText(
-                    $"{stubPath}\\StubsGenerationTestNFApp_StubsGenerationTestNFApp_NativeMethodGeneration.h");
+                    $"{_stubsPath}\\StubsGenerationTestNFApp_StubsGenerationTestNFApp_NativeMethodGeneration.h");
 
             Assert.IsTrue(generatedFile.Contains(NativeHeaderMethodGenerationDeclaration));
         }
@@ -127,15 +128,15 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
         {
             var generatedHeaderFile =
                 File.ReadAllText(
-                    $"{stubPath}\\StubsGenerationTestNFApp_StubsGenerationTestNFApp_NativeMethodGeneration.h");
+                    $"{_stubsPath}\\StubsGenerationTestNFApp_StubsGenerationTestNFApp_NativeMethodGeneration.h");
 
             var generatedMarshallFile =
                 File.ReadAllText(
-                    $"{stubPath}\\StubsGenerationTestNFApp_StubsGenerationTestNFApp_NativeMethodGeneration_mshl.cpp");
+                    $"{_stubsPath}\\StubsGenerationTestNFApp_StubsGenerationTestNFApp_NativeMethodGeneration_mshl.cpp");
 
             var generatedImplementationFile =
                 File.ReadAllText(
-                    $"{stubPath}\\StubsGenerationTestNFApp_StubsGenerationTestNFApp_NativeMethodGeneration.cpp");
+                    $"{_stubsPath}\\StubsGenerationTestNFApp_StubsGenerationTestNFApp_NativeMethodGeneration.cpp");
 
             Assert.IsTrue(generatedHeaderFile.Contains(StaticMethodWithoutParameterHeaderGeneration));
             Assert.IsTrue(generatedMarshallFile.Contains(StaticMethodWithoutParameterMarshallGeneration));
@@ -182,19 +183,33 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
         {
             var generatedHeaderFile =
                 File.ReadAllText(
-                    $"{stubPath}\\StubsGenerationTestNFApp_StubsGenerationTestNFApp_NativeMethodGeneration.h");
+                    $"{_stubsPath}\\StubsGenerationTestNFApp_StubsGenerationTestNFApp_NativeMethodGeneration.h");
 
             var generatedMarshallFile =
                 File.ReadAllText(
-                    $"{stubPath}\\StubsGenerationTestNFApp_StubsGenerationTestNFApp_NativeMethodGeneration_mshl.cpp");
+                    $"{_stubsPath}\\StubsGenerationTestNFApp_StubsGenerationTestNFApp_NativeMethodGeneration_mshl.cpp");
 
             var generatedImplementationFile =
                 File.ReadAllText(
-                    $"{stubPath}\\StubsGenerationTestNFApp_StubsGenerationTestNFApp_NativeMethodGeneration.cpp");
+                    $"{_stubsPath}\\StubsGenerationTestNFApp_StubsGenerationTestNFApp_NativeMethodGeneration.cpp");
 
             Assert.IsTrue(generatedHeaderFile.Contains(StaticMethodHeaderGeneration));
             Assert.IsTrue(generatedMarshallFile.Contains(StaticMethodMarshallGeneration));
             Assert.IsTrue(generatedImplementationFile.Contains(StaticMethodImplementationGeneration));
+        }
+
+        [TestMethod]
+        public void BackingFieldsAbsentTests()
+        {
+            string generatedAssemblyHeaderFile =
+                File.ReadAllText(
+                    $"{_stubsPath}\\TestNFClassLibrary.h");
+
+            // check for property with backing field patter in the name
+            Assert.IsFalse(generatedAssemblyHeaderFile.Contains("k__BackingField ="), "Found a name with BackingField pattern, when it shouldn't");
+
+            // deep check for backing field name pattern (except for entry patter in comments)
+            Assert.IsFalse(Regex.IsMatch(generatedAssemblyHeaderFile, @"(?<!')<\w+>k__BackingField(?!')"), "Found a name with BackingField pattern, when it shouldn't");
         }
 
         [TestInitialize]
@@ -202,7 +217,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
         {
             var loadHints = new Dictionary<string, string>(StringComparer.Ordinal)
             {
-                ["mscorlib"] = Path.Combine(Directory.GetParent(TestObjectHelper.GenerationNFAppFullPath).FullName,
+                ["mscorlib"] = Path.Combine(Directory.GetParent(TestObjectHelper.StubsGenerationNFAppFullPath).FullName,
                     "mscorlib.dll")
             };
 
@@ -212,43 +227,84 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
                 "THIS_NAME_DOES_NOT_EXIST_IN_THE_PROJECT"
             };
 
-            var fileToParse = TestObjectHelper.GenerationNFAppFullPath;
-            var fileToCompile = Path.ChangeExtension(fileToParse, "pe");
+            // Conpile StubsGenerationNFApp
+            string stubsGenerationFileToParse = TestObjectHelper.StubsGenerationNFAppFullPath;
+            string stubsGenerationFileToCompile = Path.ChangeExtension(stubsGenerationFileToParse, "pe");
 
             // get path where stubs will be generated
-            stubPath = Path.Combine(
+            _stubsPath = Path.Combine(
                 TestObjectHelper.TestExecutionLocation,
                 "Stubs");
 
-            var assemblyDefinition = AssemblyDefinition.ReadAssembly(
-                fileToParse,
+            AssemblyDefinition assemblyDefinition = AssemblyDefinition.ReadAssembly(
+                stubsGenerationFileToParse,
                 new ReaderParameters { AssemblyResolver = new LoadHintsAssemblyResolver(loadHints) });
 
-            var assemblyBuilder = new nanoAssemblyBuilder(assemblyDefinition, classNamesToExclude, false);
+            nanoAssemblyBuilder assemblyBuilder = new nanoAssemblyBuilder(assemblyDefinition, classNamesToExclude, false);
 
-            using (var stream = File.Open(
-                       Path.ChangeExtension(fileToCompile, "tmp"),
+            using (FileStream stream = File.Open(
+                       Path.ChangeExtension(stubsGenerationFileToCompile, "tmp"),
                        FileMode.Create,
                        FileAccess.ReadWrite))
-            using (var writer = new BinaryWriter(stream))
+            using (BinaryWriter writer = new BinaryWriter(stream))
             {
                 assemblyBuilder.Write(GetBinaryWriter(writer));
             }
 
             // OK to delete tmp PE file
-            File.Delete(Path.ChangeExtension(fileToCompile, "tmp"));
+            File.Delete(Path.ChangeExtension(stubsGenerationFileToCompile, "tmp"));
 
             assemblyBuilder.Minimize();
 
-            var tablesContext = assemblyBuilder.TablesContext;
+            nanoTablesContext tablesContext = assemblyBuilder.TablesContext;
 
             var skeletonGenerator = new nanoSkeletonGenerator(
                 tablesContext,
-                stubPath,
+                _stubsPath,
                 "testStubs",
                 "StubsGenerationTestNFApp",
                 false,
                 false);
+
+            skeletonGenerator.GenerateSkeleton();
+
+            // Compile the TestNFClassLibrary
+            string nfLibFileToParse = TestObjectHelper.TestNFClassLibFullPath;
+            string nfLibFileToCompile = Path.ChangeExtension(nfLibFileToParse, "pe");
+
+            assemblyDefinition = AssemblyDefinition.ReadAssembly(
+                nfLibFileToParse,
+                new ReaderParameters { AssemblyResolver = new LoadHintsAssemblyResolver(loadHints) });
+
+            assemblyBuilder = new nanoAssemblyBuilder(
+                assemblyDefinition,
+                new List<string>(),
+                false);
+
+            using (FileStream stream = File.Open(
+                       Path.ChangeExtension(nfLibFileToCompile, "tmp"),
+                       FileMode.Create,
+                       FileAccess.ReadWrite))
+
+            using (BinaryWriter writer = new BinaryWriter(stream))
+            {
+                assemblyBuilder.Write(GetBinaryWriter(writer));
+            }
+
+            // OK to delete tmp PE file
+            File.Delete(Path.ChangeExtension(nfLibFileToCompile, "tmp"));
+
+            assemblyBuilder.Minimize();
+
+            tablesContext = assemblyBuilder.TablesContext;
+
+            skeletonGenerator = new nanoSkeletonGenerator(
+                tablesContext,
+                _stubsPath,
+                "testStubs",
+                "TestNFClassLibrary",
+                true,
+                true);
 
             skeletonGenerator.GenerateSkeleton();
         }
@@ -256,7 +312,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
         [TestCleanup]
         public void DeleteStubs()
         {
-            Directory.Delete(stubPath, true);
+            Directory.Delete(_stubsPath, true);
         }
 
         private nanoBinaryWriter GetBinaryWriter(
