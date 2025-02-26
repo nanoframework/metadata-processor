@@ -400,7 +400,7 @@ jobs:
       targetType: filePath
       filePath: azure-pipelines/update-dependencies.ps1
     env:
-      GH_TOKEN: $(GitHubToken)
+      GITHUB_TOKEN: $(GitHubToken)
 
 ##################################
 # report build failure to Discord
