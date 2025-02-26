@@ -20,6 +20,7 @@
   <ItemGroup>
     <Compile Include="IAmAClassWithAnEnum.cs" />
     <Compile Include="ClassOnAnotherAssembly.cs" />
+    <Compile Include="ClassWithNativeImplementation.cs" />
     <Compile Include="IAmAnEnumToExclude.cs" />
     <Compile Include="IAmAlsoATypeToExclude.cs" />
     <Compile Include="IAmATypeToExclude.cs" />

@@ -35,6 +35,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
     {
         public string Name;
         public int ReferenceIndex;
+        public string FieldWarning;
     }
 
     public class InstanceField

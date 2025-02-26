@@ -174,7 +174,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
             }
         }
 
-        public static string GenerationNFAppFullPath
+        public static string StubsGenerationNFAppFullPath
         {
             get
             {

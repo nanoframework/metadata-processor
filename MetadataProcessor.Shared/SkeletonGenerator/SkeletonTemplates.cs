@@ -1,4 +1,4 @@
-//
+﻿//
 // Copyright (c) .NET Foundation and Contributors
 // See LICENSE file in the project root for full license information.
 //
@@ -62,6 +62,9 @@ struct Library_{{AssemblyName}}_{{Name}}{{#newline}}
 {{{#newline}}
 
 {{#each StaticFields}}
+{{#if FieldWarning}}
+    {{FieldWarning}}{{#newline}}
+{{/if}}
     static const int FIELD_STATIC__{{Name}} = {{ReferenceIndex}};{{#newline}}
 {{/each}}
 {{#if StaticFields}}{{#newline}}{{/if}}

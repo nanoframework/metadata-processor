@@ -444,14 +444,17 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
                     // static fields
                     int fieldCount = 0;
-                    var staticFields = c.Fields.Where(f => f.IsStatic && !f.IsLiteral);
+                    IEnumerable<FieldDefinition> staticFields = c.Fields.Where(f => f.IsStatic && !f.IsLiteral);
 
-                    foreach (var f in staticFields)
+                    foreach (FieldDefinition f in staticFields)
                     {
+                        FixFieldName(f, out string fixedFieldName, out string fieldWarning);
+
                         classData.StaticFields.Add(new StaticField()
                         {
-                            Name = f.Name,
-                            ReferenceIndex = staticFieldCount + fieldCount++
+                            Name = string.IsNullOrEmpty(fixedFieldName) ? f.Name : fixedFieldName,
+                            ReferenceIndex = staticFieldCount + fieldCount++,
+                            FieldWarning = fieldWarning
                         });
                     }
 
@@ -467,15 +470,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                     fieldCount = 0;
                     foreach (var f in c.Fields.Where(f => !f.IsStatic && !f.IsLiteral))
                     {
-                        // rename auto-properties backing field to a valid C++ identifier
-                        string fixedFieldName = string.Empty;
-                        string fieldWarning = string.Empty;
-
-                        if (Regex.IsMatch(f.Name, @"<\w+>k__BackingField"))
-                        {
-                            fixedFieldName = $"{f.Name.Replace("<", "").Replace(">", "_")}";
-                            fieldWarning = $"// auto-property backing field renamed to '{fixedFieldName}'";
-                        }
+                        FixFieldName(f, out string fixedFieldName, out string fieldWarning);
 
                         if (_tablesContext.FieldsTable.TryGetFieldReferenceId(f, false, out ushort fieldRefId))
                         {
@@ -542,6 +537,27 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
             {
                 var output = generator.Render(assemblyData);
                 headerFile.Write(output);
+            }
+        }
+
+        /// <summary>
+        /// Fix field name to a valid C++ identifier.
+        /// </summary>
+        /// <param name="field">The field definition to work on.</param>
+        /// <param name="fixedFieldName">The fixed field name, or an <see cref="Empty"/> string if no fix is needed.</param>
+        /// <param name="fieldWarning">The warning message to be added to the field declaration, or empty if no warning is needed.</param>
+        private static void FixFieldName(
+            FieldDefinition field,
+            out string fixedFieldName,
+            out string fieldWarning)
+        {
+            fixedFieldName = string.Empty;
+            fieldWarning = string.Empty;
+
+            if (Regex.IsMatch(field.Name, @"<\w+>k__BackingField"))
+            {
+                fixedFieldName = $"{field.Name.Replace("<", "").Replace(">k__BackingField", "")}";
+                fieldWarning = $"// renamed backing field '{field.Name}'";
             }
         }
 
