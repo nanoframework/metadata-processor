@@ -30,6 +30,8 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
         private string _safeProjectName => _project.Replace('.', '_');
 
+        public string SafeProjectName => _safeProjectName;
+
         public nanoSkeletonGenerator(
             nanoTablesContext tablesContext,
             string path,
@@ -87,11 +89,9 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                 IsInterop = !_withoutInteropCode
             };
 
-            foreach (var c in _tablesContext.TypeDefinitionTable.TypeDefinitions)
+            foreach (TypeDefinition c in _tablesContext.TypeDefinitionTable.TypeDefinitions)
             {
-                if (c.IncludeInStub() &&
-                    !c.IsToExclude() &&
-                    !nanoTablesContext.IgnoringAttributes.Contains(c.FullName))
+                if (ShouldIncludeType(c))
                 {
                     var className = NativeMethodsCrc.GetClassName(c);
 
@@ -370,12 +370,12 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
             };
 
 
-            foreach (var c in _tablesContext.TypeDefinitionTable.Items)
+            foreach (TypeDefinition c in _tablesContext.TypeDefinitionTable.Items)
             {
                 // only care about types that have methods
                 if (c.HasMethods)
                 {
-                    if (c.IncludeInStub())
+                    if (ShouldIncludeType(c))
                     {
                         var className = NativeMethodsCrc.GetClassName(c);
 
@@ -399,8 +399,11 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                                 // need to add a NULL entry for it
                                 assemblyLookup.LookupTable.Add(new MethodStub()
                                 {
+#if DEBUG
+                                    Declaration = $"NULL, // <<<<< Library_{_safeProjectName}_{NativeMethodsCrc.GetClassName(c)}::{NativeMethodsCrc.GetMethodName(m)}",
+#else
                                     Declaration = "NULL"
-                                    //Declaration = $"**Library_{_safeProjectName}_{NativeMethodsCrc.GetClassName(c)}::{NativeMethodsCrc.GetMethodName(m)}"
+#endif
                                 });
                             }
                         }
@@ -413,8 +416,11 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                         {
                             assemblyLookup.LookupTable.Add(new MethodStub()
                             {
+#if DEBUG
+                                Declaration = $"NULL, // <<<<< Library_{_safeProjectName}_{NativeMethodsCrc.GetClassName(c)}::{NativeMethodsCrc.GetMethodName(m)}",
+#else
                                 Declaration = "NULL"
-                                //Declaration = $"**Library_{_safeProjectName}_{NativeMethodsCrc.GetClassName(c)}::{NativeMethodsCrc.GetMethodName(m)}"
+#endif
                             });
                         }
                     }
@@ -443,10 +449,9 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                 IsCoreLib = _isCoreLib
             };
 
-            foreach (var c in _tablesContext.TypeDefinitionTable.Items)
+            foreach (TypeDefinition c in _tablesContext.TypeDefinitionTable.Items)
             {
-                if (c.IncludeInStub() &&
-                    !c.IsToExclude())
+                if (ShouldIncludeType(c))
                 {
                     var classData = new Class()
                     {
@@ -618,6 +623,13 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                 // get the fields count from this type
                 return c.Fields.Count(f => !f.IsStatic && !f.IsLiteral);
             }
+        }
+
+        internal static bool ShouldIncludeType(TypeDefinition type)
+        {
+            return type.IncludeInStub()
+                && !type.IsToExclude()
+                && !nanoTablesContext.IgnoringAttributes.Contains(type.FullName);
         }
     }
 }
