@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Mono.Cecil;
@@ -60,6 +61,8 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
             "static void NativeMethodWithReferenceParameters( uint8_t& param0, uint16_t& param1, HRESULT &hr );";
 
         private string _stubsPath;
+        private List<string> _nfTestLibTypeToIncludeInLookupTable = new List<string>();
+        private List<string> _nfTestLibTypeToIncludeInHeader = new List<string>();
 
         [TestMethod]
         public void GeneratingStubsFromNFAppTest()
@@ -212,6 +215,49 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
             Assert.IsFalse(Regex.IsMatch(generatedAssemblyHeaderFile, @"(?<!')<\w+>k__BackingField(?!')"), "Found a name with BackingField pattern, when it shouldn't");
         }
 
+        [TestMethod]
+        public void StubsAndDeclarationMatchTests()
+        {
+            string generatedAssemblyHeaderFile = File.ReadAllText($"{_stubsPath}\\TestNFClassLibrary.h");
+            string generatedAssemblyLookupFile = File.ReadAllText($"{_stubsPath}\\TestNFClassLibrary.cpp");
+
+            // extract all type definitions from the header file
+            MatchCollection typeDefinitionsInHeader = Regex.Matches(generatedAssemblyHeaderFile, @"struct\s{1}(\w+_\w+_\w+_\w+)\b", RegexOptions.IgnoreCase | RegexOptions.Multiline);
+
+            // extract all type definitions from the lookup file
+            List<Match> typeDefinitionsInLookupTable = Regex.Matches(generatedAssemblyLookupFile, @"^\s{4}(\w+_\w+_\w+_\w+)::", RegexOptions.IgnoreCase | RegexOptions.Multiline)
+                .Cast<Match>()
+                .GroupBy(m => m.Groups[1].Value)
+                .Select(g => g.First())
+                .ToList();
+
+            // check if all entries in lookup table are present in the header
+            foreach (Match typeDefinition in typeDefinitionsInLookupTable)
+            {
+                string typeName = typeDefinition.Groups[1].Value;
+                bool found = typeDefinitionsInHeader.Cast<Match>().Any(md => md.Groups[1].Value == typeName);
+                Assert.IsTrue(found, $"Type definition {typeName} not found in header file");
+            }
+
+            // check if all expected types are present in the lookup table
+            Assert.AreEqual(_nfTestLibTypeToIncludeInLookupTable.Count, typeDefinitionsInLookupTable.Count, "Number of type definitions don't match");
+
+            foreach (string typeName in _nfTestLibTypeToIncludeInLookupTable)
+            {
+                bool found = typeDefinitionsInLookupTable.Any(md => md.Groups[1].Value == typeName);
+                Assert.IsTrue(found, $"Type definition {typeName} not found in lookup table");
+            }
+
+            // check if all expected types are present in the header file
+            Assert.AreEqual(_nfTestLibTypeToIncludeInHeader.Count, typeDefinitionsInHeader.Count, "Number of type definitions don't match");
+
+            foreach (string typeName in _nfTestLibTypeToIncludeInHeader)
+            {
+                bool found = typeDefinitionsInHeader.Cast<Match>().Any(md => md.Groups[1].Value == typeName);
+                Assert.IsTrue(found, $"Type definition {typeName} not found in header file");
+            }
+        }
+
         [TestInitialize]
         public void GenerateStubs()
         {
@@ -256,6 +302,16 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
 
             assemblyBuilder.Minimize();
 
+            // recompile
+            using (FileStream stream = File.Open(
+                     Path.ChangeExtension(stubsGenerationFileToCompile, "tmp"),
+                     FileMode.Create,
+                     FileAccess.ReadWrite))
+            using (BinaryWriter writer = new BinaryWriter(stream))
+            {
+                assemblyBuilder.Write(GetBinaryWriter(writer));
+            }
+
             nanoTablesContext tablesContext = assemblyBuilder.TablesContext;
 
             var skeletonGenerator = new nanoSkeletonGenerator(
@@ -296,6 +352,17 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
 
             assemblyBuilder.Minimize();
 
+            // recompile
+            using (FileStream stream = File.Open(
+                  Path.ChangeExtension(nfLibFileToCompile, "tmp"),
+                  FileMode.Create,
+                  FileAccess.ReadWrite))
+
+            using (BinaryWriter writer = new BinaryWriter(stream))
+            {
+                assemblyBuilder.Write(GetBinaryWriter(writer));
+            }
+
             tablesContext = assemblyBuilder.TablesContext;
 
             skeletonGenerator = new nanoSkeletonGenerator(
@@ -307,6 +374,39 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
                 true);
 
             skeletonGenerator.GenerateSkeleton();
+
+            // save types that are to be included from assembly lookup declaration
+            foreach (TypeDefinition c in tablesContext.TypeDefinitionTable.Items)
+            {
+                if (c.HasMethods && nanoSkeletonGenerator.ShouldIncludeType(c))
+                {
+                    foreach (MethodDefinition m in nanoTablesContext.GetOrderedMethods(c.Methods))
+                    {
+                        ushort rva = tablesContext.ByteCodeTable.GetMethodRva(m);
+
+                        // check method inclusion
+                        // method is not a native implementation (RVA 0xFFFF) and is not abstract
+                        if (rva == 0xFFFF && !m.IsAbstract)
+                        {
+                            _nfTestLibTypeToIncludeInLookupTable.Add($"Library_{skeletonGenerator.SafeProjectName}_{NativeMethodsCrc.GetClassName(c)}");
+
+                            // only need to add the type once
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // save types that are to be included in assembly header
+            foreach (TypeDefinition c in tablesContext.TypeDefinitionTable.Items)
+            {
+                if (nanoSkeletonGenerator.ShouldIncludeType(c)
+                    && c.HasMethods
+                    && c.HasFields)
+                {
+                    _nfTestLibTypeToIncludeInHeader.Add($"Library_{skeletonGenerator.SafeProjectName}_{NativeMethodsCrc.GetClassName(c)}");
+                }
+            }
         }
 
         [TestCleanup]
