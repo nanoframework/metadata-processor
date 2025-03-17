@@ -3,6 +3,11 @@
 // See LICENSE file in the project root for full license information.
 //
 
+// uncomment this for verbose output of library method lookup
+#if DEBUG
+//#define VERBOSE_OUTPUT
+#endif
+
 using Mono.Cecil;
 using Mustache;
 using nanoFramework.Tools.MetadataProcessor.Core.Extensions;
@@ -378,7 +383,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                                 // need to add a NULL entry for it
                                 assemblyLookup.LookupTable.Add(new MethodStub()
                                 {
-#if DEBUG
+#if DEBUG && VERBOSE_OUTPUT
                                     Declaration = $"nullptr, // <<<<< Library_{_safeProjectName}_{NativeMethodsCrc.GetClassName(c)}::{NativeMethodsCrc.GetMethodName(m)}",
 #else
                                     Declaration = "nullptr"
@@ -395,7 +400,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                         {
                             assemblyLookup.LookupTable.Add(new MethodStub()
                             {
-#if DEBUG
+#if DEBUG && VERBOSE_OUTPUT
                                 Declaration = $"nullptr, // <<<<< Library_{_safeProjectName}_{NativeMethodsCrc.GetClassName(c)}::{NativeMethodsCrc.GetMethodName(m)}",
 #else
                                 Declaration = "nullptr"
