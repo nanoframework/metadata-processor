@@ -140,7 +140,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
                         // Tool 'nanoclr' was successfully updated from version '1.0.205' to version '1.0.208'.
                         // or (update becoming reinstall with same version, if there is no new version):
                         // Tool 'nanoclr' was reinstalled with the latest stable version (version '1.0.208').
-                        var regexResult = Regex.Match(cliResult.StandardOutput, @"((?>version ')(?'version'\d+\.\d+\.\d+)(?>'))");
+                        Match regexResult = Regex.Match(cliResult.StandardOutput, @"((?>version ')(?'version'\d+\.\d+\.\d+)(?>'))");
 
                         if (regexResult.Success)
                         {
@@ -234,14 +234,14 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
                 Assert.Inconclusive("nanoclr is not installed, can't run this test");
             }
 
-            var mscorlibPeLocation = Path.Combine(TestObjectHelper.TestNFAppLocation, "mscorlib.pe");
+            string mscorlibPeLocation = Path.Combine(TestObjectHelper.TestNFAppLocation, "mscorlib.pe");
 
             // prepare launch of nanoCLR CLI
             string arguments = $"run --assemblies {mscorlibPeLocation} {ComposeLocalClrInstancePath()} -v diag";
 
             Console.WriteLine($"Launching nanoclr with these arguments: '{arguments}'");
 
-            var cmd = Cli.Wrap("nanoclr")
+            Command cmd = Cli.Wrap("nanoclr")
                 .WithArguments(arguments)
                 .WithValidation(CommandResultValidation.None);
 
@@ -250,10 +250,10 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
             {
                 cts.CancelAfter(TimeSpan.FromSeconds(5));
 
-                var cliResult = await cmd.ExecuteBufferedAsync(cts.Token);
-                var exitCode = cliResult.ExitCode;
+                BufferedCommandResult cliResult = await cmd.ExecuteBufferedAsync(cts.Token);
+                int exitCode = cliResult.ExitCode;
                 // read standard output
-                var output = cliResult.StandardOutput;
+                string output = cliResult.StandardOutput;
 
                 if (exitCode == 0)
                 {
@@ -278,28 +278,28 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
                 Assert.Inconclusive("nanoclr is not installed, can't run this test");
             }
 
-            var mscorlibPeLocation = Path.Combine(TestObjectHelper.TestNFAppLocation, "mscorlib.pe");
-            var nfTestAppPeLocation = TestObjectHelper.NFAppFullPath.Replace("exe", "pe");
-            var nfTestClassLibPeLocation = TestObjectHelper.TestNFClassLibFullPath.Replace("dll", "pe");
+            string mscorlibPeLocation = Path.Combine(TestObjectHelper.TestNFAppLocation, "mscorlib.pe");
+            string nfTestAppPeLocation = TestObjectHelper.NFAppFullPath.Replace("exe", "pe");
+            string nfTestClassLibPeLocation = TestObjectHelper.TestNFClassLibFullPath.Replace("dll", "pe");
 
             // prepare launch of nanoCLR CLI
             string arguments = $"run --assemblies {mscorlibPeLocation} {nfTestAppPeLocation} {nfTestClassLibPeLocation} {ComposeLocalClrInstancePath()} -v diag";
 
             Console.WriteLine($"Launching nanoclr with these arguments: '{arguments}'");
 
-            var cmd = Cli.Wrap("nanoclr")
+            Command cmd = Cli.Wrap("nanoclr")
                 .WithArguments(arguments)
                 .WithValidation(CommandResultValidation.None);
 
             // setup cancellation token with a timeout of 5 seconds
-            using (var cts = new CancellationTokenSource())
+            using (CancellationTokenSource cts = new CancellationTokenSource())
             {
                 cts.CancelAfter(TimeSpan.FromSeconds(5));
 
-                var cliResult = await cmd.ExecuteBufferedAsync(cts.Token);
-                var exitCode = cliResult.ExitCode;
+                BufferedCommandResult cliResult = await cmd.ExecuteBufferedAsync(cts.Token);
+                int exitCode = cliResult.ExitCode;
                 // read standard output
-                var output = cliResult.StandardOutput;
+                string output = cliResult.StandardOutput;
 
                 if (exitCode == 0)
                 {

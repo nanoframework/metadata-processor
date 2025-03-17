@@ -21,12 +21,12 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
         [TestMethod]
         public void DumpAssemblyTest()
         {
-            var nanoTablesContext = TestObjectHelper.GetTestNFAppNanoTablesContext();
+            nanoTablesContext nanoTablesContext = TestObjectHelper.GetTestNFAppNanoTablesContext();
 
-            var fileNameBase = $"{DateTime.UtcNow.ToShortDateString()}_{DateTime.UtcNow.ToLongTimeString()}";
+            string fileNameBase = $"{DateTime.UtcNow.ToShortDateString()}_{DateTime.UtcNow.ToLongTimeString()}";
             fileNameBase = fileNameBase.Replace(':', '_').Replace('/', '_');
 
-            var dumpFileName = Path.Combine(TestObjectHelper.TestExecutionLocation, $"{fileNameBase}_dump.txt");
+            string dumpFileName = Path.Combine(TestObjectHelper.TestExecutionLocation, $"{fileNameBase}_dump.txt");
 
             nanoDumperGenerator dumper = new nanoDumperGenerator(
                 nanoTablesContext,
@@ -34,7 +34,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
             dumper.DumpAll();
 
             // read back file
-            var dumpFileContent = File.ReadAllText(dumpFileName);
+            string dumpFileContent = File.ReadAllText(dumpFileName);
 
             // search for bits
 
@@ -44,7 +44,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
 
             // TypeRefs
             Assert.IsTrue(dumpFileContent.Contains("TypeRef [01000000] /*01000001*/\r\n-------------------------------------------------------\r\nScope: [0000] /*01000001*/\r\n    'System.Diagnostics.DebuggableAttribute'"));
-            Assert.IsTrue(dumpFileContent.Contains("TypeRef [01000016] /*01000017*/\r\n-------------------------------------------------------\r\nScope: [0001] /*01000017*/\r\n    'TestNFClassLibrary.ClassOnAnotherAssembly'"));
+            Assert.IsTrue(dumpFileContent.Contains("TypeRef [0100001A] /*0100001B*/\r\n-------------------------------------------------------\r\nScope: [0001] /*0100001B*/\r\n    'TestNFClassLibrary.ClassOnAnotherAssembly'"));
 
             // TestNFApp.DummyCustomAttribute1
             string typeName = "TestNFApp.DummyCustomAttribute1";
@@ -72,7 +72,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
 
             Assert.IsTrue(dumpFileContent.Contains($"TypeDef {nanoDumperGenerator.TypeDefRefIdToString(type1, typeRefId)}\r\n-------------------------------------------------------\r\n    '{typeName}'\r\n    Flags: {typeFlags:X8}\r\n    Extends: (none)\r\n    Enclosed: (none)"));
 
-            foreach (var m in type1.Methods)
+            foreach (MethodDefinition m in type1.Methods)
             {
                 _ = nanoTablesContext.MethodDefinitionTable.TryGetMethodReferenceId(m, out ushort methodReferenceId);
 
@@ -87,11 +87,11 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
             typeFlags = (uint)nanoTypeDefinitionTable.GetFlags(type1, nanoTablesContext.MethodDefinitionTable);
 
             Assert.IsTrue(dumpFileContent.Contains($"TypeDef {nanoDumperGenerator.TypeDefRefIdToString(type1, typeRefId)}\r\n-------------------------------------------------------\r\n    '{typeName}'\r\n    Flags: {typeFlags:X8}\r\n    Extends: {nanoDumperGenerator.TypeDefExtendsTypeToString(type1.BaseType, baseTypeReferenceId)}\r\n    Enclosed: (none)"));
-            Assert.IsTrue(dumpFileContent.Contains("    FieldDef [01000000] /*04000004*/\r\n    -------------------------------------------------------\r\n    Attr: 00000021\r\n    Flags: 00000021\r\n    '_max'\r\n    [U4]\r\n"));
-            Assert.IsTrue(dumpFileContent.Contains("    FieldDef [01000000] /*04000005*/\r\n    -------------------------------------------------------\r\n    Attr: 00000021\r\n    Flags: 00000021\r\n    '_s'\r\n    [STRING]\r\n"));
-            Assert.IsTrue(dumpFileContent.Contains("    FieldDef [01000000] /*04000006*/\r\n    -------------------------------------------------------\r\n    Attr: 00000021\r\n    Flags: 00000021\r\n    '_b'\r\n    [BOOLEAN]\r\n"));
+            Assert.IsTrue(dumpFileContent.Contains("    FieldDef [05000004] /*04000004*/\r\n    -------------------------------------------------------\r\n    Attr: 00000021\r\n    Flags: 00000021\r\n    '_max'\r\n    [U4]\r\n"));
+            Assert.IsTrue(dumpFileContent.Contains("    FieldDef [05000005] /*04000005*/\r\n    -------------------------------------------------------\r\n    Attr: 00000021\r\n    Flags: 00000021\r\n    '_s'\r\n    [STRING]\r\n"));
+            Assert.IsTrue(dumpFileContent.Contains("    FieldDef [05000006] /*04000006*/\r\n    -------------------------------------------------------\r\n    Attr: 00000021\r\n    Flags: 00000021\r\n    '_b'\r\n    [BOOLEAN]\r\n"));
 
-            foreach (var m in type1.Methods)
+            foreach (MethodDefinition m in type1.Methods)
             {
                 _ = nanoTablesContext.MethodDefinitionTable.TryGetMethodReferenceId(m, out ushort methodReferenceId);
 
@@ -114,10 +114,10 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
             nanoTablesContext.TypeReferencesTable.TryGetTypeReferenceId(type1.BaseType, out baseTypeReferenceId);
             typeFlags = (uint)nanoTypeDefinitionTable.GetFlags(type1, nanoTablesContext.MethodDefinitionTable);
 
-            Assert.IsTrue(dumpFileContent.Contains($"TypeDef {nanoDumperGenerator.TypeDefRefIdToString(type1, typeRefId)}\r\n-------------------------------------------------------\r\n    '{type1.Name}'\r\n    Flags: {typeFlags:X8}\r\n    Extends: {nanoDumperGenerator.TypeDefExtendsTypeToString(type1.BaseType, baseTypeReferenceId)}\r\n    Enclosed: TestNFApp.OneClassOverAll[04000000] /*02000019*/"));
+            Assert.IsTrue(dumpFileContent.Contains($"TypeDef {nanoDumperGenerator.TypeDefRefIdToString(type1, typeRefId)}\r\n-------------------------------------------------------\r\n    '{type1.Name}'\r\n    Flags: {typeFlags:X8}\r\n    Extends: {nanoDumperGenerator.TypeDefExtendsTypeToString(type1.BaseType, baseTypeReferenceId)}\r\n    Enclosed: TestNFApp.OneClassOverAll[04000000] /*0200001B*/"));
 
             // String heap
-            foreach (var stringKey in nanoTablesContext.StringTable.GetItems().Keys)
+            foreach (string stringKey in nanoTablesContext.StringTable.GetItems().Keys)
             {
                 // skip initial empty string
                 if (string.IsNullOrEmpty(stringKey))
@@ -125,13 +125,13 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
                     continue;
                 }
 
-                var expectedString = $"{nanoTablesContext.StringTable.GetItems()[stringKey]:X8}: {stringKey}";
+                string expectedString = $"{nanoTablesContext.StringTable.GetItems()[stringKey]:X8}: {stringKey}";
 
                 Assert.IsTrue(dumpFileContent.Contains(expectedString));
             }
 
             // UserStrings
-            var lastStringEntry = nanoTablesContext.StringTable.GetItems().OrderBy(i => i.Value).Last();
+            System.Collections.Generic.KeyValuePair<string, ushort> lastStringEntry = nanoTablesContext.StringTable.GetItems().OrderBy(i => i.Value).Last();
             Assert.IsTrue(dumpFileContent.Contains($"{new nanoMetadataToken(NanoCLRTable.TBL_Strings, nanoTablesContext.StringTable.GetOrCreateStringId(lastStringEntry.Key, true))} : ({lastStringEntry.Key.Length:x2}) \"{lastStringEntry.Key}\""));
         }
     }
