@@ -540,6 +540,11 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
                                     ilDescription.Append($"\"{instruction.Operand}\" [{new nanoMetadataToken(NanoCLRTable.TBL_Strings, referenceId)}]");
                                 }
+                                else if (instruction.OpCode.OperandType == OperandType.InlineI
+                                         || instruction.OpCode.OperandType == OperandType.ShortInlineI)
+                                {
+                                    ilDescription.Append($"{instruction.Operand:x8}");
+                                }
                                 else if (instruction.OpCode.OperandType == OperandType.InlineSig)
                                 {
                                     Debug.Fail("Check this");
