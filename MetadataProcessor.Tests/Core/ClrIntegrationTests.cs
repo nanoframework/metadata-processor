@@ -24,7 +24,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
 
 #if DEBUG
         // path to local instance of nanoCLR DLL (to be used when debugging)
-        private static string _localClrInstancePath = "E:\\GitHub\\nf-interpreter\\build\\bin\\Debug\\net6.0\\NanoCLR\\nanoFramework.nanoCLR.dll";
+        private static string _localClrInstancePath = "E:\\GitHub\\nf-interpreter\\build\\bin\\Debug\\net8.0\\NanoCLR\\nanoFramework.nanoCLR.dll";
 #endif
 
         public static bool NanoClrIsInstalled { get; private set; } = false;
