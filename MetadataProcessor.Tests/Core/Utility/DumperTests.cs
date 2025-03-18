@@ -44,7 +44,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
 
             // TypeRefs
             Assert.IsTrue(dumpFileContent.Contains("TypeRef [01000000] /*01000001*/\r\n-------------------------------------------------------\r\nScope: [0000] /*01000001*/\r\n    'System.Diagnostics.DebuggableAttribute'"));
-            Assert.IsTrue(dumpFileContent.Contains("TypeRef [0100001A] /*0100001B*/\r\n-------------------------------------------------------\r\nScope: [0001] /*0100001B*/\r\n    'TestNFClassLibrary.ClassOnAnotherAssembly'"));
+            Assert.IsTrue(dumpFileContent.Contains("TypeRef [0100001C] /*0100001D*/\r\n-------------------------------------------------------\r\nScope: [0001] /*0100001D*/\r\n    'TestNFClassLibrary.ClassOnAnotherAssembly'"));
 
             // TestNFApp.DummyCustomAttribute1
             string typeName = "TestNFApp.DummyCustomAttribute1";
@@ -84,12 +84,26 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
             type1 = nanoTablesContext.TypeDefinitionTable.Items.FirstOrDefault(t => t.FullName == typeName);
             nanoTablesContext.TypeDefinitionTable.TryGetTypeReferenceId(type1, out typeRefId);
             nanoTablesContext.TypeReferencesTable.TryGetTypeReferenceId(type1.BaseType, out baseTypeReferenceId);
+
+            FieldDefinition maxField = nanoTablesContext.FieldsTable.Items.FirstOrDefault(f => f.Name == "_max");
+            string maxFieldRealToken = maxField.MetadataToken.ToInt32().ToString("X8");
+            nanoTablesContext.FieldsTable.TryGetFieldReferenceId(maxField, false, out ushort maxFieldReferenceId);
+
+            FieldDefinition sField = nanoTablesContext.FieldsTable.Items.FirstOrDefault(f => f.Name == "_s");
+            string sFieldRealToken = sField.MetadataToken.ToInt32().ToString("X8");
+            nanoTablesContext.FieldsTable.TryGetFieldReferenceId(sField, false, out ushort sFieldReferenceId);
+
+            FieldDefinition bField = nanoTablesContext.FieldsTable.Items.FirstOrDefault(f => f.Name == "_b");
+            string bFieldRealToken = bField.MetadataToken.ToInt32().ToString("X8");
+            nanoTablesContext.FieldsTable.TryGetFieldReferenceId(bField, false, out ushort bFieldReferenceId);
+
+
             typeFlags = (uint)nanoTypeDefinitionTable.GetFlags(type1, nanoTablesContext.MethodDefinitionTable);
 
             Assert.IsTrue(dumpFileContent.Contains($"TypeDef {nanoDumperGenerator.TypeDefRefIdToString(type1, typeRefId)}\r\n-------------------------------------------------------\r\n    '{typeName}'\r\n    Flags: {typeFlags:X8}\r\n    Extends: {nanoDumperGenerator.TypeDefExtendsTypeToString(type1.BaseType, baseTypeReferenceId)}\r\n    Enclosed: (none)"));
-            Assert.IsTrue(dumpFileContent.Contains("    FieldDef [05000004] /*04000004*/\r\n    -------------------------------------------------------\r\n    Attr: 00000021\r\n    Flags: 00000021\r\n    '_max'\r\n    [U4]\r\n"));
-            Assert.IsTrue(dumpFileContent.Contains("    FieldDef [05000005] /*04000005*/\r\n    -------------------------------------------------------\r\n    Attr: 00000021\r\n    Flags: 00000021\r\n    '_s'\r\n    [STRING]\r\n"));
-            Assert.IsTrue(dumpFileContent.Contains("    FieldDef [05000006] /*04000006*/\r\n    -------------------------------------------------------\r\n    Attr: 00000021\r\n    Flags: 00000021\r\n    '_b'\r\n    [BOOLEAN]\r\n"));
+            Assert.IsTrue(dumpFileContent.Contains($"    FieldDef [{new nanoMetadataToken(maxField.MetadataToken, maxFieldReferenceId)}] /*{maxFieldRealToken}*/\r\n    -------------------------------------------------------\r\n    Attr: 00000021\r\n    Flags: 00000021\r\n    '_max'\r\n    [U4]\r\n"));
+            Assert.IsTrue(dumpFileContent.Contains($"    FieldDef [{new nanoMetadataToken(sField.MetadataToken, sFieldReferenceId)}] /*{sFieldRealToken}*/\r\n    -------------------------------------------------------\r\n    Attr: 00000021\r\n    Flags: 00000021\r\n    '_s'\r\n    [STRING]\r\n"));
+            Assert.IsTrue(dumpFileContent.Contains($"    FieldDef [{new nanoMetadataToken(bField.MetadataToken, bFieldReferenceId)}] /*{bFieldRealToken}*/\r\n    -------------------------------------------------------\r\n    Attr: 00000021\r\n    Flags: 00000021\r\n    '_b'\r\n    [BOOLEAN]\r\n"));
 
             foreach (MethodDefinition m in type1.Methods)
             {
