@@ -4,12 +4,12 @@
 // See LICENSE file in the project root for full license information.
 //
 
-using Mono.Cecil;
-using Mono.Cecil.Cil;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Mono.Cecil;
+using Mono.Cecil.Cil;
 
 namespace nanoFramework.Tools.MetadataProcessor
 {
@@ -186,33 +186,35 @@ namespace nanoFramework.Tools.MetadataProcessor
 
         private void FillTypeSpecsFromTypes()
         {
-            foreach (var t in _context.TypeDefinitionTable.Items)
+            foreach (TypeDefinition t in _context.TypeDefinitionTable.Items)
             {
-                foreach (var m in t.Methods.Where(i => i.HasBody))
+                foreach (MethodDefinition m in t.Methods.Where(method => method.HasBody))
                 {
-                    foreach (var i in m.Body.Instructions.Where(i => (i.Operand is GenericParameter) || (i.OpCode.OperandType is OperandType.InlineType && ((TypeReference)i.Operand).IsArray) || (i.OpCode.OperandType is OperandType.InlineTok)))
+                    foreach (Instruction instruction in m.Body.Instructions)
                     {
-                        // get index of signature for the TypeSpecification 
-                        ushort signatureId;
-
-                        if (i.Operand is GenericParameter)
+                        if (instruction.Operand is GenericParameter genericParameter)
                         {
-                            signatureId = _context.SignaturesTable.GetOrCreateSignatureId(i.Operand as GenericParameter);
+                            ushort signatureId = _context.SignaturesTable.GetOrCreateSignatureId(genericParameter);
 
-                            if (!_idByTypeSpecifications.TryGetValue(i.Operand as GenericParameter, out ushort referenceId))
+                            if (!_idByTypeSpecifications.ContainsKey(genericParameter))
                             {
-                                // is not on the list yet, add it
-                                _idByTypeSpecifications.Add(i.Operand as GenericParameter, signatureId);
+                                _idByTypeSpecifications.Add(genericParameter, signatureId);
                             }
                         }
-                        else
+                        else if (instruction.Operand is TypeReference typeReference)
                         {
-                            signatureId = _context.SignaturesTable.GetOrCreateSignatureId(i.Operand as TypeReference);
-
-                            if (!_idByTypeSpecifications.TryGetValue(i.Operand as TypeReference, out ushort referenceId))
+                            // Optional: Check additional conditions if needed,
+                            // for example, if the operand type should be an array.
+                            if (instruction.OpCode.OperandType == OperandType.InlineType && !typeReference.IsArray)
                             {
-                                // is not on the list yet, add it
-                                _idByTypeSpecifications.Add(i.Operand as TypeReference, signatureId);
+                                continue;
+                            }
+
+                            ushort signatureId = _context.SignaturesTable.GetOrCreateSignatureId(typeReference);
+
+                            if (!_idByTypeSpecifications.ContainsKey(typeReference))
+                            {
+                                _idByTypeSpecifications.Add(typeReference, signatureId);
                             }
                         }
                     }
