@@ -4,9 +4,10 @@
 // See LICENSE file in the project root for full license information.
 //
 
-using Mono.Cecil;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Mono.Cecil;
 
 namespace nanoFramework.Tools.MetadataProcessor
 {
@@ -69,7 +70,11 @@ namespace nanoFramework.Tools.MetadataProcessor
         {
             var writerStartPosition = writer.BaseStream.Position;
 
-            WriteStringReference(writer, item.Name);
+
+            // Get the full name for nested types
+            string fullName = nanoTypeReferenceTable.GetFullName(item);
+
+            WriteStringReference(writer, fullName);
             WriteStringReference(writer, item.Namespace);
 
             writer.WriteUInt16(GetScope(item)); // scope - TBL_AssemblyRef | TBL_TypeRef // 0x8000
@@ -90,17 +95,45 @@ namespace nanoFramework.Tools.MetadataProcessor
         internal ushort GetScope(
             TypeReference typeReference)
         {
-            // TODO need to review this to use TypeRefOrAssemblyRef
-            if (typeReference.DeclaringType == null)
+            // Check if the type is defined in the same assembly
+            if (typeReference.Scope is ModuleDefinition moduleDefinition
+                && moduleDefinition.Assembly == _context.AssemblyDefinition)
             {
-                return _context.AssemblyReferenceTable.GetReferenceId(typeReference.Scope as AssemblyNameReference);
+                // The type is defined in the same assembly
+                if (_context.TypeReferencesTable.TryGetTypeReferenceId(
+                    typeReference.DeclaringType,
+                    out ushort referenceId))
+                {
+                    return (ushort)(0x8000 | referenceId);
+                }
+                else
+                {
+                    // unknown scope
+                    throw new InvalidOperationException($"Unknown scope for type reference '{typeReference.FullName}'");
+                }
+            }
+            else if (typeReference.Scope is AssemblyNameReference assemblyNameReference)
+            {
+                // The type is defined in a referenced assembly
+                return _context.AssemblyReferenceTable.GetReferenceId(assemblyNameReference);
             }
             else
             {
-                ushort referenceId;
-                _context.TypeReferencesTable.TryGetTypeReferenceId(typeReference.DeclaringType, out referenceId);
-                return (ushort)(0x8000 | referenceId);
+                // unknown scope
+                throw new InvalidOperationException($"Unknown scope for type reference '{typeReference.FullName}'");
             }
+
+        }
+
+        private static string GetFullName(TypeReference typeReference)
+        {
+            if (typeReference.DeclaringType == null)
+            {
+                return typeReference.Name;
+            }
+
+            // return the full name of the declaring type
+            return typeReference.FullName;
         }
     }
 }

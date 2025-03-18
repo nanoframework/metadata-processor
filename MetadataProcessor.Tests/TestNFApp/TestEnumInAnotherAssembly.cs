@@ -10,11 +10,23 @@ namespace System.IO
         public void CallTestEnumInAnotherAssembly()
         {
             // This test checks if MDP can minimize the assembly using an enum that is defined in another assembly
-            // and the class calling it is in a different assembly BUT in the same namespace.
-            var ioException = new IOException(
+            // as a nested type
+            IOException.IOExceptionErrorCode dummyEnum = IOException.IOExceptionErrorCode.DirectoryNotFound;
+
+            _ = new IOException(
                     string.Empty,
-                    (int)IOException.IOExceptionErrorCode.DirectoryNotFound);
+                    (int)dummyEnum);
+
+            // This test checks if MDP can minimize the assembly using an enum that is defined in another assembly
+            Base64FormattingOptions formattingOptions = Base64FormattingOptions.InsertLineBreaks;
+
+            byte[] testBytes = new byte[] {0x01, 0x03, 0x05, 0x07, 0x09 };
+
+            _ = Convert.ToBase64String(
+                testBytes,
+                0,
+                testBytes.Length,
+                formattingOptions);
         }
     }
-
 }
