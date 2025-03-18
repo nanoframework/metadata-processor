@@ -21,7 +21,7 @@
     <ClInclude Include="CorLib.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\targets\os\win32\Include\target_os.h">
+    <ClInclude Include="..\..\..\targets\win32\Include\target_os.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -65,10 +65,7 @@
     <ClCompile Include="corlib_native_System_Collections_ArrayList.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="corlib_native_System_Collections_Queue.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="corlib_native_System_Collections_Stack.cpp">
+    <ClCompile Include="corlib_native_System_Diagnostics_Debug.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="corlib_native_System_Diagnostics_Debugger.cpp">
@@ -122,12 +119,6 @@
     <ClCompile Include="corlib_native_System_RuntimeType.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="corlib_native_System_Text_UTF8Decoder.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="corlib_native_System_Text_UTF8Encoding.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="corlib_native_System_Threading_WaitHandle.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -176,10 +167,10 @@
     <ClCompile Include="corlib_native.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="corlib_native_System_Console.cpp">
+    <ClCompile Include="corlib_native_System_MathInternal.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="corlib_native_System_MathInternal.cpp">
+    <ClCompile Include="corlib_native_System_Threading_SpinWait.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

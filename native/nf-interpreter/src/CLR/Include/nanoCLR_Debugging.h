@@ -1,16 +1,20 @@
 //
-// Copyright (c) 2017 The nanoFramework project contributors
+// Copyright (c) .NET Foundation and Contributors
 // Portions Copyright (c) Microsoft Corporation.  All rights reserved.
 // See LICENSE file in the project root for full license information.
 //
-#ifndef _NANOCLR_DEBUGGING_H_
-#define _NANOCLR_DEBUGGING_H_
+
+// clang-format off
+
+#ifndef NANOCLR_DEBUGGING_H
+#define NANOCLR_DEBUGGING_H
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include <nanoPackStruct.h>
 #include <nanoCLR_Types.h>
 #include <nanoCLR_Messaging.h>
+#include <WireProtocol_MonitorCommands.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -33,29 +37,11 @@ struct CLR_DBG_Commands
     static const unsigned int c_Monitor_OemInfo            = 0x0000000E;
     static const unsigned int c_Monitor_QueryConfiguration = 0x0000000F;
     static const unsigned int c_Monitor_UpdateConfiguration= 0x00000010;
+    static const unsigned int c_Monitor_StorageOperation   = 0x00000011;
+    static const unsigned int c_Monitor_TargetInfo         = 0x00000020;
 
     //--//
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
     struct Monitor_OemInfo
     {
         struct Reply
@@ -66,90 +52,31 @@ struct CLR_DBG_Commands
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////
     // !!! KEEP IN SYNC WITH nanoFramework.Tools.Debugger.WireProtocol.RebootOptions (in managed code) !!! //
+    // !!! KEEP IN SYNC WITH nanoFramework.Runtime.Native.WireProtocol.RebootOption  (in managed code) !!! //
+    // CONSTANTS VALUES NEED TO BE 'FLAG' TYPE                                                             //
     /////////////////////////////////////////////////////////////////////////////////////////////////////////
     struct Monitor_Reboot
     {
-        static const unsigned int c_NormalReboot    = 0;
-        static const unsigned int c_EnterBootloader = 1;
-        static const unsigned int c_ClrOnly   = 2;
-        static const unsigned int c_WaitForDebugger   = 4;
+        static const unsigned int c_NormalReboot            = 0;
+        static const unsigned int c_EnterNanoBooter         = 1;
+        static const unsigned int c_ClrOnly                 = 2;
+        static const unsigned int c_WaitForDebugger         = 4;
+        static const unsigned int c_EnterProprietaryBooter  = 8;
 
         unsigned int m_flags;
-    };
-
-    struct Monitor_ReadMemory
-    {
-        unsigned int m_address;
-        unsigned int m_length;
-
-        struct Reply
-        {
-            unsigned int  ErrorCode;
-            unsigned char m_data[ 1 ];
-        };
-    };
-
-    struct Monitor_WriteMemory
-    {
-        unsigned int m_address;
-        unsigned int m_length;
-        unsigned char  m_data[ 1 ];
-
-        struct Reply
-        {
-            unsigned int ErrorCode;
-        };        
     };
 
     struct Monitor_Signature
     {        
         unsigned int m_keyIndex;
         unsigned int m_length;   
-        unsigned char  m_signature[ 1 ];
-    };
-
-    struct Monitor_CheckMemory
-    {
-        unsigned int m_address;
-        unsigned int m_length;
-
-        struct Reply
-        {
-            unsigned int m_crc;
-        };
-    };
-
-    struct Monitor_EraseMemory
-    {
-        unsigned int m_address;
-        unsigned int m_length;
-
-        struct Reply
-        {
-            unsigned int ErrorCode;
-        };        
+        unsigned char  m_signature[1];
     };
 
     struct Monitor_Execute
     {
         unsigned int m_address;
     };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     struct Monitor_DeploymentMap
     {    
@@ -166,20 +93,17 @@ struct CLR_DBG_Commands
         struct Reply
         {
 
-            FlashSector m_data[ 1 ];
+            FlashSector m_data[1];
         };
     };
-
-
-    
 
     struct Monitor_SignatureKeyUpdate
     {
         unsigned int m_keyIndex;
-        unsigned char  m_newKeySignature[ 128 ];
-        unsigned char  m_newKey[ 260 ];
+        unsigned char  m_newKeySignature[128];
+        unsigned char  m_newKey[260];
         unsigned int m_reserveLength;
-        unsigned char  m_reserveData[ 1 ];
+        unsigned char  m_reserveData[1];
     };
 
     //--------------------------------------------------------------//
@@ -194,8 +118,8 @@ struct CLR_DBG_Commands
     static const unsigned int c_Debugging_Execution_BreakpointStatus     = 0x00020007; // Queries last breakpoint hit.
     static const unsigned int c_Debugging_Execution_QueryCLRCapabilities = 0x00020008; // Queries capabilities of the CLR.
     static const unsigned int c_Debugging_Execution_SetCurrentAppDomain  = 0x00020009; // Sets the current AppDomain.  This is required before
-                                                                                 // performing certain debugging operations, such as
-                                                                                 // accessing a static field, or doing function evaluation,
+                                                                                       // performing certain debugging operations, such as
+                                                                                       // accessing a static field, or doing function evaluation,
 
     static const unsigned int c_Debugging_Thread_Create                  = 0x00020010; // OBSOLETE - Use c_Debugging_Thread_CreateEx instead.
     static const unsigned int c_Debugging_Thread_List                    = 0x00020011; // Lists the active/waiting threads.
@@ -224,8 +148,8 @@ struct CLR_DBG_Commands
     static const unsigned int c_Debugging_Value_AllocateArray            = 0x0002003A; // Creates a new instance of an array.
     static const unsigned int c_Debugging_Value_Assign                   = 0x0002003B; // Assigns a value to another value.
                                                                  
-    static const unsigned int c_Debugging_TypeSys_Assemblies                = 0x00020040; // Lists all the assemblies in the system.
-    static const unsigned int c_Debugging_TypeSys_AppDomains                = 0x00020044; // Lists all the AppDomans loaded.
+    static const unsigned int c_Debugging_TypeSys_Assemblies             = 0x00020040; // Lists all the assemblies in the system.
+    static const unsigned int c_Debugging_TypeSys_AppDomains             = 0x00020044; // Lists all the AppDomans loaded.
                                                                  
     static const unsigned int c_Debugging_Resolve_Assembly               = 0x00020050; // Resolves an assembly.
     static const unsigned int c_Debugging_Resolve_Type                   = 0x00020051; // Resolves a type to a string.
@@ -233,14 +157,6 @@ struct CLR_DBG_Commands
     static const unsigned int c_Debugging_Resolve_Method                 = 0x00020053; // Resolves a method to a string.
     static const unsigned int c_Debugging_Resolve_VirtualMethod          = 0x00020054; // Resolves a virtual method to the actual implementation.
     static const unsigned int c_Debugging_Resolve_AppDomain              = 0x00020055; // Resolves an AppDomain to it's name, and list its loaded assemblies.
-
-
-
-
-
-
-
-
 
     static const unsigned int c_Debugging_UpgradeToSsl                   = 0x00020069; //
 
@@ -260,18 +176,22 @@ struct CLR_DBG_Commands
 
     struct Debugging_Execution_Unlock
     {
-        unsigned char m_command[ 128 ];
-        unsigned char m_hash   [ 128 ];
+        unsigned char m_command[128];
+        unsigned char m_hash   [128];
     };
 
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // !!! KEEP IN SYNC WITH nanoFramework.Tools.Debugger.WireProtocol.Commands.Debugging_Execution_QueryCLRCapabilities (in managed code) !!! //
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     struct Debugging_Execution_QueryCLRCapabilities
     {
-        static const CLR_UINT32 c_CapabilityFlags             = 1;
-        static const CLR_UINT32 c_CapabilityVersion           = 3;
-        static const CLR_UINT32 c_HalSystemInfo               = 5;
-        static const CLR_UINT32 c_ClrInfo                     = 6;
-        static const CLR_UINT32 c_TargetReleaseInfo           = 7;
-        static const CLR_UINT32 c_InteropNativeAssemblies     = 8;
+        static const CLR_UINT32 c_CapabilityFlags               = 1;
+        static const CLR_UINT32 c_CapabilityVersion             = 3;
+        static const CLR_UINT32 c_HalSystemInfo                 = 5;
+        static const CLR_UINT32 c_ClrInfo                       = 6;
+        static const CLR_UINT32 c_TargetReleaseInfo             = 7;
+        static const CLR_UINT32 c_InteropNativeAssemblies       = 8;
+        static const CLR_UINT32 c_InteropNativeAssembliesCount  = 9;
 
         static const CLR_UINT32 c_CapabilityFlags_FloatingPoint             = 0x00000001;
         static const CLR_UINT32 c_CapabilityFlags_SourceLevelDebugging      = 0x00000002;
@@ -284,17 +204,32 @@ struct CLR_DBG_Commands
         static const CLR_UINT32 c_CapabilityFlags_Profiling_Calls           = 0x00000100;
         static const CLR_UINT32 c_CapabilityFlags_ThreadCreateEx            = 0x00000400;
         static const CLR_UINT32 c_CapabilityFlags_ConfigBlockRequiresErase  = 0x00000800;
+
+        /////////////////////////////////////////////////////////////////////////////////
+        // THIS FLAG IS DEPRECATED AND WILL BE REMOVED IN A FUTURE VERSION 
+        // USE Monitor_Ping_Source_Flags INSTEAD
         static const CLR_UINT32 c_CapabilityFlags_HasNanoBooter             = 0x00001000;
-        static const CLR_UINT32 c_CapabilityFlags_PlatformCapabiliy_0       = 0x00010000;
-        static const CLR_UINT32 c_CapabilityFlags_PlatformCapabiliy_1       = 0x00020000;
-        static const CLR_UINT32 c_CapabilityFlags_TargetCapabiliy_0         = 0x00040000;
-        static const CLR_UINT32 c_CapabilityFlags_TargetCapabiliy_1         = 0x00080000;
+        /////////////////////////////////////////////////////////////////////////////////
+
+        static const CLR_UINT32 c_CapabilityFlags_CanChangeMacAddress       = 0x00002000;
+
+        static const CLR_UINT32 c_CapabilityFlags_PlatformCapabiliy_0       = 0x01000000;
+        static const CLR_UINT32 c_CapabilityFlags_PlatformCapabiliy_1       = 0x02000000;
+        static const CLR_UINT32 c_CapabilityFlags_PlatformCapabiliy_2       = 0x04000000;
+        static const CLR_UINT32 c_CapabilityFlags_PlatformCapabiliy_3       = 0x08000000;
+        static const CLR_UINT32 c_CapabilityFlags_PlatformCapabiliy_Mask    = 0x0F000000;
+
+        static const CLR_UINT32 c_CapabilityFlags_TargetCapabiliy_0         = 0x10000000;
+        static const CLR_UINT32 c_CapabilityFlags_TargetCapabiliy_1         = 0x20000000;
+        static const CLR_UINT32 c_CapabilityFlags_TargetCapabiliy_2         = 0x40000000;
+        static const CLR_UINT32 c_CapabilityFlags_TargetCapabiliy_3         = 0x80000000;
+        static const CLR_UINT32 c_CapabilityFlags_TargetCapabiliy_Mask      = 0xF0000000;
 
         CLR_UINT32 m_cmd;
 
         struct __nfpack SoftwareVersion
         {
-            char BuildDate[ 22 ];
+            char BuildDate[22];
             char CompilerInfo[16];
             unsigned int CompilerVersion;
         };
@@ -339,7 +274,7 @@ struct CLR_DBG_Commands
     struct Debugging_Messaging_Send
     {
         CLR_RT_HeapBlock_EndPoint::Address m_addr;
-        unsigned char                              m_data[ 1 ];
+        unsigned char                              m_data[1];
 
         struct Reply
         {
@@ -351,7 +286,7 @@ struct CLR_DBG_Commands
     struct Debugging_Messaging_Reply
     {
         CLR_RT_HeapBlock_EndPoint::Address m_addr;
-        unsigned char                              m_data[ 1 ];
+        unsigned char                              m_data[1];
 
         struct Reply
         {
@@ -384,7 +319,7 @@ struct CLR_DBG_Commands
 
     struct Debugging_Execution_SecurityKey
     {
-        CLR_UINT8 m_key[ 32 ];
+        CLR_UINT8 m_key[32];
     };
 
     struct Debugging_Execution_Allocate
@@ -406,90 +341,6 @@ struct CLR_DBG_Commands
             CLR_UINT32 m_success;
         };
     };
-
-
-    //struct Debugging_MFUpdate_Start
-    //{
-    //    char       m_provider[64];
-    //    CLR_UINT32 m_updateId;
-    //    CLR_UINT32 m_updateType;
-    //    CLR_UINT32 m_updateSubType;
-    //    CLR_UINT32 m_updateSize;
-    //    CLR_UINT32 m_updatePacketSize;
-    //    CLR_UINT16 m_versionMajor;
-    //    CLR_UINT16 m_versionMinor;
-
-    //    struct Reply
-    //    {
-    //        CLR_INT32 m_updateHandle;
-    //    };
-    //};
-
-    //struct Debugging_MFUpdate_AuthCommand
-    //{
-    //    CLR_UINT32 m_updateHandle;
-    //    CLR_UINT32 m_authCommand;
-    //    CLR_UINT32 m_authArgsSize;
-    //    CLR_UINT8  m_authArgs[1];
-
-    //    struct Reply
-    //    {
-    //        CLR_INT32  m_success;
-    //        CLR_UINT32 m_responseSize;
-    //        CLR_UINT8  m_response[1];
-    //    };
-    //};
-
-    //struct Debugging_MFUpdate_Authenticate
-    //{
-    //    CLR_UINT32 m_updateHandle;
-    //    CLR_UINT32 m_authenticationLen;
-    //    CLR_UINT8  m_authenticationData[1];
-
-    //    struct Reply
-    //    {
-    //        CLR_INT32 m_success;
-    //    };
-    //};
-
-    //struct Debugging_MFUpdate_GetMissingPkts
-    //{
-    //    CLR_UINT32 m_updateHandle;
-    //    
-    //    struct Reply
-    //    {
-    //        CLR_INT32 m_success;
-    //        CLR_INT32  m_missingPktCount;
-    //        CLR_UINT32 m_missingPkts[1];
-    //    };
-    //};
-
-    //struct Debugging_MFUpdate_AddPacket
-    //{
-    //    CLR_INT32 m_updateHandle;
-    //    CLR_UINT32 m_packetIndex;
-    //    CLR_UINT32 m_packetValidation;
-    //    CLR_UINT32 m_packetLength;
-    //    CLR_UINT8 m_packetData[1];
-
-    //    struct Reply
-    //    {
-    //        CLR_UINT32 m_success;
-    //    };
-    //};
-
-    //struct Debugging_MFUpdate_Install
-    //{
-    //    CLR_INT32 m_updateHandle;
-    //    CLR_UINT32 m_updateValidationSize;
-    //    CLR_UINT8 m_updateValidation[1];
-
-    //    struct Reply
-    //    {
-    //        CLR_UINT32 m_success;
-    //    };
-    //};
-    
 
     struct Debugging_Execution_BreakpointDef
     {
@@ -555,7 +406,7 @@ struct CLR_DBG_Commands
     {
         CLR_UINT32                        m_flags;
 
-        Debugging_Execution_BreakpointDef m_data[ 1 ];
+        Debugging_Execution_BreakpointDef m_data[1];
     };
 
     struct Debugging_Execution_BreakpointHit
@@ -597,7 +448,7 @@ struct CLR_DBG_Commands
         struct Reply
         {
             CLR_UINT32 m_num;
-            CLR_UINT32 m_pids[ 1 ];
+            CLR_UINT32 m_pids[1];
         };
     };
 
@@ -623,7 +474,7 @@ struct CLR_DBG_Commands
             CLR_UINT32 m_num;
             CLR_UINT32 m_status;
             CLR_UINT32 m_flags;
-            Call       m_data[ 1 ];
+            Call       m_data[1];
         };
     };
 
@@ -699,9 +550,16 @@ struct CLR_DBG_Commands
 
     //--//
 
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // !!! KEEP IN SYNC WITH nanoFramework.Tools.Debugger.WireProtocol.Commands.Debugging_Value (in managed code) !!! //
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     struct Debugging_Value
     {
-        CLR_RT_HeapBlock*       m_referenceID;
+        // this is a CLR_RT_HeapBlock *
+        // has to be stored as CLR_UINT32 because CLR_RT_HeapBlock has different size on 32 and 64 bit platforms
+        CLR_UINT32              m_referenceID;
         CLR_UINT32              m_dt;                // CLR_RT_HeapBlock::DataType ()
         CLR_UINT32              m_flags;             // CLR_RT_HeapBlock::DataFlags()
         CLR_UINT32              m_size;              // CLR_RT_HeapBlock::DataSize ()
@@ -709,18 +567,25 @@ struct CLR_DBG_Commands
         //
         // For primitive types
         //
-        CLR_UINT8               m_builtinValue[ 128 ]; // Space for string preview...
+        CLR_UINT8               m_builtinValue[128]; // Space for string preview...
 
         //
         // For DATATYPE_STRING
         //
         CLR_UINT32              m_bytesInString;
-        const char*                  m_charsInString;
+        // this is a const char *
+        // has to be stored as CLR_UINT32 because const char * has different size on 32 and 64 bit platforms
+        CLR_UINT32 		        m_charsInString;
 
         //
         // For DATATYPE_VALUETYPE or DATATYPE_CLASSTYPE
         //
         CLR_RT_TypeDef_Index    m_td;
+
+        //
+        // For DATATYPE_GENERICINST
+        //
+        CLR_RT_TypeSpec_Index    m_ts;
 
         //
         // For DATATYPE_SZARRAY
@@ -732,7 +597,10 @@ struct CLR_DBG_Commands
         //
         // For values from an array.
         //
-        CLR_RT_HeapBlock_Array* m_arrayref_referenceID;
+        
+        // this is a CLR_RT_HeapBlock_Array *
+        // has to be stored as CLR_UINT32 because CLR_RT_HeapBlock_Array has different size on 32 and 64 bit platforms
+        CLR_UINT32              m_arrayref_referenceID;
         CLR_UINT32              m_arrayref_index;
     };
 
@@ -760,7 +628,7 @@ struct CLR_DBG_Commands
 
     struct Debugging_Value_GetField
     {
-        CLR_RT_HeapBlock*     m_heapblock;
+        CLR_RT_HeapBlock *    m_heapblock;
         CLR_UINT32            m_offset;
         CLR_RT_FieldDef_Index m_fd;
 
@@ -772,7 +640,7 @@ struct CLR_DBG_Commands
 
     struct Debugging_Value_GetArray
     {
-        CLR_RT_HeapBlock* m_heapblock;
+        CLR_RT_HeapBlock *m_heapblock;
         CLR_UINT32        m_index;
 
 
@@ -783,7 +651,7 @@ struct CLR_DBG_Commands
 
     struct Debugging_Value_GetBlock
     {
-        CLR_RT_HeapBlock* m_heapblock;
+        CLR_RT_HeapBlock *m_heapblock;
 
 
         //
@@ -793,7 +661,7 @@ struct CLR_DBG_Commands
 
     struct Debugging_Value_GetScratchPad
     {
-        CLR_UINT32 m_idx;
+        CLR_UINT32 m_index;
 
 
         //
@@ -803,16 +671,16 @@ struct CLR_DBG_Commands
 
     struct Debugging_Value_SetBlock
     {
-        CLR_RT_HeapBlock* m_heapblock;
+        CLR_RT_HeapBlock *m_heapblock;
         CLR_UINT32        m_dt;                // CLR_RT_HeapBlock::DataType ()
-        CLR_UINT8         m_builtinValue[ 8 ];
+        CLR_UINT8         m_builtinValue[8];
     };
 
     struct Debugging_Value_SetArray
     {
-        CLR_RT_HeapBlock_Array* m_heapblock;
+        CLR_RT_HeapBlock_Array *m_heapblock;
         CLR_UINT32              m_index;
-        CLR_UINT8               m_builtinValue[ 8 ];
+        CLR_UINT8               m_builtinValue[8];
     };
 
     //--//
@@ -851,8 +719,8 @@ struct CLR_DBG_Commands
 
     struct Debugging_Value_Assign
     {
-        CLR_RT_HeapBlock* m_heapblockSrc;
-        CLR_RT_HeapBlock* m_heapblockDst;
+        CLR_RT_HeapBlock *m_heapblockSrc;
+        CLR_RT_HeapBlock *m_heapblockDst;
 
         //
         // The reply is an array of Debugging_Value
@@ -884,20 +752,20 @@ struct CLR_DBG_Commands
         struct Reply
         {
             CLR_UINT32 m_state;
-            char       m_szName[ 512 ];
-            CLR_UINT32 m_assemblies[ 1 ]; //Array of CLR_RT_Assembly_Index
+            char       m_szName[512];
+            CLR_UINT32 m_assemblies[1]; //Array of CLR_RT_Assembly_Index
         };
     };
 
     struct Debugging_Resolve_Assembly
     {
-         CLR_RT_Assembly_Index m_idx;
+         CLR_RT_Assembly_Index m_index;
 
          struct Reply
          {
               CLR_UINT32         m_flags;
               CLR_RECORD_VERSION m_version;
-              char               m_szName[ 512 ];
+              char               m_szName[512];
          };
     };
 
@@ -907,7 +775,7 @@ struct CLR_DBG_Commands
 
         struct Reply
         {
-            char m_type[ 512 ];
+            char m_type[512];
         };
     };
 
@@ -919,7 +787,7 @@ struct CLR_DBG_Commands
         {
             CLR_RT_TypeDef_Index m_td;
             CLR_UINT32           m_index;
-            char                 m_name[ 512 ];
+            char                 m_name[512];
         };
     };
 
@@ -930,14 +798,14 @@ struct CLR_DBG_Commands
         struct Reply
         {
             CLR_RT_TypeDef_Index m_td;
-            char                 m_method[ 512 ];
+            char                 m_method[512];
         };
     };
 
     struct Debugging_Resolve_VirtualMethod
     {
         CLR_RT_MethodDef_Index m_md;
-        CLR_RT_HeapBlock*      m_obj;
+        CLR_RT_HeapBlock      *m_obj;
 
         struct Reply
         {
@@ -961,7 +829,7 @@ struct CLR_DBG_Commands
             CLR_UINT32 StorageStart;
             CLR_UINT32 StorageLength;
             
-            // FlashSector SectorData[ 1 ];
+            // FlashSector SectorData[1];
         };
     };
 
@@ -1011,12 +879,13 @@ struct CLR_DBG_Commands
 
 struct CLR_DBG_Debugger
 {
-    CLR_Messaging*              m_messaging;
-    static BlockStorageDevice*  m_deploymentStorageDevice;
+    CLR_Messaging             *m_messaging;
+    static BlockStorageDevice *m_deploymentStorageDevice;
 
 
     //--//
 
+    static void Debugger_Discovery();
     static void Debugger_WaitForCommands();
 
     static HRESULT CreateInstance();
@@ -1027,7 +896,7 @@ struct CLR_DBG_Debugger
 
     void Debugger_Cleanup();
 
-    static void BroadcastEvent( unsigned int cmd, unsigned int payloadSize, unsigned char* payload, unsigned int flags );
+    static void BroadcastEvent( unsigned int cmd, unsigned int payloadSize, unsigned char *payload, unsigned int flags );
 
     void PurgeCache     ();
 
@@ -1035,54 +904,55 @@ private:
 
     bool CheckPermission( ByteAddress address, int mode );
 
-    bool AccessMemory( CLR_UINT32 location, unsigned int lengthInBytes, unsigned char* buf, int mode, unsigned int* errorCode );
+    void AccessMemory(uint32_t location, uint32_t lengthInBytes, uint8_t *buf, uint32_t mode, uint32_t *errorCode);
 
 #if defined(NANOCLR_APPDOMAINS)
-    CLR_RT_AppDomain*  GetAppDomainFromID ( CLR_UINT32 id );
+    CLR_RT_AppDomain *GetAppDomainFromID ( CLR_UINT32 id );
 #endif
 
-    CLR_RT_StackFrame* CheckStackFrame    ( CLR_INT32 pid, CLR_UINT32 depth, bool& isInline                                        );
+    CLR_RT_StackFrame *CheckStackFrame    ( CLR_INT32 pid, CLR_UINT32 depth, bool& isInline                                        );
     HRESULT            CreateListOfThreads(                 CLR_DBG_Commands::Debugging_Thread_List ::Reply*& cmdReply, int& totLen );
     HRESULT            CreateListOfCalls  ( CLR_INT32 pid, CLR_DBG_Commands::Debugging_Thread_Stack::Reply*& cmdReply, int& totLen );
 
-    CLR_RT_Assembly*   IsGoodAssembly( CLR_IDX                       idxAssm                                  );
+    CLR_RT_Assembly   *IsGoodAssembly( CLR_INDEX                       indexAssm                                  );
     bool               CheckTypeDef  ( const CLR_RT_TypeDef_Index&   td     , CLR_RT_TypeDef_Instance&   inst );
     bool               CheckFieldDef ( const CLR_RT_FieldDef_Index&  fd     , CLR_RT_FieldDef_Instance&  inst );
     bool               CheckMethodDef( const CLR_RT_MethodDef_Index& md     , CLR_RT_MethodDef_Instance& inst );
 
-    bool               GetValue( WP_Message* msg, CLR_RT_HeapBlock* ptr, CLR_RT_HeapBlock* reference, CLR_RT_TypeDef_Instance* pTD );
+    bool               GetValue( WP_Message *msg, CLR_RT_HeapBlock *ptr, CLR_RT_HeapBlock *reference, CLR_RT_TypeDef_Instance *pTD);
 
-    bool AllocateAndQueueMessage( CLR_UINT32 cmd, unsigned int length, unsigned char* data, CLR_RT_HeapBlock_EndPoint::Port port, CLR_RT_HeapBlock_EndPoint::Address addr, CLR_UINT32 found );
+    bool AllocateAndQueueMessage( CLR_UINT32 cmd, unsigned int length, unsigned char *data, CLR_RT_HeapBlock_EndPoint::Port port, CLR_RT_HeapBlock_EndPoint::Address addr, CLR_UINT32 found );
 
-    bool ProcessHeader                           ( WP_Message* msg );
-    bool ProcessPayload                          ( WP_Message* msg );
+    bool ProcessHeader                           ( WP_Message *msg );
+    bool ProcessPayload                          ( WP_Message *msg );
 
        
 public:  
-    static CLR_RT_Thread* GetThreadFromPid ( CLR_INT32 pid );
+    static CLR_RT_Thread *GetThreadFromPid ( CLR_INT32 pid );
 
-    static bool Monitor_Ping                            ( WP_Message* msg );
-    static bool Monitor_Reboot                          ( WP_Message* msg );
-    static bool Debugging_Execution_QueryCLRCapabilities( WP_Message* msg );
+    static bool Monitor_Ping                            ( WP_Message *msg );
+    static bool Monitor_Reboot                          ( WP_Message *msg );
+    static bool Monitor_TargetInfo                      ( WP_Message *msg );
+    static bool Debugging_Execution_QueryCLRCapabilities( WP_Message *msg );
 
-    static bool Monitor_ReadMemory                      ( WP_Message* msg );
-    static bool Monitor_WriteMemory                     ( WP_Message* msg );
-    static bool Monitor_CheckMemory                     ( WP_Message* msg );
-    static bool Monitor_EraseMemory                     ( WP_Message* msg );
-    static bool Monitor_Execute                         ( WP_Message* msg );
-    static bool Monitor_MemoryMap                       ( WP_Message* msg );
-    static bool Monitor_FlashSectorMap                  ( WP_Message* msg );
-    static bool Monitor_DeploymentMap                   ( WP_Message* msg );
-    static bool Monitor_QueryConfiguration              ( WP_Message* msg );
-    static bool Monitor_UpdateConfiguration             ( WP_Message* msg );
-
+    static bool Monitor_ReadMemory                      ( WP_Message *msg );
+    static bool Monitor_WriteMemory                     ( WP_Message *msg );
+    static bool Monitor_CheckMemory                     ( WP_Message *msg );
+    static bool Monitor_EraseMemory                     ( WP_Message *msg );
+    static bool Monitor_Execute                         ( WP_Message *msg );
+    static bool Monitor_MemoryMap                       ( WP_Message *msg );
+    static bool Monitor_FlashSectorMap                  ( WP_Message *msg );
+    static bool Monitor_DeploymentMap                   ( WP_Message *msg );
+    static bool Monitor_QueryConfiguration              ( WP_Message *msg );
+    static bool Monitor_UpdateConfiguration             ( WP_Message *msg );
+    static bool Monitor_StorageOperation                ( WP_Message *msg );
                                              
-    static bool Debugging_Execution_BasePtr             ( WP_Message* msg );
-    static bool Debugging_Execution_ChangeConditions    ( WP_Message* msg );
+    static bool Debugging_Execution_BasePtr             ( WP_Message *msg );
+    static bool Debugging_Execution_ChangeConditions    ( WP_Message *msg );
 
-    static bool Debugging_Execution_Allocate            ( WP_Message* msg );
+    static bool Debugging_Execution_Allocate            ( WP_Message *msg );
 
-    static bool Debugging_UpgradeToSsl                  ( WP_Message* msg );
+    static bool Debugging_UpgradeToSsl                  ( WP_Message *msg );
 
 
 
@@ -1092,65 +962,63 @@ public:
 
 
 #if defined(NANOCLR_ENABLE_SOURCELEVELDEBUGGING)
-    static bool Debugging_Execution_Breakpoints         ( WP_Message* msg );
-    static bool Debugging_Execution_BreakpointStatus    ( WP_Message* msg );
-    static bool Debugging_Execution_SetCurrentAppDomain ( WP_Message* msg );
+    static bool Debugging_Execution_Breakpoints         ( WP_Message *msg );
+    static bool Debugging_Execution_BreakpointStatus    ( WP_Message *msg );
+    static bool Debugging_Execution_SetCurrentAppDomain ( WP_Message *msg );
 
-    static bool Debugging_Thread_CreateEx               ( WP_Message* msg );
-    static bool Debugging_Thread_List                   ( WP_Message* msg );
-    static bool Debugging_Thread_Stack                  ( WP_Message* msg );
-    static bool Debugging_Thread_Kill                   ( WP_Message* msg );
-    static bool Debugging_Thread_Suspend                ( WP_Message* msg );
-    static bool Debugging_Thread_Resume                 ( WP_Message* msg );
-    static bool Debugging_Thread_GetException           ( WP_Message* msg );
-    static bool Debugging_Thread_Unwind                 ( WP_Message* msg );
-    static bool Debugging_Thread_Get                    ( WP_Message* msg );
+    static bool Debugging_Thread_CreateEx               ( WP_Message *msg );
+    static bool Debugging_Thread_List                   ( WP_Message *msg );
+    static bool Debugging_Thread_Stack                  ( WP_Message *msg );
+    static bool Debugging_Thread_Kill                   ( WP_Message *msg );
+    static bool Debugging_Thread_Suspend                ( WP_Message *msg );
+    static bool Debugging_Thread_Resume                 ( WP_Message *msg );
+    static bool Debugging_Thread_GetException           ( WP_Message *msg );
+    static bool Debugging_Thread_Unwind                 ( WP_Message *msg );
+    static bool Debugging_Thread_Get                    ( WP_Message *msg );
                                              
-    static bool Debugging_Stack_Info                    ( WP_Message* msg );
-    static bool Debugging_Stack_SetIP                   ( WP_Message* msg );
+    static bool Debugging_Stack_Info                    ( WP_Message *msg );
+    static bool Debugging_Stack_SetIP                   ( WP_Message *msg );
                                              
-    static bool Debugging_Value_ResizeScratchPad        ( WP_Message* msg );
-    static bool Debugging_Value_GetStack                ( WP_Message* msg );
-    static bool Debugging_Value_GetField                ( WP_Message* msg );
-    static bool Debugging_Value_GetArray                ( WP_Message* msg );
-    static bool Debugging_Value_GetBlock                ( WP_Message* msg );
-    static bool Debugging_Value_GetScratchPad           ( WP_Message* msg );
-    static bool Debugging_Value_SetBlock                ( WP_Message* msg );
-    static bool Debugging_Value_SetArray                ( WP_Message* msg );
-    static bool Debugging_Value_AllocateObject          ( WP_Message* msg );
-    static bool Debugging_Value_AllocateString          ( WP_Message* msg );
-    static bool Debugging_Value_AllocateArray           ( WP_Message* msg );
-    static bool Debugging_Value_Assign                  ( WP_Message* msg );
+    static bool Debugging_Value_ResizeScratchPad        ( WP_Message *msg );
+    static bool Debugging_Value_GetStack                ( WP_Message *msg );
+    static bool Debugging_Value_GetField                ( WP_Message *msg );
+    static bool Debugging_Value_GetArray                ( WP_Message *msg );
+    static bool Debugging_Value_GetBlock                ( WP_Message *msg );
+    static bool Debugging_Value_GetScratchPad           ( WP_Message *msg );
+    static bool Debugging_Value_SetBlock                ( WP_Message *msg );
+    static bool Debugging_Value_SetArray                ( WP_Message *msg );
+    static bool Debugging_Value_AllocateObject          ( WP_Message *msg );
+    static bool Debugging_Value_AllocateString          ( WP_Message *msg );
+    static bool Debugging_Value_AllocateArray           ( WP_Message *msg );
+    static bool Debugging_Value_Assign                  ( WP_Message *msg );
                                              
-    static bool Debugging_TypeSys_Assemblies            ( WP_Message* msg );
-    static bool Debugging_TypeSys_AppDomains            ( WP_Message* msg );
+    static bool Debugging_TypeSys_Assemblies            ( WP_Message *msg );
+    static bool Debugging_TypeSys_AppDomains            ( WP_Message *msg );
                                              
-    static bool Debugging_Resolve_AppDomain             ( WP_Message* msg );
-    static bool Debugging_Resolve_Assembly              ( WP_Message* msg );
-    static bool Debugging_Resolve_Type                  ( WP_Message* msg );
-    static bool Debugging_Resolve_Field                 ( WP_Message* msg );
-    static bool Debugging_Resolve_Method                ( WP_Message* msg );
-    static bool Debugging_Resolve_VirtualMethod         ( WP_Message* msg );
+    static bool Debugging_Resolve_AppDomain             ( WP_Message *msg );
+    static bool Debugging_Resolve_Assembly              ( WP_Message *msg );
+    static bool Debugging_Resolve_Type                  ( WP_Message *msg );
+    static bool Debugging_Resolve_Field                 ( WP_Message *msg );
+    static bool Debugging_Resolve_Method                ( WP_Message *msg );
+    static bool Debugging_Resolve_VirtualMethod         ( WP_Message *msg );
 #endif //#if defined(NANOCLR_ENABLE_SOURCELEVELDEBUGGING)
 
-    static bool Debugging_Deployment_Status             ( WP_Message* msg );
+    static bool Debugging_Deployment_Status             ( WP_Message *msg );
 
 #if defined(NANOCLR_ENABLE_SOURCELEVELDEBUGGING)
-    static bool Debugging_Info_SetJMC                   ( WP_Message* msg );
+    static bool Debugging_Info_SetJMC                   ( WP_Message *msg );
     
-    bool Debugging_Info_SetJMC_Type                     ( const CLR_RT_TypeDef_Index&   idx, bool fJMC );
-    bool Debugging_Info_SetJMC_Method                   ( const CLR_RT_MethodDef_Index& idx, bool fJMC );
+    bool Debugging_Info_SetJMC_Type                     ( const CLR_RT_TypeDef_Index&   index, bool fJMC );
+    bool Debugging_Info_SetJMC_Method                   ( const CLR_RT_MethodDef_Index& index, bool fJMC );
 #endif //#if defined(NANOCLR_ENABLE_SOURCELEVELDEBUGGING)
 
-    static bool Profiling_Command                       ( WP_Message* msg );
-    bool Profiling_ChangeConditions                     ( WP_Message* msg );
-    bool Profiling_FlushStream                          ( WP_Message* msg );
+    static bool Profiling_Command                       ( WP_Message *msg );
+    bool Profiling_ChangeConditions                     ( WP_Message *msg );
+    bool Profiling_FlushStream                          ( WP_Message *msg );
 };
 
 //--//
 
-extern CLR_UINT32        g_scratchDebugger[];
-extern CLR_UINT32        g_scratchDebuggerMessaging[];
 extern CLR_DBG_Debugger *g_CLR_DBG_Debugger;
 
 //--//
@@ -1162,5 +1030,6 @@ extern const CLR_UINT32 c_Debugger_Lookup_Reply_count;
 
 //--//
 
-#endif // _NANOCLR_DEBUGGING_H_
+#endif // NANOCLR_DEBUGGING_H
 
+// clang-format on

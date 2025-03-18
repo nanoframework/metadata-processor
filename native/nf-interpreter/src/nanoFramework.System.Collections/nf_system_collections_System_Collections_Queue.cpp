@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2017 The nanoFramework project contributors
+// Copyright (c) .NET Foundation and Contributors
 // Portions Copyright (c) Microsoft Corporation.  All rights reserved.
 // See LICENSE file in the project root for full license information.
 //
@@ -7,7 +7,7 @@
 #include "nf_system_collections.h"
 
 
-HRESULT Library_nf_system_collections_System_Collections_Queue::CopyTo___VOID__mscorlibSystemArray__I4( CLR_RT_StackFrame& stack )
+HRESULT Library_nf_system_collections_System_Collections_Queue::CopyTo___VOID__SystemArray__I4( CLR_RT_StackFrame& stack )
 {
     NATIVE_PROFILE_CLR_CORE();
     NANOCLR_HEADER();

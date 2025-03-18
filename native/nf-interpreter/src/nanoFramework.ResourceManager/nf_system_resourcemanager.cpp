@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2019 The nanoFramework project contributors
+// Copyright (c) .NET Foundation and Contributors
 // Portions Copyright (c) Microsoft Corporation.  All rights reserved.
 // See LICENSE file in the project root for full license information.
 //
@@ -11,30 +11,27 @@ static const CLR_RT_MethodHandler method_lookup[] =
 {
     Library_nf_system_resourcemanager_System_Resources_ResourceManager::GetObjectInternal___OBJECT__I2,
     Library_nf_system_resourcemanager_System_Resources_ResourceManager::GetObjectInternal___OBJECT__I2__I4__I4,
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-    Library_nf_system_resourcemanager_System_Resources_ResourceManager::FindResource___STATIC__I4__STRING__mscorlibSystemReflectionAssembly,
-    Library_nf_system_resourcemanager_System_Resources_ResourceManager::GetObject___STATIC__OBJECT__SystemResourcesResourceManager__mscorlibSystemEnum,
-    Library_nf_system_resourcemanager_nanoFramework_Runtime_Native_ResourceUtility::GetObject___STATIC__OBJECT__SystemResourcesResourceManager__mscorlibSystemEnum,
-    Library_nf_system_resourcemanager_nanoFramework_Runtime_Native_ResourceUtility::GetObject___STATIC__OBJECT__SystemResourcesResourceManager__mscorlibSystemEnum__I4__I4,
-    NULL,
-    NULL,
+    nullptr,
+    nullptr,
+    nullptr,
+    nullptr,
+    nullptr,
+    nullptr,
+    nullptr,
+    nullptr,
+    nullptr,
+    Library_nf_system_resourcemanager_System_Resources_ResourceManager::FindResource___STATIC__I4__STRING__SystemReflectionAssembly,
+    Library_nf_system_resourcemanager_System_Resources_ResourceManager::GetObject___STATIC__OBJECT__SystemResourcesResourceManager__SystemEnum,
+    Library_nf_system_resourcemanager_nanoFramework_Runtime_Native_ResourceUtility::GetObject___STATIC__OBJECT__SystemResourcesResourceManager__SystemEnum,
+    Library_nf_system_resourcemanager_nanoFramework_Runtime_Native_ResourceUtility::GetObject___STATIC__OBJECT__SystemResourcesResourceManager__SystemEnum__I4__I4,
+    nullptr,
+    nullptr,
 };
 
 const CLR_RT_NativeAssemblyData g_CLR_AssemblyNative_nanoFramework_ResourceManager =
 {
-    "nanoFramework.ResourceManager", 
-    0xCDF9E76C,
+    "nanoFramework.ResourceManager",
+    0xDCD7DF4D,
     method_lookup,
-    ////////////////////////////////////////////////////////////////////////////////////
-    // check if the version bellow matches the one in AssemblyNativeVersion attribute //
-    ////////////////////////////////////////////////////////////////////////////////////
-    { 100, 0, 0, 0 }
+    { 100, 0, 0, 1 }
 };
