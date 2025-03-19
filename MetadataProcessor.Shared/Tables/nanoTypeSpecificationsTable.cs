@@ -127,7 +127,7 @@ namespace nanoFramework.Tools.MetadataProcessor
 
         public TypeReference TryGetTypeSpecification(MetadataToken token)
         {
-            return _idByTypeSpecifications.ElementAtOrDefault((int)token.RID).Key;
+            return _idByTypeSpecifications.FirstOrDefault(typeEntry => typeEntry.Key.MetadataToken == token).Key;
         }
 
         /// <inheritdoc/>
