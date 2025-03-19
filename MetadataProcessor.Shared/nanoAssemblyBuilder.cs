@@ -869,7 +869,9 @@ namespace nanoFramework.Tools.MetadataProcessor
                                 //}
                             }
                             else if (i.Operand is FieldReference ||
-                                     i.Operand is MethodSpecification)
+                                     i.Operand is TypeDefinition ||
+                                     i.Operand is MethodSpecification ||
+                                     i.Operand is TypeReference)
                             {
                                 set.Add(((IMetadataTokenProvider)i.Operand).MetadataToken);
                             }
