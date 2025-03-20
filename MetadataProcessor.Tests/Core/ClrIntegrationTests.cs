@@ -262,6 +262,8 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
 
                     // look for the error message reporting that there is no entry point
                     Assert.IsTrue(output.Contains("Cannot find any entrypoint!"));
+
+                    Console.WriteLine($"\r\n>>>>>>>>>>>>>\r\n{output}\r\n>>>>>>>>>>>>>");
                 }
                 else
                 {
@@ -316,6 +318,8 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
 
                     // look for the error message reporting that there is no entry point
                     Assert.IsFalse(output.Contains("Cannot find any entrypoint!"));
+
+                    Console.WriteLine($"\r\n>>>>>>>>>>>>>\r\n{output}\r\n>>>>>>>>>>>>>");
                 }
                 else
                 {
