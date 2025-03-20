@@ -3,15 +3,19 @@
 // See LICENSE file in the project root for full license information.
 //
 
+using TestNFClassLibrary;
+
 namespace TestNFApp
 {
     // Define a class that has the custom attribute associated with one of its members.
     [Attribute2]
     [Attribute4]
+    [Attribute1OnAnotherAssembly]
     public class MyClass1
     {
         [Attribute1]
         [Attribute3]
+        [Attribute2OnAnotherAssembly]
         public void MyMethod1(int i)
         {
             return;
