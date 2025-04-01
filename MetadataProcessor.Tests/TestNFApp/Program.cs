@@ -15,7 +15,7 @@ namespace TestNFApp
     {
         public static void Main()
         {
-            Debug.WriteLine("Starting TestNFApp");
+            Console.WriteLine("Starting TestNFApp");
 
             ///////////////////////////////////////////////////////////////////
             // referenced class
@@ -29,24 +29,35 @@ namespace TestNFApp
 
             //////////////////////////////
             // accessing property on class
-            _ = anotherClass.DummyProperty;
+            int dummyMirror1 = anotherClass.DummyProperty;
+
+            Console.WriteLine($"Accessed property on class: {dummyMirror1} ");
 
             /////////////////////////////////////////////////////////////////////////
             // instantiating a class on another assembly with a constructor parameter
+            Console.WriteLine("Instantiating a class on another assembly with a constructor parameter");
             anotherClass = new ClassOnAnotherAssembly(99);
 
             //////////////////////////////
             // accessing property on class
             _ = anotherClass.DummyProperty;
 
+            Console.WriteLine($"Accessed property on class: {dummyMirror1}");
+
             /////////////////////////////
             // Reflection Tests
+            Console.WriteLine("Reflection Tests");
             ReflectionTests();
 
             ///////////////////////////////////////
             // Delegate and MulticastDelegate tests
             _ = new TestingDelegates();
             
+            ////////////////////////////////////////////////
+            // Test enum in another assembly, same namespace
+            Console.WriteLine("Test enum in another assembly, same namespace");
+            TestEnumInAnotherAssembly enumTest = new TestEnumInAnotherAssembly();
+
             ///////////////////////////////////////////////////////////////////
             // Generics Tests
             _ = new GenericClassTests();
@@ -62,9 +73,13 @@ namespace TestNFApp
 
             /////////////////////////////////////
             // reference enum in another assembly
-            var x = (IAmAClassWithAnEnum.EnumA)1;
+            IAmAClassWithAnEnum.EnumA enumA = (IAmAClassWithAnEnum.EnumA)1;
 
-            var messageType = (IAmAClassWithAnEnum.EnumA)0;
+            Console.WriteLine($"Reference enum in another assembly {enumA}");
+
+            //////////////////////////////////////////
+            Console.WriteLine("Test accessing enum in another assembly");
+            IAmAClassWithAnEnum.EnumA messageType = (IAmAClassWithAnEnum.EnumA)0;
             switch (messageType)
             {
                 case IAmAClassWithAnEnum.EnumA.Test:
@@ -76,9 +91,10 @@ namespace TestNFApp
             }
 
             // null attributes tests
+            Console.WriteLine("Null attributes tests");
             _ = new ClassWithNullAttribs();
 
-            Debug.WriteLine("Exiting TestNFApp");
+            Console.WriteLine("Exiting TestNFApp");
         }
 
         private static void MiscelaneousTests()
@@ -103,17 +119,17 @@ namespace TestNFApp
             // Display the attributes of MyClass1.
             object[] myAttributes = myType.GetCustomAttributes(true);
 
-            Debug.WriteLine("");
-            Debug.WriteLine($"'{myType.Name}' type has {myAttributes.Length} custom attributes");
+            Console.WriteLine("");
+            Console.WriteLine($"'{myType.Name}' type has {myAttributes.Length} custom attributes");
 
             if (myAttributes.Length > 0)
             {
-                Debug.WriteLine("");
-                Debug.WriteLine($"The attributes for the class '{myType.Name}' are:");
+                Console.WriteLine("");
+                Console.WriteLine($"The attributes for the class '{myType.Name}' are:");
 
                 for (int j = 0; j < myAttributes.Length; j++)
                 {
-                    Debug.WriteLine($"  {myAttributes[j]}");
+                    Console.WriteLine($"  {myAttributes[j]}");
                 }
             }
 
@@ -126,7 +142,7 @@ namespace TestNFApp
             // Display the attributes for each of the methods of MyClass1.
             for (int i = 0; i < myMethods.Length; i++)
             {
-                var methodName = myMethods[i].Name;
+                string methodName = myMethods[i].Name;
 
                 Debug.WriteLine("");
                 Debug.WriteLine($"Getting custom attributes for '{methodName}'");
@@ -135,33 +151,33 @@ namespace TestNFApp
 
                 if (myAttributes.Length > 0)
                 {
-                    Debug.WriteLine("");
-                    Debug.WriteLine($"'{methodName}' method has {myAttributes.Length} custom attributes");
+                    Console.WriteLine("");
+                    Console.WriteLine($"'{methodName}' method has {myAttributes.Length} custom attributes");
 
-                    Debug.WriteLine("");
-                    Debug.WriteLine($"The attributes for the method '{methodName}' of class '{myType.Name}' are:");
+                    Console.WriteLine("");
+                    Console.WriteLine($"The attributes for the method '{methodName}' of class '{myType.Name}' are:");
 
                     for (int j = 0; j < myAttributes.Length; j++)
                     {
-                        Debug.WriteLine("");
-                        Debug.WriteLine($"  {myAttributes[j]}");
+                        Console.WriteLine("");
+                        Console.WriteLine($"  {myAttributes[j]}");
 
                         // check if the method has IgnoreAttribute
                         if (myAttributes[j] is IgnoreAttribute)
                         {
-                            Debug.WriteLine($"  >>>>>>> {methodName} has 'IgnoreAttribute' attribute");
+                            Console.WriteLine($"  >>>>>>> {methodName} has 'IgnoreAttribute' attribute");
                         }
 
                         // check if the method has DataRowAttribute
                         if (myAttributes[j] is DataRowAttribute)
                         {
-                            Debug.WriteLine($"  >>>>>>> {methodName} has 'DataRowAttribute' attribute");
+                            Console.WriteLine($"  >>>>>>> {methodName} has 'DataRowAttribute' attribute");
 
                             DataRowAttribute attDataRow = (DataRowAttribute)myAttributes[j];
 
                             int index = 0;
 
-                            foreach (var dataRow in attDataRow.Arguments)
+                            foreach (object dataRow in attDataRow.Arguments)
                             {
                                 Console.WriteLine($"          DataRowAttribute.Arg[{index++}] has: {dataRow}");
                             }
@@ -170,7 +186,7 @@ namespace TestNFApp
                         // check if the method has ComplexAttribute
                         if (myAttributes[j] is ComplexAttribute)
                         {
-                            Debug.WriteLine($"  >>>>>>> {methodName} has 'ComplexAttribute' attribute");
+                            Console.WriteLine($"  >>>>>>> {methodName} has 'ComplexAttribute' attribute");
 
                             ComplexAttribute attDataRow = (ComplexAttribute)myAttributes[j];
 
@@ -184,16 +200,16 @@ namespace TestNFApp
             }
 
             // display the custom attributes with constructor
-            var myClass = new MyClass1();
+            MyClass1 myClass = new MyClass1();
 
-            var myFieldAttributes = myClass.GetType().GetField("MyPackedField").GetCustomAttributes(true);
+            object[] myFieldAttributes = myClass.GetType().GetField("MyPackedField").GetCustomAttributes(true);
 
-            Debug.WriteLine("");
-            Debug.WriteLine($"The custom attributes of field 'MyPackedField' are:");
+            Console.WriteLine("");
+            Console.WriteLine($"The custom attributes of field 'MyPackedField' are:");
 
             MaxAttribute attMax = (MaxAttribute)myFieldAttributes[0];
-            Debug.WriteLine("");
-            Debug.WriteLine($"MaxAttribute value is: 0x{attMax.Max.ToString("X8")}");
+            Console.WriteLine("");
+            Console.WriteLine($"MaxAttribute value is: 0x{attMax.Max.ToString("X8")}");
 
             AuthorAttribute attAuthor = (AuthorAttribute)myFieldAttributes[1];
             Debug.WriteLine("");

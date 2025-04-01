@@ -4,11 +4,6 @@
 //
 
 using Mono.Cecil;
-using nanoFramework.Tools.MetadataProcessor.Core.Extensions;
-using System;
-using System.IO;
-using System.Linq;
-using System.Text;
 using System.Xml;
 
 namespace nanoFramework.Tools.MetadataProcessor.Core

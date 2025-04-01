@@ -15,7 +15,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -157,23 +156,45 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                                 {
                                     int parameterIndex = 0;
 
-                                    foreach (var item in m.Parameters)
+                                    foreach (ParameterDefinition item in m.Parameters)
                                     {
                                         // get the parameter type
-                                        var parameterType = item.ParameterType.ToNativeTypeAsString();
-                                        var parameterTypeCLR = item.ParameterType.ToCLRTypeAsString();
+                                        string parameterType = string.Empty;
+                                        string parameterTypeWORef = string.Empty;
+                                        string parameterTypeClr = string.Empty;
+
+                                        if (item.ParameterType.IsByReference)
+                                        {
+                                            // for ref types need an extra step to get the element type
+                                            parameterType = item.ParameterType.GetElementType().ToNativeTypeAsString() + "&";
+                                            parameterTypeWORef = item.ParameterType.GetElementType().ToNativeTypeAsString();
+                                            parameterTypeClr = item.ParameterType.GetElementType().ToCLRTypeAsString();
+                                        }
+                                        else
+                                        {
+                                            parameterType = item.ParameterType.ToNativeTypeAsString();
+                                            parameterTypeClr = item.ParameterType.ToCLRTypeAsString();
+                                        }
 
                                         // compose the function declaration
-                                        declaration.Append($"{parameterType} param{parameterIndex.ToString()}, ");
+                                        declaration.Append($"{parameterType} param{parameterIndex}, ");
 
                                         // compose the function call
-                                        marshallingCall.Append($"param{parameterIndex.ToString()}, ");
+                                        if (item.ParameterType.IsByReference)
+                                        {
+                                            marshallingCall.Append($"*param{parameterIndex}, ");
+                                        }
+                                        else
+                                        {
+                                            marshallingCall.Append($"param{parameterIndex}, ");
+                                        }
+
 
                                         // compose the variable block
                                         var parameterDeclaration = new ParameterDeclaration()
                                         {
                                             Index = parameterIndex.ToString(),
-                                            Name = $"param{parameterIndex.ToString()}",
+                                            Name = $"param{parameterIndex}",
                                         };
 
                                         if (item.ParameterType.IsByReference)
@@ -185,10 +206,10 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                                             parameterDeclaration.Type = parameterType;
 
                                             parameterDeclaration.Declaration =
-                                                $"{parameterType} {parameterDeclaration.Name};" + Environment.NewLine +
-                                                $"        UINT8 heapblock{parameterIndex.ToString()}[CLR_RT_HEAP_BLOCK_SIZE];";
+                                                $"{parameterTypeWORef} *{parameterDeclaration.Name};" + Environment.NewLine +
+                                                $"        uint8_t heapblock{parameterIndex}[CLR_RT_HEAP_BLOCK_SIZE];";
 
-                                            parameterDeclaration.MarshallingDeclaration = $"Interop_Marshal_{parameterTypeCLR}_ByRef( stack, heapblock{(parameterIndex + (m.IsStatic ? 0 : 1)).ToString()}, {parameterDeclaration.Name} )";
+                                            parameterDeclaration.MarshallingDeclaration = $"Interop_Marshal_{parameterTypeClr}_ByRef( stack, heapblock{parameterIndex}, {(parameterIndex + (m.IsStatic ? 0 : 1))}, {parameterDeclaration.Name} )";
 
                                         }
                                         else if (item.ParameterType.IsArray)
@@ -198,7 +219,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
                                             parameterDeclaration.Type = parameterType;
                                             parameterDeclaration.Declaration = $"{parameterType} {parameterDeclaration.Name};";
-                                            parameterDeclaration.MarshallingDeclaration = $"Interop_Marshal_{parameterTypeCLR}( stack, {(parameterIndex + (m.IsStatic ? 0 : 1)).ToString()}, {parameterDeclaration.Name} )";
+                                            parameterDeclaration.MarshallingDeclaration = $"Interop_Marshal_{parameterTypeClr}( stack, {(parameterIndex + (m.IsStatic ? 0 : 1))}, {parameterDeclaration.Name} )";
                                         }
                                         else
                                         {
@@ -207,12 +228,11 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
                                             parameterDeclaration.Type = parameterType;
                                             parameterDeclaration.Declaration = $"{parameterType} {parameterDeclaration.Name};";
-                                            parameterDeclaration.MarshallingDeclaration = $"Interop_Marshal_{parameterTypeCLR}( stack, {(parameterIndex + (m.IsStatic ? 0 : 1)).ToString()}, {parameterDeclaration.Name} )";
+                                            parameterDeclaration.MarshallingDeclaration = $"Interop_Marshal_{parameterTypeClr}( stack, {(parameterIndex + (m.IsStatic ? 0 : 1))}, {parameterDeclaration.Name} )";
                                         }
                                         newMethod.ParameterDeclaration.Add(parameterDeclaration);
                                         parameterIndex++;
                                     }
-
                                     declaration.Append("HRESULT &hr )");
                                     marshallingCall.Append("hr )");
                                 }

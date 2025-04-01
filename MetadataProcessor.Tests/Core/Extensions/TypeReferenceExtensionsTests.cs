@@ -61,13 +61,13 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Extensions
             DoTypeSignatureAsStringTest(mscorlibAssemblyDefinition, typeof(float), tr => "R4");
             DoTypeSignatureAsStringTest(mscorlibAssemblyDefinition, typeof(double), tr => "R8");
             DoTypeSignatureAsStringTest(mscorlibAssemblyDefinition, typeof(string), tr => "STRING");
-            DoTypeSignatureAsStringTest(mscorlibAssemblyDefinition, typeof(TimeSpan), tr => $"VALUETYPE [{tr.MetadataToken.ToInt32().ToString("x8")}]");
-            DoTypeSignatureAsStringTest(mscorlibAssemblyDefinition, typeof(DateTime), tr => $"VALUETYPE [{tr.MetadataToken.ToInt32().ToString("x8")}]");
+            DoTypeSignatureAsStringTest(mscorlibAssemblyDefinition, typeof(TimeSpan), tr => $"VALUETYPE System.TimeSpan [{tr.MetadataToken.ToInt32():x8}]");
+            DoTypeSignatureAsStringTest(mscorlibAssemblyDefinition, typeof(DateTime), tr => $"VALUETYPE System.DateTime [{tr.MetadataToken.ToInt32():x8}]");
             DoTypeSignatureAsStringTest(mscorlibAssemblyDefinition, typeof(object), tr => "OBJECT");
-            DoTypeSignatureAsStringTest(mscorlibAssemblyDefinition, typeof(System.IO.Path), tr => $"CLASS [{tr.MetadataToken.ToInt32().ToString("x8")}]");
-            DoTypeSignatureAsStringTest(mscorlibAssemblyDefinition, typeof(int[]), tr => $"SZARRAY {tr.GetElementType().TypeSignatureAsString()}");
+            DoTypeSignatureAsStringTest(mscorlibAssemblyDefinition, typeof(System.IO.Path), tr => $"CLASS System.IO.Path [{tr.MetadataToken.ToInt32():x8}]");
+            DoTypeSignatureAsStringTest(mscorlibAssemblyDefinition, typeof(int[]), tr => $"{tr.GetElementType().TypeSignatureAsString()}[]");
             DoTypeSignatureAsStringTest(mscorlibAssemblyDefinition, typeof(WeakReference), tr => $"WEAKCLASS");
-            DoTypeSignatureAsStringTest(mscorlibAssemblyDefinition, typeof(ICloneable), tr => $"CLASS [{tr.MetadataToken.ToInt32().ToString("x8")}]");
+            DoTypeSignatureAsStringTest(mscorlibAssemblyDefinition, typeof(ICloneable), tr => $"CLASS System.ICloneable [{tr.MetadataToken.ToInt32():x8}]");
         }
 
         private void DoTypeSignatureAsStringTest(Mono.Cecil.AssemblyDefinition mscorlibAssemblyDefinition, Type type, Func<Mono.Cecil.TypeReference, string> expectedResultFunc)

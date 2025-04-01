@@ -185,7 +185,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             {
                 // Check for supported bitmap type
                 Image img = Image.FromStream(ms);
-                if (Guid.Equals(img.RawFormat,ImageFormat.Bmp))
+                if (Guid.Equals(img.RawFormat, ImageFormat.Bmp))
                 {
                     return ResourceKind.Bitmap;
                 }
@@ -197,13 +197,13 @@ namespace nanoFramework.Tools.MetadataProcessor
                 {
                     return ResourceKind.Bitmap;
                 }
-                else if (Guid.Equals(img.RawFormat,ImageFormat.Icon)
-                      || Guid.Equals(img.RawFormat,ImageFormat.Emf)
-                      || Guid.Equals(img.RawFormat,ImageFormat.Exif)
-                      || Guid.Equals(img.RawFormat,ImageFormat.MemoryBmp)
-                      || Guid.Equals(img.RawFormat,ImageFormat.Png)
-                      || Guid.Equals(img.RawFormat,ImageFormat.Tiff)
-                      || Guid.Equals(img.RawFormat, ImageFormat.Wmf) )
+                else if (Guid.Equals(img.RawFormat, ImageFormat.Icon)
+                      || Guid.Equals(img.RawFormat, ImageFormat.Emf)
+                      || Guid.Equals(img.RawFormat, ImageFormat.Exif)
+                      || Guid.Equals(img.RawFormat, ImageFormat.MemoryBmp)
+                      || Guid.Equals(img.RawFormat, ImageFormat.Png)
+                      || Guid.Equals(img.RawFormat, ImageFormat.Tiff)
+                      || Guid.Equals(img.RawFormat, ImageFormat.Wmf))
                 {
                     // Any future support for other image types to be handled here
                     // Currently, fall through and pass data as a byte array

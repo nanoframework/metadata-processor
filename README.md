@@ -13,6 +13,14 @@ Is part of .NET **nanoFramework** toolbox, along with other various tools that a
 Version 2.0 is a C# application adapted from the original work of [Oleg Rakhmatulin](https://github.com/OlegRa).
 Version 1.0 was a Visual C++ application adapted from .NETMF toolbox.
 
+## Using the metadata processor
+
+The metadata processor is available in two packages.
+
+The main use of the metadata processor is packaged as a MSBuild task: [nanoFramework.Tools.MetadataProcessor.MsBuildTask](https://www.nuget.org/packages/nanoFramework.Tools.MetadataProcessor.MsBuildTask). The task is well integrated into the .NET **nanoFramework** build system and is distributed as part of the VS extensions. Almost all use cases can be addressed by the build system as it is, or by setting build variables for, e.g., additional logging.
+
+There are few use cases where the build task cannot be used. E.g., in software that generates source code at runtime, compiles the code via Roslyn, executes it on the virtual device, and uses the output for further processing. The metadata processor is required as a companion to Roslyn to convert the generated .NET assemblies to .NET **nanoFramework** .pe assemblies. The second package, [nanoFramework.Tools.MetadataProcessor.CLI](https://www.nuget.org/packages/nanoFramework.Tools.MetadataProcessor.CLI), contains a CLI version of the tool for this purpose. It is packaged as content: if added to a project, the tool will be distributed with the results of that project. If the package is added to a non-SDK-style project (e.g., .NET Framework project), make sure to set the *Copy to Output Directory* property for the files, as the package manager does not automatically do that. The code in the project should run the CLI with arguments *-loadhints*, *-parse* and *-compile* (in that order!) to create the .pe assembly.
+
 ## Developers guide
 
 ### Cloning the repository

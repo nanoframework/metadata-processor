@@ -4,17 +4,16 @@
 // See LICENSE file in the project root for full license information.
 //
 
-using Mono.Cecil;
-using Mono.Cecil.Cil;
-using Mono.Collections.Generic;
-using nanoFramework.Tools.MetadataProcessor.Core.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Xml;
+using Mono.Cecil;
+using Mono.Cecil.Cil;
+using Mono.Collections.Generic;
+using nanoFramework.Tools.MetadataProcessor.Core.Extensions;
 
 namespace nanoFramework.Tools.MetadataProcessor
 {

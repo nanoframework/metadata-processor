@@ -1,20 +1,17 @@
-﻿//
-// Copyright (c) .NET Foundation and Contributors
-// See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using Mono.Cecil;
-using Mono.Cecil.Cil;
-using Mono.Collections.Generic;
-using Mustache;
-using nanoFramework.Tools.MetadataProcessor.Core.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Security.AccessControl;
 using System.Text;
+using Mono.Cecil;
+using Mono.Cecil.Cil;
+using Mono.Collections.Generic;
+using Mustache;
+using nanoFramework.Tools.MetadataProcessor.Core.Extensions;
 
 namespace nanoFramework.Tools.MetadataProcessor.Core
 {
@@ -255,7 +252,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
         private void DumpTypeDefinitions(DumpAllTable dumpTable)
         {
-            foreach (var t in _tablesContext.TypeDefinitionTable.Items.OrderBy(tr => tr.MetadataToken.ToInt32()))
+            foreach (TypeDefinition t in _tablesContext.TypeDefinitionTable.Items.OrderBy(tr => tr.MetadataToken.ToInt32()))
             {
                 _tablesContext.TypeDefinitionTable.TryGetTypeReferenceId(t, out ushort referenceId);
 
@@ -274,7 +271,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                     typeDef.Name = t.FullName;
                 }
 
-                var typeFlags = (uint)nanoTypeDefinitionTable.GetFlags(
+                uint typeFlags = (uint)nanoTypeDefinitionTable.GetFlags(
                     t,
                     _tablesContext.MethodDefinitionTable);
 
@@ -305,7 +302,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                 }
 
                 // list generic parameters
-                foreach (var gp in t.GenericParameters)
+                foreach (GenericParameter gp in t.GenericParameters)
                 {
                     string realToken = gp.MetadataToken.ToInt32().ToString("X8");
                     _tablesContext.GenericParamsTable.TryGetParameterId(gp, out referenceId);
@@ -326,7 +323,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                 }
 
                 // list type fields
-                foreach (var f in t.Fields)
+                foreach (FieldDefinition f in t.Fields)
                 {
                     uint att = (uint)f.Attributes;
 
@@ -346,7 +343,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                 }
 
                 // list type methods
-                foreach (var m in t.Methods)
+                foreach (MethodDefinition m in t.Methods)
                 {
                     string realToken = m.MetadataToken.ToInt32().ToString("X8");
                     _tablesContext.MethodDefinitionTable.TryGetMethodReferenceId(m, out referenceId);
@@ -387,7 +384,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                         }
 
                         // exceptions
-                        foreach (var eh in m.Body.ExceptionHandlers)
+                        foreach (Mono.Cecil.Cil.ExceptionHandler eh in m.Body.ExceptionHandlers)
                         {
                             var h = new ExceptionHandler
                             {
@@ -411,7 +408,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                         methodDef.ILCodeInstructionsCount = m.Body.Instructions.Count.ToString();
 
                         // IL code
-                        foreach (var instruction in m.Body.Instructions)
+                        foreach (Instruction instruction in m.Body.Instructions)
                         {
                             if (instruction.OpCode.OperandType == OperandType.InlineMethod ||
                                 instruction.OpCode.OperandType == OperandType.InlineField ||
@@ -563,7 +560,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                 }
 
                 // list interface implementations
-                foreach (var i in t.Interfaces)
+                foreach (InterfaceImplementation i in t.Interfaces)
                 {
                     string realInterfaceToken = i.MetadataToken.ToInt32().ToString("X8");
                     string realInterfaceTypeToken = i.InterfaceType.MetadataToken.ToInt32().ToString("X8");
@@ -748,11 +745,11 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
         {
             var sig = new StringBuilder(method.ReturnType.TypeSignatureAsString());
 
-            sig.Append("( ");
+            sig.Append('(');
 
-            foreach (var p in method.Parameters)
+            foreach (ParameterDefinition param in method.Parameters)
             {
-                sig.Append(p.ParameterType.TypeSignatureAsString());
+                sig.Append(param.ParameterType.TypeSignatureAsString());
                 sig.Append(", ");
             }
 
@@ -763,10 +760,10 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
             }
             else
             {
-                sig.Append(" ");
+                sig.Append(' ');
             }
 
-            sig.Append(" )");
+            sig.Append(')');
 
             return sig.ToString();
         }

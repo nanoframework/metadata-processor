@@ -5,10 +5,9 @@
 
 # compute authorization header in format "AUTHORIZATION: basic 'encoded token'"
 # 'encoded token' is the Base64 of the string "nfbot:personal-token"
-$auth = "basic $([System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes("nfbot:$env:MY_GITHUB_TOKEN")))"
+$auth = "basic $([System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes("nfbot:$env:GITHUB_TOKEN")))"
 
 # init/reset these
-$commitMessage = ""
 $prTitle = ""
 $newBranchName = "develop-nfbot/update-dependencies/" + [guid]::NewGuid().ToString()
 $packageTargetVersion = gh release view --json tagName --jq .tagName
@@ -65,6 +64,7 @@ Write-Host "Version $latestNugetVersion available from nuget.org feed. Proceedin
 "*****************************************************************************************************" | Write-Host
 "Updating nanoFramework.Tools.MetadataProcessor.MsBuildTask.Net package in VS2019 & VS2022 solution..." | Write-Host
 
+dotnet restore
 dotnet remove VisualStudio.Extension-2019/VisualStudio.Extension-vs2019.csproj package nanoFramework.Tools.MetadataProcessor.MsBuildTask
 dotnet add VisualStudio.Extension-2019/VisualStudio.Extension-vs2019.csproj package nanoFramework.Tools.MetadataProcessor.MsBuildTask --version $packageTargetVersion --no-restore 
 dotnet remove VisualStudio.Extension-2022/VisualStudio.Extension-vs2022.csproj package nanoFramework.Tools.MetadataProcessor.MsBuildTask
@@ -127,6 +127,12 @@ if ($repoStatus -ne "") {
         $result = Invoke-RestMethod -Method Post -UserAgent [Microsoft.PowerShell.Commands.PSUserAgent]::InternetExplorer -Uri  $githubApiEndpoint -Header $headers -ContentType "application/json" -Body $prRequestBody
         'Started PR with dependencies update...' | Write-Host -NoNewline
         'OK' | Write-Host -ForegroundColor Green
+
+        # add labels to PR
+        $prNumber = $result.number
+
+        gh pr edit $prNumber --add-label "VS2019"
+        gh pr edit $prNumber --add-label "VS2022"
     }
     catch {
         $result = $_.Exception.Response.GetResponseStream()
