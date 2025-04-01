@@ -151,7 +151,7 @@ jobs:
       git config --global user.name "nfbot"
     displayName: Setup git identity
 
-  - template: azure-pipelines-templates/install-nuget.yml@templates  
+  - template: azure-pipelines-templates/install-nuget.yml@templates
 
   - task: InstallNanoMSBuildComponents@1
     condition: ne( variables['StartReleaseCandidate'], true )
@@ -165,7 +165,7 @@ jobs:
       restoreSolution: '$(solution)'
       feedsToUse: config
       nugetConfigPath: 'NuGet.config'
-  
+
   - task: VSBuild@1
     inputs:
       solution: '$(solution)'
@@ -260,7 +260,7 @@ jobs:
   - script: nbgv cloud -a -c
     condition: succeeded()
     displayName: Set build number
- 
+
   - task: PowerShell@2
     condition: succeeded()
     displayName: Save cloud build number
@@ -292,7 +292,7 @@ jobs:
       command: custom
       custom: tool
       arguments: install --tool-path . sign --version 0.9.1-beta.24170.3
-    
+
   - pwsh: |
       .\sign code azure-key-vault `
       "**/*.nupkg" `
@@ -312,7 +312,7 @@ jobs:
         succeeded(),
         eq(variables['System.PullRequest.PullRequestId'], '')
       )
-    
+
   # publish artifacts (only possible if this is not a PR originated on a fork)
   - task: PublishPipelineArtifact@1
     displayName: Publish deployables artifacts
@@ -389,14 +389,7 @@ jobs:
 
   # update dependents
   # use this to make sure nuget package is published
-  - template: azure-pipelines-templates/update-dependents.yml@templates  
-    parameters:
-      packageName: '$(nugetPackageName)'
-      repositoriesToUpdate:
-
-  # update dependents
-  # use this to make sure nuget package is published
-  - template: azure-pipelines-templates/update-dependents.yml@templates  
+  - template: azure-pipelines-templates/update-dependents.yml@templates
     parameters:
       packageName: '$(nugetPackageName)'
       repositoriesToUpdate:
@@ -426,7 +419,7 @@ jobs:
     fetchDepth: 1
 
   # step from template @ nf-tools repo
-  - template: azure-pipelines-templates/discord-webhook.yml@templates  
+  - template: azure-pipelines-templates/discord-webhook.yml@templates
     parameters:
       status: 'failure'
       webhookUrl: '$(DiscordWebhook)'
