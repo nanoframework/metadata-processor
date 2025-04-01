@@ -209,7 +209,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
                 {
                     System.Console.WriteLine("");
                     System.Console.WriteLine("-parse <path-to-assembly-file>                        Analyses .NET assembly.");
-                    System.Console.WriteLine("-compile <path-to-PE-file>                            Compiles an assembly into nanoCLR format. Optionally flags if this it's a core library.");
+                    System.Console.WriteLine("-compile <path-to-PE-file> <isCoreLibrary>            Compiles an assembly into nanoCLR format and (true/false) if this it's a core library.");
                     System.Console.WriteLine("-loadHints <assembly-name> <path-to-assembly-file>    Loads one (or more) assembly file(s) as a dependency(ies).");
                     System.Console.WriteLine("-excludeClassByName <class-name>                      Removes the class from an assembly.");
                     System.Console.WriteLine("-generateskeleton                                     Generate skeleton files with stubs to add native code for an assembly.");

@@ -86,6 +86,9 @@ namespace nanoFramework.Tools.MetadataProcessor
             // add default types to exclude
             SetDefaultTypesToExclude();
 
+            // add default types to exclude
+            SetDefaultTypesToExclude();
+
             // check CustomAttributes against list of classes to exclude
             foreach (CustomAttribute item in assemblyDefinition.CustomAttributes)
             {

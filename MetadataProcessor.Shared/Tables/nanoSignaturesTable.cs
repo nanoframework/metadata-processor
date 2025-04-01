@@ -51,6 +51,14 @@ namespace nanoFramework.Tools.MetadataProcessor
 
         public static IDictionary<string, NanoCLRDataType> PrimitiveTypes => s_primitiveTypes;
 
+        /// <summary>
+        /// Built-in types (see flags in c_CLR_RT_DataTypeLookup at CLR Core code)
+        /// </summary>
+        private static readonly IDictionary<string, nanoCLR_DataType> s_builtInTypes =
+            new Dictionary<string, nanoCLR_DataType>(StringComparer.Ordinal);
+
+        public static IDictionary<string, nanoCLR_DataType> PrimitiveTypes => s_primitiveTypes;
+
         static nanoSignaturesTable()
         {
             s_primitiveTypes.Add(typeof(void).FullName, NanoCLRDataType.DATATYPE_VOID);
