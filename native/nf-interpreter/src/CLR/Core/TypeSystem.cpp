@@ -4,6 +4,7 @@
 // See LICENSE file in the project root for full license information.
 //
 #include "stdafx.h"
+#include <string>
 
 #include "Core.h"
 #include "corhdr_private.h"
@@ -1034,9 +1035,9 @@ bool CLR_RT_TypeDef_Instance::ResolveToken(
                 // }
                 // else
                 //{
-                //     m_data = g_CLR_RT_WellKnownTypes.m_Object.m_data;
-                //     m_assm = g_CLR_RT_TypeSystem.m_assemblies[g_CLR_RT_WellKnownTypes.m_Object.Assembly() - 1];
-                //     m_target = m_assm->GetTypeDef(g_CLR_RT_WellKnownTypes.m_Object.Type());
+                //     m_data = g_CLR_RT_WellKnownTypes.Object.m_data;
+                //     m_assm = g_CLR_RT_TypeSystem.m_assemblies[g_CLR_RT_WellKnownTypes.Object.Assembly() - 1];
+                //     m_target = m_assm->GetTypeDef(g_CLR_RT_WellKnownTypes.Object.Type());
                 // }
 
 #if defined(NANOCLR_INSTANCE_NAMES)
@@ -2110,14 +2111,8 @@ CLR_PMETADATA CLR_RECORD_EH::ExtractEhFromByteCode(CLR_PMETADATA ipEnd, const CL
 CLR_UINT32 CLR_RECORD_EH::GetToken() const
 {
     NATIVE_PROFILE_CLR_CORE();
-    if (classToken & 0x8000)
-    {
-        return CLR_TkFromType(TBL_TypeRef, classToken & 0x7FFF);
-    }
-    else
-    {
-        return CLR_TkFromType(TBL_TypeDef, classToken);
-    }
+
+    return CLR_UncompressTypeToken(classToken);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2459,6 +2454,21 @@ HRESULT CLR_RT_Assembly::CreateInstance(const CLR_RECORD_ASSEMBLY *header, CLR_R
 #endif
             CLR_Debug::Printf("\r\n\r\n");
 
+            CLR_Debug::Printf(" (%d RAM - %d ROM - %d METADATA)", iTotalRamSize, header->TotalSize(), iMetaData);
+
+#if defined(NANOCLR_GC_VERBOSE)
+            if (s_CLR_RT_fTrace_Memory >= c_CLR_RT_Trace_Info)
+            {
+#ifdef _WIN64
+
+                CLR_Debug::Printf(" @ 0x%016" PRIxPTR "", (uintptr_t)assm);
+#else
+                CLR_Debug::Printf(" @ 0x%08 PRIxPTR ", (uintptr_t)assm);
+#endif
+            }
+#endif
+            CLR_Debug::Printf("\r\n\r\n");
+            
             CLR_Debug::Printf(
                 "   AssemblyRef     = %6d bytes (%5d elements)\r\n",
                 offsets.assemblyRef,
@@ -3240,7 +3250,7 @@ void CLR_RT_Assembly::ResolveLink()
                 }
 
 #if defined(NANOCLR_APPDOMAINS)
-                if (inst.m_data == g_CLR_RT_WellKnownTypes.m_MarshalByRefObject.m_data)
+                if (inst.m_data == g_CLR_RT_WellKnownTypes.MarshalByRefObject.m_data)
                 {
                     dst->m_flags |= CLR_RT_TypeDef_CrossReference::TD_CR_IsMarshalByRefObject;
                 }
@@ -3463,7 +3473,7 @@ HRESULT CLR_RT_AppDomain::LoadAssembly(CLR_RT_Assembly *assm)
         CLR_RT_HeapBlock exception;
 
         NANOCLR_CHECK_HRESULT(
-            g_CLR_RT_ExecutionEngine.NewObjectFromIndex(exception, g_CLR_RT_WellKnownTypes.m_OutOfMemoryException));
+            g_CLR_RT_ExecutionEngine.NewObjectFromIndex(exception, g_CLR_RT_WellKnownTypes.OutOfMemoryException));
 
         m_outOfMemoryException = exception.Dereference();
     }
@@ -3499,7 +3509,7 @@ HRESULT CLR_RT_AppDomain::GetManagedObject(CLR_RT_HeapBlock &res)
 
         _ASSERTE(FIMPLIES(obj, obj->DataType() == DATATYPE_CLASS || obj->DataType() == DATATYPE_VALUETYPE));
 
-        if (obj && obj->ObjectCls().m_data == g_CLR_RT_WellKnownTypes.m_AppDomain.m_data)
+        if (obj && obj->ObjectCls().m_data == g_CLR_RT_WellKnownTypes.AppDomain.m_data)
         {
             // managed appDomain is found.  Use it.
             res.SetObjectReference(ref->m_objectPtr);
@@ -3514,7 +3524,7 @@ HRESULT CLR_RT_AppDomain::GetManagedObject(CLR_RT_HeapBlock &res)
         CLR_RT_HeapBlock *pRes;
         CLR_RT_ProtectFromGC gc(res);
 
-        NANOCLR_CHECK_HRESULT(g_CLR_RT_ExecutionEngine.NewObjectFromIndex(res, g_CLR_RT_WellKnownTypes.m_AppDomain));
+        NANOCLR_CHECK_HRESULT(g_CLR_RT_ExecutionEngine.NewObjectFromIndex(res, g_CLR_RT_WellKnownTypes.AppDomain));
 
         pRes = res.Dereference();
 
@@ -3590,7 +3600,7 @@ HRESULT CLR_RT_AppDomain::MarshalObject(CLR_RT_HeapBlock &src, CLR_RT_HeapBlock 
     CLR_RT_HeapBlock *proxySrc = nullptr;
     CLR_RT_HeapBlock *mbroSrc = nullptr;
     bool fSimpleAssign = false;
-    CLR_RT_TypeDef_Index indexVerify = g_CLR_RT_WellKnownTypes.m_Object;
+    CLR_RT_TypeDef_Index indexVerify = g_CLR_RT_WellKnownTypes.Object;
     NanoCLRDataType dtSrc = src.DataType();
     CLR_RT_AppDomain *appDomainSav = g_CLR_RT_ExecutionEngine.GetCurrentAppDomain();
 
@@ -3821,7 +3831,7 @@ HRESULT CLR_RT_AppDomain::GetAssemblies(CLR_RT_HeapBlock &ref)
                 index.Set(pASSM->m_index);
 
                 NANOCLR_CHECK_HRESULT(
-                    g_CLR_RT_ExecutionEngine.NewObjectFromIndex(*pArray, g_CLR_RT_WellKnownTypes.m_Assembly));
+                    g_CLR_RT_ExecutionEngine.NewObjectFromIndex(*pArray, g_CLR_RT_WellKnownTypes.Assembly));
                 hbObj = pArray->Dereference();
 
                 hbObj->SetReflection(index);
@@ -3834,7 +3844,7 @@ HRESULT CLR_RT_AppDomain::GetAssemblies(CLR_RT_HeapBlock &ref)
         if (pass == 0)
         {
             NANOCLR_CHECK_HRESULT(
-                CLR_RT_HeapBlock_Array::CreateInstance(ref, count, g_CLR_RT_WellKnownTypes.m_Assembly));
+                CLR_RT_HeapBlock_Array::CreateInstance(ref, count, g_CLR_RT_WellKnownTypes.Assembly));
 
             pArray = (CLR_RT_HeapBlock *)ref.DereferenceArray()->GetFirstElement();
         }
@@ -4292,6 +4302,7 @@ bool CLR_RT_Assembly::FindTypeDef(const char *typeName, const char *nameSpace, C
     const CLR_RECORD_TYPEDEF *target = GetTypeDef(0);
     int tblSize = tablesSize[TBL_TypeDef];
     bool isNestedType = false;
+    std::string extractedNamespace;
 
     // Check if typeName contains '/'
     const char *slashPos = strchr(typeName, '/');
@@ -4302,10 +4313,19 @@ bool CLR_RT_Assembly::FindTypeDef(const char *typeName, const char *nameSpace, C
 
         // Extract the enclosed type name from the '/' backwards to the '.' before
         const char *dotPos = strrchr(typeName, '.');
-        std::string enclosedTypeName(dotPos + 1, slashPos);
+        std::string enclosedTypeName;
 
-        // Extract the namespace from the beginning of the string to that '.'
-        std::string extractedNamespace(typeName, dotPos - typeName);
+        if (dotPos != nullptr)
+        {
+            enclosedTypeName.assign(dotPos + 1, slashPos);
+            // Extract the namespace from the beginning of the string to that '.'
+            extractedNamespace.assign(typeName, dotPos - typeName);
+        }
+        else
+        {
+            enclosedTypeName.assign(typeName, slashPos);
+            extractedNamespace.clear();
+        }
 
         // Use the extracted values for further processing
         typeName = extractedTypeName;
@@ -4322,10 +4342,11 @@ bool CLR_RT_Assembly::FindTypeDef(const char *typeName, const char *nameSpace, C
             // check if this is a nested type
             if (target->HasValidEnclosingType())
             {
-                const char *szNameSpace = GetString(target->nameSpace);
                 const char *szName = GetString(target->name);
 
-                if (!strcmp(szName, typeName) && !strcmp(szNameSpace, nameSpace))
+                // for nested types, there is no namespace encoded in the type
+                // looking at the type name only, does look a bit flaky but it will have to work for now
+                if (!strcmp(szName, typeName))
                 {
                     index.Set(assemblyIndex, i);
                     return true;
@@ -4357,9 +4378,14 @@ bool CLR_RT_Assembly::FindTypeDef(const char *typeName, CLR_INDEX scope, CLR_RT_
 
     for (int i = 0; i < tblSize; i++, target++)
     {
-        auto enclosingType = target->EnclosingType();
+        if (!target->HasValidEnclosingType())
+        {
+            continue;
+        }
 
-        if (enclosingType == scope)
+        CLR_INDEX enclosingTypeIndex = target->EnclosingTypeIndex();
+
+        if (enclosingTypeIndex == scope)
         {
             const char *szName = GetString(target->name);
 
@@ -6371,18 +6397,20 @@ bool CLR_RT_AttributeEnumerator::Advance()
         ptr++;
         num--;
 
-        if (ptr->Key() == key)
+        if (ptr->Key() == key && ptr->ownerIndex == m_data.ownerIndex)
         {
-            CLR_INDEX tk = ptr->constructor;
-            // check TYPEDEF
-            if (tk & 0x8000)
+            // get the token of the constructor (compressed format)
+            CLR_UINT32 token = CLR_UncompressMethodToken(ptr->constructor);
+
+            // get the method definition, by resolving the token
+            CLR_RT_MethodDef_Instance method{};
+            if (method.ResolveToken(token, m_assm) == false)
             {
-                m_match = m_assm->crossReferenceMethodRef[tk & 0x7FFF].target;
+                ASSERT(0);
             }
-            else
-            {
-                m_match.Set(m_assm->assemblyIndex, tk);
-            }
+
+            // get the method definition index
+            m_match.data = method.data;
 
             m_blob = m_assm->GetSignature(ptr->data);
 
