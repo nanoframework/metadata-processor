@@ -1,13 +1,11 @@
-﻿//
-// Copyright (c) .NET Foundation and Contributors
-// See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using Mono.Cecil;
-using nanoFramework.Tools.MetadataProcessor.Core.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Mono.Cecil;
+using nanoFramework.Tools.MetadataProcessor.Core.Extensions;
 
 namespace nanoFramework.Tools.MetadataProcessor
 {
@@ -54,7 +52,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             }
         }
 
-        public NanoCLRTable TableIndex => NanoCLRTable.TBL_MethodSpec;
+        public NanoClrTable TableIndex => NanoClrTable.TBL_MethodSpec;
 
         /// <summary>
         /// Creates new instance of <see cref="nanoMethodSpecificationTable"/> object.

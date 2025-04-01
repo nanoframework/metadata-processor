@@ -1,11 +1,8 @@
-﻿//
-// Copyright (c) .NET Foundation and Contributors
-// See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using Mono.Cecil;
-using System;
 using System.Diagnostics;
+using Mono.Cecil;
 
 namespace nanoFramework.Tools.MetadataProcessor
 {
@@ -14,14 +11,14 @@ namespace nanoFramework.Tools.MetadataProcessor
     /// </summary>
     public class nanoMetadataToken
     {
-        private NanoCLRTable _clrTable;
+        private NanoClrTable _clrTable;
         private ushort _id;
 
         public nanoMetadataToken()
         {
         }
 
-        public nanoMetadataToken(NanoCLRTable clrTable, ushort id)
+        public nanoMetadataToken(NanoClrTable clrTable, ushort id)
         {
             _clrTable = clrTable;
             _id = id;
@@ -35,23 +32,23 @@ namespace nanoFramework.Tools.MetadataProcessor
             switch (token.TokenType)
             {
                 case TokenType.AssemblyRef:
-                    _clrTable = NanoCLRTable.TBL_AssemblyRef;
+                    _clrTable = NanoClrTable.TBL_AssemblyRef;
                     break;
 
                 case TokenType.TypeRef:
-                    _clrTable = NanoCLRTable.TBL_TypeRef;
+                    _clrTable = NanoClrTable.TBL_TypeRef;
                     break;
 
                 case TokenType.Field:
-                    _clrTable = NanoCLRTable.TBL_FieldDef;
+                    _clrTable = NanoClrTable.TBL_FieldDef;
                     break;
 
                 case TokenType.Method:
-                    _clrTable = NanoCLRTable.TBL_MethodDef;
+                    _clrTable = NanoClrTable.TBL_MethodDef;
                     break;
 
                 case TokenType.TypeDef:
-                    _clrTable = NanoCLRTable.TBL_TypeDef;
+                    _clrTable = NanoClrTable.TBL_TypeDef;
                     break;
 
                 //case TokenType.MethodSpec:
@@ -63,19 +60,19 @@ namespace nanoFramework.Tools.MetadataProcessor
                 //    break;
 
                 case TokenType.GenericParam:
-                    _clrTable = NanoCLRTable.TBL_GenericParam;
+                    _clrTable = NanoClrTable.TBL_GenericParam;
                     break;
 
                 case TokenType.MethodSpec:
-                    _clrTable = NanoCLRTable.TBL_MethodDef;
+                    _clrTable = NanoClrTable.TBL_MethodDef;
                     break;
 
                 case TokenType.MemberRef:
-                    _clrTable = NanoCLRTable.TBL_MethodRef;
+                    _clrTable = NanoClrTable.TBL_MethodRef;
                     break;
 
                 case TokenType.TypeSpec:
-                    _clrTable = NanoCLRTable.TBL_TypeSpec;
+                    _clrTable = NanoClrTable.TBL_TypeSpec;
                     break;
 
                 default:

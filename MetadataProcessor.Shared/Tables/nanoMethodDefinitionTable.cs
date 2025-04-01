@@ -1,8 +1,11 @@
-using Mono.Cecil;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Mono.Cecil;
 
 namespace nanoFramework.Tools.MetadataProcessor
 {
@@ -39,7 +42,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             }
         }
 
-        public NanoCLRTable TableIndex => NanoCLRTable.TBL_MethodDef;
+        public NanoClrTable TableIndex => NanoClrTable.TBL_MethodDef;
 
         /// <summary>
         /// Creates new instance of <see cref="nanoMethodDefinitionTable"/> object.
@@ -277,7 +280,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                 flag |= (method.IsStatic ? MD_StaticConstructor : MD_Constructor);
             }
 
-            if(method.Name == "Finalize"
+            if (method.Name == "Finalize"
                && method.ReturnType.FullName == "System.Void"
                && method.Parameters.Count == 0)
             {

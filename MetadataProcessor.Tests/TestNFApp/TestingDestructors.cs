@@ -1,7 +1,5 @@
-﻿//
-// Copyright (c) .NET Foundation and Contributors
-// See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 
@@ -44,7 +42,7 @@ namespace TestNFApp
         {
             // Calling Destructor for Test Class 3
             intI = 2;
-     
+
             Console.WriteLine("Calling Destructor for Test Class 3");
         }
 
@@ -103,7 +101,7 @@ namespace TestNFApp
         public static bool TestMethod()
         {
             DestructorsTestAnotherClass mc = new DestructorsTestAnotherClass();
-            
+
             mc = null;
 
             // should be calling GC
@@ -111,15 +109,15 @@ namespace TestNFApp
 
             int sleepTime = 5000;
             int slept = 0;
-            
+
             while (intI != 8 && slept < sleepTime)
             {
                 System.Threading.Thread.Sleep(10);
                 slept += 10;
             }
-            
+
             Console.WriteLine($"Thread has slept for {slept}");
-            
+
             if (intI == 8)
             {
                 return true;

@@ -1,14 +1,11 @@
-﻿//
-// Copyright (c) .NET Foundation and Contributors
-// Portions Copyright (c) Microsoft Corporation.  All rights reserved.
-// See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
 using System;
 using System.Diagnostics;
 using System.Threading;
+using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
 
 namespace nanoFramework.Tools.Utilities
 {
@@ -23,7 +20,7 @@ namespace nanoFramework.Tools.Utilities
 
             var isToEnablePauseForDebug = Environment.GetEnvironmentVariable(varName, EnvironmentVariableTarget.User);
 
-            if (!string.IsNullOrEmpty(isToEnablePauseForDebug) 
+            if (!string.IsNullOrEmpty(isToEnablePauseForDebug)
                 && isToEnablePauseForDebug.Equals("1", StringComparison.Ordinal))
             {
                 var currentProcessId = Process.GetCurrentProcess().Id;
@@ -35,7 +32,7 @@ namespace nanoFramework.Tools.Utilities
                 logger.LogMessage(MessageImportance.Normal, $"Debugging of .NET nanoFramework Metadata Processor msbuild task is enabled. Waiting {timeoutSeconds} seconds for debugger attachment on Process Id: {currentProcessId} Name: {currentProcessName}...");
 
                 // wait N seconds for debugger to attach
-                while (!Debugger.IsAttached 
+                while (!Debugger.IsAttached
                     && timeoutToWaitForDebugToAttach.TotalSeconds > 0)
                 {
                     Thread.Sleep(1000);

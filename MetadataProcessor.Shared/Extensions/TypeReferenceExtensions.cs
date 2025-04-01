@@ -357,7 +357,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
             return nanoTokenHelpers.EncodeTableIndex(value.ToNanoCLRTable(), nanoTokenHelpers.CLR_TypeRefOrSpecTables);
         }
 
-        private static NanoCLRTable ToNanoCLRTable(this TypeReference value)
+        private static NanoClrTable ToNanoCLRTable(this TypeReference value)
         {
             return nanoTokenHelpers.ConvertToNanoCLRTable(value);
         }

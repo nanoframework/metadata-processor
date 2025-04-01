@@ -1,14 +1,13 @@
-//
-// Copyright (c) .NET Foundation and Contributors
-// Original work from Oleg Rakhmatulin.
-// See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using Mono.Cecil;
-using Mono.Cecil.Cil;
+// Original work from Oleg Rakhmatulin.
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Mono.Cecil;
+using Mono.Cecil.Cil;
 
 namespace nanoFramework.Tools.MetadataProcessor
 {
@@ -169,27 +168,27 @@ namespace nanoFramework.Tools.MetadataProcessor
                         continue;
 
                     case Code.Newobj:
-                        {
-                            var method = (MethodReference)instruction.Operand;
-                            size -= method.Parameters.Count;
-                        }
-                        break;
+                    {
+                        var method = (MethodReference)instruction.Operand;
+                        size -= method.Parameters.Count;
+                    }
+                    break;
 
                     case Code.Callvirt:
                     case Code.Call:
+                    {
+                        var method = (MethodReference)instruction.Operand;
+                        if (method.HasThis)
                         {
-                            var method = (MethodReference)instruction.Operand;
-                            if (method.HasThis)
-                            {
-                                --size;
-                            }
-                            size -= method.Parameters.Count;
-                            if (method.ReturnType.FullName != "System.Void")
-                            {
-                                ++size;
-                            }
+                            --size;
                         }
-                        break;
+                        size -= method.Parameters.Count;
+                        if (method.ReturnType.FullName != "System.Void")
+                        {
+                            ++size;
+                        }
+                    }
+                    break;
                 }
 
                 size = CorrectStackDepthByPushes(instruction, size);
@@ -344,30 +343,30 @@ namespace nanoFramework.Tools.MetadataProcessor
             switch (operandType)
             {
                 case OperandType.InlineSwitch:
+                {
+                    var targets = (Instruction[])operand;
+                    _writer.WriteByte((byte)targets.Length);
+                    var diff = instruction.Offset + opcode.Size + 2 * targets.Length + 1;
+                    foreach (var item in targets)
                     {
-                        var targets = (Instruction[])operand;
-                        _writer.WriteByte((byte)targets.Length);
-                        var diff = instruction.Offset + opcode.Size + 2 * targets.Length + 1;
-                        foreach (var item in targets)
-                        {
-                            _writer.WriteInt16((short)(GetTargetOffset(item) - diff));
-                        }
-                        break;
+                        _writer.WriteInt16((short)(GetTargetOffset(item) - diff));
                     }
+                    break;
+                }
                 case OperandType.ShortInlineBrTarget:
-                    {
-                        var target = (Instruction)operand;
-                        _writer.WriteSByte((sbyte)
-                            (GetTargetOffset(target) - (instruction.Offset + opcode.Size + 1)));
-                        break;
-                    }
+                {
+                    var target = (Instruction)operand;
+                    _writer.WriteSByte((sbyte)
+                        (GetTargetOffset(target) - (instruction.Offset + opcode.Size + 1)));
+                    break;
+                }
                 case OperandType.InlineBrTarget:
-                    {
-                        var target = (Instruction)operand;
-                        _writer.WriteInt16((short)
-                            (GetTargetOffset(target) - (instruction.Offset + opcode.Size + 2)));
-                        break;
-                    }
+                {
+                    var target = (Instruction)operand;
+                    _writer.WriteInt16((short)
+                        (GetTargetOffset(target) - (instruction.Offset + opcode.Size + 2)));
+                    break;
+                }
                 case OperandType.ShortInlineVar:
                     _writer.WriteByte((byte)GetVariableIndex((VariableDefinition)operand));
                     break;

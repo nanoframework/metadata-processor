@@ -1,12 +1,10 @@
-﻿//
-// Copyright (c) .NET Foundation and Contributors
-// See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using Mono.Cecil;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Mono.Cecil;
 
 namespace nanoFramework.Tools.MetadataProcessor
 {
@@ -18,64 +16,64 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// <summary>
         /// Tables to encode NanoTypeToken.
         /// </summary>
-        public readonly static List<NanoCLRTable> NanoTypeTokenTables = new List<NanoCLRTable>() {
+        public readonly static List<NanoClrTable> NanoTypeTokenTables = new List<NanoClrTable>() {
              // order matters and has to match CLR_UncompressTypeToken in native nanoCLR_Types.h
-                NanoCLRTable.TBL_TypeDef,
-                NanoCLRTable.TBL_TypeRef,
-                NanoCLRTable.TBL_TypeSpec,
-                NanoCLRTable.TBL_GenericParam
+                NanoClrTable.TBL_TypeDef,
+                NanoClrTable.TBL_TypeRef,
+                NanoClrTable.TBL_TypeSpec,
+                NanoClrTable.TBL_GenericParam
             };
 
         /// <summary>
         /// Tables to encode NanoTypeDefOrRefToken.
         /// </summary>
-        public readonly static List<NanoCLRTable> NanoTypeDefOrRefTokenTables = new List<NanoCLRTable>() {
-                NanoCLRTable.TBL_TypeDef,
-                NanoCLRTable.TBL_TypeRef,
+        public readonly static List<NanoClrTable> NanoTypeDefOrRefTokenTables = new List<NanoClrTable>() {
+                NanoClrTable.TBL_TypeDef,
+                NanoClrTable.TBL_TypeRef,
             };
 
         /// <summary>
         /// Tables to encode NanoMemberRefToken.
         /// </summary>
-        public readonly static List<NanoCLRTable> NanoMemberRefTokenTables = new List<NanoCLRTable>() {
+        public readonly static List<NanoClrTable> NanoMemberRefTokenTables = new List<NanoClrTable>() {
              // order matters and has to match CLR_UncompressMethodToken in native nanoCLR_Types.h
-                NanoCLRTable.TBL_MethodDef,
-                NanoCLRTable.TBL_MethodRef,
-                NanoCLRTable.TBL_TypeSpec,
-                NanoCLRTable.TBL_MethodSpec,
+                NanoClrTable.TBL_MethodDef,
+                NanoClrTable.TBL_MethodRef,
+                NanoClrTable.TBL_TypeSpec,
+                NanoClrTable.TBL_MethodSpec,
             };
 
         /// <summary>
         /// Tables to encode NanoFieldMemberRefToken.
         /// </summary>
-        public readonly static List<NanoCLRTable> NanoFieldMemberRefTokenTables = new List<NanoCLRTable>() {
-                NanoCLRTable.TBL_FieldDef,
-                NanoCLRTable.TBL_FieldRef
+        public readonly static List<NanoClrTable> NanoFieldMemberRefTokenTables = new List<NanoClrTable>() {
+                NanoClrTable.TBL_FieldDef,
+                NanoClrTable.TBL_FieldRef
             };
 
         /// <summary>
         /// Tables to encode NanoMethodDefOrRefToken.
         /// </summary>
-        public readonly static List<NanoCLRTable> NanoMethodDefOrRefTokenTables = new List<NanoCLRTable>() {
-                NanoCLRTable.TBL_MethodDef,
-                NanoCLRTable.TBL_MethodRef
+        public readonly static List<NanoClrTable> NanoMethodDefOrRefTokenTables = new List<NanoClrTable>() {
+                NanoClrTable.TBL_MethodDef,
+                NanoClrTable.TBL_MethodRef
             };
 
         /// <summary>
         /// Tables to encode NanoTypeOrMethodToken.
         /// </summary>
-        public readonly static List<NanoCLRTable> NanoTypeOrMethodDefTokenTables = new List<NanoCLRTable>() {
-                NanoCLRTable.TBL_TypeDef,
-                NanoCLRTable.TBL_MethodDef
+        public readonly static List<NanoClrTable> NanoTypeOrMethodDefTokenTables = new List<NanoClrTable>() {
+                NanoClrTable.TBL_TypeDef,
+                NanoClrTable.TBL_MethodDef
             };
 
         /// <summary>
         /// Tables to encode CLR_TypeRefOrSpec.
         /// </summary>
-        public readonly static List<NanoCLRTable> CLR_TypeRefOrSpecTables = new List<NanoCLRTable>() {
+        public readonly static List<NanoClrTable> CLR_TypeRefOrSpecTables = new List<NanoClrTable>() {
                 // order matters and has to match decoder Owner() in native nanoCLR_Types.h
-                NanoCLRTable.TBL_TypeRef,
-                NanoCLRTable.TBL_TypeSpec
+                NanoClrTable.TBL_TypeRef,
+                NanoClrTable.TBL_TypeSpec
             };
 
         /// <summary>
@@ -85,7 +83,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// <param name="table">Table to compress.</param>
         /// <param name="tableList">List of tables to be used in encoding.</param>
         /// <returns>The encoded tag to be used in a nanoToken.</returns>
-        public static ushort EncodeTableIndex(NanoCLRTable table, List<NanoCLRTable> tableList)
+        public static ushort EncodeTableIndex(NanoClrTable table, List<NanoClrTable> tableList)
         {
             // sanity checks
             if (tableList.Count < 1)
@@ -105,12 +103,12 @@ namespace nanoFramework.Tools.MetadataProcessor
         }
 
         /// <summary>
-        /// Decode <see cref="NanoCLRTable"/> from nanoToken.
+        /// Decode <see cref="NanoClrTable"/> from nanoToken.
         /// </summary>
         /// <param name="value">Encoded value containing the table index.</param>
         /// <param name="tableList">List of tables to be used in encoding.</param>
-        /// <returns>The <see cref="NanoCLRTable"/> encoded in the <paramref name="value"/>.</returns>
-        public static NanoCLRTable DecodeTableIndex(ushort value, List<NanoCLRTable> tableList)
+        /// <returns>The <see cref="NanoClrTable"/> encoded in the <paramref name="value"/>.</returns>
+        public static NanoClrTable DecodeTableIndex(ushort value, List<NanoClrTable> tableList)
         {
             if (tableList.Count < 1)
             {
@@ -131,7 +129,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// <param name="value">Encoded value.</param>
         /// <param name="tableList">List of tables used in encoding.</param>
         /// <returns>The reference encoded in the <paramref name="value"/>.</returns>
-        public static ushort DecodeReferenceIndex(ushort value, List<NanoCLRTable> tableList)
+        public static ushort DecodeReferenceIndex(ushort value, List<NanoClrTable> tableList)
         {
             if (tableList.Count < 1)
             {
@@ -152,31 +150,31 @@ namespace nanoFramework.Tools.MetadataProcessor
         }
 
         /// <summary>
-        /// Convert <see cref="TypeReference"/> (and derived) in <see cref="NanoCLRTable"/>.
+        /// Convert <see cref="TypeReference"/> (and derived) in <see cref="NanoClrTable"/>.
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
-        public static NanoCLRTable ConvertToNanoCLRTable(MemberReference value)
+        public static NanoClrTable ConvertToNanoCLRTable(MemberReference value)
         {
             switch (value)
             {
                 case GenericParameter _:
-                    return NanoCLRTable.TBL_GenericParam;
+                    return NanoClrTable.TBL_GenericParam;
 
                 case TypeDefinition _:
-                    return NanoCLRTable.TBL_TypeDef;
+                    return NanoClrTable.TBL_TypeDef;
 
                 case TypeSpecification _:
-                    return NanoCLRTable.TBL_TypeSpec;
+                    return NanoClrTable.TBL_TypeSpec;
 
                 case TypeReference _:
-                    return NanoCLRTable.TBL_TypeRef;
+                    return NanoClrTable.TBL_TypeRef;
 
                 case FieldReference _:
-                    return NanoCLRTable.TBL_FieldRef;
+                    return NanoClrTable.TBL_FieldRef;
 
                 case MethodReference _:
-                    return NanoCLRTable.TBL_MethodRef;
+                    return NanoClrTable.TBL_MethodRef;
 
                 default:
                     throw new ArgumentException("Unknown conversion to CLR Table.");

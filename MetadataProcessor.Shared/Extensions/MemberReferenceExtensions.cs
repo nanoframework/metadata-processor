@@ -1,12 +1,8 @@
-//
-// Copyright (c) .NET Foundation and Contributors
-// See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using Mono.Cecil;
 using System;
-using System.Linq;
-using System.Text;
+using Mono.Cecil;
 
 namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
 {
@@ -25,33 +21,33 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
             return nanoTokenHelpers.EncodeTableIndex(value.ToNanoCLRTable(), nanoTokenHelpers.NanoMemberRefTokenTables);
         }
 
-        public static NanoCLRTable ToNanoCLRTable(this MemberReference value)
+        public static NanoClrTable ToNanoCLRTable(this MemberReference value)
         {
             // this one has to be before the others because generic parameters are also "other" types
             if (value is MethodDefinition)
             {
-                return NanoCLRTable.TBL_MethodDef;
+                return NanoClrTable.TBL_MethodDef;
             }
             else if (value is MethodSpecification)
             {
-                return NanoCLRTable.TBL_MethodSpec;
+                return NanoClrTable.TBL_MethodSpec;
             }
             else if (value.Resolve() is MethodReference)
             {
                 if (value.DeclaringType.Scope.MetadataScopeType == MetadataScopeType.AssemblyNameReference)
                 {
                     // method ref is external
-                    return NanoCLRTable.TBL_MethodRef;
+                    return NanoClrTable.TBL_MethodRef;
                 }
                 else
                 {
                     // method ref is internal
-                    return NanoCLRTable.TBL_MethodDef;
+                    return NanoClrTable.TBL_MethodDef;
                 }
             }
             else if (value.DeclaringType is TypeSpecification)
             {
-                return NanoCLRTable.TBL_TypeSpec;
+                return NanoClrTable.TBL_TypeSpec;
             }
             else
             {

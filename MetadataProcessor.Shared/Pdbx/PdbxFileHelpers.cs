@@ -1,14 +1,12 @@
-﻿//
-// Copyright (c) .NET Foundation and Contributors
-// See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using Mono.Cecil;
-using nanoFramework.Tools.MetadataProcessor.Core.Extensions;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Text;
+using Mono.Cecil;
+using nanoFramework.Tools.MetadataProcessor.Core.Extensions;
 
 namespace nanoFramework.Tools.MetadataProcessor
 {
@@ -85,7 +83,7 @@ namespace nanoFramework.Tools.MetadataProcessor
     {
         public Class(nanoTablesContext context, TypeDefinition item, uint nanoToken)
         {
-            Token = new Token(item.MetadataToken, NanoCLRTable.TBL_TypeDef.ToNanoTokenType() | nanoToken);
+            Token = new Token(item.MetadataToken, NanoClrTable.TBL_TypeDef.ToNanoTokenType() | nanoToken);
 
             Name = item.FullName;
             IsEnum = item.IsEnum;
@@ -114,7 +112,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         {
             context.MethodDefinitionTable.TryGetMethodReferenceId(method, out ushort methodToken);
 
-            Token = new Token(method.MetadataToken, NanoCLRTable.TBL_MethodDef.ToNanoTokenType() | methodToken);
+            Token = new Token(method.MetadataToken, NanoClrTable.TBL_MethodDef.ToNanoTokenType() | methodToken);
 
             Name = method.Name;
             NumParams = method.Parameters.Count;
@@ -152,7 +150,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         {
             context.FieldsTable.TryGetFieldReferenceId(field, false, out ushort fieldToken);
 
-            Token = new Token(field.MetadataToken, NanoCLRTable.TBL_FieldDef.ToNanoTokenType() | fieldToken);
+            Token = new Token(field.MetadataToken, NanoClrTable.TBL_FieldDef.ToNanoTokenType() | fieldToken);
 
             Name = field.Name;
         }
@@ -170,7 +168,7 @@ namespace nanoFramework.Tools.MetadataProcessor
     {
         public GenericParam(nanoTablesContext context, GenericParameter item, uint nanoToken)
         {
-            Token = new Token(item.MetadataToken, NanoCLRTable.TBL_GenericParam.ToNanoTokenType() | nanoToken);
+            Token = new Token(item.MetadataToken, NanoClrTable.TBL_GenericParam.ToNanoTokenType() | nanoToken);
 
             Name = item.FullName;
         }
@@ -186,7 +184,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             // need to add one because ours is 0 indexed
             var clrToken = new MetadataToken(TokenType.TypeSpec, nanoToken + 1);
 
-            Token = new Token(clrToken, NanoCLRTable.TBL_TypeSpec.ToNanoTokenType() | nanoToken);
+            Token = new Token(clrToken, NanoClrTable.TBL_TypeSpec.ToNanoTokenType() | nanoToken);
 
             if (item.IsGenericInstance)
             {
@@ -225,7 +223,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                     {
                         if (context.MethodReferencesTable.TryGetMethodReferenceId(mr, out referenceId))
                         {
-                            Members.Add(new Member(mr, NanoCLRTable.TBL_MethodRef.ToNanoTokenType() | nanoToken));
+                            Members.Add(new Member(mr, NanoClrTable.TBL_MethodRef.ToNanoTokenType() | nanoToken));
                         }
                     }
                 }
@@ -237,7 +235,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                     {
                         if (context.MethodSpecificationTable.TryGetMethodSpecificationId(ms, out ushort methodSpecId))
                         {
-                            Members.Add(new Member(ms, NanoCLRTable.TBL_MethodSpec.ToNanoTokenType() | nanoToken));
+                            Members.Add(new Member(ms, NanoClrTable.TBL_MethodSpec.ToNanoTokenType() | nanoToken));
                         }
                     }
                 }
@@ -249,7 +247,7 @@ namespace nanoFramework.Tools.MetadataProcessor
     {
         public Member(MethodReference mr, uint nanoToken)
         {
-            Token = new Token(mr.MetadataToken, NanoCLRTable.TBL_MethodRef.ToNanoTokenType() | nanoToken);
+            Token = new Token(mr.MetadataToken, NanoClrTable.TBL_MethodRef.ToNanoTokenType() | nanoToken);
 
             Name = mr.Name;
         }

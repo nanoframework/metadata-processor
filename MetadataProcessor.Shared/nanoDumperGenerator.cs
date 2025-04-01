@@ -243,7 +243,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                 dumpTable.UserStrings.Add(
                     new UserString()
                     {
-                        ReferenceId = new nanoMetadataToken(NanoCLRTable.TBL_Strings, _tablesContext.StringTable.GetOrCreateStringId(s.Key, true)).ToString(),
+                        ReferenceId = new nanoMetadataToken(NanoClrTable.TBL_Strings, _tablesContext.StringTable.GetOrCreateStringId(s.Key, true)).ToString(),
                         Length = s.Key.Length.ToString("x2"),
                         Content = s.Key
                     });
@@ -375,7 +375,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
                             // get signature Id for locals
                             var signatureId = _tablesContext.SignaturesTable.GetOrCreateSignatureId(m.Body.Variables);
-                            locaStringBuilder.Append($"[{new nanoMetadataToken(NanoCLRTable.TBL_Signatures, signatureId)}]");
+                            locaStringBuilder.Append($"[{new nanoMetadataToken(NanoClrTable.TBL_Signatures, signatureId)}]");
 
                             // print locals ids
                             locaStringBuilder.Append($": {PrintSignatureForLocalVar(m.Body.Variables)}");
@@ -477,12 +477,12 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
                                     switch (clrTable)
                                     {
-                                        case NanoCLRTable.TBL_GenericParam:
+                                        case NanoClrTable.TBL_GenericParam:
                                             typeName = (instruction.Operand as GenericParameter).TypeSignatureAsString();
-                                            nfToken = new nanoMetadataToken(NanoCLRTable.TBL_GenericParam, referenceId);
+                                            nfToken = new nanoMetadataToken(NanoClrTable.TBL_GenericParam, referenceId);
                                             break;
 
-                                        case NanoCLRTable.TBL_TypeSpec:
+                                        case NanoClrTable.TBL_TypeSpec:
                                             if (instruction.Operand is TypeSpecification)
                                             {
                                                 typeName = (instruction.Operand as TypeSpecification).FullName;
@@ -508,18 +508,18 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                                             // need to fake a MetadataToken and add one because ours is 0 indexed
                                             realToken = new MetadataToken(TokenType.TypeSpec, referenceId + 1).ToUInt32().ToString("X8");
 
-                                            nfToken = new nanoMetadataToken(NanoCLRTable.TBL_TypeSpec, referenceId);
+                                            nfToken = new nanoMetadataToken(NanoClrTable.TBL_TypeSpec, referenceId);
 
                                             break;
 
-                                        case NanoCLRTable.TBL_TypeRef:
+                                        case NanoClrTable.TBL_TypeRef:
                                             typeName = (instruction.Operand as TypeReference).FullName;
-                                            nfToken = new nanoMetadataToken(NanoCLRTable.TBL_TypeRef, referenceId);
+                                            nfToken = new nanoMetadataToken(NanoClrTable.TBL_TypeRef, referenceId);
                                             break;
 
-                                        case NanoCLRTable.TBL_TypeDef:
+                                        case NanoClrTable.TBL_TypeDef:
                                             typeName = (instruction.Operand as TypeDefinition).FullName;
-                                            nfToken = new nanoMetadataToken(NanoCLRTable.TBL_TypeDef, referenceId);
+                                            nfToken = new nanoMetadataToken(NanoClrTable.TBL_TypeDef, referenceId);
                                             break;
 
                                         default:
@@ -535,7 +535,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                                     // get string ID from table
                                     referenceId = _tablesContext.StringTable.GetOrCreateStringId((string)instruction.Operand, true);
 
-                                    ilDescription.Append($"\"{instruction.Operand}\" [{new nanoMetadataToken(NanoCLRTable.TBL_Strings, referenceId)}]");
+                                    ilDescription.Append($"\"{instruction.Operand}\" [{new nanoMetadataToken(NanoClrTable.TBL_Strings, referenceId)}]");
                                 }
                                 else if (instruction.OpCode.OperandType == OperandType.InlineI
                                          || instruction.OpCode.OperandType == OperandType.ShortInlineI)
@@ -659,7 +659,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
             // need to add one because ours is 0 indexed
             realToken = new MetadataToken(TokenType.TypeSpec, index + 1).ToUInt32().ToString("X8");
 
-            typeSpec.ReferenceId = $"[{new nanoMetadataToken(NanoCLRTable.TBL_TypeSpec, index)}] /*{realToken}*/";
+            typeSpec.ReferenceId = $"[{new nanoMetadataToken(NanoClrTable.TBL_TypeSpec, index)}] /*{realToken}*/";
 
             // build name
             StringBuilder typeSpecName = new StringBuilder();
@@ -704,7 +704,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                         {
                             realToken = mr.MetadataToken.ToInt32().ToString("X8");
 
-                            memberRef.ReferenceId = $"[{new nanoMetadataToken(NanoCLRTable.TBL_MethodRef, memberRefId)}] /*{realToken}*/";
+                            memberRef.ReferenceId = $"[{new nanoMetadataToken(NanoClrTable.TBL_MethodRef, memberRefId)}] /*{realToken}*/";
                             memberRef.Signature = PrintSignatureForMethod(mr);
                         }
 
@@ -726,7 +726,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                         {
                             realToken = ms.MetadataToken.ToInt32().ToString("X8");
 
-                            memberRef.ReferenceId = $"[{new nanoMetadataToken(NanoCLRTable.TBL_MethodSpec, methodSpecId)}] /*{realToken}*/";
+                            memberRef.ReferenceId = $"[{new nanoMetadataToken(NanoClrTable.TBL_MethodSpec, methodSpecId)}] /*{realToken}*/";
                             memberRef.Signature = PrintSignatureForMethod(ms);
                         }
 
@@ -789,7 +789,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
                     _tablesContext.TypeDefinitionTable.TryGetTypeReferenceId(l.VariableType as TypeDefinition, out ushort referenceId);
 
-                    sig.Append($"[{new nanoMetadataToken(NanoCLRTable.TBL_TypeDef, referenceId)}] /*{l.VariableType.MetadataToken.ToInt32().ToString("X8")}*/");
+                    sig.Append($"[{new nanoMetadataToken(NanoClrTable.TBL_TypeDef, referenceId)}] /*{l.VariableType.MetadataToken.ToInt32().ToString("X8")}*/");
                 }
                 else if (l.VariableType.IsGenericInstance)
                 {
@@ -797,7 +797,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
                     _tablesContext.TypeSpecificationsTable.TryGetTypeReferenceId(l.VariableType as TypeSpecification, out ushort referenceId);
 
-                    sig.Append($"[{new nanoMetadataToken(NanoCLRTable.TBL_TypeSpec, referenceId)}] /*{l.VariableType.GetElementType().MetadataToken.ToInt32().ToString("X8")}*/");
+                    sig.Append($"[{new nanoMetadataToken(NanoClrTable.TBL_TypeSpec, referenceId)}] /*{l.VariableType.GetElementType().MetadataToken.ToInt32().ToString("X8")}*/");
 
                     // now the generic parameters
                     sig.Append("<");

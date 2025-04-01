@@ -1,7 +1,5 @@
-﻿//
-// Copyright (c) .NET Foundation and Contributors
-// See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
 
@@ -18,6 +16,6 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
         public List<AttributeCustom> Attributes = new List<AttributeCustom>();
         public List<HeapString> StringHeap = new List<HeapString>();
         public List<UserString> UserStrings = new List<UserString>();
-        public List<GenericParam> GenericParams= new List<GenericParam>();
+        public List<GenericParam> GenericParams = new List<GenericParam>();
     }
 }

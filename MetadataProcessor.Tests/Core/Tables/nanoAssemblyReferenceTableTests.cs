@@ -1,13 +1,11 @@
-﻿//
-// Copyright (c) .NET Foundation and Contributors
-// See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
 {
@@ -23,7 +21,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
 
             // test
             var iut = new nanoAssemblyReferenceTable(
-                mainModule.AssemblyReferences, 
+                mainModule.AssemblyReferences,
                 context);
 
             // no op
@@ -86,10 +84,10 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
                 var streamOutput = new MemoryStream();
                 var writerTestOutput = new BinaryWriter(streamOutput, Encoding.Default, true);
 
-                foreach(var a in iut.Items)
+                foreach (var a in iut.Items)
                 {
                     writerTestOutput.Write(context.StringTable.GetOrCreateStringId(a.Name));
-                    
+
                     // version
                     writerTestOutput.Write((ushort)a.Version.Major);
                     writerTestOutput.Write((ushort)a.Version.Minor);

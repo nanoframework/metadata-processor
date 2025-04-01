@@ -1,13 +1,13 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
+using System.IO;
+using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Mono.Cecil;
 using nanoFramework.Tools.MetadataProcessor.Core;
 using nanoFramework.Tools.MetadataProcessor.Core.Extensions;
-using System;
-using System.IO;
-using System.Linq;
 
 namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
 {
@@ -147,7 +147,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
 
             // UserStrings
             System.Collections.Generic.KeyValuePair<string, ushort> lastStringEntry = nanoTablesContext.StringTable.GetItems().OrderBy(i => i.Value).Last();
-            Assert.IsTrue(dumpFileContent.Contains($"{new nanoMetadataToken(NanoCLRTable.TBL_Strings, nanoTablesContext.StringTable.GetOrCreateStringId(lastStringEntry.Key, true))} : ({lastStringEntry.Key.Length:x2}) \"{lastStringEntry.Key}\""));
+            Assert.IsTrue(dumpFileContent.Contains($"{new nanoMetadataToken(NanoClrTable.TBL_Strings, nanoTablesContext.StringTable.GetOrCreateStringId(lastStringEntry.Key, true))} : ({lastStringEntry.Key.Length:x2}) \"{lastStringEntry.Key}\""));
         }
     }
 }

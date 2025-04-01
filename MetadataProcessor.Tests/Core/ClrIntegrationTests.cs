@@ -19,7 +19,7 @@ using Newtonsoft.Json;
 namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
 {
     [TestClass]
-    public class CLRIntegrationTests
+    public class ClrIntegrationTests
     {
 
 #if DEBUG

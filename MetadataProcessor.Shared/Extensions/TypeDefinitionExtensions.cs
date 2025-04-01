@@ -1,10 +1,8 @@
-//
-// Copyright (c) .NET Foundation and Contributors
-// See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using Mono.Cecil;
 using System;
+using Mono.Cecil;
 
 namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
 {

@@ -1,16 +1,12 @@
-﻿//
-// Copyright (c) .NET Foundation and Contributors
-// See LICENSE file in the project root for full license information.
-//
-
-using System;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 namespace nanoFramework.Tools.MetadataProcessor
 {
     /// <summary>
     /// .NET nanoFramework PE tables index.
     /// </summary>
-    public enum NanoCLRTable
+    public enum NanoClrTable
     {
         //////////////////////////////////////////////////////////////////////////////////////
         // !!! KEEP IN SYNC WITH enum NanoCLRTable (in NanoCLR_TypeSystem VS extension) !!! //
