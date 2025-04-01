@@ -45,7 +45,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
 
             // TypeRefs
             Assert.IsTrue(dumpFileContent.Contains("TypeRef [01000000] /*01000001*/\r\n-------------------------------------------------------\r\nScope: [0000] /*01000001*/\r\n    'System.Diagnostics.DebuggableAttribute'"));
-            Assert.IsTrue(dumpFileContent.Contains("TypeRef [0100001C] /*0100001D*/\r\n-------------------------------------------------------\r\nScope: [0001] /*0100001D*/\r\n    'TestNFClassLibrary.ClassOnAnotherAssembly'"));
+            Assert.IsTrue(dumpFileContent.Contains("TypeRef [0100001E] /*0100001F*/\r\n-------------------------------------------------------\r\nScope: [0001] /*0100001F*/\r\n    'TestNFClassLibrary.ClassOnAnotherAssembly'"));
 
             // TestNFApp.DummyCustomAttribute1
             string typeName = "TestNFApp.DummyCustomAttribute1";
