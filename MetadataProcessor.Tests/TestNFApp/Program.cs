@@ -57,19 +57,11 @@ namespace TestNFApp
             // Test enum in another assembly, same namespace
             Console.WriteLine("Test enum in another assembly, same namespace");
             TestEnumInAnotherAssembly enumTest = new TestEnumInAnotherAssembly();
-
-            ///////////////////////////////////////////////////////////////////
-            // Generics Tests
-            _ = new GenericClassTests();
+            enumTest.CallTestEnumInAnotherAssembly();
 
             /////////////////////////////////////////////////////////////////// 
             // Miscelaneous Tests
             MiscelaneousTests();
-
-            ////////////////////////////////////////////////
-            // Test enum in another assembly, same namespace
-            var enumTest = new TestEnumInAnotherAssembly();
-            enumTest.CallTestEnumInAnotherAssembly();
 
             /////////////////////////////////////
             // reference enum in another assembly
@@ -89,6 +81,10 @@ namespace TestNFApp
                 default:
                     break;
             }
+
+            ///////////////////////////////////////////////////////////////////
+            // Generics Tests
+            _ = new GenericClassTests();
 
             // null attributes tests
             Console.WriteLine("Null attributes tests");
