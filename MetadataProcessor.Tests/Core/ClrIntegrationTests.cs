@@ -21,12 +21,6 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
     [TestClass]
     public class ClrIntegrationTests
     {
-
-#if DEBUG
-        // path to local instance of nanoCLR DLL (to be used when debugging)
-        private static string _localClrInstancePath = "E:\\GitHub\\nf-interpreter\\build\\bin\\Debug\\net8.0\\NanoCLR\\nanoFramework.nanoCLR.dll";
-#endif
-
         public static bool NanoClrIsInstalled { get; private set; } = false;
 
         [ClassInitialize]
@@ -172,19 +166,10 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
                 }
             }
 
-#if DEBUG
-            if (!string.IsNullOrEmpty(_localClrInstancePath))
-            {
-                // done here as we are using a local instance of nanoCLR DLL
-                return;
-            }
-#else
             if (!string.IsNullOrEmpty(TestObjectHelper.NanoClrLocalInstance))
             {
                 // done here as we are using a local instance of nanoCLR DLL
-                return;
             }
-#endif
             else
             {
                 Console.WriteLine("Upate nanoCLR instance");
@@ -332,10 +317,6 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
         {
             StringBuilder arguments = new StringBuilder(" --localinstance");
 
-#if DEBUG
-            arguments.Append($" \"{_localClrInstancePath}\"");
-
-#else
             if (string.IsNullOrEmpty(TestObjectHelper.NanoClrLocalInstance))
             {
                 return null;
@@ -344,7 +325,6 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
             {
                 arguments.Append($" \"{TestObjectHelper.NanoClrLocalInstance}\"");
             }
-#endif
 
             return arguments.ToString();
         }

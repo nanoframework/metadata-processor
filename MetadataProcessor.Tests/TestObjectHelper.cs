@@ -14,7 +14,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
 {
     public static class TestObjectHelper
     {
-        private const string _varNameForLocalNanoCLRInstancePath = "MDP_TEST_NANOCLR_INSTANCE_PATH";
+        private const string _varNameForLocalNanoCLRInstancePath = "NF_MDP_NANOCLR_INSTANCE_PATH";
 
         private static string _testExecutionLocation;
         private static string _testNFAppLocation;

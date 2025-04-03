@@ -50,6 +50,9 @@ For those that need to be keep in sync with native code, there is a tag `<SYNC-W
 For sync with Visual Studio extension, the tag `<SYNC-WITH-VS>` is used.
 For sync with the debugger, the tag `<SYNC-WITH-DEBUGGER>` is used.
 
+### Miscellaneous
+
+If there is a need to override the nanoCLR DLL to be used in the virtual device set the environment variable `NF_MDP_NANOCLR_INSTANCE_PATH` to the path of the DLL.
 
 ## Feedback and documentation
 
