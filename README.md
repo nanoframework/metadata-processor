@@ -43,6 +43,14 @@ When adding a project to the solution the following points have to be kept in mi
 
 1. This flag disables "nodeReuse", this is needed as a custom MsBuildTask is used which also gets rebuilt. "NodeReuse" keeps instances of MsBuild running which interferes with the rebuilding of the custom MsBuildTask.
 
+### Code sync between MDP, native code and other tools
+
+There are several code snippets, structures and details that are shared between the metadata processor, the native code and other tools. These need to be kept in sync.
+For those that need to be keep in sync with native code, there is a tag `<SYNC-WITH-NATIVE>` in a comment before the relevant code snippet.
+For sync with Visual Studio extension, the tag `<SYNC-WITH-VS>` is used.
+For sync with the debugger, the tag `<SYNC-WITH-DEBUGGER>` is used.
+
+
 ## Feedback and documentation
 
 For documentation, providing feedback, issues and finding out how to contribute please refer to the [Home repo](https://github.com/nanoframework/Home).

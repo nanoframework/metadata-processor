@@ -9,8 +9,10 @@ namespace nanoFramework.Tools.MetadataProcessor
     public enum NanoClrTable
     {
         //////////////////////////////////////////////////////////////////////////////////////
+        // <SYNC-WITH-VS>                                                                   //
         // !!! KEEP IN SYNC WITH enum NanoCLRTable (in NanoCLR_TypeSystem VS extension) !!! //
-        // !!! KEEP IN SYNC WITH enum NanoCLRTable (in NanoCLR_Types.h in CLR)         !!! //
+        // <SYNC-WITH-NATIVE>                                                               //
+        // !!! KEEP IN SYNC WITH enum NanoCLRTable (in NanoCLR_Types.h in CLR)          !!! //
         //////////////////////////////////////////////////////////////////////////////////////
 
         TBL_AssemblyRef = 0x00000000,
