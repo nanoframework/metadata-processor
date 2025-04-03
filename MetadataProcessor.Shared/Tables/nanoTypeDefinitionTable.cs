@@ -212,7 +212,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             // drop namespace as it's already on the full name
             // OK to use full name as type name to help comparison ahead
             var genericType = new TypeDefinition(
-                "",
+                string.Empty,
                 typeReference.FullName,
                 typeReference.Resolve().Attributes);
 

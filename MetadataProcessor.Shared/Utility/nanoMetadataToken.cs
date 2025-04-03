@@ -51,14 +51,6 @@ namespace nanoFramework.Tools.MetadataProcessor
                     _clrTable = NanoClrTable.TBL_TypeDef;
                     break;
 
-                //case TokenType.MethodSpec:
-                //    _clrTable = CLRTable.FieldDef;
-                //    break;
-
-                //case TokenType.MethodSpec:
-                //    _clrTable = CLRTable.MethodDef;
-                //    break;
-
                 case TokenType.GenericParam:
                     _clrTable = NanoClrTable.TBL_GenericParam;
                     break;

@@ -689,9 +689,10 @@ namespace nanoFramework.Tools.MetadataProcessor
         private byte[] GetSignature(Collection<GenericParameter> genericParameters)
         {
             using (var buffer = new MemoryStream())
-            using (var writer = new BinaryWriter(buffer)) // Only Write(Byte) will be used
+            // Only Write(Byte) will be used
+            using (var writer = new BinaryWriter(buffer))
             {
-                foreach (var parameter in genericParameters)
+                foreach (GenericParameter parameter in genericParameters)
                 {
                     WriteGenericParameterValue(writer, parameter);
                 }
@@ -852,6 +853,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             else
             {
                 // TODO
+                Debug.Fail("NEED TO IMPLEMENT THIS");
             }
         }
 

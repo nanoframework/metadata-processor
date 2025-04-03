@@ -854,17 +854,6 @@ namespace nanoFramework.Tools.MetadataProcessor
                                         }
                                     }
                                 }
-                                //else
-                                //{
-                                //    if (_tablesContext.MethodDefinitionTable.TryGetMethodReferenceId(methodReferenceType.Resolve(), out referenceId))
-                                //    {
-                                //        set.Add(methodReferenceType.MetadataToken);
-                                //    }
-                                //    else
-                                //    {
-                                //        Debug.Fail("Can't find method in any table.");
-                                //    }
-                                //}
                             }
                             else if (i.Operand is FieldReference ||
                                      i.Operand is TypeDefinition ||

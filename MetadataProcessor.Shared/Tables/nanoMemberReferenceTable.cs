@@ -103,9 +103,6 @@ namespace nanoFramework.Tools.MetadataProcessor
                 // MemberRefParent tag is 3 (MethodDef)
                 tag = 3;
 
-                //
-
-
                 signature = 0;
             }
             else if (_context.TypeReferencesTable.TryGetTypeReferenceId(item.DeclaringType, out referenceId))
@@ -132,13 +129,6 @@ namespace nanoFramework.Tools.MetadataProcessor
                 // get signature index
                 signature = _context.SignaturesTable.GetOrCreateSignatureId(item.DeclaringType.Resolve());
             }
-            //else if (_context.TypeDefinitionTable.TryGetTypeReferenceId(item.DeclaringType.Resolve(), out referenceId))
-            //{
-            //    // MemberRefParent tag is 0 (TypeDef)
-            //    tag = 0;
-            //// get signature index
-            //signature = _context.SignaturesTable.GetOrCreateSignatureId(item.DeclaringType.Resolve());
-            //}
             else
             {
                 // developer note:
