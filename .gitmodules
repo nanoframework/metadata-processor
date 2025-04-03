@@ -1,3 +1,6 @@
 [submodule "MetadataProcessor.Tests/mscorlib"]
 	path = MetadataProcessor.Tests/mscorlib
 	url = https://github.com/nanoframework/CoreLibrary
+[submodule "native/nf-interpreter"]
+	path = native/nf-interpreter
+	url = https://github.com/nanoframework/nf-interpreter.git
