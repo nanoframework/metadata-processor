@@ -33,9 +33,3 @@ using System.Runtime.InteropServices;
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("11.22.33.44")]
 [assembly: AssemblyFileVersion("11.22.33.44")]
-
-/////////////////////////////////////////////////////////////////
-// This attribute is mandatory when building Interop libraries //
-// update this whenever the native assembly signature changes  //
-[assembly: AssemblyNativeVersion("0.0.0.0")]
-/////////////////////////////////////////////////////////////////
