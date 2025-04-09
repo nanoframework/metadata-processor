@@ -49,7 +49,7 @@ variables:
 jobs:
 
 ##############################
-- job: Get_Build_Flags
+- job: Build_Prep
   pool:
     vmImage: 'windows-latest'
 
@@ -63,10 +63,21 @@ jobs:
 
       # default to false
       $update = $false
+      $downloadPreview = $false
 
-      if($env:Build_Reason -eq 'PullRequest')
+      if($env:System_PullRequest_PullRequestNumber -ne $null)
       {
-        # PR build, nothing interesting in commit message
+        # PR build
+        Write-Host "##[command] **This is a PR build**"
+
+        $commit = Invoke-RestMethod -Uri "https://api.github.com/repos/nanoframework/metadata-processor/commits/$(Build.SourceVersion)" -ContentType "application/json" -Method GET
+        
+        # check if should download nanoCLR to run unit tests
+        if($commit.commit.message -like "*[use nanoclr preview]*")
+        {
+          Write-Host "##[command] **Download preview nanoCLR for unit tests**"
+          $downloadPreview = $true
+        }
       }
       else
       {
@@ -103,10 +114,11 @@ jobs:
         }
       }
 
-      # set variable to forward to jobs
+      # set variables to forward to jobs
       echo "##vso[task.setvariable variable=RUN_UPDATE_DEPENDENTS;isOutput=true]$update"
+      echo "##vso[task.setvariable variable=DOWNLOAD_PREVIEW_NANOCLR;isOutput=true]$downloadPreview"
     name: GetPRLabels
-    displayName:  Check build labels
+    displayName:  Check build conditions
 
 ##############################
 # build MDP
@@ -118,7 +130,7 @@ jobs:
     )    
 
   dependsOn:
-    - Get_Build_Flags
+    - Build_Prep
 
   pool:
     vmImage: 'windows-latest'
@@ -133,6 +145,8 @@ jobs:
       value: 'nanoFramework.Tools.MetadataProcessor.sln'
     - name: NF_MDP_MSBUILDTASK_PATH
       value: '$(System.DefaultWorkingDirectory)/MetadataProcessor.MsBuildTask/bin/Release/net472'
+    - name: DownloadNanoClrPreview
+      value: $[ dependencies.Build_Prep.outputs['GetPRLabels.DOWNLOAD_PREVIEW_NANOCLR'] ]
 
   steps:
 
@@ -158,6 +172,8 @@ jobs:
     displayName: Install nanoFramework MSBuild components
     env:
       GITHUB_TOKEN: $(GitHubToken)
+
+  - template: azure-pipelines-templates/check-nf-interpreter-to-test.yml
 
   - task: NuGetCommand@2
     displayName: NuGet restore
@@ -188,7 +204,11 @@ jobs:
       versionSelector: latestStable
 
   - task: VSTest@2
-    condition: succeeded()
+    condition: >-
+      and(
+        succeeded(),
+        ne(variables['System.PullRequest.PullRequestNumber'], '')
+      )
     displayName: 'Running tests'
     inputs:
       testSelector: 'testAssemblies'
@@ -205,7 +225,7 @@ jobs:
       configuration: '$(BuildConfiguration)'
       diagnosticsEnabled: true
       vsTestVersion: toolsInstaller
-      codeCoverageEnabled: true  
+      codeCoverageEnabled: true
 
   - task: CopyFiles@1
     condition: failed()
@@ -252,11 +272,11 @@ jobs:
       sourceFolder: $(Build.SourcesDirectory)
       Contents: |
         **\bin\Release\nanoFramework.Tools.MetaDataProcessor.exe
-        **\bin\Release\nanoFramework.Tools.MetadataProcessor.MsBuildTask.dll
+        **\bin\Release\net472\nanoFramework.Tools.MetadataProcessor.MsBuildTask.dll
       TargetFolder: '$(Build.ArtifactStagingDirectory)'
       flattenFolders: true
 
-  # set cloud build vars again as they've been overriten by the tests run
+  # set cloud build vars again as they've been overwritten by the tests run
   - script: nbgv cloud -a -c
     condition: succeeded()
     displayName: Set build number
@@ -372,11 +392,11 @@ jobs:
     or(
       startsWith(variables['Build.SourceBranch'], 'refs/tags/v'),
       eq(variables['UPDATE_DEPENDENTS'], 'true'),
-      eq(dependencies.Get_Build_Flags.outputs['GetPRLabels.RUN_UPDATE_DEPENDENTS'], 'true')
+      eq(dependencies.Build_Prep.outputs['GetPRLabels.RUN_UPDATE_DEPENDENTS'], 'true')
     )
 
   dependsOn:
-    - Get_Build_Flags
+    - Build_Prep
     - Build_MDP
 
   pool:
