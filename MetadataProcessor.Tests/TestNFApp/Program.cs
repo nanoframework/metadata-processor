@@ -42,8 +42,6 @@ namespace TestNFApp
 
             Console.WriteLine($"Accessed property on class: {dummyMirror1}");
 
-            Console.WriteLine($"Accessed property on class: {dummyMirror1}");
-
             /////////////////////////////
             // Reflection Tests
             Console.WriteLine("Reflection Tests");
