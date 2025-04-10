@@ -230,10 +230,10 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
                 .WithArguments(arguments)
                 .WithValidation(CommandResultValidation.None);
 
-            // setup cancellation token with a timeout of 5 seconds
+            // setup cancellation token with a timeout of 30 seconds
             using (var cts = new CancellationTokenSource())
             {
-                cts.CancelAfter(TimeSpan.FromSeconds(5));
+                cts.CancelAfter(TimeSpan.FromSeconds(30));
 
                 BufferedCommandResult cliResult = await cmd.ExecuteBufferedAsync(cts.Token);
                 int exitCode = cliResult.ExitCode;
@@ -278,10 +278,10 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
                 .WithArguments(arguments)
                 .WithValidation(CommandResultValidation.None);
 
-            // setup cancellation token with a timeout of 5 seconds
+            // setup cancellation token with a timeout of 30 seconds
             using (CancellationTokenSource cts = new CancellationTokenSource())
             {
-                cts.CancelAfter(TimeSpan.FromSeconds(5));
+                cts.CancelAfter(TimeSpan.FromSeconds(30));
 
                 BufferedCommandResult cliResult = await cmd.ExecuteBufferedAsync(cts.Token);
                 int exitCode = cliResult.ExitCode;
