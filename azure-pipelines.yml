@@ -321,8 +321,12 @@ jobs:
       flattenFolders: true
 
   - task: DotNetCoreCLI@2
-    displayName: Install SignTool tool
-    condition: and( succeeded(), eq(variables['System.PullRequest.PullRequestId'], '') )
+    displayName: Install Sign Client CLI
+    condition: >-
+      and(
+        succeeded(),
+        eq(variables['UPDATE_DEPENDENTS'], 'false')
+      )
     inputs:
       command: custom
       custom: tool
@@ -345,11 +349,16 @@ jobs:
     condition: >-
       and(
         succeeded(),
-        eq(variables['System.PullRequest.PullRequestId'], '')
+        eq(variables['UPDATE_DEPENDENTS'], 'false')
       )
 
   # publish artifacts (only possible if this is not a PR originated on a fork)
   - task: PublishPipelineArtifact@1
+    condition: >-
+      and(
+        succeeded(),
+        ne(variables['UPDATE_DEPENDENTS'], 'true')
+      )  
     displayName: Publish deployables artifacts
     inputs:
       targetPath: '$(Build.ArtifactStagingDirectory)'
@@ -361,7 +370,8 @@ jobs:
     condition: >-
       and(
         succeeded(),
-        eq(variables['System.PullRequest.PullRequestId'], '')
+        eq(variables['System.PullRequest.PullRequestId'], ''),
+        ne(variables['UPDATE_DEPENDENTS'], 'true')
       )
     continueOnError: true
     inputs:
@@ -377,18 +387,17 @@ jobs:
       and(
         succeeded(),
         eq(variables['System.PullRequest.PullRequestId'], ''),
-        startsWith(variables['Build.SourceBranch'], 'refs/heads/main'),
         eq(variables['UPDATE_DEPENDENTS'], 'false')
       )
     displayName: Create/Update GitHub release
     inputs:
-      action: edit
       gitHubConnection: 'github.com_nano-$(System.TeamProject)'
       tagSource: userSpecifiedTag
       tag: v$(NBGV_NuGetPackageVersion)
       title: 'nanoFramework Metadata Processor v$(NBGV_NuGetPackageVersion)'
       assets: '$(Build.ArtifactStagingDirectory)/*'
       isPreRelease: false
+      action: create
       isDraft: false
       addChangeLog: true
       changeLogType: issueBased
