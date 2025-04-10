@@ -484,6 +484,6 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
         // no need to check if path exists as this validation is performed by nanoclr
         public static string NanoClrLocalInstance => Environment.GetEnvironmentVariable(
             _varNameForLocalNanoCLRInstancePath,
-            EnvironmentVariableTarget.User);
+            EnvironmentVariableTarget.Process);
     }
 }
