@@ -68,12 +68,27 @@ jobs:
       if($env:System_PullRequest_PullRequestNumber -ne $null)
       {
         # PR build
-        Write-Host "##[command] **This is a PR build**"
+        # compute authorization header in format "AUTHORIZATION: basic 'encoded token'"
+        # 'encoded token' is the Base64 of the string "nfbot:personal-token"
+        $auth = "basic $([System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes("nfbot:$(GitHubToken)")))"
 
-        $commit = Invoke-RestMethod -Uri "https://api.github.com/repos/nanoframework/metadata-processor/commits/$(Build.SourceVersion)" -ContentType "application/json" -Method GET
-        
+        # find PR
+        "Getting PR #$env:System_PullRequest_PullRequestNumber details..." | Write-Host -ForegroundColor White -NoNewline
+        $pr = Invoke-WebRequest "https://api.github.com/repos/$env:Build_Repository_Name/pulls/$env:System_PullRequest_PullRequestNumber" | ConvertFrom-Json
+
+        if($($pr.number) -eq "$env:System_PullRequest_PullRequestNumber")
+        {
+          'OK' | Write-Host -ForegroundColor Green
+        }
+
+        # grab PR commit message
+        $prCommitMessage = $($pr.body)
+  
+        # debug output
+        # echo "=====`r`n$($prCommitMessage)`r`n====="
+
         # check if should download nanoCLR to run unit tests
-        if($commit.commit.message -like "*[use nanoclr preview]*")
+        if($prCommitMessage -match "\[tested against nanoclr buildId (\d+)\]")
         {
           Write-Host "##[command] **Download preview nanoCLR for unit tests**"
           $downloadPreview = $true
