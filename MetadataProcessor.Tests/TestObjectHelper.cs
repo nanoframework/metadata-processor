@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using Mono.Cecil;
 
@@ -213,22 +214,18 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
         {
             AssemblyDefinition ret = null;
 
-            ret = AssemblyDefinition.ReadAssembly(TestNFAppFullPath);
+            ret = AssemblyDefinition.ReadAssembly(
+                TestNFAppFullPath,
+                new ReaderParameters { AssemblyResolver = ProvideLoadHints() });
 
             return ret;
         }
 
         public static AssemblyDefinition GetTestNFAppAssemblyDefinitionWithLoadHints()
         {
-            IDictionary<string, string> loadHints = new Dictionary<string, string>(StringComparer.Ordinal)
-            {
-                ["mscorlib"] = GetmscorlibAssemblyDefinition().MainModule.FileName,
-                ["TestNFClassLibrary"] = GetTestNFClassLibraryDefinition().MainModule.FileName
-            };
-
             return AssemblyDefinition.ReadAssembly(
                 TestNFAppFullPath,
-                new ReaderParameters { AssemblyResolver = new LoadHintsAssemblyResolver(loadHints) });
+                new ReaderParameters { AssemblyResolver = ProvideLoadHints() });
         }
 
 
@@ -236,7 +233,9 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
         {
             AssemblyDefinition ret = null;
 
-            ret = AssemblyDefinition.ReadAssembly(TestNFClassLibFullPath);
+            ret = AssemblyDefinition.ReadAssembly(
+                TestNFClassLibFullPath,
+                new ReaderParameters { AssemblyResolver = ProvideLoadHints() });
 
             return ret;
         }
@@ -485,5 +484,13 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
         public static string NanoClrLocalInstance => Environment.GetEnvironmentVariable(
             _varNameForLocalNanoCLRInstancePath,
             EnvironmentVariableTarget.Process);
+
+        private static DefaultAssemblyResolver ProvideLoadHints()
+        {
+            var resolver = new DefaultAssemblyResolver();
+            resolver.AddSearchDirectory(TestExecutionLocation);
+
+            return resolver;
+        }
     }
 }
