@@ -29,7 +29,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
         {
             nanoTablesContext ret = null;
 
-            var assemblyDefinition = GetTestNFAppAssemblyDefinition();
+            var assemblyDefinition = GetTestNFAppAssemblyDefinitionWithLoadHints();
 
             ret = new nanoTablesContext(
                 assemblyDefinition,
@@ -223,9 +223,15 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
 
         public static AssemblyDefinition GetTestNFAppAssemblyDefinitionWithLoadHints()
         {
+            IDictionary<string, string> loadHints = new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["mscorlib"] = GetmscorlibAssemblyDefinition().MainModule.FileName,
+                ["TestNFClassLibrary"] = GetTestNFClassLibraryDefinition().MainModule.FileName
+            };
+
             return AssemblyDefinition.ReadAssembly(
                 TestNFAppFullPath,
-                new ReaderParameters { AssemblyResolver = ProvideLoadHints() });
+                new ReaderParameters { AssemblyResolver = new LoadHintsAssemblyResolver(loadHints) });
         }
 
 
