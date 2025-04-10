@@ -49,7 +49,7 @@ variables:
 jobs:
 
 ##############################
-- job: Get_Build_Flags
+- job: Build_Prep
   pool:
     vmImage: 'windows-latest'
 
@@ -63,10 +63,36 @@ jobs:
 
       # default to false
       $update = $false
+      $downloadPreview = $false
 
-      if($env:Build_Reason -eq 'PullRequest')
+      if($env:System_PullRequest_PullRequestNumber -ne $null)
       {
-        # PR build, nothing interesting in commit message
+        # PR build
+        # compute authorization header in format "AUTHORIZATION: basic 'encoded token'"
+        # 'encoded token' is the Base64 of the string "nfbot:personal-token"
+        $auth = "basic $([System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes("nfbot:$(GitHubToken)")))"
+
+        # find PR
+        "Getting PR #$env:System_PullRequest_PullRequestNumber details..." | Write-Host -ForegroundColor White -NoNewline
+        $pr = Invoke-WebRequest "https://api.github.com/repos/$env:Build_Repository_Name/pulls/$env:System_PullRequest_PullRequestNumber" | ConvertFrom-Json
+
+        if($($pr.number) -eq "$env:System_PullRequest_PullRequestNumber")
+        {
+          'OK' | Write-Host -ForegroundColor Green
+        }
+
+        # grab PR commit message
+        $prCommitMessage = $($pr.body)
+  
+        # debug output
+        # echo "=====`r`n$($prCommitMessage)`r`n====="
+
+        # check if should download nanoCLR to run unit tests
+        if($prCommitMessage -match "\[tested against nanoclr buildId (\d+)\]")
+        {
+          Write-Host "##[command] **Download preview nanoCLR for unit tests**"
+          $downloadPreview = $true
+        }
       }
       else
       {
@@ -103,10 +129,11 @@ jobs:
         }
       }
 
-      # set variable to foward to jobs
+      # set variables to forward to jobs
       echo "##vso[task.setvariable variable=RUN_UPDATE_DEPENDENTS;isOutput=true]$update"
+      echo "##vso[task.setvariable variable=DOWNLOAD_PREVIEW_NANOCLR;isOutput=true]$downloadPreview"
     name: GetPRLabels
-    displayName:  Check build labels
+    displayName:  Check build conditions
 
 ##############################
 # build MDP
@@ -118,7 +145,7 @@ jobs:
     )    
 
   dependsOn:
-    - Get_Build_Flags
+    - Build_Prep
 
   pool:
     vmImage: 'windows-latest'
@@ -133,6 +160,8 @@ jobs:
       value: 'nanoFramework.Tools.MetadataProcessor.sln'
     - name: NF_MDP_MSBUILDTASK_PATH
       value: '$(System.DefaultWorkingDirectory)/MetadataProcessor.MsBuildTask/bin/Release/net472'
+    - name: DownloadNanoClrPreview
+      value: $[ dependencies.Build_Prep.outputs['GetPRLabels.DOWNLOAD_PREVIEW_NANOCLR'] ]
 
   steps:
 
@@ -151,7 +180,7 @@ jobs:
       git config --global user.name "nfbot"
     displayName: Setup git identity
 
-  - template: azure-pipelines-templates/install-nuget.yml@templates  
+  - template: azure-pipelines-templates/install-nuget.yml@templates
 
   - task: InstallNanoMSBuildComponents@1
     condition: ne( variables['StartReleaseCandidate'], true )
@@ -159,13 +188,15 @@ jobs:
     env:
       GITHUB_TOKEN: $(GitHubToken)
 
+  - template: azure-pipelines-templates/check-nf-interpreter-to-test.yml
+
   - task: NuGetCommand@2
     displayName: NuGet restore
     inputs:
       restoreSolution: '$(solution)'
       feedsToUse: config
       nugetConfigPath: 'NuGet.config'
-  
+
   - task: VSBuild@1
     inputs:
       solution: '$(solution)'
@@ -188,7 +219,11 @@ jobs:
       versionSelector: latestStable
 
   - task: VSTest@2
-    condition: succeeded()
+    condition: >-
+      and(
+        succeeded(),
+        ne(variables['System.PullRequest.PullRequestNumber'], '')
+      )
     displayName: 'Running tests'
     inputs:
       testSelector: 'testAssemblies'
@@ -205,7 +240,7 @@ jobs:
       configuration: '$(BuildConfiguration)'
       diagnosticsEnabled: true
       vsTestVersion: toolsInstaller
-      codeCoverageEnabled: true  
+      codeCoverageEnabled: true
 
   - task: CopyFiles@1
     condition: failed()
@@ -252,15 +287,15 @@ jobs:
       sourceFolder: $(Build.SourcesDirectory)
       Contents: |
         **\bin\Release\nanoFramework.Tools.MetaDataProcessor.exe
-        **\bin\Release\nanoFramework.Tools.MetadataProcessor.MsBuildTask.dll
+        **\bin\Release\net472\nanoFramework.Tools.MetadataProcessor.MsBuildTask.dll
       TargetFolder: '$(Build.ArtifactStagingDirectory)'
       flattenFolders: true
 
-  # set cloud build vars again as they've been overriten by the tests run
+  # set cloud build vars again as they've been overwritten by the tests run
   - script: nbgv cloud -a -c
     condition: succeeded()
     displayName: Set build number
- 
+
   - task: PowerShell@2
     condition: succeeded()
     displayName: Save cloud build number
@@ -292,7 +327,7 @@ jobs:
       command: custom
       custom: tool
       arguments: install --tool-path . sign --version 0.9.1-beta.24170.3
-    
+
   - pwsh: |
       .\sign code azure-key-vault `
       "**/*.nupkg" `
@@ -312,7 +347,7 @@ jobs:
         succeeded(),
         eq(variables['System.PullRequest.PullRequestId'], '')
       )
-    
+
   # publish artifacts (only possible if this is not a PR originated on a fork)
   - task: PublishPipelineArtifact@1
     displayName: Publish deployables artifacts
@@ -371,11 +406,12 @@ jobs:
   condition: >-
     or(
       startsWith(variables['Build.SourceBranch'], 'refs/tags/v'),
-      eq(variables['UPDATE_DEPENDENTS'], 'true')
+      eq(variables['UPDATE_DEPENDENTS'], 'true'),
+      eq(dependencies.Build_Prep.outputs['GetPRLabels.RUN_UPDATE_DEPENDENTS'], 'true')
     )
 
   dependsOn:
-    - Get_Build_Flags
+    - Build_Prep
     - Build_MDP
 
   pool:
@@ -388,7 +424,7 @@ jobs:
 
   # update dependents
   # use this to make sure nuget package is published
-  - template: azure-pipelines-templates/update-dependents.yml@templates  
+  - template: azure-pipelines-templates/update-dependents.yml@templates
     parameters:
       packageName: '$(nugetPackageName)'
       repositoriesToUpdate:
@@ -418,7 +454,7 @@ jobs:
     fetchDepth: 1
 
   # step from template @ nf-tools repo
-  - template: azure-pipelines-templates/discord-webhook.yml@templates  
+  - template: azure-pipelines-templates/discord-webhook.yml@templates
     parameters:
       status: 'failure'
       webhookUrl: '$(DiscordWebhook)'

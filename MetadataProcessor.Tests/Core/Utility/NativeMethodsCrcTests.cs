@@ -1,12 +1,10 @@
-﻿//
-// Copyright (c) .NET Foundation and Contributors
-// See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Mono.Cecil;
 using System;
 using System.Collections.Generic;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Mono.Cecil;
 
 namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
 {
@@ -72,46 +70,46 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
         }
 
         [TestMethod]
-        public void GetnanoClrTypeNameTest()
+        public void GetNanoCLRTypeNameTest()
         {
             var assemblyDefinition = TestObjectHelper.GetTestNFAppAssemblyDefinition();
 
-            DoGetnanoClrTypeNameTest(assemblyDefinition, typeof(void), "DATATYPE_VOID");
-            DoGetnanoClrTypeNameTest(assemblyDefinition, typeof(sbyte), "DATATYPE_I1");
-            DoGetnanoClrTypeNameTest(assemblyDefinition, typeof(short), "DATATYPE_I2");
-            DoGetnanoClrTypeNameTest(assemblyDefinition, typeof(int), "DATATYPE_I4");
-            DoGetnanoClrTypeNameTest(assemblyDefinition, typeof(long), "DATATYPE_I8");
+            DoGetNanoCLRTypeNameTest(assemblyDefinition, typeof(void), "DATATYPE_VOID");
+            DoGetNanoCLRTypeNameTest(assemblyDefinition, typeof(sbyte), "DATATYPE_I1");
+            DoGetNanoCLRTypeNameTest(assemblyDefinition, typeof(short), "DATATYPE_I2");
+            DoGetNanoCLRTypeNameTest(assemblyDefinition, typeof(int), "DATATYPE_I4");
+            DoGetNanoCLRTypeNameTest(assemblyDefinition, typeof(long), "DATATYPE_I8");
 
-            DoGetnanoClrTypeNameTest(assemblyDefinition, typeof(byte), "DATATYPE_U1");
-            DoGetnanoClrTypeNameTest(assemblyDefinition, typeof(ushort), "DATATYPE_U2");
-            DoGetnanoClrTypeNameTest(assemblyDefinition, typeof(uint), "DATATYPE_U4");
-            DoGetnanoClrTypeNameTest(assemblyDefinition, typeof(ulong), "DATATYPE_U8");
+            DoGetNanoCLRTypeNameTest(assemblyDefinition, typeof(byte), "DATATYPE_U1");
+            DoGetNanoCLRTypeNameTest(assemblyDefinition, typeof(ushort), "DATATYPE_U2");
+            DoGetNanoCLRTypeNameTest(assemblyDefinition, typeof(uint), "DATATYPE_U4");
+            DoGetNanoCLRTypeNameTest(assemblyDefinition, typeof(ulong), "DATATYPE_U8");
 
-            DoGetnanoClrTypeNameTest(assemblyDefinition, typeof(float), "DATATYPE_R4");
-            DoGetnanoClrTypeNameTest(assemblyDefinition, typeof(double), "DATATYPE_R8");
+            DoGetNanoCLRTypeNameTest(assemblyDefinition, typeof(float), "DATATYPE_R4");
+            DoGetNanoCLRTypeNameTest(assemblyDefinition, typeof(double), "DATATYPE_R8");
 
-            DoGetnanoClrTypeNameTest(assemblyDefinition, typeof(char), "DATATYPE_CHAR");
-            DoGetnanoClrTypeNameTest(assemblyDefinition, typeof(string), "DATATYPE_STRING");
-            DoGetnanoClrTypeNameTest(assemblyDefinition, typeof(bool), "DATATYPE_BOOLEAN");
+            DoGetNanoCLRTypeNameTest(assemblyDefinition, typeof(char), "DATATYPE_CHAR");
+            DoGetNanoCLRTypeNameTest(assemblyDefinition, typeof(string), "DATATYPE_STRING");
+            DoGetNanoCLRTypeNameTest(assemblyDefinition, typeof(bool), "DATATYPE_BOOLEAN");
 
-            DoGetnanoClrTypeNameTest(assemblyDefinition, typeof(object), "DATATYPE_OBJECT");
-            DoGetnanoClrTypeNameTest(assemblyDefinition, typeof(IntPtr), "DATATYPE_I4");
-            DoGetnanoClrTypeNameTest(assemblyDefinition, typeof(UIntPtr), "DATATYPE_U4");
+            DoGetNanoCLRTypeNameTest(assemblyDefinition, typeof(object), "DATATYPE_OBJECT");
+            DoGetNanoCLRTypeNameTest(assemblyDefinition, typeof(IntPtr), "DATATYPE_I4");
+            DoGetNanoCLRTypeNameTest(assemblyDefinition, typeof(UIntPtr), "DATATYPE_U4");
 
-            DoGetnanoClrTypeNameTest(assemblyDefinition, typeof(System.WeakReference), "DATATYPE_WEAKCLASS");
+            DoGetNanoCLRTypeNameTest(assemblyDefinition, typeof(System.WeakReference), "DATATYPE_WEAKCLASS");
 
-            DoGetnanoClrTypeNameTest(assemblyDefinition, this.GetType(), "nanoFrameworkToolsMetadataProcessorTestsCoreUtilityNativeMethodsCrcTests");
+            DoGetNanoCLRTypeNameTest(assemblyDefinition, this.GetType(), "nanoFrameworkToolsMetadataProcessorTestsCoreUtilityNativeMethodsCrcTests");
 
         }
 
-        private void DoGetnanoClrTypeNameTest(AssemblyDefinition assemblyDefinition, Type type, string expectedNanoClrTypeName)
+        private void DoGetNanoCLRTypeNameTest(AssemblyDefinition assemblyDefinition, Type type, string expectedNanoCLRTypeName)
         {
             var typeReference = assemblyDefinition.MainModule.ImportReference(type);
 
             // test
-            var r = NativeMethodsCrc.GetnanoClrTypeName(typeReference);
+            var r = NativeMethodsCrc.GetNanoCLRTypeName(typeReference);
 
-            Assert.AreEqual(expectedNanoClrTypeName, r);
+            Assert.AreEqual(expectedNanoCLRTypeName, r);
         }
 
 
@@ -157,7 +155,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
             // test
             iut.UpdateCrc(nonExternMethodDefinition);
 
-            Assert.AreEqual((uint)2748897355, iut.CurrentCrc);
+            Assert.AreEqual((uint)882012044, iut.CurrentCrc);
         }
 
         [TestMethod]

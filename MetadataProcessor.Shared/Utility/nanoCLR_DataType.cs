@@ -1,12 +1,18 @@
-//
-// Copyright (c) .NET Foundation and Contributors
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 // Original work from Oleg Rakhmatulin.
-// See LICENSE file in the project root for full license information.
-//
 
 namespace nanoFramework.Tools.MetadataProcessor
 {
-    public enum nanoCLR_DataType : byte
+    //////////////////////////////////////////////////////////////////////////////////
+    // <SYNC-WITH-DEBUGGER>                                                         //
+    // !!! KEEP IN SYNC WITH enum CLRDataType (in nanoCLR_TypeSystem Debugger) !!!  //
+    // <SYNC-WITH-NATIVE>                                                           //
+    // !!! KEEP IN SYNC WITH enum CLRDataType (in nanoCLRT_Types.h in CLR)     !!!  //
+    //////////////////////////////////////////////////////////////////////////////////
+
+    public enum NanoCLRDataType : byte
     {
         // these where defined @ enum CLR_DataType
 

@@ -59,6 +59,16 @@
     <None Include="packages.lock.json" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.Build.Tasks.Git">
+      <Version>8.0.0</Version>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.SourceLink.Common">
+      <Version>8.0.0</Version>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.SourceLink.GitHub">
       <Version>8.0.0</Version>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -74,6 +84,9 @@
       <Version>3.7.115</Version>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="System.Text.Json">
+      <Version>8.0.5</Version>
     </PackageReference>
   </ItemGroup>
   <Import Project="..\MetadataProcessor.Shared\MetadataProcessor.Shared.projitems" Label="Shared" />

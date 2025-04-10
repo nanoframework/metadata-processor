@@ -1,4 +1,4 @@
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT) [![#yourfirstpr](https://img.shields.io/badge/first--timers--only-friendly-blue.svg)](https://github.com/nanoframework/Home/blob/main/CONTRIBUTING.md) [![Build Status](https://dev.azure.com/nanoframework/metadata-processor/_apis/build/status/nanoframework.metadata-processor?branchName=develop)](https://dev.azure.com/nanoframework/metadata-processor/_build/latest?definitionId=43&branchName=develop) [![Discord](https://img.shields.io/discord/478725473862549535.svg)](https://discord.gg/gCyBu8T)
+﻿[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT) [![#yourfirstpr](https://img.shields.io/badge/first--timers--only-friendly-blue.svg)](https://github.com/nanoframework/Home/blob/main/CONTRIBUTING.md) [![Build Status](https://dev.azure.com/nanoframework/metadata-processor/_apis/build/status/nanoframework.metadata-processor?branchName=develop)](https://dev.azure.com/nanoframework/metadata-processor/_build/latest?definitionId=43&branchName=develop) [![Discord](https://img.shields.io/discord/478725473862549535.svg)](https://discord.gg/gCyBu8T)
 
 ![nanoFramework logo](https://raw.githubusercontent.com/nanoframework/Home/main/resources/logo/nanoFramework-repo-logo.png)
 
@@ -42,6 +42,17 @@ When adding a project to the solution the following points have to be kept in mi
 - Any nanoFramework projects (.nfproj) that are required for Unit Tests have to have their build configuration changed so they don't build. Building those has to be added to the pre-build event of the Unit Test project that will be using it. See the [prebuild event](https://github.com/nanoframework/metadata-processor/blob/bcb82f6c9153cdc3863abf6fcc5b589437408b28/MetadataProcessor.Tests/MetadataProcessor.Tests.csproj#L118-L128) for the MetadataProcessor.Tests project. When adding nanoFramework projects to the pre-build event it is important to add the `-nr=False` flag<sup>[1]</sup>.
 
 1. This flag disables "nodeReuse", this is needed as a custom MsBuildTask is used which also gets rebuilt. "NodeReuse" keeps instances of MsBuild running which interferes with the rebuilding of the custom MsBuildTask.
+
+### Code sync between MDP, native code and other tools
+
+There are several code snippets, structures and details that are shared between the metadata processor, the native code and other tools. These need to be kept in sync.
+For those that need to be keep in sync with native code, there is a tag `<SYNC-WITH-NATIVE>` in a comment before the relevant code snippet.
+For sync with Visual Studio extension, the tag `<SYNC-WITH-VS>` is used.
+For sync with the debugger, the tag `<SYNC-WITH-DEBUGGER>` is used.
+
+### Miscellaneous
+
+If there is a need to override the nanoCLR DLL to be used in the virtual device set the environment variable `NF_MDP_NANOCLR_INSTANCE_PATH` to the path of the DLL.
 
 ## Feedback and documentation
 

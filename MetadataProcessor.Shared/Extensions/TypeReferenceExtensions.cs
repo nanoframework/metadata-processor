@@ -38,38 +38,38 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
                 return "U";
             }
 
-            nanoCLR_DataType dataType;
+            NanoCLRDataType dataType;
             if (nanoSignaturesTable.PrimitiveTypes.TryGetValue(type.FullName, out dataType))
             {
                 switch (dataType)
                 {
-                    case nanoCLR_DataType.DATATYPE_VOID:
-                    case nanoCLR_DataType.DATATYPE_BOOLEAN:
-                    case nanoCLR_DataType.DATATYPE_CHAR:
-                    case nanoCLR_DataType.DATATYPE_I1:
-                    case nanoCLR_DataType.DATATYPE_U1:
-                    case nanoCLR_DataType.DATATYPE_I2:
-                    case nanoCLR_DataType.DATATYPE_U2:
-                    case nanoCLR_DataType.DATATYPE_I4:
-                    case nanoCLR_DataType.DATATYPE_U4:
-                    case nanoCLR_DataType.DATATYPE_I8:
-                    case nanoCLR_DataType.DATATYPE_U8:
-                    case nanoCLR_DataType.DATATYPE_R4:
-                    case nanoCLR_DataType.DATATYPE_BYREF:
-                    case nanoCLR_DataType.DATATYPE_OBJECT:
-                    case nanoCLR_DataType.DATATYPE_WEAKCLASS:
+                    case NanoCLRDataType.DATATYPE_VOID:
+                    case NanoCLRDataType.DATATYPE_BOOLEAN:
+                    case NanoCLRDataType.DATATYPE_CHAR:
+                    case NanoCLRDataType.DATATYPE_I1:
+                    case NanoCLRDataType.DATATYPE_U1:
+                    case NanoCLRDataType.DATATYPE_I2:
+                    case NanoCLRDataType.DATATYPE_U2:
+                    case NanoCLRDataType.DATATYPE_I4:
+                    case NanoCLRDataType.DATATYPE_U4:
+                    case NanoCLRDataType.DATATYPE_I8:
+                    case NanoCLRDataType.DATATYPE_U8:
+                    case NanoCLRDataType.DATATYPE_R4:
+                    case NanoCLRDataType.DATATYPE_BYREF:
+                    case NanoCLRDataType.DATATYPE_OBJECT:
+                    case NanoCLRDataType.DATATYPE_WEAKCLASS:
                         return dataType.ToString().Replace("DATATYPE_", "");
 
-                    case nanoCLR_DataType.DATATYPE_LAST_PRIMITIVE:
+                    case NanoCLRDataType.DATATYPE_LAST_PRIMITIVE:
                         return "STRING";
 
-                    case nanoCLR_DataType.DATATYPE_LAST_PRIMITIVE_TO_PRESERVE:
+                    case NanoCLRDataType.DATATYPE_LAST_PRIMITIVE_TO_PRESERVE:
                         return "R8";
 
-                    case nanoCLR_DataType.DATATYPE_LAST_PRIMITIVE_TO_MARSHAL:
+                    case NanoCLRDataType.DATATYPE_LAST_PRIMITIVE_TO_MARSHAL:
                         return "TIMESPAN";
 
-                    case nanoCLR_DataType.DATATYPE_REFLECTION:
+                    case NanoCLRDataType.DATATYPE_REFLECTION:
                         return type.FullName.Replace(".", "");
                 }
             }
@@ -113,10 +113,23 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
                 return byrefSig.ToString();
             }
 
-            if (type.IsGenericParameter ||
-                type.IsGenericInstance)
+            if (type.IsGenericParameter)
             {
-                return $"!!{type.Name}";
+                StringBuilder genericParamTypeSig = new StringBuilder();
+
+                if ((type as GenericParameter).Owner is TypeDefinition)
+                {
+                    genericParamTypeSig.Append("!");
+                }
+                if ((type as GenericParameter).Owner is MethodDefinition)
+                {
+                    genericParamTypeSig.Append("!!");
+                }
+
+                genericParamTypeSig.Append($"{type.Name}");
+
+
+                return genericParamTypeSig.ToString();
             }
 
             return "";
@@ -124,44 +137,44 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
 
         public static string ToNativeTypeAsString(this TypeReference type)
         {
-            nanoCLR_DataType dataType;
+            NanoCLRDataType dataType;
             if (nanoSignaturesTable.PrimitiveTypes.TryGetValue(type.FullName, out dataType))
             {
                 switch (dataType)
                 {
-                    case nanoCLR_DataType.DATATYPE_VOID:
+                    case NanoCLRDataType.DATATYPE_VOID:
                         return "void";
-                    case nanoCLR_DataType.DATATYPE_BOOLEAN:
+                    case NanoCLRDataType.DATATYPE_BOOLEAN:
                         return "bool";
-                    case nanoCLR_DataType.DATATYPE_CHAR:
+                    case NanoCLRDataType.DATATYPE_CHAR:
                         return "char";
-                    case nanoCLR_DataType.DATATYPE_I1:
+                    case NanoCLRDataType.DATATYPE_I1:
                         return "int8_t";
-                    case nanoCLR_DataType.DATATYPE_U1:
+                    case NanoCLRDataType.DATATYPE_U1:
                         return "uint8_t";
-                    case nanoCLR_DataType.DATATYPE_I2:
+                    case NanoCLRDataType.DATATYPE_I2:
                         return "int16_t";
-                    case nanoCLR_DataType.DATATYPE_U2:
+                    case NanoCLRDataType.DATATYPE_U2:
                         return "uint16_t";
-                    case nanoCLR_DataType.DATATYPE_I4:
+                    case NanoCLRDataType.DATATYPE_I4:
                         return "signed int";
-                    case nanoCLR_DataType.DATATYPE_U4:
+                    case NanoCLRDataType.DATATYPE_U4:
                         return "unsigned int";
-                    case nanoCLR_DataType.DATATYPE_I8:
+                    case NanoCLRDataType.DATATYPE_I8:
                         return "int64_t";
-                    case nanoCLR_DataType.DATATYPE_U8:
+                    case NanoCLRDataType.DATATYPE_U8:
                         return "uint64_t";
-                    case nanoCLR_DataType.DATATYPE_R4:
+                    case NanoCLRDataType.DATATYPE_R4:
                         return "float";
-                    case nanoCLR_DataType.DATATYPE_BYREF:
+                    case NanoCLRDataType.DATATYPE_BYREF:
                         return "";
 
                     // system.String
-                    case nanoCLR_DataType.DATATYPE_LAST_PRIMITIVE:
+                    case NanoCLRDataType.DATATYPE_LAST_PRIMITIVE:
                         return "const char*";
 
                     // System.Double
-                    case nanoCLR_DataType.DATATYPE_LAST_PRIMITIVE_TO_PRESERVE:
+                    case NanoCLRDataType.DATATYPE_LAST_PRIMITIVE_TO_PRESERVE:
                         return "double";
 
                     default:
@@ -196,44 +209,44 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
 
         public static string ToCLRTypeAsString(this TypeReference type)
         {
-            nanoCLR_DataType dataType;
+            NanoCLRDataType dataType;
             if (nanoSignaturesTable.PrimitiveTypes.TryGetValue(type.FullName, out dataType))
             {
                 switch (dataType)
                 {
-                    case nanoCLR_DataType.DATATYPE_VOID:
+                    case NanoCLRDataType.DATATYPE_VOID:
                         return "void";
-                    case nanoCLR_DataType.DATATYPE_BOOLEAN:
+                    case NanoCLRDataType.DATATYPE_BOOLEAN:
                         return "bool";
-                    case nanoCLR_DataType.DATATYPE_CHAR:
+                    case NanoCLRDataType.DATATYPE_CHAR:
                         return "CHAR";
-                    case nanoCLR_DataType.DATATYPE_I1:
+                    case NanoCLRDataType.DATATYPE_I1:
                         return "INT8";
-                    case nanoCLR_DataType.DATATYPE_U1:
+                    case NanoCLRDataType.DATATYPE_U1:
                         return "UINT8";
-                    case nanoCLR_DataType.DATATYPE_I2:
+                    case NanoCLRDataType.DATATYPE_I2:
                         return "INT16";
-                    case nanoCLR_DataType.DATATYPE_U2:
+                    case NanoCLRDataType.DATATYPE_U2:
                         return "UINT16";
-                    case nanoCLR_DataType.DATATYPE_I4:
+                    case NanoCLRDataType.DATATYPE_I4:
                         return "INT32";
-                    case nanoCLR_DataType.DATATYPE_U4:
+                    case NanoCLRDataType.DATATYPE_U4:
                         return "UINT32";
-                    case nanoCLR_DataType.DATATYPE_I8:
+                    case NanoCLRDataType.DATATYPE_I8:
                         return "INT64";
-                    case nanoCLR_DataType.DATATYPE_U8:
+                    case NanoCLRDataType.DATATYPE_U8:
                         return "UINT64";
-                    case nanoCLR_DataType.DATATYPE_R4:
+                    case NanoCLRDataType.DATATYPE_R4:
                         return "float";
-                    case nanoCLR_DataType.DATATYPE_BYREF:
+                    case NanoCLRDataType.DATATYPE_BYREF:
                         return "NONE";
 
                     // system.String
-                    case nanoCLR_DataType.DATATYPE_LAST_PRIMITIVE:
+                    case NanoCLRDataType.DATATYPE_LAST_PRIMITIVE:
                         return "LPCSTR";
 
                     // System.Double
-                    case nanoCLR_DataType.DATATYPE_LAST_PRIMITIVE_TO_PRESERVE:
+                    case NanoCLRDataType.DATATYPE_LAST_PRIMITIVE_TO_PRESERVE:
                         return "double";
 
                     default:
@@ -270,36 +283,36 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
 
         public static nanoSerializationType ToSerializationType(this TypeReference value)
         {
-            nanoCLR_DataType dataType;
+            NanoCLRDataType dataType;
             if (nanoSignaturesTable.PrimitiveTypes.TryGetValue(value.FullName, out dataType))
             {
                 switch (dataType)
                 {
-                    case nanoCLR_DataType.DATATYPE_BOOLEAN:
+                    case NanoCLRDataType.DATATYPE_BOOLEAN:
                         return nanoSerializationType.ELEMENT_TYPE_BOOLEAN;
-                    case nanoCLR_DataType.DATATYPE_I1:
+                    case NanoCLRDataType.DATATYPE_I1:
                         return nanoSerializationType.ELEMENT_TYPE_I1;
-                    case nanoCLR_DataType.DATATYPE_U1:
+                    case NanoCLRDataType.DATATYPE_U1:
                         return nanoSerializationType.ELEMENT_TYPE_U1;
-                    case nanoCLR_DataType.DATATYPE_I2:
+                    case NanoCLRDataType.DATATYPE_I2:
                         return nanoSerializationType.ELEMENT_TYPE_I2;
-                    case nanoCLR_DataType.DATATYPE_U2:
+                    case NanoCLRDataType.DATATYPE_U2:
                         return nanoSerializationType.ELEMENT_TYPE_U2;
-                    case nanoCLR_DataType.DATATYPE_I4:
+                    case NanoCLRDataType.DATATYPE_I4:
                         return nanoSerializationType.ELEMENT_TYPE_I4;
-                    case nanoCLR_DataType.DATATYPE_U4:
+                    case NanoCLRDataType.DATATYPE_U4:
                         return nanoSerializationType.ELEMENT_TYPE_U4;
-                    case nanoCLR_DataType.DATATYPE_I8:
+                    case NanoCLRDataType.DATATYPE_I8:
                         return nanoSerializationType.ELEMENT_TYPE_I8;
-                    case nanoCLR_DataType.DATATYPE_U8:
+                    case NanoCLRDataType.DATATYPE_U8:
                         return nanoSerializationType.ELEMENT_TYPE_U8;
-                    case nanoCLR_DataType.DATATYPE_R4:
+                    case NanoCLRDataType.DATATYPE_R4:
                         return nanoSerializationType.ELEMENT_TYPE_R4;
-                    case nanoCLR_DataType.DATATYPE_R8:
+                    case NanoCLRDataType.DATATYPE_R8:
                         return nanoSerializationType.ELEMENT_TYPE_R8;
-                    case nanoCLR_DataType.DATATYPE_CHAR:
+                    case NanoCLRDataType.DATATYPE_CHAR:
                         return nanoSerializationType.ELEMENT_TYPE_CHAR;
-                    case nanoCLR_DataType.DATATYPE_STRING:
+                    case NanoCLRDataType.DATATYPE_STRING:
                         return nanoSerializationType.ELEMENT_TYPE_STRING;
                     default:
                         return 0;
@@ -309,5 +322,64 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
             return 0;
         }
 
+        public static ushort ToEncodedNanoTypeToken(this TypeReference value)
+        {
+            // implements .NET nanoFramework encoding for TypeToken
+            // encodes TypeReference to be decoded with CLR_UncompressTypeToken
+            // CLR tables are
+            // 0: TBL_TypeDef
+            // 1: TBL_TypeRef
+            // 2: TBL_TypeSpec
+            // 3: TBL_GenericParam
+
+            return nanoTokenHelpers.EncodeTableIndex(value.ToNanoCLRTable(), nanoTokenHelpers.NanoTypeTokenTables);
+        }
+
+        public static ushort ToEncodedNanoTypeDefOrRefToken(this TypeReference value)
+        {
+            // implements .NET nanoFramework encoding for TypeToken
+            // CLR tables are
+            // 0: TBL_TypeDef
+            // 1: TBL_TypeRef
+
+            return nanoTokenHelpers.EncodeTableIndex(value.ToNanoCLRTable(), nanoTokenHelpers.NanoTypeDefOrRefTokenTables);
+        }
+
+        ////////////////////////////////////////////
+
+        /// <summary>
+        /// Encodes a TypeReference or TypeSpecification to CLR_TypeRefOrSpec.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static ushort ToCLR_TypeRefOrSpec(this TypeReference value)
+        {
+            return nanoTokenHelpers.EncodeTableIndex(value.ToNanoCLRTable(), nanoTokenHelpers.CLR_TypeRefOrSpecTables);
+        }
+
+        private static NanoClrTable ToNanoCLRTable(this TypeReference value)
+        {
+            return nanoTokenHelpers.ConvertToNanoCLRTable(value);
+        }
+
+        /// <summary>
+        /// Fixed full name with simplified type names.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static string FixedFullName(this TypeReference value)
+        {
+            return nanoHelpers.FixTypeNames(value.FullName);
+        }
+
+        /// <summary>
+        /// Fixed name with simplified type names.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static string FixedName(this TypeReference value)
+        {
+            return nanoHelpers.FixTypeNames(value.Name);
+        }
     }
 }

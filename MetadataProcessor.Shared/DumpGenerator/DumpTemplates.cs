@@ -1,7 +1,5 @@
-//
-// Copyright (c) .NET Foundation and Contributors
-// See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 namespace nanoFramework.Tools.MetadataProcessor
 {
@@ -9,30 +7,58 @@ namespace nanoFramework.Tools.MetadataProcessor
     {
         internal const string DumpAllTemplate =
 @"{{#each AssemblyReferences}}
-AssemblyRefProps [{{ReferenceId}}]: Flags: {{Flags}} '{{Name}}'{{#newline}}
+AssemblyRef {{ReferenceId}}{{#newline}}
+-------------------------------------------------------{{#newline}}
+'{{Name}}'{{#newline}}
+    Flags: {{Flags}}{{#newline}}
+{{#newline}}
 {{/each}}
-{{#if AssemblyReferences}}{{#newline}}{{/if}}
 
 {{#each TypeReferences}}
-TypeRefProps [{{ReferenceId}}]: Scope: {{Scope}} '{{Name}}'{{#newline}}
+TypeRef {{ReferenceId}}{{#newline}}
+-------------------------------------------------------{{#newline}}
+Scope: {{Scope}}{{#newline}}
+    '{{Name}}'{{#newline}}
 {{#each MemberReferences}}
-    MemberRefProps [{{ReferenceId}}]: '{{Name}}' [{{Signature}}]{{#newline}}
+    MemberRef {{ReferenceId}}{{#newline}}
+    -------------------------------------------------------{{#newline}}
+        '{{Name}}'{{#newline}}
+        [{{Signature}}]{{#newline}}
 {{/each}}
+{{#newline}}
 {{/each}}
-{{#if TypeReferences}}{{#newline}}{{/if}}
 
 {{#each TypeDefinitions}}
-TypeDefProps [{{ReferenceId}}]: Flags: {{Flags}} Extends: {{ExtendsType}} Enclosed: {{EnclosedType}} '{{Name}}'{{#newline}}
+TypeDef {{ReferenceId}}{{#newline}}
+-------------------------------------------------------{{#newline}}
+    '{{Name}}'{{#newline}}
+    Flags: {{Flags}}{{#newline}}
+    Extends: {{ExtendsType}}{{#newline}}
+    Enclosed: {{EnclosedType}}{{#newline}}
+{{#if GenericParameters}}
+    Generic Parameters{{#newline}}
 {{#each GenericParameters}}
-    GenericParam [{{GenericParamToken}}]: Position: ({{Position}}) '{{Name}}' Owner: {{Owner}} [{{Signature}}]{{#newline}}
+        ({{Position}}) GenericParamToken {{GenericParamToken}} '{{Name}}' Owner: {{Owner}} [{{Signature}}]{{#newline}}
 {{/each}}
+{{/if}}
 
 {{#each FieldDefinitions}}
-    FieldDefProps [{{ReferenceId}}]: Attr: {{Attributes}} Flags: {{Flags}} '{{Name}}' [{{Signature}}]{{#newline}}
+    FieldDef {{ReferenceId}}{{#newline}}
+    -------------------------------------------------------{{#newline}}
+    Attr: {{Attributes}}{{#newline}}
+    Flags: {{Flags}}{{#newline}}
+    '{{Name}}'{{#newline}}
+    [{{Signature}}]{{#newline}}
 {{/each}}
 
 {{#each MethodDefinitions}}
-    MethodDefProps [{{ReferenceId}}]: Flags: {{Flags}} Impl: {{Implementation}} RVA: {{RVA}} '{{Name}}' [{{Signature}}]{{#newline}}
+    MethodDef {{ReferenceId}}{{#newline}}
+    -------------------------------------------------------{{#newline}}
+        '{{Name}}'{{#newline}}
+        Flags: {{Flags}}{{#newline}}
+        Impl: {{Implementation}}{{#newline}}
+        RVA: {{RVA}}{{#newline}}
+        [{{Signature}}]{{#newline}}
 {{#if Locals}}
         Locals {{Locals}}{{#newline}}
 {{/if}}
@@ -43,28 +69,64 @@ TypeDefProps [{{ReferenceId}}]: Flags: {{Flags}} Extends: {{ExtendsType}} Enclos
         IL count: {{ILCodeInstructionsCount}}{{#newline}}
 {{/if}}
 {{#each ILCode}}
-           {{IL}}{{#newline}}
+            {{IL}}{{#newline}}
 {{/each}}
 {{/each}}
 
 {{#each InterfaceDefinitions}}
-    InterfaceImplProps [{{ReferenceId}}]: Itf: {{Interface}}{{#newline}}
+    InterfaceImpl {{ReferenceId}} Itf: {{Interface}}{{#newline}}
+    -------------------------------------------------------{{#newline}}
 {{/each}}
+{{#newline}}
 {{/each}}
-{{#if TypeDefinitions}}{{#newline}}{{/if}}
+
+{{#each TypeSpecifications}}
+TypeSpec {{ReferenceId}}{{#newline}}
+-------------------------------------------------------{{#newline}}
+    '{{Name}}'{{#newline}}
+{{#each MemberReferences}}
+    MemberRef {{ReferenceId}}{{#newline}}
+    -------------------------------------------------------{{#newline}}
+        '{{Name}}'{{#newline}}
+        {{Signature}}{{#newline}}
+
+{{#if Arguments}}
+        Argument: {{Arguments}}{{#newline}}
+{{/else}}
+    No arguments
+{{/if}}
+{{/each}}
+{{#newline}}
+{{/each}}
+
+Generic Parameters{{#newline}}
+-------------------------------------------------------{{#newline}}
+{{#each GenericParams}}
+{{Position}} {{Name}} {{Owner}}{{#newline}}
+{{/each}}
+{{#newline}}
 
 {{#each Attributes}}
 Attribute: {{Name}}::[{{ReferenceId}} {{TypeToken}}]{{#newline}}
+-------------------------------------------------------{{#newline}}
 {{#if FixedArgs}}Fixed Arguments:{{#newline}}{{#else}}{{#newline}}{{/if}}
 {{#each FixedArgs}}
 {{Options}} {{Numeric}}{{Text}}{{#newline}}
+{{/each}}
 {{#newline}}
 {{/each}}
-{{/each}}
-{{#if Attributes}}{{#newline}}{{/if}}
 
+String Heap{{#newline}}
+-------------------------------------------------------{{#newline}}
+{{#each StringHeap}}
+{{ReferenceId}}: {{Content}}{{#newline}}
+{{/each}}
+{{#newline}}
+
+User Strings{{#newline}}
+-------------------------------------------------------{{#newline}}
 {{#each UserStrings}}
-UserString [{{ReferenceId}}]: '{{Content}}'{{#newline}}
+{{ReferenceId}} : ({{Length}}) ""{{Content}}""{{#newline}}
 {{/each}}
 ";
     }

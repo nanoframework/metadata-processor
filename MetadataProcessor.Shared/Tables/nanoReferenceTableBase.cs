@@ -1,13 +1,12 @@
-﻿//
-// Copyright (c) .NET Foundation and Contributors
-// Original work from Oleg Rakhmatulin.
-// See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using Mono.Cecil;
+// Original work from Oleg Rakhmatulin.
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Mono.Cecil;
 
 namespace nanoFramework.Tools.MetadataProcessor
 {
@@ -171,6 +170,48 @@ namespace nanoFramework.Tools.MetadataProcessor
                 _comparer);
 
             _items = usedItems;
+        }
+
+        public virtual void AddItem(T value, int index = -1)
+        {
+            // sanity check 
+            if (_idsByItemsDictionary.ContainsKey(value))
+            {
+                // already there
+                return;
+            }
+
+            // need to recreate the items dictionary after adding this new one
+
+            List<T> copyOfItems = new List<T>();
+
+            foreach (var i in _idsByItemsDictionary)
+            {
+                copyOfItems.Add(i.Key);
+            }
+
+            // add new item...
+            if (index > -1)
+            {
+                // index was specified, so make it happen
+                copyOfItems.Insert(index, value);
+            }
+            else
+            {
+                // no index specified, so just add it
+                copyOfItems.Add(value);
+            }
+
+            // rebuild dictionary
+            _idsByItemsDictionary = copyOfItems
+                .Select((reference,
+                         position) => new { reference, position })
+                .ToDictionary(item => item.reference,
+                              item => (ushort)item.position,
+                              _comparer);
+
+            // repopulate items
+            _items = copyOfItems;
         }
     }
 }

@@ -1,12 +1,14 @@
-﻿//
-// Copyright (c) .NET Foundation and Contributors
-// See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+// this class should be added only for unit tests in MDP
+#if MDP_UNIT_TESTS_BUILD
 
 using System.Runtime.CompilerServices;
 
 namespace TestNFClassLibrary
 {
+
     public class ClassWithNativeImplementation
     {
         private static int _staticField;
@@ -33,3 +35,5 @@ namespace TestNFClassLibrary
         public static extern void NativeMethod2();
     }
 }
+
+#endif

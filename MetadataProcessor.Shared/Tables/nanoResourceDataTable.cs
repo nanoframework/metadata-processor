@@ -1,8 +1,7 @@
-﻿//
-// Copyright (c) .NET Foundation and Contributors
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 // Original work from Oleg Rakhmatulin.
-// See LICENSE file in the project root for full license information.
-//
 
 using System.Collections.Generic;
 
@@ -18,6 +17,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// List of registered resouce data for writing into output stream "as is".
         /// </summary>
         private readonly IList<byte[]> _dataByteArrays = new List<byte[]>();
+        public NanoClrTable TableIndex => NanoClrTable.TBL_ResourcesData;
 
         /// <summary>
         /// Gets current offset in resrouces data table (total size of all data blocks).

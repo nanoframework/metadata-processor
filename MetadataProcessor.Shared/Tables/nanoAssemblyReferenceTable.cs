@@ -1,12 +1,12 @@
-﻿//
-// Copyright (c) .NET Foundation and Contributors
-// Original work from Oleg Rakhmatulin.
-// See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using Mono.Cecil;
+// Original work from Oleg Rakhmatulin.
+
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using Mono.Cecil;
 
 namespace nanoFramework.Tools.MetadataProcessor
 {
@@ -17,6 +17,14 @@ namespace nanoFramework.Tools.MetadataProcessor
     public sealed class nanoAssemblyReferenceTable :
         nanoReferenceTableBase<AssemblyNameReference>
     {
+        //////////////////////////////////////////////////////////////////////////////////////////////
+        //////////////////////////////////////////////////////////////////////////////////////////////
+        // <SYNC-WITH-NATIVE>                                                                       //
+        // when updating this size here need to update matching define in nanoCLR_Types.h in native //
+        private const int sizeOf_CLR_RECORD_ASSEMBLYREF = 10;
+        //////////////////////////////////////////////////////////////////////////////////////////////
+        //////////////////////////////////////////////////////////////////////////////////////////////
+
         /// <summary>
         /// Helper class for comparing two instances of <see cref="AssemblyNameReference"/> objects
         /// using <see cref="AssemblyNameReference.FullName"/> property as unique key for comparison.
@@ -60,10 +68,14 @@ namespace nanoFramework.Tools.MetadataProcessor
                 return;
             }
 
-            WriteStringReference(writer, item.Name);
-            writer.WriteUInt16(0); // padding
+            var writerStartPosition = writer.BaseStream.Position;
 
+            WriteStringReference(writer, item.Name);
             writer.WriteVersion(item.Version);
+
+            var writerEndPosition = writer.BaseStream.Position;
+
+            Debug.Assert((writerEndPosition - writerStartPosition) == sizeOf_CLR_RECORD_ASSEMBLYREF);
         }
 
         /// <inheritdoc/>
@@ -77,7 +89,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// Gets assembly reference ID by assembly name reference in Mono.Cecil format.
         /// </summary>
         /// <param name="assemblyNameReference">Assembly name reference in Mono.Cecil format.</param>
-        /// <returns>Refernce ID for passed <paramref name="assemblyNameReference"/> item.</returns>
+        /// <returns>Reference ID for passed <paramref name="assemblyNameReference"/> item.</returns>
         public ushort GetReferenceId(
             AssemblyNameReference assemblyNameReference)
         {

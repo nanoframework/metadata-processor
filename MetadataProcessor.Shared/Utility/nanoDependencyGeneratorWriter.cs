@@ -1,15 +1,14 @@
-﻿//
-// Copyright (c) .NET Foundation and Contributors
-// Original work from Oleg Rakhmatulin.
-// See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using Mono.Cecil;
+// Original work from Oleg Rakhmatulin.
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Xml;
+using Mono.Cecil;
 
 namespace nanoFramework.Tools.MetadataProcessor
 {
@@ -129,12 +128,12 @@ namespace nanoFramework.Tools.MetadataProcessor
 
         private void WriteClassInfo(
             XmlWriter writer,
-            uint nanoClrItemToken,
+            uint nanoCLRItemToken,
             TypeDefinition item)
         {
             writer.WriteStartElement("Class");
 
-            WriteTokensPair(writer, item.MetadataToken.ToUInt32(), 0x04000000 | nanoClrItemToken);
+            WriteTokensPair(writer, item.MetadataToken.ToUInt32(), 0x04000000 | nanoCLRItemToken);
 
             writer.WriteStartElement("Methods");
             foreach (var tuple in GetMethodsTokens(item.Methods))
@@ -204,12 +203,12 @@ namespace nanoFramework.Tools.MetadataProcessor
         private void WriteTokensPair(
             XmlWriter writer,
             uint clrToken,
-            uint nanoClrToken)
+            uint nanoCLRToken)
         {
             writer.WriteStartElement("Token");
 
             writer.WriteElementString("CLR", "0x" + clrToken.ToString("X8", CultureInfo.InvariantCulture));
-            writer.WriteElementString("nanoCLR", "0x" + nanoClrToken.ToString("X8", CultureInfo.InvariantCulture));
+            writer.WriteElementString("nanoCLR", "0x" + nanoCLRToken.ToString("X8", CultureInfo.InvariantCulture));
 
             writer.WriteEndElement();
         }

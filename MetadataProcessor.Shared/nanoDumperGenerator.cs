@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -37,11 +38,12 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
             DumpAssemblyReferences(dumpTable);
             //DumpModuleReferences(dumpTable);
             DumpTypeReferences(dumpTable);
-
             DumpTypeDefinitions(dumpTable);
+            _tablesContext.TypeSpecificationsTable.ForEachItems((index, typeReference) => DumpTypeSpecifications(typeReference, dumpTable));
+            _tablesContext.GenericParamsTable.ForEachItems((index, genericParameter) => DumpGenericParams(genericParameter, dumpTable));
             DumpCustomAttributes(dumpTable);
+            DumpStringHeap(dumpTable);
             DumpUserStrings(dumpTable);
-
 
             FormatCompiler compiler = new FormatCompiler();
             Generator generator = compiler.Compile(DumpTemplates.DumpAllTemplate);
@@ -51,6 +53,33 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                 var output = generator.Render(dumpTable);
                 dumpFile.Write(output);
             }
+        }
+
+        private void DumpGenericParams(GenericParameter genericParameter, DumpAllTable dumpTable)
+        {
+            _tablesContext.GenericParamsTable.TryGetParameterId(genericParameter, out ushort referenceId);
+
+            var genericParam = new GenericParam()
+            {
+                Position = referenceId.ToString(),
+                Owner = genericParameter.Owner.ToString(),
+                Name = genericParameter.Name
+            };
+
+            if (genericParameter.Owner is TypeDefinition && _tablesContext.TypeDefinitionTable.TryGetTypeReferenceId((TypeDefinition)genericParameter.Owner, out ushort typeRefId))
+            {
+                string realToken = genericParameter.MetadataToken.ToInt32().ToString("X8");
+
+                genericParam.Owner = $"Owner: {genericParameter.Owner} [{new nanoMetadataToken(genericParameter.Owner.MetadataToken, typeRefId)}] /*{realToken}*/";
+            }
+            else if (_tablesContext.MethodDefinitionTable.TryGetMethodReferenceId((MethodDefinition)genericParameter.Owner, out ushort refId))
+            {
+                string realToken = genericParameter.Owner.MetadataToken.ToInt32().ToString("X8");
+
+                genericParam.Owner = $"Owner: {((MethodDefinition)genericParameter.Owner)} [{new nanoMetadataToken(genericParameter.Owner.MetadataToken, refId)}] /*{realToken}*/";
+            }
+
+            dumpTable.GenericParams.Add(genericParam);
         }
 
         private void DumpCustomAttributes(DumpAllTable dumpTable)
@@ -64,8 +93,8 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                         var attribute = new AttributeCustom()
                         {
                             Name = a.Module.Assembly.Name.Name,
-                            ReferenceId = ma.MetadataToken.ToInt32().ToString("x8"),
-                            TypeToken = ma.CustomAttributes[0].Constructor.MetadataToken.ToInt32().ToString("x8")
+                            ReferenceId = ma.MetadataToken.ToInt32().ToString("X8"),
+                            TypeToken = ma.CustomAttributes[0].Constructor.MetadataToken.ToInt32().ToString("X8")
                         };
 
                         if (ma.CustomAttributes[0].HasConstructorArguments)
@@ -87,8 +116,8 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                         var attribute = new AttributeCustom()
                         {
                             Name = a.Module.Assembly.Name.Name,
-                            ReferenceId = fa.MetadataToken.ToInt32().ToString("x8"),
-                            TypeToken = fa.CustomAttributes[0].Constructor.MetadataToken.ToInt32().ToString("x8")
+                            ReferenceId = fa.MetadataToken.ToInt32().ToString("X8"),
+                            TypeToken = fa.CustomAttributes[0].Constructor.MetadataToken.ToInt32().ToString("X8")
                         };
 
                         if (!nanoTablesContext.IgnoringAttributes.Contains(fa.CustomAttributes[0].AttributeType.FullName)
@@ -182,11 +211,27 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
             return new List<AttFixedArgs>() { newArg };
         }
 
+        private void DumpStringHeap(DumpAllTable dumpTable)
+        {
+            foreach (var s in _tablesContext.StringTable.GetItems().OrderBy(i => i.Value))
+            {
+                // don't output the empty string
+                if (s.Value == 0)
+                {
+                    continue;
+                }
+
+                dumpTable.StringHeap.Add(
+                    new HeapString()
+                    {
+                        ReferenceId = s.Value.ToString("X8"),
+                        Content = s.Key
+                    });
+            }
+        }
+
         private void DumpUserStrings(DumpAllTable dumpTable)
         {
-            // start at 1, because 0 is the empty string entry
-            int tokenId = 1;
-
             foreach (var s in _tablesContext.StringTable.GetItems().OrderBy(i => i.Value).Where(i => i.Value > _tablesContext.StringTable.LastPreAllocatedId))
             {
                 // don't output the empty string
@@ -195,13 +240,11 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                     continue;
                 }
 
-                // fake the metadata token from the ID
-                var stringMetadataToken = new MetadataToken(TokenType.String, tokenId++);
-
                 dumpTable.UserStrings.Add(
                     new UserString()
                     {
-                        ReferenceId = stringMetadataToken.ToInt32().ToString("x8"),
+                        ReferenceId = new nanoMetadataToken(NanoClrTable.TBL_Strings, _tablesContext.StringTable.GetOrCreateStringId(s.Key, true)).ToString(),
+                        Length = s.Key.Length.ToString("x2"),
                         Content = s.Key
                     });
             }
@@ -211,10 +254,12 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
         {
             foreach (TypeDefinition t in _tablesContext.TypeDefinitionTable.Items.OrderBy(tr => tr.MetadataToken.ToInt32()))
             {
+                _tablesContext.TypeDefinitionTable.TryGetTypeReferenceId(t, out ushort referenceId);
+
                 // fill type definition
                 var typeDef = new TypeDef()
                 {
-                    ReferenceId = t.MetadataToken.ToInt32().ToString("x8"),
+                    ReferenceId = TypeDefRefIdToString(t, referenceId)
                 };
 
                 if (t.IsNested)
@@ -230,37 +275,47 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                     t,
                     _tablesContext.MethodDefinitionTable);
 
-                typeDef.Flags = typeFlags.ToString("x8");
+                typeDef.Flags = typeFlags.ToString("X8");
 
                 if (t.BaseType != null)
                 {
-                    typeDef.ExtendsType = t.BaseType.MetadataToken.ToInt32().ToString("x8");
+                    _tablesContext.TypeReferencesTable.TryGetTypeReferenceId(t.BaseType, out referenceId);
+
+                    typeDef.ExtendsType = TypeDefExtendsTypeToString(t.BaseType, referenceId);
                 }
                 else
                 {
-                    var token = new MetadataToken(TokenType.TypeRef, 0);
-                    typeDef.ExtendsType = token.ToInt32().ToString("x8");
+                    typeDef.ExtendsType = "(none)";
                 }
 
                 if (t.DeclaringType != null)
                 {
-                    typeDef.EnclosedType = t.DeclaringType.MetadataToken.ToInt32().ToString("x8");
+                    string realToken = t.DeclaringType.MetadataToken.ToInt32().ToString("X8");
+
+                    _tablesContext.TypeReferencesTable.TryGetTypeReferenceId(t.DeclaringType, out referenceId);
+
+                    typeDef.EnclosedType = $"{t.DeclaringType.FullName}[{new nanoMetadataToken(t.DeclaringType.MetadataToken, referenceId)}] /*{realToken}*/";
                 }
                 else
                 {
-                    var token = new MetadataToken(TokenType.TypeDef, 0);
-                    typeDef.EnclosedType = token.ToInt32().ToString("x8");
+                    typeDef.EnclosedType = "(none)";
                 }
 
                 // list generic parameters
                 foreach (GenericParameter gp in t.GenericParameters)
                 {
+                    string realToken = gp.MetadataToken.ToInt32().ToString("X8");
+                    _tablesContext.GenericParamsTable.TryGetParameterId(gp, out referenceId);
+
+                    var ownerRealToken = gp.Owner.MetadataToken.ToInt32().ToString("X8");
+                    _tablesContext.TypeDefinitionTable.TryGetTypeReferenceId(gp.Owner as TypeDefinition, out ushort ownerReferenceId);
+
                     var genericParam = new GenericParam()
                     {
                         Position = gp.Position.ToString(),
-                        GenericParamToken = gp.MetadataToken.ToInt32().ToString("x8"),
-                        Name = gp.FullName,
-                        Owner = gp.Owner.MetadataToken.ToInt32().ToString("x8"),
+                        GenericParamToken = $"[{new nanoMetadataToken(gp.MetadataToken, referenceId)}] /*{realToken}*/",
+                        Name = new string('!', gp.Position + 1) + gp.FullName,
+                        Owner = $"[{ownerReferenceId:x4}] /*{ownerRealToken}*/",
                         Signature = gp.DeclaringType.Name
                     };
 
@@ -272,12 +327,15 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                 {
                     uint att = (uint)f.Attributes;
 
+                    string realToken = f.MetadataToken.ToInt32().ToString("X8");
+                    _tablesContext.FieldsTable.TryGetFieldReferenceId(f, false, out referenceId);
+
                     var fieldDef = new FieldDef()
                     {
-                        ReferenceId = f.MetadataToken.ToInt32().ToString("x8"),
+                        ReferenceId = $"[{new nanoMetadataToken(f.MetadataToken, referenceId)}] /*{realToken}*/",
                         Name = f.Name,
-                        Flags = att.ToString("x8"),
-                        Attributes = att.ToString("x8"),
+                        Flags = att.ToString("X8"),
+                        Attributes = att.ToString("X8"),
                         Signature = f.FieldType.TypeSignatureAsString()
                     };
 
@@ -287,38 +345,57 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                 // list type methods
                 foreach (MethodDefinition m in t.Methods)
                 {
+                    string realToken = m.MetadataToken.ToInt32().ToString("X8");
+                    _tablesContext.MethodDefinitionTable.TryGetMethodReferenceId(m, out referenceId);
+
                     var methodDef = new MethodDef()
                     {
-                        ReferenceId = m.MetadataToken.ToInt32().ToString("x8"),
+                        ReferenceId = MethodDefIdToString(m, referenceId),
                         Name = m.FullName(),
-                        RVA = m.RVA.ToString("x8"),
+                        RVA = _tablesContext.ByteCodeTable.GetMethodRva(m).ToString("X8"),
                         Implementation = "00000000",
                         Signature = PrintSignatureForMethod(m)
                     };
 
-                    uint methodFlags = nanoMethodDefinitionTable.GetFlags(m);
-                    methodDef.Flags = methodFlags.ToString("x8");
+                    // check for entry point
+                    if (m == m.Module.EntryPoint)
+                    {
+                        methodDef.ReferenceId += " [ENTRYPOINT]";
+                    }
+
+                    var methodFlags = nanoMethodDefinitionTable.GetFlags(m);
+                    methodDef.Flags = methodFlags.ToString("X8");
 
                     if (m.HasBody)
                     {
                         // locals
                         if (m.Body.HasVariables)
                         {
-                            methodDef.Locals = PrintSignatureForLocalVar(m.Body.Variables);
+                            var locaStringBuilder = new StringBuilder();
+
+                            // get signature Id for locals
+                            var signatureId = _tablesContext.SignaturesTable.GetOrCreateSignatureId(m.Body.Variables);
+                            locaStringBuilder.Append($"[{new nanoMetadataToken(NanoClrTable.TBL_Signatures, signatureId)}]");
+
+                            // print locals ids
+                            locaStringBuilder.Append($": {PrintSignatureForLocalVar(m.Body.Variables)}");
+
+                            methodDef.Locals = locaStringBuilder.ToString();
                         }
 
                         // exceptions
                         foreach (Mono.Cecil.Cil.ExceptionHandler eh in m.Body.ExceptionHandlers)
                         {
-                            var h = new ExceptionHandler();
-
-                            h.Handler = $"{((int)eh.HandlerType).ToString("x2")} " +
-                                $"{eh.TryStart?.Offset.ToString("x8")}->{eh.TryEnd?.Offset.ToString("x8")} " +
-                                $"{eh.HandlerStart?.Offset.ToString("x8")}->{eh.HandlerEnd?.Offset.ToString("x8")} ";
+                            var h = new ExceptionHandler
+                            {
+                                Handler = $"{(int)eh.HandlerType:x2} " +
+                                $"{eh.TryStart?.Offset.ToString("X8")}->{eh.TryEnd?.Offset.ToString("X8")} " +
+                                $"{eh.HandlerStart?.Offset.ToString("X8")}->{eh.HandlerEnd?.Offset.ToString("X8")} "
+                            };
 
                             if (eh.CatchType != null)
                             {
-                                h.Handler += $"{eh.CatchType.MetadataToken.ToInt32().ToString("x8")}";
+                                h.Handler += $"{eh.CatchType.MetadataToken.ToInt32():X8}";
                             }
                             else
                             {
@@ -333,67 +410,147 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                         // IL code
                         foreach (Instruction instruction in m.Body.Instructions)
                         {
+                            if (instruction.OpCode.OperandType == OperandType.InlineMethod ||
+                                instruction.OpCode.OperandType == OperandType.InlineField ||
+                                instruction.OpCode.OperandType == OperandType.InlineTok ||
+                                instruction.OpCode.OperandType == OperandType.InlineType)
+                            {
+                                realToken = ((IMetadataTokenProvider)instruction.Operand).MetadataToken.ToInt32().ToString("X8");
+                            }
+
+                            string typeName = string.Empty;
+
                             ILCode ilCode = new ILCode();
 
-                            ilCode.IL += instruction.OpCode.Name.PadRight(12);
+                            StringBuilder ilDescription = new StringBuilder();
+
+                            ilDescription.Append($"IL_{instruction.Offset:x4}:  ");
+
+                            ilDescription.Append(instruction.OpCode.Name.PadRight(12));
 
                             if (instruction.Operand != null)
                             {
-                                if (instruction.OpCode.OperandType == OperandType.InlineTok ||
-                                    instruction.OpCode.OperandType == OperandType.InlineSig)
+                                if (instruction.OpCode.OperandType == OperandType.InlineMethod)
                                 {
-                                    ilCode.IL += $"[{((IMetadataTokenProvider)instruction.Operand).MetadataToken.ToInt32():x8}]";
+                                    typeName = (instruction.Operand as MethodReference).FullName;
+
+                                    referenceId = _tablesContext.GetMethodReferenceId((MethodReference)instruction.Operand);
+
+                                    // get CLR table
+                                    var clrTable = nanoTokenHelpers.DecodeTableIndex(referenceId, nanoTokenHelpers.NanoMemberRefTokenTables);
+
+                                    // need to clear the encoded type mask
+                                    referenceId = nanoTokenHelpers.DecodeReferenceIndex(referenceId, nanoTokenHelpers.NanoMemberRefTokenTables);
+
+                                    ilDescription.Append($"{typeName} [{new nanoMetadataToken(clrTable, referenceId)}] /*{realToken}*/");
                                 }
                                 else if (instruction.OpCode.OperandType == OperandType.InlineField)
                                 {
-                                    // output the field type name
-                                    ilCode.IL += $"{((FieldReference)instruction.Operand).FieldType.FullName}";
+                                    typeName = (instruction.Operand as FieldReference).FullName;
 
-                                    // output the token
-                                    ilCode.IL += $" [{((IMetadataTokenProvider)instruction.Operand).MetadataToken.ToInt32():x8}]";
+                                    referenceId = _tablesContext.GetFieldReferenceId((FieldReference)instruction.Operand);
+
+                                    // get CLR table
+                                    var clrTable = nanoTokenHelpers.DecodeTableIndex(referenceId, nanoTokenHelpers.NanoFieldMemberRefTokenTables);
+
+                                    // need to clear the encoded type mask
+                                    referenceId = nanoTokenHelpers.DecodeReferenceIndex(referenceId, nanoTokenHelpers.NanoFieldMemberRefTokenTables);
+
+                                    ilDescription.Append($"{typeName} [{new nanoMetadataToken(clrTable, referenceId)}] /*{realToken}*/");
                                 }
-                                else if (instruction.OpCode.OperandType == Mono.Cecil.Cil.OperandType.InlineMethod)
+                                else if (instruction.OpCode.OperandType == OperandType.InlineTok)
                                 {
-                                    // output the method name
-                                    ilCode.IL += $"{((MethodReference)instruction.Operand).FullName}";
+                                    var token = _tablesContext.GetMetadataToken((IMetadataTokenProvider)instruction.Operand);
 
-                                    // output the token
-                                    ilCode.IL += $" [{((IMetadataTokenProvider)instruction.Operand).MetadataToken.ToInt32():x8}]";
+                                    ilDescription.Append($"[{token:X8}] /*{realToken}*/");
                                 }
                                 else if (instruction.OpCode.OperandType == OperandType.InlineType)
                                 {
-                                    // Mono.Cecil.ArrayType
-                                    if (instruction.Operand is ArrayType arrayType)
+                                    referenceId = _tablesContext.GetTypeReferenceId((TypeReference)instruction.Operand);
+                                    var nfToken = new nanoMetadataToken();
+
+                                    // get CLR table
+                                    var clrTable = nanoTokenHelpers.DecodeTableIndex(referenceId, nanoTokenHelpers.NanoTypeTokenTables);
+
+                                    // need to clear the encoded type mask
+                                    referenceId = nanoTokenHelpers.DecodeReferenceIndex(referenceId, nanoTokenHelpers.NanoTypeTokenTables);
+
+                                    switch (clrTable)
                                     {
-                                        // output the type name
-                                        ilCode.IL += $"{arrayType.ElementType.FullName}[]";
-                                    }
-                                    else
-                                    {
-                                        // output the type name
-                                        ilCode.IL += $"{((TypeReference)instruction.Operand).FullName}";
+                                        case NanoClrTable.TBL_GenericParam:
+                                            typeName = (instruction.Operand as GenericParameter).TypeSignatureAsString();
+                                            nfToken = new nanoMetadataToken(NanoClrTable.TBL_GenericParam, referenceId);
+                                            break;
+
+                                        case NanoClrTable.TBL_TypeSpec:
+                                            if (instruction.Operand is TypeSpecification)
+                                            {
+                                                typeName = (instruction.Operand as TypeSpecification).FullName;
+                                            }
+                                            else if (instruction.Operand is GenericParameter)
+                                            {
+                                                typeName = (instruction.Operand as GenericParameter).FullName;
+
+                                                if ((instruction.Operand as GenericParameter).Owner is TypeDefinition)
+                                                {
+                                                    ilDescription.Append("!");
+                                                }
+                                                if ((instruction.Operand as GenericParameter).Owner is MethodDefinition)
+                                                {
+                                                    ilDescription.Append("!!");
+                                                }
+                                            }
+                                            else
+                                            {
+                                                Debug.Fail($"Can't find table for operand type {instruction.Operand}.");
+                                            }
+
+                                            // need to fake a MetadataToken and add one because ours is 0 indexed
+                                            realToken = new MetadataToken(TokenType.TypeSpec, referenceId + 1).ToUInt32().ToString("X8");
+
+                                            nfToken = new nanoMetadataToken(NanoClrTable.TBL_TypeSpec, referenceId);
+
+                                            break;
+
+                                        case NanoClrTable.TBL_TypeRef:
+                                            typeName = (instruction.Operand as TypeReference).FullName;
+                                            nfToken = new nanoMetadataToken(NanoClrTable.TBL_TypeRef, referenceId);
+                                            break;
+
+                                        case NanoClrTable.TBL_TypeDef:
+                                            typeName = (instruction.Operand as TypeDefinition).FullName;
+                                            nfToken = new nanoMetadataToken(NanoClrTable.TBL_TypeDef, referenceId);
+                                            break;
+
+                                        default:
+                                            Debug.Fail($"Can't find table for operand type {instruction.Operand}.");
+                                            break;
                                     }
 
-                                    // output the token
-                                    ilCode.IL += $" [{((IMetadataTokenProvider)instruction.Operand).MetadataToken.ToInt32():x8}]";
+                                    ilDescription.Append($"{typeName}[{nfToken}] /*{realToken}*/");
                                 }
                                 else if (instruction.OpCode.OperandType == OperandType.InlineString)
                                 {
                                     // strings need a different processing
                                     // get string ID from table
-                                    ushort stringReferenceId = _tablesContext.StringTable.GetOrCreateStringId((string)instruction.Operand, true);
+                                    referenceId = _tablesContext.StringTable.GetOrCreateStringId((string)instruction.Operand, true);
 
-                                    // fake the metadata token from the ID
-                                    MetadataToken stringMetadataToken = new MetadataToken(TokenType.String, stringReferenceId);
-
-                                    // output the string
-                                    ilCode.IL += $"\"{(string)instruction.Operand}\"";
-
-                                    // ouput the metadata token
-                                    ilCode.IL += $" [{stringMetadataToken.ToInt32():x8}]";
+                                    ilDescription.Append($"\"{instruction.Operand}\" [{new nanoMetadataToken(NanoClrTable.TBL_Strings, referenceId)}]");
                                 }
-
+                                else if (instruction.OpCode.OperandType == OperandType.InlineI
+                                         || instruction.OpCode.OperandType == OperandType.ShortInlineI)
+                                {
+                                    ilDescription.Append($"{instruction.Operand:x8}");
+                                }
+                                else if (instruction.OpCode.OperandType == OperandType.InlineSig)
+                                {
+                                    Debug.Fail("Check this");
+                                    ilDescription.Append($"InlineSig ???? /*{realToken}*/");
+                                }
                             }
+
+                            // clean-up trailing spaces
+                            ilCode.IL = ilDescription.ToString().TrimEnd();
 
                             methodDef.ILCode.Add(ilCode);
                         }
@@ -405,11 +562,19 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                 // list interface implementations
                 foreach (InterfaceImplementation i in t.Interfaces)
                 {
+                    string realInterfaceToken = i.MetadataToken.ToInt32().ToString("X8");
+                    string realInterfaceTypeToken = i.InterfaceType.MetadataToken.ToInt32().ToString("X8");
+
+                    // TODO
+                    //_tablesContext.TypeDefinitionTable.TryGetTypeReferenceId(i as TypeDefinition, out ushort interfaceTypeReferenceId);
+                    _tablesContext.TypeDefinitionTable.TryGetTypeReferenceId(i.InterfaceType as TypeDefinition, out ushort interfaceTypeReferenceId);
+                    ushort interfaceReferenceId = 0xFFFF;
+
                     typeDef.InterfaceDefinitions.Add(
                         new InterfaceDef()
                         {
-                            ReferenceId = i.MetadataToken.ToInt32().ToString("x8"),
-                            Interface = i.InterfaceType.MetadataToken.ToInt32().ToString("x8")
+                            ReferenceId = $"[{interfaceReferenceId:x4}] /*{realInterfaceToken}*/",
+                            Interface = $"[{interfaceTypeReferenceId:x4}] /*{realInterfaceTypeToken}*/"
                         });
                 }
 
@@ -421,19 +586,17 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
         {
             foreach (var t in _tablesContext.TypeReferencesTable.Items.OrderBy(tr => tr.MetadataToken.ToInt32()))
             {
-                ushort refId;
+                string realToken = t.MetadataToken.ToInt32().ToString("X8");
 
                 var typeRef = new TypeRef()
                 {
                     Name = t.FullName,
                     // need to add 1 to match the index on the old MDP
-                    Scope = new MetadataToken(TokenType.AssemblyRef, _tablesContext.TypeReferencesTable.GetScope(t) + 1).ToInt32().ToString("x8")
+                    Scope = $"[{_tablesContext.TypeReferencesTable.GetScope(t):x4}] /*{realToken}*/"
                 };
 
-                if (_tablesContext.TypeReferencesTable.TryGetTypeReferenceId(t, out refId))
-                {
-                    typeRef.ReferenceId = t.MetadataToken.ToInt32().ToString("x8");
-                }
+                _tablesContext.TypeReferencesTable.TryGetTypeReferenceId(t, out ushort referenceId);
+                typeRef.ReferenceId = $"[{new nanoMetadataToken(t.MetadataToken, referenceId)}] /*{realToken}*/";
 
                 // list member refs               
                 foreach (var m in _tablesContext.MethodReferencesTable.Items.Where(mr => mr.DeclaringType == t))
@@ -443,11 +606,12 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                         Name = m.Name
                     };
 
-                    if (_tablesContext.MethodReferencesTable.TryGetMethodReferenceId(m, out refId))
-                    {
-                        memberRef.ReferenceId = m.MetadataToken.ToInt32().ToString("x8");
-                        memberRef.Signature = PrintSignatureForMethod(m);
-                    }
+                    realToken = m.MetadataToken.ToInt32().ToString("X8");
+
+                    _tablesContext.MethodReferencesTable.TryGetMethodReferenceId(m, out referenceId);
+
+                    memberRef.ReferenceId = $"[{new nanoMetadataToken(m.MetadataToken, referenceId)}] /*{realToken}*/";
+                    memberRef.Signature = PrintSignatureForMethod(m);
 
                     typeRef.MemberReferences.Add(memberRef);
                 }
@@ -465,17 +629,119 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
         {
             foreach (var a in _tablesContext.AssemblyReferenceTable.Items)
             {
+                string realToken = a.MetadataToken.ToInt32().ToString("X8");
+
+                var referenceId = _tablesContext.AssemblyReferenceTable.GetReferenceId(a);
+
                 dumpTable.AssemblyReferences.Add(new AssemblyRef()
                 {
                     Name = a.Name,
                     // need to add 1 to match the index on the old MDP
-                    ReferenceId = new MetadataToken(TokenType.AssemblyRef, _tablesContext.AssemblyReferenceTable.GetReferenceId(a) + 1).ToInt32().ToString("x8"),
+                    ReferenceId = $"[{new nanoMetadataToken(a.MetadataToken, referenceId)}] /*{realToken}*/",
                     Flags = "00000000"
                 });
             }
         }
 
-        private string PrintSignatureForMethod(MethodReference method)
+        private void DumpTypeSpecifications(
+            TypeReference typeReference,
+            DumpAllTable dumpTable)
+        {
+
+            // get real token for the TypeSpec
+            string realToken = string.Empty;
+
+            _tablesContext.TypeSpecificationsTable.TryGetTypeReferenceId(typeReference, out ushort index);
+
+            var typeSpec = new TypeSpec();
+
+            // assume that real token index is the same as ours
+            // need to add one because ours is 0 indexed
+            realToken = new MetadataToken(TokenType.TypeSpec, index + 1).ToUInt32().ToString("X8");
+
+            typeSpec.ReferenceId = $"[{new nanoMetadataToken(NanoClrTable.TBL_TypeSpec, index)}] /*{realToken}*/";
+
+            // build name
+            StringBuilder typeSpecName = new StringBuilder();
+
+            if (typeReference is GenericParameter)
+            {
+                var genericParam = typeReference as GenericParameter;
+
+                typeSpecName.Append(typeReference.MetadataType);
+
+                if (genericParam.Owner is TypeDefinition)
+                {
+                    typeSpecName.Append("!");
+                }
+                if (genericParam.Owner is MethodDefinition)
+                {
+                    typeSpecName.Append("!!");
+                }
+
+                typeSpecName.Append(genericParam.Owner.GenericParameters.IndexOf(genericParam));
+
+                typeSpec.Name = typeSpecName.ToString();
+            }
+            else if (typeReference is GenericInstanceType)
+            {
+                // type is a GenericInstance
+                // can't compare with Cecil MetadataToken because the tables have been cleaned-up and re-indexed
+
+                typeSpec.Name = typeReference.FullName;
+
+                foreach (var mr in _tablesContext.MethodReferencesTable.Items)
+                {
+                    if (_tablesContext.TypeSpecificationsTable.TryGetTypeReferenceId(mr.DeclaringType, out ushort referenceId) &&
+                        referenceId == index)
+                    {
+                        var memberRef = new MemberRef()
+                        {
+                            Name = mr.Name
+                        };
+
+                        if (_tablesContext.MethodReferencesTable.TryGetMethodReferenceId(mr, out ushort memberRefId))
+                        {
+                            realToken = mr.MetadataToken.ToInt32().ToString("X8");
+
+                            memberRef.ReferenceId = $"[{new nanoMetadataToken(NanoClrTable.TBL_MethodRef, memberRefId)}] /*{realToken}*/";
+                            memberRef.Signature = PrintSignatureForMethod(mr);
+                        }
+
+                        typeSpec.MemberReferences.Add(memberRef);
+                    }
+                }
+
+                foreach (var ms in _tablesContext.MethodSpecificationTable.Items)
+                {
+                    if (_tablesContext.TypeSpecificationsTable.TryGetTypeReferenceId(ms.DeclaringType, out ushort referenceId) &&
+                        referenceId == index)
+                    {
+                        var memberRef = new MemberRef()
+                        {
+                            Name = ms.Name
+                        };
+
+                        if (_tablesContext.MethodSpecificationTable.TryGetMethodSpecificationId(ms, out ushort methodSpecId))
+                        {
+                            realToken = ms.MetadataToken.ToInt32().ToString("X8");
+
+                            memberRef.ReferenceId = $"[{new nanoMetadataToken(NanoClrTable.TBL_MethodSpec, methodSpecId)}] /*{realToken}*/";
+                            memberRef.Signature = PrintSignatureForMethod(ms);
+                        }
+
+                        typeSpec.MemberReferences.Add(memberRef);
+                    }
+                }
+
+                Debug.Assert(typeSpec.MemberReferences.Count > 0, $"Couldn't find any MethodRef for TypeSpec[{typeReference}] {typeReference.FullName}");
+            }
+
+            dumpTable.TypeSpecifications.Add(typeSpec);
+        }
+
+
+        internal static string PrintSignatureForMethod(MethodReference method)
         {
             var sig = new StringBuilder(method.ReturnType.TypeSignatureAsString());
 
@@ -504,26 +770,98 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
         private string PrintSignatureForLocalVar(Collection<VariableDefinition> variables)
         {
-            const string localIdentation = "                ";
-
             StringBuilder sig = new StringBuilder();
+            sig.Append("( ");
 
-            sig.Append('(');
-
-            for (int localIndex = 0; localIndex < variables.Count; localIndex++)
+            foreach (var l in variables)
             {
-                sig.Append($"{(localIndex > 0 ? localIdentation : "")} [{localIndex}] ");
-                sig.Append(variables[localIndex].VariableType.TypeSignatureAsString());
-
-                if (localIndex < variables.Count - 1)
+                // ident locals after the 1st one
+                if (l.Index > 0)
                 {
-                    sig.AppendLine(", ");
+                    sig.Append("                ");
                 }
+
+                sig.Append($"[{l.Index}] ");
+
+                if (l.VariableType.MetadataType == MetadataType.Class)
+                {
+                    sig.Append($"class {l.VariableType.FullName}");
+
+                    _tablesContext.TypeDefinitionTable.TryGetTypeReferenceId(l.VariableType as TypeDefinition, out ushort referenceId);
+
+                    sig.Append($"[{new nanoMetadataToken(NanoClrTable.TBL_TypeDef, referenceId)}] /*{l.VariableType.MetadataToken.ToInt32().ToString("X8")}*/");
+                }
+                else if (l.VariableType.IsGenericInstance)
+                {
+                    sig.Append($"class {l.VariableType.FullName}");
+
+                    _tablesContext.TypeSpecificationsTable.TryGetTypeReferenceId(l.VariableType as TypeSpecification, out ushort referenceId);
+
+                    sig.Append($"[{new nanoMetadataToken(NanoClrTable.TBL_TypeSpec, referenceId)}] /*{l.VariableType.GetElementType().MetadataToken.ToInt32().ToString("X8")}*/");
+
+                    // now the generic parameters
+                    sig.Append("<");
+
+                    foreach (var p in l.VariableType.GenericParameters)
+                    {
+                        sig.Append(p.Name);
+
+                        if (!p.Equals(l.VariableType.GenericParameters.Last()))
+                        {
+                            sig.Append(",");
+                        }
+                    }
+
+                    sig.Append(">");
+                }
+                else
+                {
+                    sig.Append(l.VariableType.TypeSignatureAsString());
+                }
+
+                sig.AppendLine(", ");
+            }
+
+            // remove trailing", "
+            if (variables.Count > 0)
+            {
+                sig.Remove(sig.Length - 4, 4);
+            }
+            else
+            {
+                sig.Append(" ");
             }
 
             sig.Append(" )");
 
             return sig.ToString();
+        }
+
+        internal static string TypeDefExtendsTypeToString(
+            TypeReference baseType,
+            ushort referenceId)
+        {
+            string realToken = baseType.MetadataToken.ToInt32().ToString("X8");
+
+            return $"{baseType.FullName}[{new nanoMetadataToken(baseType.MetadataToken, referenceId)}] /*{realToken}*/";
+        }
+
+        internal static string TypeDefRefIdToString(
+            TypeDefinition typeDef,
+            ushort referenceId)
+        {
+            string realToken = typeDef.MetadataToken.ToInt32().ToString("X8");
+
+            return $"[{new nanoMetadataToken(typeDef.MetadataToken, referenceId)}] /*{realToken}*/";
+        }
+
+        internal static string MethodDefIdToString(
+            MethodReference methodRef,
+            ushort referenceId)
+        {
+            string realToken = methodRef.MetadataToken.ToInt32().ToString("X8");
+
+            return $"[{new nanoMetadataToken(methodRef.MetadataToken, referenceId)}] /*{realToken}*/";
         }
     }
 }

@@ -1,14 +1,13 @@
-﻿//
-// Copyright (c) .NET Foundation and Contributors
-// Original work from Oleg Rakhmatulin.
-// See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using Mono.Cecil;
+// Original work from Oleg Rakhmatulin.
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Mono.Cecil;
 
 namespace nanoFramework.Tools.MetadataProcessor
 {
@@ -54,6 +53,8 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// Assembly tables context - contains all tables used for building target assembly.
         /// </summary>
         private readonly nanoTablesContext _context;
+
+        public NanoClrTable TableIndex => NanoClrTable.TBL_Strings;
 
         /// <summary>
         /// Last pre-allocated string identifier.

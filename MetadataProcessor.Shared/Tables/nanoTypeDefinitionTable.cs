@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Mono.Cecil;
@@ -21,6 +22,14 @@ namespace nanoFramework.Tools.MetadataProcessor
     public sealed class nanoTypeDefinitionTable :
         nanoReferenceTableBase<TypeDefinition>
     {
+        //////////////////////////////////////////////////////////////////////////////////////////////
+        //////////////////////////////////////////////////////////////////////////////////////////////
+        // <SYNC-WITH-NATIVE>                                                                       //
+        // when updating this size here need to update matching define in nanoCLR_Types.h in native //
+        private const int sizeOf_CLR_RECORD_TYPEDEF = 27;
+        //////////////////////////////////////////////////////////////////////////////////////////////
+        //////////////////////////////////////////////////////////////////////////////////////////////
+
         /// <summary>
         /// Helper class for comparing two instances of <see cref="TypeDefinition"/> objects
         /// using <see cref="TypeDefinition.FullName"/> property as unique key for comparison.
@@ -43,14 +52,16 @@ namespace nanoFramework.Tools.MetadataProcessor
         private IDictionary<uint, List<Tuple<uint, uint>>> _byteCodeOffsets =
             new Dictionary<uint, List<Tuple<uint, uint>>>();
 
-        public List<TypeDefinition> TypeDefinitions { get; private set; }
+        private List<TypeDefinition> TypeDefinitions;
 
         public List<EnumDeclaration> EnumDeclarations { get; }
+
+        public NanoClrTable TableIndex => NanoClrTable.TBL_TypeDef;
 
         /// <summary>
         /// Creates new instance of <see cref="nanoTypeDefinitionTable"/> object.
         /// </summary>
-        /// <param name="items">List of types definitins in Mono.Cecil format.</param>
+        /// <param name="items">List of types definitions in Mono.Cecil format.</param>
         /// <param name="context">
         /// Assembly tables context - contains all tables used for building target assembly.
         /// </param>
@@ -99,13 +110,21 @@ namespace nanoFramework.Tools.MetadataProcessor
             nanoBinaryWriter writer,
             TypeDefinition item)
         {
+            var writerStartPosition = writer.BaseStream.Position;
+
             _context.StringTable.GetOrCreateStringId(item.Namespace);
 
+            // Name
             WriteStringReference(writer, item.Name);
+
+            // NameSpace
             WriteStringReference(writer, item.Namespace);
 
-            writer.WriteUInt16(GetTypeReferenceOrDefinitionId(item.BaseType));
-            writer.WriteUInt16(GetTypeReferenceOrDefinitionId(item.DeclaringType));
+            // Extends
+            writer.WriteUInt16(GetEncodedTypeReferenceOrDefinitionId(item.BaseType));
+
+            // EnclosingType
+            writer.WriteUInt16(GetEncodedTypeReferenceOrDefinitionId(item.DeclaringType));
 
             var fieldsList = item.Fields
                 .Where(field => !field.HasConstant)
@@ -155,11 +174,50 @@ namespace nanoFramework.Tools.MetadataProcessor
                 }
             }
 
-            // write flags
+            ushort genericParamRefId = 0xFFFF;
+
+            if (item.HasGenericParameters)
+            {
+                // no need to check if it's found
+                _context.GenericParamsTable.TryGetParameterId(item.GenericParameters.FirstOrDefault(), out genericParamRefId);
+            }
+
+            // FirstGenericParam
+            writer.WriteUInt16(genericParamRefId);
+
+            // GenericParamCount
+            writer.WriteByte((byte)item.GenericParameters.Count);
+
+            // Flags
             writer.WriteUInt16(
                 (ushort)GetFlags(
                     item,
                     _context.MethodDefinitionTable));
+
+            var writerEndPosition = writer.BaseStream.Position;
+
+            // ignore assert when not minimize
+            if (_context.MinimizeComplete)
+            {
+                Debug.Assert((writerEndPosition - writerStartPosition) == sizeOf_CLR_RECORD_TYPEDEF);
+            }
+        }
+
+        /// <summary>
+        /// Add a "fake" TypeDef as placeholder for an instanced generic type.
+        /// </summary>
+        /// <param name="typeReference"></param>
+        public void AddGenericInstanceType(TypeReference typeReference)
+        {
+            // drop namespace as it's already on the full name
+            // OK to use full name as type name to help comparison ahead
+            var genericType = new TypeDefinition(
+                string.Empty,
+                typeReference.FullName,
+                typeReference.Resolve().Attributes);
+
+            // add to items list
+            AddItem(genericType);
         }
 
         private void WriteClassFields(
@@ -223,10 +281,16 @@ namespace nanoFramework.Tools.MetadataProcessor
                 }
             }
 
+            // FirstStaticField
             writer.WriteUInt16(firstStaticFieldId);
+
+            // FirstInstanceField
             writer.WriteUInt16(firstInstanceFieldId);
 
+            // StaticFieldsCount
             writer.WriteByte((byte)staticFieldsCount);
+
+            // InstanceFieldsCount
             writer.WriteByte((byte)instanceFieldsCount);
         }
 
@@ -266,8 +330,10 @@ namespace nanoFramework.Tools.MetadataProcessor
                 firstMethodId = _context.ByteCodeTable.NextMethodId;
             }
 
+            // Interfaces
             writer.WriteUInt16(_context.SignaturesTable.GetOrCreateSignatureId(iInterfaces));
 
+            // FirstMethod
             writer.WriteUInt16(firstMethodId);
 
             // sanity checks
@@ -286,8 +352,11 @@ namespace nanoFramework.Tools.MetadataProcessor
                 throw new InvalidOperationException($"Fatal error processing '{typeName}', static methods count ({staticMethodsCount}) exceeds maximum supported (255).");
             }
 
+            // VirtualMethodCount
             writer.WriteByte((byte)virtualMethodsCount);
+            // InstanceMethodCount
             writer.WriteByte((byte)instanceMethodsCount);
+            // StaticMethodCount
             writer.WriteByte((byte)staticMethodsCount);
         }
 
@@ -302,19 +371,31 @@ namespace nanoFramework.Tools.MetadataProcessor
             _context.StringTable.GetOrCreateStringId(method.Name);
         }
 
-        private ushort GetTypeReferenceOrDefinitionId(
+        private ushort GetEncodedTypeReferenceOrDefinitionId(
             TypeReference typeReference)
         {
-            ushort referenceId;
-            if (_context.TypeReferencesTable.TryGetTypeReferenceId(typeReference, out referenceId))
+            ushort tag;
+
+            if (_context.TypeReferencesTable.TryGetTypeReferenceId(typeReference, out ushort referenceId))
             {
-                return (ushort)(0x8000 | referenceId);
+                // check "nested inside" case
+                if (referenceId != 0xFFFF)
+                {
+                    // is TypeRef
+
+                    return (ushort)(typeReference.ToEncodedNanoTypeDefOrRefToken() | referenceId);
+                }
             }
 
-            ushort typeId;
-            if (TryGetTypeReferenceId(typeReference.Resolve(), out typeId))
+            if (TryGetTypeReferenceId(typeReference?.Resolve(), out ushort typeId))
             {
-                return typeId;
+                // check "nested inside" case
+                if (referenceId != 0xFFFF)
+                {
+                    // is TypeDef
+
+                    return (ushort)(typeReference.Resolve().ToEncodedNanoTypeDefOrRefToken() | typeId);
+                }
             }
 
             return 0xFFFF;

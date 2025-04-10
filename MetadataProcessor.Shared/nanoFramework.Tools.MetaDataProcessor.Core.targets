@@ -1,22 +1,22 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-    <ItemGroup>
-        <Content Include="$(OutDir)nanoFramework.Tools.MetadataProcessor.Core.dll">
-            <InstallRoot>MSBuild</InstallRoot>
-            <VSIXSubPath>nanoFramework\v1.0\</VSIXSubPath>
-            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-            <IncludeInVSIX>true</IncludeInVSIX>
-        </Content>
-        <Content Include="$(OutDir)Mono.Cecil.dll">
-            <InstallRoot>MSBuild</InstallRoot>
-            <VSIXSubPath>nanoFramework\v1.0\</VSIXSubPath>
-            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-            <IncludeInVSIX>true</IncludeInVSIX>
-        </Content>
-        <Content Include="$(OutDir)mustache-sharp.dll">
-            <InstallRoot>MSBuild</InstallRoot>
-            <VSIXSubPath>nanoFramework\v1.0\</VSIXSubPath>
-            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-            <IncludeInVSIX>true</IncludeInVSIX>
-        </Content>
-    </ItemGroup>
+	<ItemGroup>
+		<Content Include="$(OutDir)nanoFramework.Tools.MetadataProcessor.Core.dll">
+			<InstallRoot>MSBuild</InstallRoot>
+			<VSIXSubPath>nanoFramework\v1.0\</VSIXSubPath>
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+			<IncludeInVSIX>true</IncludeInVSIX>
+		</Content>
+		<Content Include="$(OutDir)Mono.Cecil.dll">
+			<InstallRoot>MSBuild</InstallRoot>
+			<VSIXSubPath>nanoFramework\v1.0\</VSIXSubPath>
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+			<IncludeInVSIX>true</IncludeInVSIX>
+		</Content>
+		<Content Include="$(OutDir)mustache-sharp.dll">
+			<InstallRoot>MSBuild</InstallRoot>
+			<VSIXSubPath>nanoFramework\v1.0\</VSIXSubPath>
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+			<IncludeInVSIX>true</IncludeInVSIX>
+		</Content>
+	</ItemGroup>
 </Project>

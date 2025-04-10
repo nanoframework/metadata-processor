@@ -1,18 +1,14 @@
-﻿//
-// Copyright (c) .NET Foundation and Contributors
-// Original work from Oleg Rakhmatulin.
-// See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using Mono.Cecil;
-using nanoFramework.Tools.MetadataProcessor.Core;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.Reflection;
 using System.Xml;
+using Mono.Cecil;
+using nanoFramework.Tools.MetadataProcessor.Core;
 
 namespace nanoFramework.Tools.MetadataProcessor.Console
 {
@@ -93,10 +89,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
                         _assemblyBuilder.Write(GetBinaryWriter(writer));
                     }
 
-                    using (var writer = XmlWriter.Create(Path.ChangeExtension(fileName, "pdbx")))
-                    {
-                        _assemblyBuilder.Write(writer);
-                    }
+                    _assemblyBuilder.Write(Path.ChangeExtension(fileName, "pdbx"));
 
                     if (DumpMetadata)
                     {
@@ -188,7 +181,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
 
         public static void Main(string[] args)
         {
-            FileVersionInfo fileVersion = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location);
+            FileVersionInfo fileVersion = FileVersionInfo.GetVersionInfo(System.Reflection.Assembly.GetExecutingAssembly().Location);
 
             bool isCoreLibrary = false;
 

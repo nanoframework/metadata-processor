@@ -17,6 +17,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)DumpGenerator\ExceptionHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DumpGenerator\FieldDef.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DumpGenerator\GenericParam.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DumpGenerator\HeapString.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DumpGenerator\ILCode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DumpGenerator\InterfaceDef.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DumpGenerator\LocalDef.cs" />
@@ -24,10 +25,16 @@
     <Compile Include="$(MSBuildThisFileDirectory)DumpGenerator\MethodDef.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DumpGenerator\TypeDef.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DumpGenerator\TypeRef.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DumpGenerator\TypeSpec.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DumpGenerator\UserString.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Endianness\nanoBinaryWriter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\ByteArrayExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\ClrTableExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\IGenericParameterProviderExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\MemberReferenceExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\MethodDefinitionExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\MethodReferenceExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\MethodSpecificationExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\ParameterDefintionExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\TypeDefinitionExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\TypeReferenceExtensions.cs" />
@@ -38,6 +45,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)nanoDependencyGenerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)nanoDumperGenerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)nanoSkeletonGenerator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Pdbx\nanoPdbxFileWriter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Pdbx\Pdbx.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Pdbx\PdbxFileHelpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SkeletonGenerator\AssemblyClass.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SkeletonGenerator\AssemblyClassStubs.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SkeletonGenerator\AssemblyClassTable.cs" />
@@ -47,12 +57,15 @@
     <Compile Include="$(MSBuildThisFileDirectory)Tables\nanoAssemblyReferenceTable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tables\nanoAttributesTable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tables\nanoByteCodeTable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tables\nanoClrTable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tables\nanoEmptyTable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tables\nanoFieldDefinitionTable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tables\nanoFieldReferenceTable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tables\nanoGenericParamTable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tables\nanoMemberReferenceTable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tables\nanoMethodDefinitionTable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tables\nanoMethodReferenceTable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Tables\nanoMethodSpecificationTable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tables\nanoReferenceTableBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tables\nanoResourceDataTable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tables\nanoResourceFileTable.cs" />
@@ -63,16 +76,19 @@
     <Compile Include="$(MSBuildThisFileDirectory)Tables\nanoTypeDefinitionTable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tables\nanoTypeReferenceTable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tables\nanoTypeSpecificationsTable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utility\CompressTokenHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utility\Crc32.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utility\FixTypeNames.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utility\LoadHintsAssemblyResolver.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utility\nanoBitmapProcessor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utility\nanoCLR_DataType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utility\nanoDependencyGeneratorWriter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utility\nanoFontProcessor.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Utility\nanoPdbxFileWriter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utility\nanoMetadataToken.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utility\nanoSerializationType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utility\nanoStringsConstants.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utility\nanoTypeDefinitionFlags.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utility\NativeMethodsCrc.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utility\TypeReferenceEqualityComparer.cs" />
   </ItemGroup>
 </Project>

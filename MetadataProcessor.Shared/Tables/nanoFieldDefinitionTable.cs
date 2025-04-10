@@ -1,13 +1,13 @@
-﻿//
-// Copyright (c) .NET Foundation and Contributors
-// Original work from Oleg Rakhmatulin.
-// See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using Mono.Cecil;
+// Original work from Oleg Rakhmatulin.
+
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using Mono.Cecil;
 
 namespace nanoFramework.Tools.MetadataProcessor
 {
@@ -18,6 +18,14 @@ namespace nanoFramework.Tools.MetadataProcessor
     public sealed class nanoFieldDefinitionTable :
         nanoReferenceTableBase<FieldDefinition>
     {
+        //////////////////////////////////////////////////////////////////////////////////////////////
+        //////////////////////////////////////////////////////////////////////////////////////////////
+        // <SYNC-WITH-NATIVE>                                                                       //
+        // when updating this size here need to update matching define in nanoCLR_Types.h in native //
+        private const int sizeOf_CLR_RECORD_FIELDDEF = 8;
+        //////////////////////////////////////////////////////////////////////////////////////////////
+        //////////////////////////////////////////////////////////////////////////////////////////////
+
         /// <summary>
         /// Helper class for comparing two instances of <see cref="FieldDefinition"/> objects
         /// using <see cref="FieldDefinition.FullName"/> property as unique key for comparison.
@@ -71,11 +79,17 @@ namespace nanoFramework.Tools.MetadataProcessor
                 return;
             }
 
+            var writerStartPosition = writer.BaseStream.Position;
+
             WriteStringReference(writer, item.Name);
             writer.WriteUInt16(_context.SignaturesTable.GetOrCreateSignatureId(item));
 
             writer.WriteUInt16(_context.SignaturesTable.GetOrCreateSignatureId(item.InitialValue));
             writer.WriteUInt16(GetFlags(item));
+
+            var writerEndPosition = writer.BaseStream.Position;
+
+            Debug.Assert((writerEndPosition - writerStartPosition) == sizeOf_CLR_RECORD_FIELDDEF);
         }
 
         /// <summary>

@@ -1,7 +1,5 @@
-﻿//
-// Copyright (c) .NET Foundation and Contributors
-// See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Diagnostics;
@@ -17,7 +15,13 @@ namespace TestNFApp
         {
             Console.WriteLine("Starting TestNFApp");
 
-            ////////////////////////////////////////////
+            ///////////////////////////////////////////////////////////////////
+            // referenced class
+            Debug.WriteLine("++++++++++++++++++++++++++++");
+            Debug.WriteLine("++ Referenced class tests ++");
+            Debug.WriteLine("++++++++++++++++++++++++++++");
+            Debug.WriteLine("");
+
             // instantiating a class on another assembly
             ClassOnAnotherAssembly anotherClass = new ClassOnAnotherAssembly();
 
@@ -34,7 +38,7 @@ namespace TestNFApp
 
             //////////////////////////////
             // accessing property on class
-            dummyMirror1 = anotherClass.DummyProperty;
+            _ = anotherClass.DummyProperty;
 
             Console.WriteLine($"Accessed property on class: {dummyMirror1}");
 
@@ -73,6 +77,10 @@ namespace TestNFApp
                     break;
             }
 
+            ///////////////////////////////////////////////////////////////////
+            // Generics Tests
+            _ = new GenericClassTests();
+
             // null attributes tests
             Console.WriteLine("Null attributes tests");
             _ = new ClassWithNullAttribs();
@@ -80,10 +88,21 @@ namespace TestNFApp
             Console.WriteLine("Exiting TestNFApp");
         }
 
+        private static void MiscelaneousTests()
+        {
+            var type = typeof(short[]);
+            if (type.FullName != "System.Int16[]")
+            {
+                throw new Exception($"Type name is wrong. Got '{type.FullName}' should be System.Int16[]");
+            }
+        }
+
         public static void ReflectionTests()
         {
-            Console.WriteLine("");
-            Console.WriteLine("+++Starting ReflectionTests");
+            Debug.WriteLine("++++++++++++++++++++++");
+            Debug.WriteLine("++ Reflection tests ++");
+            Debug.WriteLine("++++++++++++++++++++++");
+            Debug.WriteLine("");
 
             // Get the type of MyClass1.
             Type myType = typeof(MyClass1);
@@ -107,17 +126,17 @@ namespace TestNFApp
 
             // Get the methods associated with MyClass1.
             MemberInfo[] myMethods = myType.GetMethods();
-            
-            //Console.WriteLine("");
-            //Console.WriteLine($"'{myType.Name}' type has '{myMethods.Length}' methods");
+
+            Debug.WriteLine("");
+            Debug.WriteLine($"'{myType.Name}' type has '{myMethods.Length}' methods");
 
             // Display the attributes for each of the methods of MyClass1.
             for (int i = 0; i < myMethods.Length; i++)
             {
                 string methodName = myMethods[i].Name;
 
-                //Console.WriteLine("");
-                //Console.WriteLine($"Getting custom attributes for '{methodName}'");
+                Debug.WriteLine("");
+                Debug.WriteLine($"Getting custom attributes for '{methodName}'");
 
                 myAttributes = myMethods[i].GetCustomAttributes(true);
 
@@ -184,12 +203,12 @@ namespace TestNFApp
             Console.WriteLine($"MaxAttribute value is: 0x{attMax.Max.ToString("X8")}");
 
             AuthorAttribute attAuthor = (AuthorAttribute)myFieldAttributes[1];
-            Console.WriteLine("");
-            Console.WriteLine($"AuthorAttribute value is: '{attAuthor.Author}'");
+            Debug.WriteLine("");
+            Debug.WriteLine($"AuthorAttribute value is: '{attAuthor.Author}'");
 
-            Console.WriteLine("");
-            Console.WriteLine("+++ReflectionTests completed");
-            Console.WriteLine("");
+            Debug.WriteLine("");
+            Debug.WriteLine("+++ReflectionTests completed");
+            Debug.WriteLine("");
         }
     }
 }

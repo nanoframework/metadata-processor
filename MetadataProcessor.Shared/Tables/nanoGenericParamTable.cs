@@ -1,11 +1,12 @@
-﻿//
-// Copyright (c) .NET Foundation and Contributors
-// See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using Mono.Cecil;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using Mono.Cecil;
+using nanoFramework.Tools.MetadataProcessor.Core.Extensions;
 
 namespace nanoFramework.Tools.MetadataProcessor
 {
@@ -16,11 +17,19 @@ namespace nanoFramework.Tools.MetadataProcessor
     public sealed class nanoGenericParamTable :
         nanoReferenceTableBase<GenericParameter>
     {
+        //////////////////////////////////////////////////////////////////////////////////////////////
+        //////////////////////////////////////////////////////////////////////////////////////////////
+        // <SYNC-WITH-NATIVE>                                                                       //
+        // when updating this size here need to update matching define in nanoCLR_Types.h in native //
+        private const int sizeOf_CLR_RECORD_GENERICPARAM = 10;
+        //////////////////////////////////////////////////////////////////////////////////////////////
+        //////////////////////////////////////////////////////////////////////////////////////////////
+
         /// <summary>
         /// Helper class for comparing two instances of <see cref="GenericParameter"/> objects
         /// using <see cref="MetadataToken"/> property as unique key for comparison.
         /// </summary>
-        private sealed class MemberReferenceComparer : IEqualityComparer<GenericParameter>
+        private sealed class GenericParameterComparer : IEqualityComparer<GenericParameter>
         {
             /// <inheritdoc/>
             public bool Equals(GenericParameter x, GenericParameter y)
@@ -46,6 +55,14 @@ namespace nanoFramework.Tools.MetadataProcessor
         }
 
         /// <summary>
+        /// Maps each unique generic parameter and its type.
+        /// </summary>
+        private Dictionary<GenericParameter, TypeReference> _typeForGenericParam =
+            new Dictionary<GenericParameter, TypeReference>();
+
+        public NanoClrTable TableIndex => NanoClrTable.TBL_GenericParam;
+
+        /// <summary>
         /// Creates new instance of <see cref="nanoGenericParamTable"/> object.
         /// </summary>
         /// <param name="items">List of member references in Mono.Cecil format.</param>
@@ -55,21 +72,62 @@ namespace nanoFramework.Tools.MetadataProcessor
         public nanoGenericParamTable(
             IEnumerable<GenericParameter> items,
             nanoTablesContext context)
-            : base(items, new MemberReferenceComparer(), context)
+            : base(items, new GenericParameterComparer(), context)
         {
+            foreach (var gp in items)
+            {
+                var methodWithGenericParam = _context.MethodDefinitionTable.Items.SingleOrDefault(m => m.GenericParameters.Contains(gp));
+
+                if (methodWithGenericParam != null)
+                {
+                    // get the first method specification that matches this type AND name
+                    var instanceMethod = _context.MethodSpecificationTable.Items.FirstOrDefault(
+                        mr => mr.DeclaringType.GetElementType() == methodWithGenericParam.DeclaringType &&
+                        mr.Name == methodWithGenericParam.Name) as GenericInstanceMethod;
+
+                    Debug.Assert(instanceMethod != null, $"Couldn't find a method specification for type {methodWithGenericParam.DeclaringType} when processing generic parameter {gp}.");
+
+                    _typeForGenericParam.Add(gp, instanceMethod.GenericArguments.ElementAt(gp.Position));
+                }
+                else
+                {
+                    var typeWithGenericParam = _context.TypeDefinitionTable.Items.SingleOrDefault(t => t.GenericParameters.Contains(gp));
+
+                    if (typeWithGenericParam != null)
+                    {
+                        if (_context.MethodReferencesTable.Items.Any())
+                        {
+                            var genericInstance = _context.MethodReferencesTable.Items.FirstOrDefault(
+                                mr => mr.DeclaringType.GetElementType() == typeWithGenericParam)
+                                .DeclaringType as GenericInstanceType;
+                            Debug.Assert(genericInstance != null, $"Couldn't find a method reference for type {typeWithGenericParam} when processing generic parameter {gp}.");
+
+                            _typeForGenericParam.Add(gp, genericInstance.GenericArguments.ElementAt(gp.Position));
+                        }
+                        else
+                        {
+                            _typeForGenericParam.Add(gp, null);
+                        }
+                    }
+                    else
+                    {
+                        _typeForGenericParam.Add(gp, null);
+                    }
+                }
+            }
         }
 
         /// <summary>
-        /// Gets method reference ID if possible (if method is external and stored in this table).
+        /// Gets generic parameter ID if possible (if generic parameter is stored in this table).
         /// </summary>
-        /// <param name="genericParameter">Method reference metadata in Mono.Cecil format.</param>
-        /// <param name="referenceId">Method reference ID in .NET nanoFramework format.</param>
-        /// <returns>Returns <c>true</c> if reference found, otherwise returns <c>false</c>.</returns>
+        /// <param name="genericParameter">Generic parameter TypeReference in Mono.Cecil format.</param>
+        /// <param name="referenceId">Generic parameter identifier for filling.</param>
+        /// <returns>Returns <c>true</c> the parameter was found, otherwise returns <c>false</c>.</returns>
         public bool TryGetParameterId(
-            GenericParameter genericParameter,
+            TypeReference genericParameter,
             out ushort referenceId)
         {
-            return TryGetIdByValue(genericParameter, out referenceId);
+            return TryGetIdByValue(genericParameter as GenericParameter, out referenceId);
         }
 
         /// <inheritdoc/>
@@ -82,7 +140,49 @@ namespace nanoFramework.Tools.MetadataProcessor
                 return;
             }
 
-            // TODO
+            var writerStartPosition = writer.BaseStream.Position;
+
+            // number
+            writer.WriteUInt16((ushort)item.Position);
+
+            // flags
+            writer.WriteUInt16((ushort)item.Attributes);
+
+            // find owner
+            if (item.Owner is TypeDefinition &&
+                _context.TypeDefinitionTable.TryGetTypeReferenceId(item.Owner as TypeDefinition, out ushort referenceId))
+            {
+                // is TypeDef
+            }
+            else if (_context.MethodDefinitionTable.TryGetMethodReferenceId(item.Owner as MethodDefinition, out referenceId))
+            {
+                // is MethodDef
+            }
+            else
+            {
+                throw new ArgumentException($"Can't find entry in type or method definition tables for generic parameter '{item.FullName}' [0x{item.Owner.MetadataToken.ToInt32():x8}].");
+            }
+
+            // owner
+            writer.WriteUInt16((ushort)(item.Owner.ToEncodedNanoTypeOrMethodDefToken() | referenceId));
+
+            // Signature
+            if (_typeForGenericParam[item] != null)
+            {
+                writer.WriteUInt16(_context.SignaturesTable.GetOrCreateSignatureId(_typeForGenericParam[item]));
+            }
+            else
+            {
+                // no type for this generic parameter
+                writer.WriteUInt16(0xFFFF);
+            }
+
+            // name
+            WriteStringReference(writer, item.Name);
+
+            var writerEndPosition = writer.BaseStream.Position;
+
+            Debug.Assert((writerEndPosition - writerStartPosition) == sizeOf_CLR_RECORD_GENERICPARAM);
         }
     }
 }

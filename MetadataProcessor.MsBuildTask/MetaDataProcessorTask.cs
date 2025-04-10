@@ -1,20 +1,17 @@
-﻿//
-// Copyright (c) .NET Foundation and Contributors
-// Portions Copyright (c) Microsoft Corporation.  All rights reserved.
-// See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
-using System.ComponentModel;
 using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using System.Collections.Generic;
-using nanoFramework.Tools.Utilities;
 using System.Xml;
-using nanoFramework.Tools.MetadataProcessor.Core;
+using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
 using Mono.Cecil;
+using nanoFramework.Tools.MetadataProcessor.Core;
+using nanoFramework.Tools.Utilities;
 
 namespace nanoFramework.Tools.MetadataProcessor.MsBuildTask
 {
@@ -126,7 +123,7 @@ namespace nanoFramework.Tools.MetadataProcessor.MsBuildTask
             // developer note: to debug this task set an environment variable like this:
             // set NFBUILD_TASKS_DEBUG=1
             // this will cause the execution to pause bellow so a debugger can be attached
-            DebuggerHelper.WaitForDebuggerIfEnabled(TasksConstants.BuildTaskDebugVar);
+            DebuggerHelper.WaitForDebuggerIfEnabled(TasksConstants.BuildTaskDebugVar, Log);
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
             try
@@ -298,6 +295,26 @@ namespace nanoFramework.Tools.MetadataProcessor.MsBuildTask
         private void ExecuteCompile(
             string fileName)
         {
+            FileStream logOutputStream = null;
+            StreamWriter logWriter = null;
+            string logFile = "";
+
+            try
+            {
+                if (Verbose)
+                {
+                    logFile = Path.ChangeExtension(fileName, "log.txt");
+
+                    logOutputStream = new FileStream(logFile, FileMode.OpenOrCreate, FileAccess.Write);
+                    logWriter = new StreamWriter(logOutputStream);
+                    Console.SetOut(logWriter);
+                }
+            }
+            catch
+            {
+                Log.LogError($"Unable to create log file '{logFile}'.");
+            }
+
             try
             {
                 // compile assembly (1st pass)
@@ -318,6 +335,12 @@ namespace nanoFramework.Tools.MetadataProcessor.MsBuildTask
             catch (Exception)
             {
                 Log.LogError($"Unable to compile output assembly file '{fileName}' - check parse command results");
+
+                if (Verbose)
+                {
+                    logWriter?.Close();
+                    logOutputStream?.Close();
+                }
 
                 throw;
             }
@@ -342,10 +365,7 @@ namespace nanoFramework.Tools.MetadataProcessor.MsBuildTask
                 }
 
                 // output PDBX
-                using (var writer = XmlWriter.Create(Path.ChangeExtension(fileName, "pdbx")))
-                {
-                    _assemblyBuilder.Write(writer);
-                }
+                _assemblyBuilder.Write(Path.ChangeExtension(fileName, "pdbx"));
 
                 // output assembly metadata
                 if (DumpMetadata)
@@ -374,6 +394,14 @@ namespace nanoFramework.Tools.MetadataProcessor.MsBuildTask
             {
                 Log.LogError($"Exception minimizing assembly");
                 throw;
+            }
+            finally
+            {
+                if (Verbose)
+                {
+                    logWriter?.Close();
+                    logOutputStream?.Close();
+                }
             }
         }
 

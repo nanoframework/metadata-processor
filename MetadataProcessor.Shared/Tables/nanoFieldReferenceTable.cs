@@ -1,12 +1,13 @@
-﻿//
-// Copyright (c) .NET Foundation and Contributors
-// Original work from Oleg Rakhmatulin.
-// See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using Mono.Cecil;
+// Original work from Oleg Rakhmatulin.
+
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using Mono.Cecil;
+using nanoFramework.Tools.MetadataProcessor.Core.Extensions;
 
 namespace nanoFramework.Tools.MetadataProcessor
 {
@@ -17,6 +18,14 @@ namespace nanoFramework.Tools.MetadataProcessor
     public sealed class nanoFieldReferenceTable :
         nanoReferenceTableBase<FieldReference>
     {
+        //////////////////////////////////////////////////////////////////////////////////////////////
+        //////////////////////////////////////////////////////////////////////////////////////////////
+        // <SYNC-WITH-NATIVE>                                                                       //
+        // when updating this size here need to update matching define in nanoCLR_Types.h in native //
+        private const int sizeOf_CLR_RECORD_FIELDREF = 6;
+        //////////////////////////////////////////////////////////////////////////////////////////////
+        //////////////////////////////////////////////////////////////////////////////////////////////
+
         /// <summary>
         /// Helper class for comparing two instances of <see cref="FieldReference"/> objects
         /// using <see cref="FieldReference.FullName"/> property as unique key for comparison.
@@ -73,57 +82,35 @@ namespace nanoFramework.Tools.MetadataProcessor
                 return;
             }
 
-            bool experimentalCode = true;
+            var writerStartPosition = writer.BaseStream.Position;
 
-            ushort referenceId;
-
-
-            if (experimentalCode)
+            if ((item.DeclaringType is TypeSpecification ||
+                 item.DeclaringType is GenericParameter) &&
+                _context.TypeSpecificationsTable.TryGetTypeReferenceId(item.DeclaringType, out ushort referenceId))
             {
-                ////////////////////////////////////
-                // EXPERIMENTAL CODE FOR GENERICS //
-                ////////////////////////////////////
-
-                if (_context.TypeReferencesTable.TryGetTypeReferenceId(item.DeclaringType, out referenceId))
-                {
-                    WriteStringReference(writer, item.Name);
-                    writer.WriteUInt16(referenceId);
-
-                    writer.WriteUInt16(_context.SignaturesTable.GetOrCreateSignatureId(item));
-                    writer.WriteUInt16(0); // padding
-                }
-                else if (_context.TypeReferencesTable.TryGetTypeReferenceId(item.DeclaringType.Resolve(), out referenceId))
-                {
-                    WriteStringReference(writer, item.Name);
-                    writer.WriteUInt16(referenceId);
-
-                    writer.WriteUInt16(_context.SignaturesTable.GetOrCreateSignatureId(item));
-                    writer.WriteUInt16(0); // padding
-                }
-                else if (_context.TypeDefinitionTable.TryGetTypeReferenceId(item.DeclaringType.Resolve(), out referenceId))
-                {
-                    WriteStringReference(writer, item.Name);
-                    writer.WriteUInt16((ushort)(referenceId | 0x8000));
-
-                    writer.WriteUInt16(_context.SignaturesTable.GetOrCreateSignatureId(item));
-                    writer.WriteUInt16(0); // padding
-                }
-                else
-                {
-                    throw new ArgumentException($"Can't find entry in type reference table for {item.DeclaringType.FullName} for Field {item.FullName}.");
-                }
+                // is TypeSpecification
+            }
+            else if (_context.TypeReferencesTable.TryGetTypeReferenceId(item.DeclaringType, out referenceId))
+            {
+                // is TypeReference
             }
             else
             {
-
-                _context.TypeReferencesTable.TryGetTypeReferenceId(item.DeclaringType, out referenceId);
-
-                WriteStringReference(writer, item.Name);
-                writer.WriteUInt16(referenceId);
-
-                writer.WriteUInt16(_context.SignaturesTable.GetOrCreateSignatureId(item));
-                writer.WriteUInt16(0); // padding
+                throw new ArgumentException($"Can't find a type reference for {item.DeclaringType}.");
             }
+
+            // Name
+            WriteStringReference(writer, item.Name);
+
+            // Owner
+            writer.WriteUInt16((ushort)(item.DeclaringType.ToCLR_TypeRefOrSpec() | referenceId));
+
+            // signature
+            writer.WriteUInt16(_context.SignaturesTable.GetOrCreateSignatureId(item));
+
+            var writerEndPosition = writer.BaseStream.Position;
+
+            Debug.Assert((writerEndPosition - writerStartPosition) == sizeOf_CLR_RECORD_FIELDREF);
         }
     }
 }

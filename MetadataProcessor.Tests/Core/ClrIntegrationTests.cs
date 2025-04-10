@@ -21,12 +21,6 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
     [TestClass]
     public class ClrIntegrationTests
     {
-
-#if DEBUG
-        // path to local instance of nanoCLR DLL (to be used when debugging)
-        private static string _localClrInstancePath = "E:\\GitHub\\nf-interpreter\\build\\bin\\Debug\\net6.0\\NanoCLR\\nanoFramework.nanoCLR.dll";
-#endif
-
         public static bool NanoClrIsInstalled { get; private set; } = false;
 
         [ClassInitialize]
@@ -140,7 +134,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
                         // Tool 'nanoclr' was successfully updated from version '1.0.205' to version '1.0.208'.
                         // or (update becoming reinstall with same version, if there is no new version):
                         // Tool 'nanoclr' was reinstalled with the latest stable version (version '1.0.208').
-                        var regexResult = Regex.Match(cliResult.StandardOutput, @"((?>version ')(?'version'\d+\.\d+\.\d+)(?>'))");
+                        Match regexResult = Regex.Match(cliResult.StandardOutput, @"((?>version ')(?'version'\d+\.\d+\.\d+)(?>'))");
 
                         if (regexResult.Success)
                         {
@@ -172,19 +166,10 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
                 }
             }
 
-#if DEBUG
-            if (!string.IsNullOrEmpty(_localClrInstancePath))
-            {
-                // done here as we are using a local instance of nanoCLR DLL
-                return;
-            }
-#else
             if (!string.IsNullOrEmpty(TestObjectHelper.NanoClrLocalInstance))
             {
                 // done here as we are using a local instance of nanoCLR DLL
-                return;
             }
-#endif
             else
             {
                 Console.WriteLine("Upate nanoCLR instance");
@@ -245,14 +230,13 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
                 .WithArguments(arguments)
                 .WithValidation(CommandResultValidation.None);
 
-            // setup cancellation token with a timeout of 1 minute
+            // setup cancellation token with a timeout of 30 seconds
             using (var cts = new CancellationTokenSource())
             {
-                cts.CancelAfter(TimeSpan.FromMinutes(1));
+                cts.CancelAfter(TimeSpan.FromSeconds(30));
 
                 BufferedCommandResult cliResult = await cmd.ExecuteBufferedAsync(cts.Token);
                 int exitCode = cliResult.ExitCode;
-
                 // read standard output
                 string output = cliResult.StandardOutput;
 
@@ -263,10 +247,12 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
 
                     // look for the error message reporting that there is no entry point
                     Assert.IsTrue(output.Contains("Cannot find any entrypoint!"));
+
+                    Console.WriteLine($"\r\n>>>>>>>>>>>>>\r\n{output}\r\n>>>>>>>>>>>>>");
                 }
                 else
                 {
-                    Assert.Fail($"nanoCLR ended with '{exitCode}' exit code.\r\n>>>>>>>>>>>>>\r\n{output}\r\n<<<<<<<<<<<<<");
+                    Assert.Fail($"nanoCLR ended with '{exitCode}' exit code.\r\n>>>>>>>>>>>>>\r\n{output}\r\n>>>>>>>>>>>>>");
                 }
             }
         }
@@ -292,14 +278,13 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
                 .WithArguments(arguments)
                 .WithValidation(CommandResultValidation.None);
 
-            // setup cancellation token with a timeout of 1 minute
-            using (var cts = new CancellationTokenSource())
+            // setup cancellation token with a timeout of 30 seconds
+            using (CancellationTokenSource cts = new CancellationTokenSource())
             {
-                cts.CancelAfter(TimeSpan.FromMinutes(1));
+                cts.CancelAfter(TimeSpan.FromSeconds(30));
 
                 BufferedCommandResult cliResult = await cmd.ExecuteBufferedAsync(cts.Token);
                 int exitCode = cliResult.ExitCode;
-
                 // read standard output
                 string output = cliResult.StandardOutput;
 
@@ -318,10 +303,12 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
 
                     // look for the error message reporting that there is no entry point
                     Assert.IsFalse(output.Contains("Cannot find any entrypoint!"));
+
+                    Console.WriteLine($"\r\n>>>>>>>>>>>>>\r\n{output}\r\n>>>>>>>>>>>>>");
                 }
                 else
                 {
-                    Assert.Fail($"nanoCLR ended with '{exitCode}' exit code.\r\n>>>>>>>>>>>>>\r\n{output}\r\n<<<<<<<<<<<<<");
+                    Assert.Fail($"nanoCLR ended with '{exitCode}' exit code.\r\n>>>>>>>>>>>>>\r\n{output}\r\n>>>>>>>>>>>>>");
                 }
             }
         }
@@ -330,10 +317,6 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
         {
             StringBuilder arguments = new StringBuilder(" --localinstance");
 
-#if DEBUG
-            arguments.Append($" \"{_localClrInstancePath}\"");
-
-#else
             if (string.IsNullOrEmpty(TestObjectHelper.NanoClrLocalInstance))
             {
                 return null;
@@ -342,7 +325,6 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
             {
                 arguments.Append($" \"{TestObjectHelper.NanoClrLocalInstance}\"");
             }
-#endif
 
             return arguments.ToString();
         }

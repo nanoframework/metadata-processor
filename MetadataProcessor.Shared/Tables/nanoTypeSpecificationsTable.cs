@@ -1,13 +1,14 @@
-﻿//
-// Copyright (c) .NET Foundation and Contributors
-// Original work from Oleg Rakhmatulin.
-// See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using Mono.Cecil;
+// Original work from Oleg Rakhmatulin.
+
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using Mono.Cecil;
+using Mono.Cecil.Cil;
 
 namespace nanoFramework.Tools.MetadataProcessor
 {
@@ -17,40 +18,74 @@ namespace nanoFramework.Tools.MetadataProcessor
     /// </summary>
     public sealed class nanoTypeSpecificationsTable : InanoTable
     {
+
+        //////////////////////////////////////////////////////////////////////////////////////////////
+        //////////////////////////////////////////////////////////////////////////////////////////////
+        // <SYNC-WITH-NATIVE>                                                                       //
+        // when updating this size here need to update matching define in nanoCLR_Types.h in native //
+        private const int sizeOf_CLR_RECORD_TYPESPEC = 2;
+        //////////////////////////////////////////////////////////////////////////////////////////////
+        //////////////////////////////////////////////////////////////////////////////////////////////
+
         /// <summary>
-        /// Helper class for comparing two instances of <see cref="TypeReference"/> objects
-        /// using <see cref="TypeReference.FullName"/> property as unique key for comparison.
+        /// Helper class for comparing two instances of <see cref="TypeSpecification"/> objects
+        /// using <see cref="TypeSpecification.MetadataToken"/> property as unique key for comparison.
         /// </summary>
-        private sealed class TypeReferenceComparer : IEqualityComparer<TypeReference>
+        private sealed class TypeSpecificationEqualityComparer : IEqualityComparer<TypeSpecification>
         {
             /// <inheritdoc/>
-            public bool Equals(TypeReference lhs, TypeReference rhs)
+            public bool Equals(TypeSpecification x, TypeSpecification y)
             {
-                return string.Equals(lhs.FullName, rhs.FullName, StringComparison.Ordinal);
+                if (x is null)
+                {
+                    throw new ArgumentNullException(nameof(x));
+                }
+
+                if (y is null)
+                {
+                    throw new ArgumentNullException(nameof(y));
+                }
+
+                return string.Equals(x.MetadataToken, y.MetadataToken);
             }
 
             /// <inheritdoc/>
-            public int GetHashCode(TypeReference that)
+            public int GetHashCode(TypeSpecification obj)
             {
-                return that.FullName.GetHashCode();
+                if (obj is null)
+                {
+                    throw new ArgumentNullException(nameof(obj));
+                }
+
+                return obj.MetadataToken.GetHashCode();
+            }
+        }
+
+        private sealed class TypeSpecBySignatureComparer : IEqualityComparer<KeyValuePair<ushort, TypeReference>>
+        {
+            public bool Equals(KeyValuePair<ushort, TypeReference> x, KeyValuePair<ushort, TypeReference> y)
+            {
+                return x.Key == y.Key;
+            }
+
+            /// <inheritdoc/>
+            public int GetHashCode(KeyValuePair<ushort, TypeReference> that)
+            {
+                return that.Key;
             }
         }
 
         /// <summary>
         /// Maps for each unique type specification and related identifier.
         /// </summary>
-        private readonly IDictionary<TypeReference, ushort> _idByTypeSpecifications =
-            new Dictionary<TypeReference, ushort>(new TypeReferenceComparer());
+        private Dictionary<TypeReference, ushort> _idByTypeSpecifications;
 
         /// <summary>
         /// Assembly tables context - contains all tables used for building target assembly.
         /// </summary>
         private readonly nanoTablesContext _context;
 
-        /// <summary>
-        /// Last available type specifier identificator.
-        /// </summary>
-        private ushort _lastAvailableId;
+        public NanoClrTable TableIndex => NanoClrTable.TBL_TypeSpec;
 
         /// <summary>
         /// Creates new instance of <see cref="nanoTypeSpecificationsTable"/> object.
@@ -62,79 +97,128 @@ namespace nanoFramework.Tools.MetadataProcessor
             nanoTablesContext context)
         {
             _context = context;
+
+            _idByTypeSpecifications = new Dictionary<TypeReference, ushort>(new TypeReferenceEqualityComparer(context));
+
+            FillTypeSpecsFromTypes();
+
+            FillTypeSpecsFromMemberReferences();
         }
 
         /// <summary>
-        /// Gets existing or creates new type specification reference identifier.
-        /// </summary>
-        /// <param name="typeReference">Type reference value for obtaining identifier.</param>
-        /// <returns>Existing identifier if specification already in table or new one.</returns>
-        public ushort GetOrCreateTypeSpecificationId(
-            TypeReference typeReference)
-        {
-            ushort referenceId;
-            if (!_idByTypeSpecifications.TryGetValue(typeReference, out referenceId))
-            {
-                // check for array in TypeSpec because we don't support for multidimensional arrays
-                if (typeReference.IsArray &&
-                    (typeReference as ArrayType).Rank > 1)
-                {
-                    throw new ArgumentException($".NET nanoFramework doesn't have support for multidimensional arrays. Unable to parse {typeReference.FullName}.");
-                }
-
-                _idByTypeSpecifications.Add(typeReference, _lastAvailableId);
-
-                referenceId = _lastAvailableId;
-                ++_lastAvailableId;
-            }
-
-            return referenceId;
-        }
-
-        /// <summary>
-        /// Gets type specification identifier (if it already added into type specifications list).
+        /// Gets type specification identifier.
         /// </summary>
         /// <param name="typeReference">Type reference in Mono.Cecil format.</param>
-        /// <param name="referenceId">Type reference identifier for filling.</param>
+        /// <param name="referenceId">Type Specification identifier for filling.</param>
         /// <returns>Returns <c>true</c> if item found, otherwise returns <c>false</c>.</returns>
         public bool TryGetTypeReferenceId(
             TypeReference typeReference,
             out ushort referenceId)
         {
-            if (typeReference == null) // This case is possible for encoding 'nested inside' case
+            if (_idByTypeSpecifications.TryGetValue(typeReference, out referenceId))
             {
-                referenceId = 0xFFFF;
+                referenceId = (ushort)Array.IndexOf(_idByTypeSpecifications.Values.ToArray(), referenceId);
+
                 return true;
             }
 
-            referenceId = GetOrCreateTypeSpecificationId(typeReference);
-
-            return true;
+            return false;
         }
 
         public TypeReference TryGetTypeSpecification(MetadataToken token)
         {
-            foreach (var t in _idByTypeSpecifications)
-            {
-                if (t.Key.MetadataToken == token)
-                {
-                    return t.Key;
-                }
-            }
-
-            return null;
+            return _idByTypeSpecifications.FirstOrDefault(typeEntry => typeEntry.Key.MetadataToken == token).Key;
         }
 
         /// <inheritdoc/>
         public void Write(
             nanoBinaryWriter writer)
         {
-            foreach (var item in _idByTypeSpecifications
-                .OrderBy(item => item.Value)
-                .Select(item => item.Key))
+
+            foreach (var item in _idByTypeSpecifications)
             {
-                writer.WriteUInt16(_context.SignaturesTable.GetOrCreateSignatureId(item));
-                writer.WriteUInt16(0x0000); // padding
+                var writerStartPosition = writer.BaseStream.Position;
+
+                writer.WriteUInt16(item.Value);
+
+                var writerEndPosition = writer.BaseStream.Position;
+
+                Debug.Assert((writerEndPosition - writerStartPosition) == sizeOf_CLR_RECORD_TYPESPEC);
+            }
+        }
+
+        public void ForEachItems(Action<uint, TypeReference> action)
+        {
+            foreach (var item in _idByTypeSpecifications)
+            {
+                action(item.Value, item.Key);
+            }
+        }
+
+        private void FillTypeSpecsFromMemberReferences()
+        {
+            List<TypeSpecification> typeSpecs = new List<TypeSpecification>();
+
+            foreach (var m in _context.MemberReferencesTable.Items.Where(mr => mr.DeclaringType is TypeSpecification))
+            {
+                if (!typeSpecs.Contains(m.DeclaringType as TypeSpecification, new TypeSpecificationEqualityComparer()))
+                {
+                    // check for array in TypeSpec because we don't support for multidimensional arrays
+                    if (m.DeclaringType.IsArray &&
+                        (m.DeclaringType as ArrayType).Rank > 1)
+                    {
+                        throw new ArgumentException($".NET nanoFramework doesn't have support for multidimensional arrays. Unable to parse {m.DeclaringType.FullName}.");
+                    }
+
+                    typeSpecs.Add(m.DeclaringType as TypeSpecification);
+
+                    // get index of signature for the TypeSpecification 
+                    ushort signatureId = _context.SignaturesTable.GetOrCreateSignatureId(m.DeclaringType);
+
+                    if (!_idByTypeSpecifications.TryGetValue(m.DeclaringType, out ushort referenceId))
+                    {
+                        // is not on the list yet, add it
+                        _idByTypeSpecifications.Add(m.DeclaringType, signatureId);
+                    }
+                }
+            }
+        }
+
+        private void FillTypeSpecsFromTypes()
+        {
+            foreach (TypeDefinition t in _context.TypeDefinitionTable.Items)
+            {
+                foreach (MethodDefinition m in t.Methods.Where(method => method.HasBody))
+                {
+                    foreach (Instruction instruction in m.Body.Instructions)
+                    {
+                        if (instruction.Operand is GenericParameter genericParameter)
+                        {
+                            ushort signatureId = _context.SignaturesTable.GetOrCreateSignatureId(genericParameter);
+
+                            if (!_idByTypeSpecifications.ContainsKey(genericParameter))
+                            {
+                                _idByTypeSpecifications.Add(genericParameter, signatureId);
+                            }
+                        }
+                        else if (instruction.Operand is TypeReference typeReference)
+                        {
+                            // Optional: Check additional conditions if needed,
+                            // for example, if the operand type should be an array.
+                            if (instruction.OpCode.OperandType == OperandType.InlineType && !typeReference.IsArray)
+                            {
+                                continue;
+                            }
+
+                            ushort signatureId = _context.SignaturesTable.GetOrCreateSignatureId(typeReference);
+
+                            if (!_idByTypeSpecifications.ContainsKey(typeReference))
+                            {
+                                _idByTypeSpecifications.Add(typeReference, signatureId);
+                            }
+                        }
+                    }
+                }
             }
         }
     }

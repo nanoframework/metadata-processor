@@ -1,7 +1,11 @@
-using Mono.Cecil;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
+using Mono.Cecil;
 
 namespace nanoFramework.Tools.MetadataProcessor
 {
@@ -12,7 +16,13 @@ namespace nanoFramework.Tools.MetadataProcessor
     public sealed class nanoMethodDefinitionTable :
         nanoReferenceTableBase<MethodDefinition>
     {
-        private const int sizeOf_CLR_RECORD_METHODDEF = 16;
+        //////////////////////////////////////////////////////////////////////////////////////////////
+        //////////////////////////////////////////////////////////////////////////////////////////////
+        // <SYNC-WITH-NATIVE>                                                                       //
+        // when updating this size here need to update matching define in nanoCLR_Types.h in native //
+        private const int sizeOf_CLR_RECORD_METHODDEF = 19;
+        //////////////////////////////////////////////////////////////////////////////////////////////
+        //////////////////////////////////////////////////////////////////////////////////////////////
 
         /// <summary>
         /// Helper class for comparing two instances of <see cref="MethodDefinition"/> objects
@@ -32,6 +42,8 @@ namespace nanoFramework.Tools.MetadataProcessor
                 return that.FullName.GetHashCode();
             }
         }
+
+        public NanoClrTable TableIndex => NanoClrTable.TBL_MethodDef;
 
         /// <summary>
         /// Creates new instance of <see cref="nanoMethodDefinitionTable"/> object.
@@ -65,16 +77,21 @@ namespace nanoFramework.Tools.MetadataProcessor
             nanoBinaryWriter writer,
             MethodDefinition item)
         {
-            var writerStartPosition = writer.BaseStream.Position;
 
             if (!_context.MinimizeComplete)
             {
                 return;
             }
 
+            var writerStartPosition = writer.BaseStream.Position;
+
+            // Name
             WriteStringReference(writer, item.Name);
+
+            // RVA
             writer.WriteUInt16(_context.ByteCodeTable.GetMethodRva(item));
 
+            // Flags
             writer.WriteUInt32(GetFlags(item));
 
             var parametersCount = (byte)item.Parameters.Count;
@@ -83,7 +100,9 @@ namespace nanoFramework.Tools.MetadataProcessor
                 ++parametersCount; // add implicit 'this' pointer into non-static methods
             }
 
+            // RetVal
             _context.SignaturesTable.WriteDataType(item.ReturnType, writer, false, false, false);
+
             if (item.ReturnType is TypeSpecification)
             {
                 // developer note
@@ -97,13 +116,18 @@ namespace nanoFramework.Tools.MetadataProcessor
                 //}
             }
 
+            // ArgumentsCount
             writer.WriteByte(parametersCount);
+
+            // LocalsCount
             writer.WriteByte((byte)(item.HasBody ? item.Body.Variables.Count : 0));
+
+            // LengthEvalStack
             writer.WriteByte(CodeWriter.CalculateStackSize(item.Body));
 
             var methodSignature = _context.SignaturesTable.GetOrCreateSignatureId(item);
 
-            // locals signature
+            // Locals signature
             if (item.HasBody)
             {
                 writer.WriteUInt16(_context.SignaturesTable.GetOrCreateSignatureId(item.Body.Variables));
@@ -122,6 +146,21 @@ namespace nanoFramework.Tools.MetadataProcessor
                 }
             }
 
+            ushort genericParamRefId = 0xFFFF;
+
+            if (item.HasGenericParameters)
+            {
+                // no need to check if it's found
+                _context.GenericParamsTable.TryGetParameterId(item.GenericParameters.FirstOrDefault(), out genericParamRefId);
+            }
+
+            // FirstGenericParam
+            writer.WriteUInt16(genericParamRefId);
+
+            // GenericParamCount
+            writer.WriteByte((byte)item.GenericParameters.Count);
+
+            // Signature
             writer.WriteUInt16(methodSignature);
 
             var writerEndPosition = writer.BaseStream.Position;
@@ -158,8 +197,8 @@ namespace nanoFramework.Tools.MetadataProcessor
             const uint MD_DelegateBeginInvoke = 0x00040000;
             const uint MD_DelegateEndInvoke = 0x00080000;
 
-            const uint MD_ContainsGenericParameter = 0x00100000;
-            const uint MD_HasGenericParameter = 0x00200000;
+            const uint MD_IsGenericInstance = 0x00100000;
+            const uint MD_ContainsGenericParameter = 0x00200000;
 
             const uint MD_Synchronized = 0x01000000;
             const uint MD_GloballySynchronized = 0x02000000;
@@ -242,7 +281,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                 flag |= (method.IsStatic ? MD_StaticConstructor : MD_Constructor);
             }
 
-            if(method.Name == "Finalize"
+            if (method.Name == "Finalize"
                && method.ReturnType.FullName == "System.Void"
                && method.Parameters.Count == 0)
             {
@@ -300,9 +339,9 @@ namespace nanoFramework.Tools.MetadataProcessor
                 flag |= MD_ContainsGenericParameter;
             }
 
-            if (method.HasGenericParameters)
+            if (method.IsGenericInstance)
             {
-                flag |= MD_HasGenericParameter;
+                flag |= MD_IsGenericInstance;
             }
 
             return flag;

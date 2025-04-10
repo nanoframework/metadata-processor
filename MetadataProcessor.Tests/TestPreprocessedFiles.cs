@@ -1,11 +1,5 @@
-﻿//using System;
-//using System.Collections.Generic;
-//using System.IO;
-//using System.Linq;
-//using System.Xml;
-//using System.Xml.Xsl;
-//using Microsoft.VisualStudio.TestTools.UnitTesting;
-//using Mono.Cecil;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 //namespace nanoFramework.Tools.MetadataProcessor.Tests
 //{
@@ -498,7 +492,7 @@
 //                "Microsoft.SPOT.Native", "Microsoft.SPOT.TinyCore", "Microsoft.SPOT.Hardware.Usb",
 //                "Microsoft.SPOT.Hardware");
 //        }
-        
+
 //        [TestMethod]
 //        public void WeakDelegatesTest()
 //        {

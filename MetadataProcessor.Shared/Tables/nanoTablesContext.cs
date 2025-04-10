@@ -1,11 +1,11 @@
-﻿//
-// Copyright (c) .NET Foundation and Contributors
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 // Original work from Oleg Rakhmatulin.
-// See LICENSE file in the project root for full license information.
-//
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Mono.Cecil;
 
@@ -14,7 +14,6 @@ namespace nanoFramework.Tools.MetadataProcessor
     public sealed class nanoTablesContext
     {
         internal readonly bool _verbose;
-        internal readonly bool _isCoreLibrary;
 
         internal static HashSet<string> IgnoringAttributes { get; } = new HashSet<string>(StringComparer.Ordinal)
             {
@@ -80,7 +79,9 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             ClassNamesToExclude = classNamesToExclude;
             _verbose = verbose;
-            _isCoreLibrary = isCoreLibrary;
+
+            // add default types to exclude
+            SetDefaultTypesToExclude();
 
             // add default types to exclude
             SetDefaultTypesToExclude();
@@ -129,8 +130,9 @@ namespace nanoFramework.Tools.MetadataProcessor
                     item.DeclaringType.GetElementType().IsPrimitive ||
                     item.ContainsGenericParameter ||
                     item.DeclaringType.IsGenericInstance))
-
                 .ToList();
+
+            MemberReferencesTable = new nanoMemberReferencesTable(memberReferences, this);
 
             FieldReferencesTable = new nanoFieldReferenceTable(
                 memberReferences.OfType<FieldReference>(), this);
@@ -166,8 +168,6 @@ namespace nanoFramework.Tools.MetadataProcessor
                 GetAttributes(methods, applyAttributesCompression),
                 this);
 
-            TypeSpecificationsTable = new nanoTypeSpecificationsTable(this);
-
             // Resources information
 
             ResourcesTable = new nanoResourcesTable(
@@ -188,16 +188,14 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             ResourceFileTable = new nanoResourceFileTable(this);
 
+            List<MethodSpecification> methodSpecifications = GetMethodSpecifications(methods);
+
+            MethodSpecificationTable = new nanoMethodSpecificationTable(methodSpecifications, this);
+
             // build list of generic parameters belonging to method defs
             List<GenericParameter> methodDefsGenericParameters = new List<GenericParameter>();
 
-            foreach (var m in methods)
-            {
-                if (m.HasGenericParameters)
-                {
-                    methodDefsGenericParameters.AddRange(m.GenericParameters);
-                }
-            }
+            methodDefsGenericParameters.AddRange(methods.Where(m => m.HasGenericParameters).SelectMany(mm => mm.GenericParameters));
 
             var generics = types
                             .SelectMany(t => t.GenericParameters)
@@ -205,6 +203,8 @@ namespace nanoFramework.Tools.MetadataProcessor
                             .ToList();
 
             GenericParamsTable = new nanoGenericParamTable(generics, this);
+
+            TypeSpecificationsTable = new nanoTypeSpecificationsTable(this);
 
             // Pre-allocate strings from some tables
             AssemblyReferenceTable.AllocateStrings();
@@ -228,23 +228,240 @@ namespace nanoFramework.Tools.MetadataProcessor
         }
 
         /// <summary>
-        /// Gets method reference identifier (external or internal) encoded with appropriate prefix.
+        /// Gets (.NET nanoFramework encoded) method reference identifier (external or internal).
         /// </summary>
-        /// <param name="methodReference">Method reference in Mono.Cecil format.</param>
-        /// <returns>Reference identifier for passed <paramref name="methodReference"/> value.</returns>
+        /// <param name="memberReference">Method reference in Mono.Cecil format.</param>
+        /// <returns>Reference identifier for passed <paramref name="memberReference"/> value.</returns>
         public ushort GetMethodReferenceId(
-            MethodReference methodReference)
+            MemberReference memberReference)
         {
-            ushort referenceId;
-            if (MethodReferencesTable.TryGetMethodReferenceId(methodReference, out referenceId))
+            // encodes MethodReference to be decoded with CLR_UncompressMethodToken
+            // CLR tables are: 
+            // 0: TBL_MethodDef
+            // 1: TBL_MethodRef
+            // 2: TBL_MemberRef  (TODO find if needed)
+
+            ushort referenceId = 0xFFFF;
+            NanoClrTable ownerTable = NanoClrTable.TBL_EndOfAssembly;
+
+            if (memberReference is MethodDefinition)
             {
-                referenceId |= 0x8000; // External method reference
+                // check if method is external
+                if (memberReference.DeclaringType.Scope.MetadataScopeType == MetadataScopeType.AssemblyNameReference)
+                {
+                    // method reference is external
+                    ownerTable = NanoClrTable.TBL_MethodRef;
+                }
+                else
+                {
+                    // method reference is internal
+                    if (MethodDefinitionTable.TryGetMethodReferenceId(memberReference as MethodDefinition, out referenceId))
+                    {
+                        // method reference is internal => method definition
+                        ownerTable = NanoClrTable.TBL_MethodDef;
+                    }
+                    else
+                    {
+                        Debug.Fail($"Can't find method definition for {memberReference}");
+                    }
+                }
+            }
+            else if (memberReference is MethodReference &&
+                 MethodReferencesTable.TryGetMethodReferenceId(memberReference as MethodReference, out referenceId))
+            {
+                // check if method is external
+                if (memberReference.DeclaringType.Scope.MetadataScopeType == MetadataScopeType.AssemblyNameReference)
+                {
+                    // method reference is external
+                }
+                else
+                {
+                    // method reference belongs to a TypeSpec
+
+                    // find MethodDef for this 
+                    var methodRef = MethodReferencesTable.Items.FirstOrDefault(m => m.DeclaringType.MetadataToken == memberReference.DeclaringType.MetadataToken && m.Name == memberReference.Name);
+
+                    if (!MethodReferencesTable.TryGetMethodReferenceId(methodRef, out referenceId))
+                    {
+                        Debug.Fail($"Can't find MethodRef for {memberReference}");
+                    }
+                }
+
+                ownerTable = NanoClrTable.TBL_MethodRef;
+            }
+            else if (memberReference is MethodSpecification &&
+                    MethodSpecificationTable.TryGetMethodSpecificationId(memberReference as MethodSpecification, out referenceId))
+            {
+                // member reference is MethodSpecification
+                ownerTable = NanoClrTable.TBL_MethodSpec;
             }
             else
             {
-                MethodDefinitionTable.TryGetMethodReferenceId(methodReference.Resolve(), out referenceId);
+                Debug.Fail($"Can't find any reference for {memberReference}");
             }
-            return referenceId;
+
+            return (ushort)(nanoTokenHelpers.EncodeTableIndex(ownerTable, nanoTokenHelpers.NanoMemberRefTokenTables) | referenceId);
+        }
+
+        /// <summary>
+        /// Gets (.NET nanoFramework encoded) field reference identifier (external or internal).
+        /// </summary>
+        /// <param name="fieldReference">Field reference in Mono.Cecil format.</param>
+        /// <returns>Reference identifier for passed <paramref name="fieldReference"/> value.</returns>
+        public ushort GetFieldReferenceId(
+            FieldReference fieldReference)
+        {
+            // encodes FieldReference to be decoded with CLR_UncompressFieldToken
+            // CLR tables are: 
+            // 0: TBL_FieldDef
+            // 1: TBL_FieldRef
+
+            ushort referenceId = 0xFFFF;
+            NanoClrTable ownerTable = NanoClrTable.TBL_EndOfAssembly;
+
+            if (fieldReference is FieldDefinition)
+            {
+                // field reference is internal
+                if (FieldsTable.TryGetFieldReferenceId(fieldReference as FieldDefinition, false, out referenceId))
+                {
+                    // field reference is internal => field definition
+                    ownerTable = NanoClrTable.TBL_FieldDef;
+                }
+                else
+                {
+                    Debug.Fail($"Can't find field definition for {fieldReference}");
+                }
+            }
+            else if (FieldReferencesTable.TryGetFieldReferenceId(fieldReference, out referenceId))
+            {
+                // field reference is external
+                ownerTable = NanoClrTable.TBL_FieldRef;
+            }
+            else
+            {
+                Debug.Fail($"Can't find any reference for {fieldReference}");
+            }
+
+            return (ushort)(nanoTokenHelpers.EncodeTableIndex(ownerTable, nanoTokenHelpers.NanoFieldMemberRefTokenTables) | referenceId);
+        }
+
+        /// <summary>
+        /// Gets metadata token encoded with appropriate prefix.
+        /// </summary>
+        /// <param name="token">Metadata token in Mono.Cecil format.</param>
+        /// <returns>The .NET nanoFramework encoded token for passed <paramref name="token"/> value.</returns>
+        public uint GetMetadataToken(
+            IMetadataTokenProvider token)
+        {
+            switch (token.MetadataToken.TokenType)
+            {
+                case TokenType.TypeRef:
+                    TypeReferencesTable.TryGetTypeReferenceId((TypeReference)token, out ushort referenceId);
+                    return (uint)0x01000000 | referenceId;
+                case TokenType.TypeDef:
+                    TypeDefinitionTable.TryGetTypeReferenceId((TypeDefinition)token, out referenceId);
+                    return (uint)0x04000000 | referenceId;
+                case TokenType.TypeSpec:
+                    TypeSpecificationsTable.TryGetTypeReferenceId((TypeReference)token, out referenceId);
+                    return (uint)0x09000000 | referenceId;
+                case TokenType.Field:
+                    FieldsTable.TryGetFieldReferenceId((FieldDefinition)token, false, out referenceId);
+                    return (uint)0x05000000 | referenceId;
+                case TokenType.GenericParam:
+                    GenericParamsTable.TryGetParameterId((GenericParameter)token, out referenceId);
+                    return (uint)0x07000000 | referenceId;
+
+                default:
+                    System.Diagnostics.Debug.Fail("Unsupported TokenType");
+                    break;
+            }
+            return 0U;
+        }
+
+        /// <summary>
+        /// Gets an (.NET nanoFramework encoded) type reference identifier (all kinds).
+        /// </summary>
+        /// <param name="typeReference">Type reference in Mono.Cecil format.</param>
+        /// <param name="typeReferenceMask">The mask type to add to the encoded type reference Id. TypeRef mask will be added if none is specified.</param>
+        /// <returns>Encoded type reference identifier for passed <paramref name="typeReference"/> value.</returns>
+        public ushort GetTypeReferenceId(
+            TypeReference typeReference)
+        {
+            // encodes TypeReference to be decoded with CLR_UncompressTypeToken
+
+            NanoClrTable ownerTable = NanoClrTable.TBL_EndOfAssembly;
+
+            if (typeReference is TypeSpecification &&
+                TypeSpecificationsTable.TryGetTypeReferenceId(typeReference, out ushort referenceId))
+            {
+                // is TypeSpec
+                ownerTable = NanoClrTable.TBL_TypeSpec;
+            }
+            else if (typeReference is GenericParameter)
+            {
+                // is GenericParameter
+                if (TypeSpecificationsTable.TryGetTypeReferenceId(typeReference, out referenceId))
+                {
+                    // found it!
+                    ownerTable = NanoClrTable.TBL_TypeSpec;
+                }
+                else
+                {
+                    Debug.Fail("Can't find type reference.");
+                    throw new ArgumentException($"Can't find type reference for {typeReference}.");
+                }
+            }
+            else if (typeReference is TypeDefinition &&
+                     TypeDefinitionTable.TryGetTypeReferenceId(typeReference.Resolve(), out referenceId))
+            {
+                // is TypeDefinition
+                ownerTable = NanoClrTable.TBL_TypeDef;
+            }
+            else if (TypeReferencesTable.TryGetTypeReferenceId(typeReference, out referenceId))
+            {
+                // is External type reference
+                ownerTable = NanoClrTable.TBL_TypeRef;
+            }
+            else
+            {
+                Debug.Fail("Can't find type reference.");
+                throw new ArgumentException($"Can't find type reference for {typeReference}.");
+            }
+
+            return (ushort)(nanoTokenHelpers.EncodeTableIndex(ownerTable, nanoTokenHelpers.NanoTypeTokenTables) | referenceId);
+        }
+
+        private List<MethodSpecification> GetMethodSpecifications(List<MethodDefinition> methods)
+        {
+            List<MethodSpecification> methodSpecs = new List<MethodSpecification>();
+
+            // need to find MethodSpecs in method body
+            foreach (var m in methods.Where(i => i.HasBody))
+            {
+                foreach (var i in m.Body.Instructions)
+                {
+                    if (i.Operand is MethodSpecification)
+                    {
+                        methodSpecs.Add(i.Operand as MethodSpecification);
+                    }
+                }
+            }
+
+            return methodSpecs;
+        }
+
+        private List<GenericParameterConstraint> GetGenericParamsConstraints(List<GenericParameter> generics)
+        {
+            var genericsWithConstraints = generics.Where(g => g.HasConstraints);
+
+            List<GenericParameterConstraint> constraints = new List<GenericParameterConstraint>();
+
+            foreach (var g in genericsWithConstraints)
+            {
+                constraints.AddRange(g.Constraints);
+            }
+
+            return constraints;
         }
 
         public AssemblyDefinition AssemblyDefinition { get; private set; }
@@ -259,6 +476,8 @@ namespace nanoFramework.Tools.MetadataProcessor
 
         public nanoGenericParamTable GenericParamsTable { get; private set; }
 
+        public nanoMethodSpecificationTable MethodSpecificationTable { get; private set; }
+
         public nanoMethodReferenceTable MethodReferencesTable { get; private set; }
 
         public nanoFieldDefinitionTable FieldsTable { get; private set; }
@@ -266,6 +485,8 @@ namespace nanoFramework.Tools.MetadataProcessor
         public nanoMethodDefinitionTable MethodDefinitionTable { get; private set; }
 
         public nanoTypeDefinitionTable TypeDefinitionTable { get; private set; }
+
+        public nanoMemberReferencesTable MemberReferencesTable { get; private set; }
 
         public nanoAttributesTable AttributesTable { get; private set; }
 
@@ -459,6 +680,11 @@ namespace nanoFramework.Tools.MetadataProcessor
         internal void ResetSignaturesTable()
         {
             SignaturesTable = new nanoSignaturesTable(this);
+        }
+
+        internal void ResetTypeSpecificationsTable()
+        {
+            TypeSpecificationsTable = new nanoTypeSpecificationsTable(this);
         }
 
         internal void ResetResourcesTables()

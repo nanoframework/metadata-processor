@@ -7,7 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 using Mono.Cecil;
 
@@ -15,7 +15,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
 {
     public static class TestObjectHelper
     {
-        private const string _varNameForLocalNanoCLRInstancePath = "MDP_TEST_NANOCLR_INSTANCE_PATH";
+        private const string _varNameForLocalNanoCLRInstancePath = "NF_MDP_NANOCLR_INSTANCE_PATH";
 
         private static string _testExecutionLocation;
         private static string _testNFAppLocation;
@@ -29,7 +29,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
         {
             nanoTablesContext ret = null;
 
-            var assemblyDefinition = GetTestNFAppAssemblyDefinition();
+            var assemblyDefinition = GetTestNFAppAssemblyDefinitionWithLoadHints();
 
             ret = new nanoTablesContext(
                 assemblyDefinition,
@@ -65,7 +65,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
             {
                 if (string.IsNullOrEmpty(_testExecutionLocation))
                 {
-                    _testExecutionLocation = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+                    _testExecutionLocation = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
 
                     if (_testExecutionLocation.Contains("Debug"))
                     {
@@ -214,7 +214,9 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
         {
             AssemblyDefinition ret = null;
 
-            ret = AssemblyDefinition.ReadAssembly(TestNFAppFullPath);
+            ret = AssemblyDefinition.ReadAssembly(
+                TestNFAppFullPath,
+                new ReaderParameters { AssemblyResolver = ProvideLoadHints() });
 
             return ret;
         }
@@ -237,7 +239,9 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
         {
             AssemblyDefinition ret = null;
 
-            ret = AssemblyDefinition.ReadAssembly(TestNFClassLibFullPath);
+            ret = AssemblyDefinition.ReadAssembly(
+                TestNFClassLibFullPath,
+                new ReaderParameters { AssemblyResolver = ProvideLoadHints() });
 
             return ret;
         }
@@ -358,7 +362,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
 
             Stream ret = null;
 
-            var thisAssembly = Assembly.GetExecutingAssembly();
+            var thisAssembly = System.Reflection.Assembly.GetExecutingAssembly();
 
             ret = thisAssembly.GetManifestResourceStream(String.Concat(thisAssembly.GetName().Name, ".", resourceName));
 
@@ -485,6 +489,14 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
         // no need to check if path exists as this validation is performed by nanoclr
         public static string NanoClrLocalInstance => Environment.GetEnvironmentVariable(
             _varNameForLocalNanoCLRInstancePath,
-            EnvironmentVariableTarget.User);
+            EnvironmentVariableTarget.Process);
+
+        private static DefaultAssemblyResolver ProvideLoadHints()
+        {
+            var resolver = new DefaultAssemblyResolver();
+            resolver.AddSearchDirectory(TestExecutionLocation);
+
+            return resolver;
+        }
     }
 }

@@ -1,17 +1,20 @@
-﻿//
-// Copyright (c) .NET Foundation and Contributors
-// See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using Mono.Cecil;
-using Mustache;
-using nanoFramework.Tools.MetadataProcessor.Core.Extensions;
+// uncomment this for verbose output of library method lookup
+#if DEBUG
+//#define VERBOSE_OUTPUT
+#endif
+
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using Mono.Cecil;
+using Mustache;
+using nanoFramework.Tools.MetadataProcessor.Core.Extensions;
 
 namespace nanoFramework.Tools.MetadataProcessor.Core
 {
@@ -66,9 +69,9 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                 GenerateStubs();
 
                 // output native checksum so it shows in build log
-                Console.WriteLine("++++++++++++++++++++++++++++++++++++++++++++");
+                Console.WriteLine("+++++++++++++++++++++++++++++++++++++++++++");
                 Console.WriteLine($"+ Native declaration checksum: 0x{_tablesContext.NativeMethodsCrc.CurrentCrc.ToString("X8")} +");
-                Console.WriteLine("++++++++++++++++++++++++++++++++++++++++++++");
+                Console.WriteLine("+++++++++++++++++++++++++++++++++++++++++++");
             }
             else
             {
@@ -89,7 +92,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                 IsInterop = !_withoutInteropCode
             };
 
-            foreach (TypeDefinition c in _tablesContext.TypeDefinitionTable.TypeDefinitions)
+            foreach (TypeDefinition c in _tablesContext.TypeDefinitionTable.Items)
             {
                 if (ShouldIncludeType(c))
                 {
@@ -151,7 +154,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                                 {
                                     int parameterIndex = 0;
 
-                                    foreach (var item in m.Parameters)
+                                    foreach (ParameterDefinition item in m.Parameters)
                                     {
                                         // get the parameter type
                                         string parameterType = string.Empty;
@@ -228,7 +231,6 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                                         newMethod.ParameterDeclaration.Add(parameterDeclaration);
                                         parameterIndex++;
                                     }
-
                                     declaration.Append("HRESULT &hr )");
                                     marshallingCall.Append("hr )");
                                 }
@@ -399,10 +401,10 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                                 // need to add a NULL entry for it
                                 assemblyLookup.LookupTable.Add(new MethodStub()
                                 {
-#if DEBUG
-                                    Declaration = $"NULL, // <<<<< Library_{_safeProjectName}_{NativeMethodsCrc.GetClassName(c)}::{NativeMethodsCrc.GetMethodName(m)}",
+#if DEBUG && VERBOSE_OUTPUT
+                                    Declaration = $"nullptr, // <<<<< Library_{_safeProjectName}_{NativeMethodsCrc.GetClassName(c)}::{NativeMethodsCrc.GetMethodName(m)}",
 #else
-                                    Declaration = "NULL"
+                                    Declaration = "nullptr"
 #endif
                                 });
                             }
@@ -416,10 +418,10 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                         {
                             assemblyLookup.LookupTable.Add(new MethodStub()
                             {
-#if DEBUG
-                                Declaration = $"NULL, // <<<<< Library_{_safeProjectName}_{NativeMethodsCrc.GetClassName(c)}::{NativeMethodsCrc.GetMethodName(m)}",
+#if DEBUG && VERBOSE_OUTPUT
+                                Declaration = $"nullptr, // <<<<< Library_{_safeProjectName}_{NativeMethodsCrc.GetClassName(c)}::{NativeMethodsCrc.GetMethodName(m)}",
 #else
-                                Declaration = "NULL"
+                                Declaration = "nullptr"
 #endif
                             });
                         }
@@ -604,11 +606,12 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
         private int GetNestedFieldsCount(TypeDefinition c)
         {
+            ushort tt;
+
             int fieldCount = 0;
 
             if (c.BaseType != null &&
-                c.BaseType.FullName != "System.Object" &&
-                c.BaseType.FullName != "System.MarshalByRefObject")
+                c.BaseType.FullName != "System.Object")
             {
                 // get parent type fields count
                 fieldCount = GetNestedFieldsCount(c.BaseType.Resolve());

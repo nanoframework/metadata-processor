@@ -1,10 +1,8 @@
-//
-// Copyright (c) .NET Foundation and Contributors
-// See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using Mono.Cecil;
 using System;
+using Mono.Cecil;
 
 namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
 {
@@ -14,7 +12,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
         {
             var typeDefFlags = nanoTypeDefinitionTable.GetFlags(value);
 
-            if ( typeDefFlags.HasFlag(nanoTypeDefinitionFlags.TD_Delegate) ||
+            if (typeDefFlags.HasFlag(nanoTypeDefinitionFlags.TD_Delegate) ||
                  typeDefFlags.HasFlag(nanoTypeDefinitionFlags.TD_MulticastDelegate))
             {
                 return false;
@@ -23,9 +21,9 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
             typeDefFlags = typeDefFlags & nanoTypeDefinitionFlags.TD_Semantics;
 
             // Only generate a stub for classes and value types.
-            if  (typeDefFlags == nanoTypeDefinitionFlags.TD_Semantics_Class ||
-                 typeDefFlags == nanoTypeDefinitionFlags.TD_Semantics_ValueType )
-            { 
+            if (typeDefFlags == nanoTypeDefinitionFlags.TD_Semantics_Class ||
+                 typeDefFlags == nanoTypeDefinitionFlags.TD_Semantics_ValueType)
+            {
                 return true;
             }
 
@@ -42,7 +40,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
         public static EnumDeclaration ToEnumDeclaration(this TypeDefinition source)
         {
             // sanity check (to prevent missuse)
-            if(!source.IsEnum)
+            if (!source.IsEnum)
             {
                 throw new ArgumentException("Can clone only TypeDefinition that are Enums.");
             }
@@ -52,21 +50,21 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
 
 
             // if there is a namespace remove it (as there can't be two enums with the same name)
-            if(!string.IsNullOrEmpty(source.Namespace))
+            if (!string.IsNullOrEmpty(source.Namespace))
             {
                 enumName = source.FullName.Replace(source.Namespace, "");
-                
+
                 // remove trailing dot
                 enumName = enumName.Replace(".", "");
             }
             else
             {
-                if( 
+                if (
                     source.DeclaringType != null &&
                     !string.IsNullOrEmpty(source.DeclaringType.Namespace))
                 {
                     enumName = source.FullName.Replace(source.DeclaringType.Namespace, "");
-                   
+
                     // remove trailing dot
                     enumName = enumName.Replace(".", "");
 
@@ -130,9 +128,9 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
                     // enum items are named with the enum name followed by the enum item and respective value
                     // pattern: nnnn_yyyyy
                     var emunItem = new EnumItem()
-                        {
-                            Name = $"{enumName}_{f.Name}",
-                        };
+                    {
+                        Name = $"{enumName}_{f.Name}",
+                    };
 
                     emunItem.Value = f.Constant.ToString();
 
@@ -141,6 +139,26 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
             }
 
             return myEnum;
+        }
+
+        /// <summary>
+        /// Fixed full name with simplified type names.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static string FixedFullName(this TypeDefinition value)
+        {
+            return nanoHelpers.FixTypeNames(value.FullName);
+        }
+
+        /// <summary>
+        /// Fixed name with simplified type names.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static string FixedName(this TypeDefinition value)
+        {
+            return nanoHelpers.FixTypeNames(value.Name);
         }
     }
 }

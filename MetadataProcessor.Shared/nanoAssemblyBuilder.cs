@@ -1,19 +1,18 @@
-﻿//
-// Copyright (c) .NET Foundation and Contributors
-// Original work from Oleg Rakhmatulin.
-// See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using Mono.Cecil;
-using Mono.Collections.Generic;
-using nanoFramework.Tools.MetadataProcessor.Core.Extensions;
+// Original work from Oleg Rakhmatulin.
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Xml;
+using Mono.Cecil;
+using Mono.Cecil.Cil;
+using Mono.Collections.Generic;
+using nanoFramework.Tools.MetadataProcessor.Core.Extensions;
 
 namespace nanoFramework.Tools.MetadataProcessor
 {
@@ -102,7 +101,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             var setNew = new HashSet<MetadataToken>();
             var set = new HashSet<MetadataToken>();
 
-            foreach (var t in _tablesContext.TypeDefinitionTable.TypeDefinitions)
+            foreach (var t in _tablesContext.TypeDefinitionTable.Items)
             {
                 if (!t.IsToExclude())
                 {
@@ -166,19 +165,22 @@ namespace nanoFramework.Tools.MetadataProcessor
             }
 
             // need to reset several tables so they are recreated only with the used items
+            // order matters on several cases because the list recreation populates others
+            _tablesContext.ResetByteCodeTable();
+            _tablesContext.ResetSignaturesTable();
+            _tablesContext.ResetResourcesTables();
             _tablesContext.AssemblyReferenceTable.RemoveUnusedItems(set);
             _tablesContext.TypeReferencesTable.RemoveUnusedItems(set);
             _tablesContext.FieldsTable.RemoveUnusedItems(set);
             _tablesContext.GenericParamsTable.RemoveUnusedItems(set);
+            _tablesContext.MethodSpecificationTable.RemoveUnusedItems(set);
             _tablesContext.FieldReferencesTable.RemoveUnusedItems(set);
             _tablesContext.MethodDefinitionTable.RemoveUnusedItems(set);
             _tablesContext.MethodReferencesTable.RemoveUnusedItems(set);
             _tablesContext.TypeDefinitionTable.RemoveUnusedItems(set);
             _tablesContext.TypeDefinitionTable.ResetByteCodeOffsets();
+            _tablesContext.ResetTypeSpecificationsTable();
             _tablesContext.AttributesTable.RemoveUnusedItems(set);
-            _tablesContext.ResetByteCodeTable();
-            _tablesContext.ResetSignaturesTable();
-            _tablesContext.ResetResourcesTables();
             _tablesContext.StringTable.RemoveUnusedItems(set);
 
             // renormalise type definitions look-up tables
@@ -340,6 +342,8 @@ namespace nanoFramework.Tools.MetadataProcessor
 
                     Collection<ParameterDefinition> parameters = null;
 
+                    FieldReference fr = null;
+
                     // try to find a method reference
                     var mr = _tablesContext.MethodReferencesTable.Items.FirstOrDefault(i => i.MetadataToken == token);
 
@@ -350,7 +354,24 @@ namespace nanoFramework.Tools.MetadataProcessor
 
                         if (mr.DeclaringType != null)
                         {
-                            set.Add(mr.DeclaringType.MetadataToken);
+                            if (mr.DeclaringType is TypeSpecification)
+                            {
+                                // Cecil.Mono has a bug providing TypeSpecs Metadata tokens generic parameters variables, so we need to check against our internal table and build one from it
+                                if (_tablesContext.TypeSpecificationsTable.TryGetTypeReferenceId(mr.DeclaringType, out ushort referenceId))
+                                {
+                                    set.Add(new MetadataToken(
+                                        TokenType.TypeSpec,
+                                        referenceId));
+                                }
+                                else
+                                {
+                                    Debug.Fail($"Couldn't find a TypeSpec entry for {mr.DeclaringType}");
+                                }
+                            }
+                            else
+                            {
+                                set.Add(mr.DeclaringType.MetadataToken);
+                            }
                         }
 
                         if (mr.MethodReturnType.ReturnType.IsValueType &&
@@ -428,15 +449,31 @@ namespace nanoFramework.Tools.MetadataProcessor
                     if (mr == null)
                     {
                         // try now with field references
-                        var fr = _tablesContext.FieldReferencesTable.Items.FirstOrDefault(i => i.MetadataToken == token);
+                        fr = _tablesContext.FieldReferencesTable.Items.FirstOrDefault(i => i.MetadataToken == token);
 
                         if (fr != null)
                         {
                             if (fr.DeclaringType != null)
                             {
-                                set.Add(fr.DeclaringType.MetadataToken);
+                                if (fr.DeclaringType is TypeSpecification)
+                                {
+                                    // Cecil.Mono has a bug providing TypeSpecs Metadata tokens generic parameters variables, so we need to check against our internal table and build one from it
+                                    if (_tablesContext.TypeSpecificationsTable.TryGetTypeReferenceId(fr.DeclaringType, out ushort referenceId))
+                                    {
+                                        set.Add(new MetadataToken(
+                                            TokenType.TypeSpec,
+                                            referenceId));
+                                    }
+                                    else
+                                    {
+                                        Debug.Fail($"Couldn't find a TypeSpec entry for {fr.DeclaringType}");
+                                    }
+                                }
+                                else
+                                {
+                                    set.Add(fr.DeclaringType.MetadataToken);
+                                }
                             }
-
 
                             if (fr.FieldType.MetadataType == MetadataType.Class)
                             {
@@ -476,6 +513,8 @@ namespace nanoFramework.Tools.MetadataProcessor
                         }
                     }
 
+                    Debug.Assert(mr != null || fr != null);
+
                     break;
 
                 case TokenType.TypeSpec:
@@ -485,6 +524,8 @@ namespace nanoFramework.Tools.MetadataProcessor
                     {
                         set.Add(token);
                     }
+
+                    Debug.Assert(ts != null);
 
                     break;
 
@@ -696,6 +737,24 @@ namespace nanoFramework.Tools.MetadataProcessor
                             set.Add(parameterType.MetadataToken);
                             set.Add(parameterType.GetElementType().MetadataToken);
                         }
+                        else if (parameterType is GenericParameter)
+                        {
+                            set.Add(parameterType.MetadataToken);
+
+                            foreach (var gp in parameterType.GenericParameters)
+                            {
+                                set.Add(gp.MetadataToken);
+                                if (parameterType.DeclaringType != null)
+                                {
+                                    set.Add(parameterType.DeclaringType.MetadataToken);
+                                }
+                            }
+
+                            if (parameterType.DeclaringType != null)
+                            {
+                                set.Add(parameterType.DeclaringType.MetadataToken);
+                            }
+                        }
                         else if (!parameterType.IsValueType &&
                                  !parameterType.IsPrimitive &&
                                   parameterType.FullName != "System.Void" &&
@@ -745,8 +804,19 @@ namespace nanoFramework.Tools.MetadataProcessor
                             }
                             else if (v.VariableType is GenericInstanceType)
                             {
-                                set.Add(v.VariableType.MetadataToken);
-                                set.Add(v.VariableType.GetElementType().MetadataToken);
+                                // Cecil.Mono has a bug providing TypeSpecs Metadata tokens generic parameters variables, so we need to check against our internal table and build one from it
+                                if (_tablesContext.TypeSpecificationsTable.TryGetTypeReferenceId(v.VariableType, out ushort referenceId))
+                                {
+                                    set.Add(new MetadataToken(
+                                        TokenType.TypeSpec,
+                                        referenceId));
+
+                                    set.Add(v.VariableType.GetElementType().MetadataToken);
+                                }
+                                else
+                                {
+                                    Debug.Fail($"Couldn't find a TypeSpec entry for {v.VariableType}");
+                                }
                             }
                             else if (v.VariableType.IsPointer)
                             {
@@ -760,15 +830,66 @@ namespace nanoFramework.Tools.MetadataProcessor
                         // op codes
                         foreach (var i in md.Body.Instructions)
                         {
-                            if (i.Operand is MethodReference ||
-                                i.Operand is FieldReference ||
-                                i.Operand is TypeDefinition ||
-                                i.Operand is TypeSpecification ||
-                                i.Operand is TypeReference ||
-                                i.Operand is GenericInstanceType ||
-                                i.Operand is GenericParameter)
+                            if (i.Operand is MethodReference)
+                            {
+                                var methodReferenceType = i.Operand as MethodReference;
+
+                                set.Add(methodReferenceType.MetadataToken);
+
+                                if (_tablesContext.MethodReferencesTable.TryGetMethodReferenceId(methodReferenceType, out ushort referenceId))
+                                {
+                                    if (methodReferenceType.DeclaringType != null &&
+                                       methodReferenceType.DeclaringType.IsGenericInstance)
+                                    {
+                                        // Cecil.Mono has a bug providing TypeSpecs Metadata tokens generic parameters variables, so we need to check against our internal table and build one from it
+                                        if (_tablesContext.TypeSpecificationsTable.TryGetTypeReferenceId(methodReferenceType.DeclaringType, out referenceId))
+                                        {
+                                            set.Add(new MetadataToken(
+                                                TokenType.TypeSpec,
+                                                referenceId));
+                                        }
+                                        else
+                                        {
+                                            Debug.Fail($"Couldn't find a TypeSpec entry for {methodReferenceType.DeclaringType}");
+                                        }
+                                    }
+                                }
+                            }
+                            else if (i.Operand is FieldReference ||
+                                     i.Operand is TypeDefinition ||
+                                     i.Operand is MethodSpecification ||
+                                     i.Operand is TypeReference)
                             {
                                 set.Add(((IMetadataTokenProvider)i.Operand).MetadataToken);
+                            }
+                            else if (
+                                i.OpCode.OperandType is OperandType.InlineType ||
+                                i.Operand is GenericInstanceType ||
+                                i.Operand is GenericInstanceMethod ||
+                                i.Operand is GenericParameter)
+                            {
+                                var opType = (TypeReference)i.Operand;
+
+                                var opToken = ((IMetadataTokenProvider)i.Operand).MetadataToken;
+
+                                if (opToken.TokenType == TokenType.TypeSpec)
+                                {
+                                    // Cecil.Mono has a bug providing TypeSpecs Metadata tokens generic parameters variables, so we need to check against our internal table and build one from it
+                                    if (_tablesContext.TypeSpecificationsTable.TryGetTypeReferenceId(opType, out ushort referenceId))
+                                    {
+                                        set.Add(new MetadataToken(
+                                            TokenType.TypeSpec,
+                                            referenceId));
+                                    }
+                                    else
+                                    {
+                                        Debug.Fail($"Couldn't find a TypeSpec entry for {opType}");
+                                    }
+                                }
+                                else
+                                {
+                                    set.Add(opToken);
+                                }
                             }
                             else if (i.Operand is string)
                             {
@@ -778,7 +899,6 @@ namespace nanoFramework.Tools.MetadataProcessor
 
                                 set.Add(newToken);
                             }
-
                         }
 
                         // exceptions
@@ -823,9 +943,31 @@ namespace nanoFramework.Tools.MetadataProcessor
 
                     break;
 
+                case TokenType.MethodSpec:
+                    var ms = _tablesContext.MethodSpecificationTable.Items.FirstOrDefault(i => i.MetadataToken == token);
+
+                    if (ms != null)
+                    {
+                        set.Add(token);
+                    }
+                    break;
+
                 case TokenType.GenericParam:
+                    var gpar = _tablesContext.GenericParamsTable.Items.FirstOrDefault(i => i.MetadataToken == token);
+
+                    if (gpar != null)
+                    {
+                        // need to add their constraints if, any
+                        foreach (var c in gpar.Constraints)
+                        {
+                            set.Add(c.MetadataToken);
+                        }
+                    }
+                    break;
+
                 case TokenType.AssemblyRef:
                 case TokenType.String:
+                case TokenType.GenericParamConstraint:
                     // we are good with these, nothing to do here
                     break;
 
@@ -1017,6 +1159,14 @@ namespace nanoFramework.Tools.MetadataProcessor
                     }
                     break;
 
+                case TokenType.MethodSpec:
+                    output.Append($"[MethodSpec 0x{token.ToUInt32().ToString("X8")}]");
+                    break;
+
+                case TokenType.GenericParamConstraint:
+                    output.Append($"[GenericParamConstraint 0x{token.ToUInt32().ToString("X8")}]");
+                    break;
+
                 default:
                     Debug.Fail($"Unable to process token {token}.");
                     break;
@@ -1031,16 +1181,28 @@ namespace nanoFramework.Tools.MetadataProcessor
             return output.ToString();
         }
 
-        public void Write(
-            XmlWriter xmlWriter)
+        public void Write(string fileName)
         {
             var pdbxWriter = new nanoPdbxFileWriter(_tablesContext);
-            pdbxWriter.Write(xmlWriter);
+            pdbxWriter.Write(fileName);
         }
 
-        private static IEnumerable<InanoTable> GetTables(
+        /// <summary>
+        /// Count of tables in the assembly
+        /// </summary>
+        static public int TablesCount => 0x12;
+
+        internal static IEnumerable<InanoTable> GetTables(
             nanoTablesContext context)
         {
+            //////////////////////////////////////////////////
+            // order matters and must follow CLR_TABLESENUM //
+            //////////////////////////////////////////////////
+
+            //////////////////////////////////////////////////////////////
+            // update count property above whenever changing the tables //
+            //////////////////////////////////////////////////////////////
+
             yield return context.AssemblyReferenceTable;
 
             yield return context.TypeReferencesTable;
@@ -1055,9 +1217,13 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             yield return context.MethodDefinitionTable;
 
-            yield return context.AttributesTable;
+            yield return context.GenericParamsTable;
+
+            yield return context.MethodSpecificationTable;
 
             yield return context.TypeSpecificationsTable;
+
+            yield return context.AttributesTable;
 
             yield return context.ResourcesTable;
 

@@ -1,10 +1,7 @@
-﻿//
-// Copyright (c) .NET Foundation and Contributors
-// See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following 
@@ -36,9 +33,3 @@ using System.Runtime.InteropServices;
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("11.22.33.44")]
 [assembly: AssemblyFileVersion("11.22.33.44")]
-
-/////////////////////////////////////////////////////////////////
-// This attribute is mandatory when building Interop libraries //
-// update this whenever the native assembly signature changes  //
-[assembly: AssemblyNativeVersion("0.0.0.0")]
-/////////////////////////////////////////////////////////////////

@@ -1,14 +1,13 @@
-//
-// Copyright (c) .NET Foundation and Contributors
-// Original work from Oleg Rakhmatulin.
-// See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using Mono.Cecil;
-using Mono.Cecil.Cil;
+// Original work from Oleg Rakhmatulin.
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Mono.Cecil;
+using Mono.Cecil.Cil;
 
 namespace nanoFramework.Tools.MetadataProcessor
 {
@@ -51,11 +50,11 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// Assembly tables context - contains all tables used for building target assembly.
         /// </param>
         public CodeWriter(
-	        MethodDefinition method,
+            MethodDefinition method,
             nanoBinaryWriter writer,
             nanoStringTable stringTable,
             nanoTablesContext context)
-	    {
+        {
             _stringTable = stringTable;
 
             _body = method.Body;
@@ -109,13 +108,13 @@ namespace nanoFramework.Tools.MetadataProcessor
                 switch (instruction.OpCode.OperandType)
                 {
                     case OperandType.InlineSwitch:
-		                var targets = (Instruction[]) instruction.Operand;
+                        var targets = (Instruction[])instruction.Operand;
                         offset -= 3; // One bye used instead of Int32
-		                offset -= 2 * targets.Length; // each target use Int16 instead of Int32
+                        offset -= 2 * targets.Length; // each target use Int16 instead of Int32
                         offsetChanged = true;
                         break;
                     case OperandType.InlineString:
-                        stringTable.GetOrCreateStringId((string) instruction.Operand, true);
+                        stringTable.GetOrCreateStringId((string)instruction.Operand, true);
                         offset -= 2;
                         offsetChanged = true;
                         break;
@@ -138,8 +137,8 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// <param name="methodBody">Method body in Mono.Cecil format.</param>
         /// <returns>Maximal evaluated stack size for passed method body.</returns>
 	    public static byte CalculateStackSize(
-	        MethodBody methodBody)
-	    {
+            MethodBody methodBody)
+        {
             if (methodBody == null)
             {
                 return 0;
@@ -149,16 +148,16 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             var size = 0;
             var maxSize = 0;
-	        foreach (var instruction in methodBody.Instructions)
-	        {
+            foreach (var instruction in methodBody.Instructions)
+            {
                 int correctedStackSize;
-	            if (offsets.TryGetValue(instruction.Offset, out correctedStackSize))
-	            {
-	                size = correctedStackSize;
-	            }
+                if (offsets.TryGetValue(instruction.Offset, out correctedStackSize))
+                {
+                    size = correctedStackSize;
+                }
 
-	            switch (instruction.OpCode.Code)
-	            {
+                switch (instruction.OpCode.Code)
+                {
                     case Code.Throw:
                     case Code.Endfinally:
                     case Code.Endfilter:
@@ -169,30 +168,30 @@ namespace nanoFramework.Tools.MetadataProcessor
                         continue;
 
                     case Code.Newobj:
-	                    {
-                            var method = (MethodReference)instruction.Operand;
-                            size -= method.Parameters.Count;
-                        }
-                        break;
+                    {
+                        var method = (MethodReference)instruction.Operand;
+                        size -= method.Parameters.Count;
+                    }
+                    break;
 
                     case Code.Callvirt:
                     case Code.Call:
-	                    {
-                            var method = (MethodReference)instruction.Operand;
-                            if (method.HasThis)
-                            {
-                                --size;
-                            }
-                            size -= method.Parameters.Count;
-                            if (method.ReturnType.FullName != "System.Void")
-                            {
-                                ++size;
-                            }
+                    {
+                        var method = (MethodReference)instruction.Operand;
+                        if (method.HasThis)
+                        {
+                            --size;
                         }
-                        break;
-	            }
+                        size -= method.Parameters.Count;
+                        if (method.ReturnType.FullName != "System.Void")
+                        {
+                            ++size;
+                        }
+                    }
+                    break;
+                }
 
-	            size = CorrectStackDepthByPushes(instruction, size);
+                size = CorrectStackDepthByPushes(instruction, size);
                 size = CorrectStackDepthByPops(instruction, size);
 
                 if (instruction.OpCode.OperandType == OperandType.ShortInlineBrTarget ||
@@ -204,11 +203,11 @@ namespace nanoFramework.Tools.MetadataProcessor
                     offsets[target.Offset] = Math.Max(stackSize, size);
                 }
 
-	            maxSize = Math.Max(maxSize, size);
-	        }
+                maxSize = Math.Max(maxSize, size);
+            }
 
-	        return (byte)maxSize;
-	    }
+            return (byte)maxSize;
+        }
 
         private static int CorrectStackDepthByPushes(
             Instruction instruction,
@@ -278,7 +277,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                 {
                     case ExceptionHandlerType.Catch:
                         _writer.WriteUInt16(0x0000);
-                        _writer.WriteUInt16(GetTypeReferenceId(handler.CatchType, 0x8000));
+                        _writer.WriteUInt16(_context.GetTypeReferenceId(handler.CatchType));
                         break;
                     case ExceptionHandlerType.Fault:
                         _writer.WriteUInt16(0x0001);
@@ -310,216 +309,153 @@ namespace nanoFramework.Tools.MetadataProcessor
             _writer.WriteByte((byte)_body.ExceptionHandlers.Count);
         }
 
-	    private void WriteOpCode (
+        private void WriteOpCode(
             OpCode opcode)
-		{
-			if (opcode.Size == 1)
+        {
+            if (opcode.Size == 1)
             {
-				_writer.WriteByte(opcode.Op2);
-			}
+                _writer.WriteByte(opcode.Op2);
+            }
             else
             {
                 _writer.WriteByte(opcode.Op1);
                 _writer.WriteByte(opcode.Op2);
             }
-		}
+        }
 
-		private void WriteOperand (
+        private void WriteOperand(
             Instruction instruction)
-		{
+        {
             var opcode = instruction.OpCode;
-			var operandType = opcode.OperandType;
+            var operandType = opcode.OperandType;
 
-		    if (operandType == OperandType.InlineNone)
-		    {
+            if (operandType == OperandType.InlineNone)
+            {
                 return;
-		    }
+            }
 
-			var operand = instruction.Operand;
-		    if (operand == null)
-		    {
+            var operand = instruction.Operand;
+            if (operand == null)
+            {
                 throw new ArgumentException();
-		    }
+            }
 
-		    switch (operandType)
-		    {
-		        case OperandType.InlineSwitch:
-		        {
-		            var targets = (Instruction[]) operand;
+            switch (operandType)
+            {
+                case OperandType.InlineSwitch:
+                {
+                    var targets = (Instruction[])operand;
                     _writer.WriteByte((byte)targets.Length);
-		            var diff = instruction.Offset + opcode.Size + 2 * targets.Length + 1;
-		            foreach (var item in targets)
-		            {
-		                _writer.WriteInt16((short)(GetTargetOffset(item) - diff));
-		            }
-		            break;
-		        }
-		        case OperandType.ShortInlineBrTarget:
-		        {
-		            var target = (Instruction) operand;
-		            _writer.WriteSByte((sbyte)
+                    var diff = instruction.Offset + opcode.Size + 2 * targets.Length + 1;
+                    foreach (var item in targets)
+                    {
+                        _writer.WriteInt16((short)(GetTargetOffset(item) - diff));
+                    }
+                    break;
+                }
+                case OperandType.ShortInlineBrTarget:
+                {
+                    var target = (Instruction)operand;
+                    _writer.WriteSByte((sbyte)
                         (GetTargetOffset(target) - (instruction.Offset + opcode.Size + 1)));
-		            break;
-		        }
-		        case OperandType.InlineBrTarget:
-		        {
-		            var target = (Instruction) operand;
+                    break;
+                }
+                case OperandType.InlineBrTarget:
+                {
+                    var target = (Instruction)operand;
                     _writer.WriteInt16((short)
                         (GetTargetOffset(target) - (instruction.Offset + opcode.Size + 2)));
-		            break;
-		        }
-		        case OperandType.ShortInlineVar:
+                    break;
+                }
+                case OperandType.ShortInlineVar:
                     _writer.WriteByte((byte)GetVariableIndex((VariableDefinition)operand));
-		            break;
-		        case OperandType.ShortInlineArg:
+                    break;
+                case OperandType.ShortInlineArg:
                     _writer.WriteByte((byte)GetParameterIndex((ParameterDefinition)operand));
-		            break;
-		        case OperandType.InlineVar:
+                    break;
+                case OperandType.InlineVar:
                     _writer.WriteInt16((short)GetVariableIndex((VariableDefinition)operand));
-		            break;
-		        case OperandType.InlineArg:
+                    break;
+                case OperandType.InlineArg:
                     _writer.WriteInt16((short)GetParameterIndex((ParameterDefinition)operand));
-		            break;
-		        case OperandType.InlineSig:
-		            // TODO: implement this properly after finding when such code is generated
-		            //WriteMetadataToken (GetStandAloneSignature ((CallSite) operand));
-		            break;
-		        case OperandType.ShortInlineI:
-		            if (opcode == OpCodes.Ldc_I4_S)
-		            {
+                    break;
+                case OperandType.InlineSig:
+                    // TODO: implement this properly after finding when such code is generated
+                    //WriteMetadataToken (GetStandAloneSignature ((CallSite) operand));
+                    break;
+                case OperandType.ShortInlineI:
+                    if (opcode == OpCodes.Ldc_I4_S)
+                    {
                         _writer.WriteSByte((sbyte)operand);
-		            }
-		            else
-		            {
+                    }
+                    else
+                    {
                         _writer.WriteByte((byte)operand);
                     }
-		            break;
-		        case OperandType.InlineI:
+                    break;
+                case OperandType.InlineI:
                     _writer.WriteInt32((int)operand);
-		            break;
-		        case OperandType.InlineI8:
+                    break;
+                case OperandType.InlineI8:
                     _writer.WriteInt64((long)operand);
-		            break;
-		        case OperandType.ShortInlineR:
+                    break;
+                case OperandType.ShortInlineR:
                     _writer.WriteSingle((float)operand);
-		            break;
-		        case OperandType.InlineR:
+                    break;
+                case OperandType.InlineR:
                     _writer.WriteDouble((double)operand);
-		            break;
-		        case OperandType.InlineString:
-		            var stringReferenceId = _stringTable.GetOrCreateStringId((string) operand, true);
+                    break;
+                case OperandType.InlineString:
+                    var stringReferenceId = _stringTable.GetOrCreateStringId((string)operand, true);
                     _writer.WriteUInt16(stringReferenceId);
-		            break;
+                    break;
                 case OperandType.InlineMethod:
-                    _writer.WriteUInt16(_context.GetMethodReferenceId((MethodReference)operand));
+                    _writer.WriteUInt16(_context.GetMethodReferenceId((MemberReference)operand));
                     break;
                 case OperandType.InlineType:
-                    _writer.WriteUInt16(GetTypeReferenceId((TypeReference)operand));
+                    _writer.WriteUInt16(_context.GetTypeReferenceId((TypeReference)operand));
                     break;
-		        case OperandType.InlineField:
-                    _writer.WriteUInt16(GetFieldReferenceId((FieldReference)operand));
+                case OperandType.InlineField:
+                    _writer.WriteUInt16(_context.GetFieldReferenceId((FieldReference)operand));
                     break;
                 case OperandType.InlineTok:
-                    _writer.WriteUInt32(GetMetadataToken((IMetadataTokenProvider)operand));
+                    _writer.WriteUInt32(_context.GetMetadataToken((IMetadataTokenProvider)operand));
                     break;
                 default:
-		            throw new ArgumentException();
-		    }
-		}
-
-        private uint GetMetadataToken(
-            IMetadataTokenProvider token)
-        {
-            ushort referenceId;
-            switch (token.MetadataToken.TokenType)
-            {
-                case TokenType.TypeRef:
-                    _context.TypeReferencesTable.TryGetTypeReferenceId((TypeReference)token, out referenceId);
-                    return (uint)0x01000000 | referenceId;
-                case TokenType.TypeDef:
-                    _context.TypeDefinitionTable.TryGetTypeReferenceId((TypeDefinition)token, out referenceId);
-                    return (uint)0x04000000 | referenceId;
-                case TokenType.TypeSpec:
-                    _context.TypeSpecificationsTable.TryGetTypeReferenceId((TypeReference) token, out referenceId);
-                    return (uint)0x08000000 | referenceId;
-                case TokenType.Field:
-                    _context.FieldsTable.TryGetFieldReferenceId((FieldDefinition) token, false, out referenceId);
-                    return (uint)0x05000000 | referenceId;
+                    throw new ArgumentException();
             }
-            return 0U;
         }
 
-        private ushort GetFieldReferenceId(
-            FieldReference fieldReference)
-        {
-            ushort referenceId;
-            if (_context.FieldReferencesTable.TryGetFieldReferenceId(fieldReference, out referenceId))
-            {
-                referenceId |= 0x8000; // External field reference
-            }
-            else
-            {
-                _context.FieldsTable.TryGetFieldReferenceId(fieldReference.Resolve(), false, out referenceId);
-            }
-            return referenceId;
-        }
-
-        private ushort GetTypeReferenceId(
-            TypeReference typeReference,
-            ushort typeReferenceMask = 0x4000)
-        {
-            ushort referenceId;
-
-            if(typeReference is TypeSpecification)
-            {
-                referenceId = _context.TypeSpecificationsTable.GetOrCreateTypeSpecificationId(typeReference);
-
-                return (ushort)(0x8000 | referenceId);
-            }
-            else if (_context.TypeReferencesTable.TryGetTypeReferenceId(typeReference, out referenceId))
-            {
-                referenceId |= typeReferenceMask; // External type reference
-            }
-            else
-            {
-                if (!_context.TypeDefinitionTable.TryGetTypeReferenceId(typeReference.Resolve(), out referenceId))
-                {
-                    return 0x8000;
-                }
-
-            }
-            return referenceId;
-        }
-
-        private int GetTargetOffset (
+        private int GetTargetOffset(
             Instruction instruction)
-		{
-			if (instruction == null)
+        {
+            if (instruction == null)
             {
-				var last = _body.Instructions[_body.Instructions.Count - 1];
-				return last.Offset + last.GetSize ();
-			}
+                var last = _body.Instructions[_body.Instructions.Count - 1];
+                return last.Offset + last.GetSize();
+            }
 
             return instruction.Offset;
-		}
+        }
 
-		private static int GetVariableIndex (
+        private static int GetVariableIndex(
             VariableDefinition variable)
-		{
-			return variable.Index;
-		}
+        {
+            return variable.Index;
+        }
 
-		private int GetParameterIndex (
+        private int GetParameterIndex(
             ParameterDefinition parameter)
-		{
-			if (_body.Method.HasThis) {
-				if (parameter == _body.ThisParameter)
-					return 0;
+        {
+            if (_body.Method.HasThis)
+            {
+                if (parameter == _body.ThisParameter)
+                    return 0;
 
-				return parameter.Index + 1;
-			}
+                return parameter.Index + 1;
+            }
 
-			return parameter.Index;
-		}
+            return parameter.Index;
+        }
     }
 }

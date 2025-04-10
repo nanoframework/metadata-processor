@@ -1,11 +1,9 @@
-//
-// Copyright (c) .NET Foundation and Contributors
-// See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using Mono.Cecil;
 using System.Linq;
 using System.Text;
+using Mono.Cecil;
 
 namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
 {
@@ -13,7 +11,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
     {
         public static string FullName(this MethodDefinition value)
         {
-            if(value.GenericParameters.Count == 0)
+            if (value.GenericParameters.Count == 0)
             {
                 return value.Name;
             }
@@ -22,7 +20,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
                 StringBuilder name = new StringBuilder(value.Name);
                 name.Append("<");
 
-                foreach(var p in value.GenericParameters)
+                foreach (var p in value.GenericParameters)
                 {
                     name.Append(p.Name);
                     if (!p.Equals(value.GenericParameters.Last()))
@@ -35,6 +33,26 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
 
                 return name.ToString();
             }
+        }
+
+        /// <summary>
+        /// Fixed full name with simplified type names.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static string FixedFullName(this MethodDefinition value)
+        {
+            return nanoHelpers.FixTypeNames(value.FullName);
+        }
+
+        /// <summary>
+        /// Fixed name with simplified type names.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        public static string FixedName(this MethodDefinition value)
+        {
+            return nanoHelpers.FixTypeNames(value.Name);
         }
     }
 }
