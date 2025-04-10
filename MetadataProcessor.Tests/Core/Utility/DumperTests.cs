@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -17,6 +18,9 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
         private ushort refId;
 
         [TestMethod]
+#if !DEBUG
+        [Ignore("This test is ignored in Release builds.")]
+#endif
         public void DumpAssemblyTest()
         {
             nanoTablesContext nanoTablesContext = TestObjectHelper.GetTestNFAppNanoTablesContext();
