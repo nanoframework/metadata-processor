@@ -23,6 +23,7 @@
     <Compile Include="DataRowAttribute.cs" />
     <Compile Include="DummyCustomAttribute1.cs" />
     <Compile Include="DummyCustomAttribute2.cs" />
+    <Compile Include="StackClass.cs" />
     <Compile Include="IgnoreAttribute.cs" />
     <Compile Include="IOneClassOverAll.cs" />
     <Compile Include="ComplexAttribute.cs" />

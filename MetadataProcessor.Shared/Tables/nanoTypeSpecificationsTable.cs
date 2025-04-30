@@ -130,6 +130,21 @@ namespace nanoFramework.Tools.MetadataProcessor
             return _idByTypeSpecifications.FirstOrDefault(typeEntry => typeEntry.Key.MetadataToken == token).Key;
         }
 
+        /// <summary>
+        /// Tries to find type reference by the index on the TypeSpec list.
+        /// </summary>
+        /// <param name="index">Index of the type reference in the list.</param>
+        /// <returns>Returns the type reference if found, otherwise returns <c>null</c>.</returns>
+        public TypeReference TryGetTypeReferenceByIndex(ushort index)
+        {
+            if (index >= _idByTypeSpecifications.Count)
+            {
+                return null;
+            }
+
+            return _idByTypeSpecifications.ElementAt(index).Key;
+        }
+
         /// <inheritdoc/>
         public void Write(
             nanoBinaryWriter writer)
