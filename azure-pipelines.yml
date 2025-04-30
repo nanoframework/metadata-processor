@@ -431,13 +431,6 @@ jobs:
   - checkout: self
     fetchDepth: 1
 
-  # update dependents
-  # use this to make sure nuget package is published
-  - template: azure-pipelines-templates/update-dependents.yml@templates
-    parameters:
-      packageName: '$(nugetPackageName)'
-      repositoriesToUpdate:
-
   # update dependencies
   - task: PowerShell@2
     displayName: Update dependent class libs
