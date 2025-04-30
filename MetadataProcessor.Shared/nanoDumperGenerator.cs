@@ -734,6 +734,25 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                     }
                 }
 
+                foreach (var fr in _tablesContext.FieldReferencesTable.Items)
+                {
+                    if (_tablesContext.TypeSpecificationsTable.TryGetTypeReferenceId(fr.DeclaringType, out ushort referenceId) &&
+                        referenceId == index)
+                    {
+                        var memberRef = new MemberRef()
+                        {
+                            Name = fr.Name
+                        };
+                        if (_tablesContext.FieldReferencesTable.TryGetFieldReferenceId(fr, out ushort fieldRefId))
+                        {
+                            realToken = fr.MetadataToken.ToInt32().ToString("X8");
+                            memberRef.ReferenceId = $"[{new nanoMetadataToken(NanoClrTable.TBL_FieldRef, fieldRefId)}] /*{realToken}*/";
+                            memberRef.Signature = fr.FieldType.TypeSignatureAsString();
+                        }
+                        typeSpec.MemberReferences.Add(memberRef);
+                    }
+                }
+
                 Debug.Assert(typeSpec.MemberReferences.Count > 0, $"Couldn't find any MethodRef for TypeSpec[{typeReference}] {typeReference.FullName}");
             }
 
