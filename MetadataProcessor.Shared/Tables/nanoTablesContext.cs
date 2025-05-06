@@ -192,6 +192,8 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             MethodSpecificationTable = new nanoMethodSpecificationTable(methodSpecifications, this);
 
+            TypeSpecificationsTable = new nanoTypeSpecificationsTable(this);
+
             // build list of generic parameters belonging to method defs
             List<GenericParameter> methodDefsGenericParameters = new List<GenericParameter>();
 
@@ -203,8 +205,6 @@ namespace nanoFramework.Tools.MetadataProcessor
                             .ToList();
 
             GenericParamsTable = new nanoGenericParamTable(generics, this);
-
-            TypeSpecificationsTable = new nanoTypeSpecificationsTable(this);
 
             // Pre-allocate strings from some tables
             AssemblyReferenceTable.AllocateStrings();
