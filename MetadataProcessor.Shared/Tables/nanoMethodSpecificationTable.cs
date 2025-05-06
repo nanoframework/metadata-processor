@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using Mono.Cecil;
 using nanoFramework.Tools.MetadataProcessor.Core.Extensions;
 
@@ -65,7 +66,10 @@ namespace nanoFramework.Tools.MetadataProcessor
         public nanoMethodSpecificationTable(
             IEnumerable<MethodSpecification> items,
             nanoTablesContext context)
-            : base(items, new MemberReferenceComparer(), context)
+            : base(
+                  items.Distinct(new MemberReferenceComparer()),
+                  new MemberReferenceComparer(),
+                  context)
         {
         }
 
