@@ -76,7 +76,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         {
             foreach (var gp in items)
             {
-                var methodWithGenericParam = _context.MethodDefinitionTable.Items.SingleOrDefault(m => m.GenericParameters.Contains(gp));
+                MethodDefinition methodWithGenericParam = _context.MethodDefinitionTable.Items.SingleOrDefault(m => m.GenericParameters.Contains(gp));
 
                 if (methodWithGenericParam != null)
                 {
@@ -85,27 +85,63 @@ namespace nanoFramework.Tools.MetadataProcessor
                         mr => mr.DeclaringType.GetElementType() == methodWithGenericParam.DeclaringType &&
                         mr.Name == methodWithGenericParam.Name) as GenericInstanceMethod;
 
-                    Debug.Assert(instanceMethod != null, $"Couldn't find a method specification for type {methodWithGenericParam.DeclaringType} when processing generic parameter {gp}.");
+                    Debug.Assert(
+                        instanceMethod != null,
+                        $"Couldn't find a method specification for type {methodWithGenericParam.DeclaringType} when processing generic parameter {gp}.");
 
-                    _typeForGenericParam.Add(gp, instanceMethod.GenericArguments.ElementAt(gp.Position));
+                    _typeForGenericParam.Add(
+                        gp,
+                        instanceMethod.GenericArguments.ElementAt(gp.Position));
                 }
                 else
                 {
-                    var typeWithGenericParam = _context.TypeDefinitionTable.Items.SingleOrDefault(t => t.GenericParameters.Contains(gp));
+                    TypeDefinition typeWithGenericParam = _context.TypeDefinitionTable.Items.SingleOrDefault(t => t.GenericParameters.Contains(gp));
 
                     if (typeWithGenericParam != null)
                     {
                         if (_context.MethodReferencesTable.Items.Any())
                         {
-                            var genericInstance = _context.MethodReferencesTable.Items.FirstOrDefault(
-                                mr => mr.DeclaringType.GetElementType() == typeWithGenericParam)
-                                .DeclaringType as GenericInstanceType;
-                            Debug.Assert(genericInstance != null, $"Couldn't find a method reference for type {typeWithGenericParam} when processing generic parameter {gp}.");
+                            // try to find an existing GenericInstanceType in the TypeReferencesTable
+                            GenericInstanceType genericInstance = _context.TypeReferencesTable.Items
+                                .OfType<GenericInstanceType>()
+                                .FirstOrDefault(gt => gt.ElementType == typeWithGenericParam);
 
-                            _typeForGenericParam.Add(gp, genericInstance.GenericArguments.ElementAt(gp.Position));
+                            // fallback to whatever TryGetTypeSpecification gives us
+                            if (genericInstance == null)
+                            {
+                                TypeReference spec = _context.TypeSpecificationsTable.TryGetTypeSpecification(typeWithGenericParam.MetadataToken);
+
+                                // If it really is an instance, grab its args...
+                                if (spec is GenericInstanceType genericInstanceType)
+                                {
+                                    genericInstance = genericInstanceType;
+                                }
+                                else
+                                {
+                                    // ... otherwise it's just an open generic definition (unbound T),
+                                    // so our "argument" for gp is gp itself:
+                                    _typeForGenericParam.Add(gp, gp);
+
+                                    // done here
+                                    continue;
+                                }
+                            }
+
+                            // at this point we know we've got a GenericInstanceType,
+                            // so pull out the actual generic‐argument at position gp.Position:
+                            Debug.Assert(
+                                genericInstance != null,
+                                $"Couldn't find a generic instance for type {typeWithGenericParam} when processing generic parameter {gp}."
+                            );
+
+                            _typeForGenericParam.Add(
+                                gp,
+                                genericInstance.GenericArguments.ElementAt(gp.Position)
+                            );
                         }
                         else
                         {
+                            // No methods in scope → no instantiation possible
                             _typeForGenericParam.Add(gp, null);
                         }
                     }
