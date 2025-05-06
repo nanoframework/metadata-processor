@@ -350,6 +350,9 @@ namespace nanoFramework.Tools.MetadataProcessor
                     if (mr != null &&
                         mr.ReturnType != null)
                     {
+                        // keep the MemberRef itself
+                        set.Add(token);
+
                         if (mr.DeclaringType != null)
                         {
                             if (mr.DeclaringType is TypeSpecification)
@@ -451,10 +454,14 @@ namespace nanoFramework.Tools.MetadataProcessor
                     if (mr == null)
                     {
                         // try now with field references
-                        fr = _tablesContext.FieldReferencesTable.Items.FirstOrDefault(i => i.MetadataToken == token);
+                        fr = _tablesContext.FieldReferencesTable.Items
+                                 .FirstOrDefault(i => i.MetadataToken == token);
 
                         if (fr != null)
                         {
+                            // keep the MemberRef itself
+                            set.Add(token);
+
                             if (fr.DeclaringType != null)
                             {
                                 if (fr.DeclaringType is TypeSpecification)
@@ -497,7 +504,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                             {
                                 if (fr.FieldType.DeclaringType != null)
                                 {
-                                    set.Add(fr.FieldType.MetadataToken);
+                                    set.Add(fr.FieldType.DeclaringType.MetadataToken);
                                 }
                                 else
                                 {
@@ -676,8 +683,8 @@ namespace nanoFramework.Tools.MetadataProcessor
                     MethodDefinition md = _tablesContext.MethodDefinitionTable.Items.FirstOrDefault(i => i.MetadataToken == token);
 
                     // return value
-                    if (md.ReturnType.IsValueType &&
-                        !md.ReturnType.IsPrimitive)
+                    if (md.ReturnType.IsValueType
+                        && !md.ReturnType.IsPrimitive)
                     {
                         set.Add(md.ReturnType.MetadataToken);
                     }
@@ -739,10 +746,10 @@ namespace nanoFramework.Tools.MetadataProcessor
                             }
                             else
                             {
-                                if (parameterType.GetElementType().FullName != "System.Void" &&
-                                    parameterType.GetElementType().FullName != "System.String" &&
-                                    parameterType.GetElementType().FullName != "System.Object" &&
-                                    !parameterType.GetElementType().IsPrimitive)
+                                if (parameterType.GetElementType().FullName != "System.Void"
+                                    && parameterType.GetElementType().FullName != "System.String"
+                                    && parameterType.GetElementType().FullName != "System.Object"
+                                    && !parameterType.GetElementType().IsPrimitive)
                                 {
                                     set.Add(parameterType.GetElementType().MetadataToken);
                                 }
@@ -780,11 +787,11 @@ namespace nanoFramework.Tools.MetadataProcessor
                                 set.Add(parameterType.DeclaringType.MetadataToken);
                             }
                         }
-                        else if (!parameterType.IsValueType &&
-                                 !parameterType.IsPrimitive &&
-                                  parameterType.FullName != "System.Void" &&
-                                  parameterType.FullName != "System.String" &&
-                                  parameterType.FullName != "System.Object")
+                        else if (!parameterType.IsValueType
+                                 && !parameterType.IsPrimitive
+                                 && parameterType.FullName != "System.Void"
+                                 && parameterType.FullName != "System.String"
+                                 && parameterType.FullName != "System.Object")
                         {
                             set.Add(parameterType.MetadataToken);
                         }
@@ -814,16 +821,16 @@ namespace nanoFramework.Tools.MetadataProcessor
                             }
                             else if (v.VariableType.MetadataType == MetadataType.Array)
                             {
-                                if (v.VariableType.GetElementType().FullName != "System.Void" &&
-                                    v.VariableType.GetElementType().FullName != "System.String" &&
-                                    v.VariableType.GetElementType().FullName != "System.Object" &&
-                                    !v.VariableType.GetElementType().IsPrimitive)
+                                if (v.VariableType.GetElementType().FullName != "System.Void"
+                                    && v.VariableType.GetElementType().FullName != "System.String"
+                                    && v.VariableType.GetElementType().FullName != "System.Object"
+                                    && !v.VariableType.GetElementType().IsPrimitive)
                                 {
                                     set.Add(v.VariableType.GetElementType().MetadataToken);
                                 }
                             }
-                            else if (v.VariableType.IsValueType &&
-                                    !v.VariableType.IsPrimitive)
+                            else if (v.VariableType.IsValueType
+                                     && !v.VariableType.IsPrimitive)
                             {
                                 set.Add(v.VariableType.MetadataToken);
                             }
@@ -857,62 +864,229 @@ namespace nanoFramework.Tools.MetadataProcessor
                         // op codes
                         foreach (Instruction i in md.Body.Instructions)
                         {
-                            if (i.Operand is MethodReference)
+                            if (i.Operand is GenericInstanceMethod genericInstanceMethod)
                             {
-                                var methodReferenceType = i.Operand as MethodReference;
-
-                                set.Add(methodReferenceType.MetadataToken);
-
-                                if (_tablesContext.MethodReferencesTable.TryGetMethodReferenceId(methodReferenceType, out ushort referenceId))
+                                // add the MethodSpec token for this instantiation
+                                if (_tablesContext.MethodSpecificationTable.TryGetMethodSpecificationId(
+                                    genericInstanceMethod,
+                                    out ushort methodSpecId))
                                 {
-                                    if (methodReferenceType.DeclaringType != null &&
-                                       methodReferenceType.DeclaringType.IsGenericInstance)
+                                    set.Add(genericInstanceMethod.MetadataToken);
+                                }
+
+                                // also keep the underlying generic‐method definition
+                                set.Add(genericInstanceMethod.ElementMethod.MetadataToken);
+
+                                // if the declaring type is itself a TypeSpec, add it too
+                                // Cecil.Mono has a bug providing TypeSpecs Metadata tokens generic parameters variables, so we need to check against our internal table and build one from it
+                                if (genericInstanceMethod.DeclaringType is TypeSpecification ts
+                                    && _tablesContext.TypeSpecificationsTable.TryGetTypeReferenceId(ts, out ushort typeSpecId))
+                                {
+                                    // add "fabricated" token for TypeSpec using the referenceId as RID
+                                    set.Add(new MetadataToken(TokenType.TypeSpec, typeSpecId));
+
+                                    // add the metadata token for the element type
+                                    set.Add(ts.GetElementType().MetadataToken);
+                                }
+
+                                // capture the *return‐type* of the instantiation (e.g. T[] for Array.Empty<T>())
+                                TypeReference returnType = genericInstanceMethod.ReturnType;
+                                if (returnType is ArrayType arrayType)
+                                {
+                                    // Cecil.Mono has a bug providing TypeSpecs Metadata tokens generic parameters variables, so we need to check against our internal table and build one from it
+                                    if (_tablesContext.TypeSpecificationsTable
+                                            .TryGetTypeReferenceId(arrayType, out ushort arraySpecId))
+                                    {
+                                        // add "fabricated" token for TypeSpec using the referenceId as RID
+                                        set.Add(new MetadataToken(TokenType.TypeSpec, arraySpecId));
+
+                                        set.Add(arrayType.GetElementType().MetadataToken);
+                                    }
+                                    else
+                                    {
+                                        Debug.Fail($"Missing Array TypeSpec for {arrayType}");
+                                    }
+
+                                    // still pin the element T itself
+                                    TypeReference elementType = arrayType.GetElementType();
+                                    if (elementType.FullName != "System.Void" && !elementType.IsPrimitive)
+                                    {
+                                        set.Add(elementType.MetadataToken);
+                                    }
+                                }
+                                else if (returnType.MetadataType == MetadataType.Class
+                                    || (returnType.IsValueType && !returnType.IsPrimitive))
+                                {
+                                    set.Add(returnType.MetadataToken);
+                                }
+                                else if (returnType is GenericInstanceType genericInstanceType)
+                                {
+                                    set.Add(genericInstanceType.MetadataToken);
+                                    set.Add(genericInstanceType.ElementType.MetadataToken);
+                                }
+
+                                // capture any *parameter* types
+                                foreach (ParameterDefinition p in genericInstanceMethod.Parameters)
+                                {
+                                    TypeReference parameterType = p.ParameterType;
+
+                                    if (parameterType is ArrayType at)
                                     {
                                         // Cecil.Mono has a bug providing TypeSpecs Metadata tokens generic parameters variables, so we need to check against our internal table and build one from it
-                                        if (_tablesContext.TypeSpecificationsTable.TryGetTypeReferenceId(methodReferenceType.DeclaringType, out referenceId))
+                                        if (_tablesContext.TypeSpecificationsTable.TryGetTypeReferenceId(at, out ushort atSpecId))
                                         {
                                             // add "fabricated" token for TypeSpec using the referenceId as RID
-                                            set.Add(new MetadataToken(
-                                                TokenType.TypeSpec,
-                                                referenceId));
+                                            set.Add(new MetadataToken(TokenType.TypeSpec, atSpecId));
 
-                                            // add the metadata token for the element type
-                                            set.Add(methodReferenceType.DeclaringType.GetElementType().MetadataToken);
+                                            set.Add(at.GetElementType().MetadataToken);
                                         }
                                         else
                                         {
-                                            Debug.Fail($"Couldn't find a TypeSpec entry for {methodReferenceType.DeclaringType}");
+                                            Debug.Fail($"Missing Array TypeSpec for {at}");
                                         }
+
+                                        TypeReference elementType = at.GetElementType();
+                                        if (elementType.FullName != "System.Void" && !elementType.IsPrimitive)
+                                        {
+                                            set.Add(elementType.MetadataToken);
+                                        }
+                                    }
+                                    else if (parameterType.MetadataType == MetadataType.Class
+                                        || (parameterType.IsValueType && !parameterType.IsPrimitive))
+                                    {
+                                        set.Add(parameterType.MetadataToken);
+                                    }
+                                    else if (parameterType is GenericInstanceType genericInstanceType)
+                                    {
+                                        set.Add(genericInstanceType.MetadataToken);
+                                        set.Add(genericInstanceType.ElementType.MetadataToken);
+                                    }
+                                }
+
+                                // after handling a GenericInstanceMethod, OK skip the other branches
+                                continue;
+                            }
+                            // catch MethodSpecification operands too, before falling back to plain MethodReference
+                            else if (i.Operand is MethodSpecification methodSpec)
+                            {
+                                // keep the MethodSpec itself
+                                set.Add(methodSpec.MetadataToken);
+
+                                // also pin the generic‐definition behind it, if any
+                                if (methodSpec is GenericInstanceMethod gim)
+                                {
+                                    set.Add(gim.ElementMethod.MetadataToken);
+                                }
+
+                                // now capture its return‐type just like above
+                                TypeReference returnType = (i.Operand as MethodReference).ReturnType;
+                                if (returnType is ArrayType arrayType)
+                                {
+                                    if (_tablesContext.TypeSpecificationsTable.TryGetTypeReferenceId(
+                                        arrayType,
+                                        out ushort arraySpecId))
+                                    {
+                                        set.Add(new MetadataToken(TokenType.TypeSpec, arraySpecId));
+                                        set.Add(arrayType.GetElementType().MetadataToken);
+                                    }
+                                    else
+                                    {
+                                        Debug.Fail($"Missing Array TypeSpec for {arrayType}");
+                                    }
+
+                                    TypeReference elementType = arrayType.ElementType;
+                                    if (elementType.FullName != "System.Void" && !elementType.IsPrimitive)
+                                    {
+                                        set.Add(elementType.MetadataToken);
+                                    }
+                                }
+                                else if (returnType.MetadataType == MetadataType.Class
+                                    || (returnType.IsValueType && !returnType.IsPrimitive))
+                                {
+                                    set.Add(returnType.MetadataToken);
+                                }
+                                else if (returnType is GenericInstanceType gitRt)
+                                {
+                                    set.Add(gitRt.MetadataToken);
+                                    set.Add(gitRt.ElementType.MetadataToken);
+                                }
+
+                                // capture any parameters
+                                foreach (ParameterDefinition p in ((MethodReference)i.Operand).Parameters)
+                                {
+                                    TypeReference typeReference = p.ParameterType;
+
+                                    if (typeReference.IsArray)
+                                    {
+                                        set.Add(typeReference.MetadataToken);
+
+                                        TypeReference e = typeReference.GetElementType();
+
+                                        if (e.FullName != "System.Void" && !e.IsPrimitive)
+                                        {
+                                            set.Add(e.MetadataToken);
+                                        }
+                                    }
+                                    else if (typeReference.MetadataType == MetadataType.Class
+                                        || (typeReference.IsValueType && !typeReference.IsPrimitive))
+                                    {
+                                        set.Add(typeReference.MetadataToken);
+                                    }
+                                    else if (typeReference is GenericInstanceType genericInstanceType)
+                                    {
+                                        set.Add(genericInstanceType.MetadataToken);
+                                        set.Add(genericInstanceType.ElementType.MetadataToken);
                                     }
                                 }
                             }
-                            else if (i.Operand is FieldReference ||
-                                     i.Operand is TypeDefinition ||
-                                     i.Operand is MethodSpecification ||
-                                     i.Operand is TypeReference)
+                            else if (i.Operand is MethodReference methodReference)
+                            {
+                                // keep the MemberRef itself
+                                set.Add(methodReference.MetadataToken);
+
+                                // unconditionally pin its declaring type:
+                                // if it's a generic instantiation, grab our fabricated TypeSpec
+                                if (methodReference.DeclaringType is TypeSpecification ts
+                                    && _tablesContext.TypeSpecificationsTable.TryGetTypeReferenceId(ts, out ushort tsRid))
+                                {
+                                    // add "fabricated" token for TypeSpec using the referenceId as RID
+                                    set.Add(new MetadataToken(TokenType.TypeSpec, tsRid));
+                                    set.Add(ts.GetElementType().MetadataToken);
+                                }
+                                else
+                                {
+                                    // otherwise a naked TypeRef or TypeDef
+                                    set.Add(methodReference.DeclaringType.MetadataToken);
+                                }
+
+                                // done here
+                                continue;
+                            }
+
+                            else if (i.Operand is FieldReference
+                                || i.Operand is TypeDefinition
+                                || i.Operand is MethodSpecification
+                                || i.Operand is TypeReference)
                             {
                                 set.Add(((IMetadataTokenProvider)i.Operand).MetadataToken);
                             }
-                            else if (
-                                i.OpCode.OperandType is OperandType.InlineType ||
-                                i.Operand is GenericInstanceType ||
-                                i.Operand is GenericInstanceMethod ||
-                                i.Operand is GenericParameter)
+                            else if (i.OpCode.OperandType == OperandType.InlineType
+                                || i.Operand is GenericInstanceType
+                                || i.Operand is GenericParameter)
                             {
-                                var opType = (TypeReference)i.Operand;
-
+                                TypeReference opType = (TypeReference)i.Operand;
                                 MetadataToken opToken = ((IMetadataTokenProvider)i.Operand).MetadataToken;
 
                                 if (opToken.TokenType == TokenType.TypeSpec)
                                 {
-                                    // Cecil.Mono has a bug providing TypeSpecs Metadata tokens generic parameters variables, so we need to check against our internal table and build one from it
-                                    if (_tablesContext.TypeSpecificationsTable.TryGetTypeReferenceId(opType, out ushort referenceId))
+                                    // Cecil.Mono has a bug providing TypeSpecs Metadata tokens generic parameters variables,
+                                    // so we need to check against our internal table and build one from it
+                                    if (_tablesContext.TypeSpecificationsTable.TryGetTypeReferenceId(
+                                        opType,
+                                        out ushort referenceId))
                                     {
                                         // add "fabricated" token for TypeSpec using the referenceId as RID
-                                        set.Add(new MetadataToken(
-                                            TokenType.TypeSpec,
-                                            referenceId));
-
+                                        set.Add(new MetadataToken(TokenType.TypeSpec, referenceId));
                                         // add the metadata token for the element type
                                         set.Add(opType.GetElementType().MetadataToken);
                                     }
@@ -926,13 +1100,15 @@ namespace nanoFramework.Tools.MetadataProcessor
                                     set.Add(opToken);
                                 }
                             }
-                            else if (i.Operand is string)
+                            else if (i.Operand is string s)
                             {
-                                ushort stringId = _tablesContext.StringTable.GetOrCreateStringId((string)i.Operand);
-
-                                var newToken = new MetadataToken(TokenType.String, stringId);
-
-                                set.Add(newToken);
+                                ushort stringId = _tablesContext.StringTable.GetOrCreateStringId(s);
+                                set.Add(new MetadataToken(TokenType.String, stringId));
+                            }
+                            else if (i.Operand is MemberReference anyMemberRef)
+                            {
+                                // catch‐all for anything we didn't explicitly handle
+                                set.Add(anyMemberRef.MetadataToken);
                             }
                         }
 
@@ -966,10 +1142,10 @@ namespace nanoFramework.Tools.MetadataProcessor
                     // have to do it the hard way: search the type definition that contains the interface
                     foreach (TypeDefinition t in _tablesContext.TypeDefinitionTable.Items)
                     {
-                        InterfaceImplementation ii1 = t.Interfaces.FirstOrDefault(i => i.MetadataToken == token);
-                        if (ii1 != null)
+                        InterfaceImplementation interfaceImplementation = t.Interfaces.FirstOrDefault(i => i.MetadataToken == token);
+                        if (interfaceImplementation != null)
                         {
-                            set.Add(ii1.InterfaceType.MetadataToken);
+                            set.Add(interfaceImplementation.InterfaceType.MetadataToken);
                             set.Add(t.MetadataToken);
 
                             break;
@@ -983,7 +1159,88 @@ namespace nanoFramework.Tools.MetadataProcessor
 
                     if (ms != null)
                     {
+                        // pin the MethodSpec row itself
                         set.Add(token);
+
+                        // pin the underlying generic‐method definition
+                        MetadataToken methodDefTok = ms.MetadataToken;
+                        set.Add(methodDefTok);
+
+                        // pin its declaring type (TypeSpec or plain TypeRef)
+                        TypeReference dt = ms.DeclaringType;
+
+                        if (dt is TypeSpecification ts
+                            && _tablesContext.TypeSpecificationsTable.TryGetTypeReferenceId(ts, out ushort typeSpecRefId))
+                        {
+                            // add "fabricated" token for TypeSpec using the referenceId as RID
+                            set.Add(new MetadataToken(TokenType.TypeSpec, typeSpecRefId));
+                            set.Add(ts.GetElementType().MetadataToken);
+                        }
+                        else
+                        {
+                            set.Add(dt.MetadataToken);
+                        }
+
+                        // pin the RETURN type of this instantiation
+                        TypeReference ret = ms.ReturnType;
+                        if (ret is ArrayType arr)
+                        {
+                            if (_tablesContext.TypeSpecificationsTable.TryGetTypeReferenceId(
+                                arr,
+                                out ushort arrRid))
+                            {
+                                // add "fabricated" token for TypeSpec using the referenceId as RID
+                                set.Add(new MetadataToken(TokenType.TypeSpec, arrRid));
+
+                                set.Add(arr.GetElementType().MetadataToken);
+                            }
+                            else
+                            {
+                                Debug.Fail($"Missing Array TypeSpec for {arr}");
+                            }
+
+                            set.Add(arr.ElementType.MetadataToken);
+                        }
+                        else if (ret.MetadataType == MetadataType.Class
+                                 || (ret.IsValueType && !ret.IsPrimitive))
+                        {
+                            set.Add(ret.MetadataToken);
+                        }
+                        else if (ret is GenericInstanceType genericInstanceType)
+                        {
+                            set.Add(genericInstanceType.MetadataToken);
+                            set.Add(genericInstanceType.ElementType.MetadataToken);
+                        }
+
+                        // pin each PARAMETER type as well
+                        foreach (ParameterDefinition p in ms.Parameters)
+                        {
+                            TypeReference parameterType = p.ParameterType;
+
+                            if (parameterType is ArrayType ap)
+                            {
+                                // same ArrayType-lookup as above
+                                if (_tablesContext.TypeSpecificationsTable.TryGetTypeReferenceId(
+                                    ap,
+                                    out ushort apRid))
+                                {
+                                    // add "fabricated" token for TypeSpec using the referenceId as RID
+                                    set.Add(new MetadataToken(TokenType.TypeSpec, apRid));
+                                }
+
+                                set.Add(ap.ElementType.MetadataToken);
+                            }
+                            else if (parameterType.MetadataType == MetadataType.Class
+                                     || (parameterType.IsValueType && !parameterType.IsPrimitive))
+                            {
+                                set.Add(parameterType.MetadataToken);
+                            }
+                            else if (parameterType is GenericInstanceType genericInstanceType)
+                            {
+                                set.Add(genericInstanceType.MetadataToken);
+                                set.Add(genericInstanceType.ElementType.MetadataToken);
+                            }
+                        }
                     }
                     break;
 
@@ -1041,7 +1298,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                     break;
 
                 case TokenType.TypeDef:
-                    TypeDefinition td = _tablesContext.TypeDefinitionTable.Items.FirstOrDefault(i => i.MetadataToken == token);
+                    TypeReference td = _tablesContext.TypeDefinitionTable.Items.FirstOrDefault(i => i.MetadataToken == token);
 
                     if (td.DeclaringType != null)
                     {
@@ -1148,7 +1405,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                         else
                         {
                             // try now with generic parameters
-                            GenericParameter gr = _tablesContext.GenericParamsTable.Items.FirstOrDefault(g => g.MetadataToken == token);
+                            TypeReference gr = _tablesContext.GenericParamsTable.Items.FirstOrDefault(g => g.MetadataToken == token);
 
                             if (gr != null)
                             {
@@ -1278,5 +1535,52 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             yield return nanoEmptyTable.Instance;
         }
+
+        /// <summary>
+        /// Pins any TypeReference into your dependency set: classes, structs, array-of-generics, etc.
+        /// </summary>
+        private void PinType(TypeReference t, HashSet<MetadataToken> set)
+        {
+            if (t is ArrayType at)
+            {
+                // arrays → use your fabricated TypeSpec
+                if (_tablesContext.TypeSpecificationsTable.TryGetTypeReferenceId(at, out ushort arrRid))
+                {
+                    set.Add(new MetadataToken(TokenType.TypeSpec, arrRid));
+                }
+                else
+                {
+                    Debug.Fail($"Missing Array TypeSpec for {at}");
+                }
+
+                // then pin the element
+                TypeReference elem = at.ElementType;
+                if (elem.MetadataType != MetadataType.Void && !elem.IsPrimitive)
+                {
+                    set.Add(elem.MetadataToken);
+                }
+            }
+            else if (t is TypeSpecification ts)
+            {
+                // generic instances, pointers, by-ref, modifiers → TypeSpec + element
+                if (_tablesContext.TypeSpecificationsTable.TryGetTypeReferenceId(ts, out ushort specRid))
+                {
+                    set.Add(new MetadataToken(TokenType.TypeSpec, specRid));
+                }
+                else
+                {
+                    Debug.Fail($"Missing TypeSpec for {ts}");
+                }
+
+                set.Add(ts.GetElementType().MetadataToken);
+            }
+            else if (t.MetadataType == MetadataType.Class
+                     || (t.IsValueType && !t.IsPrimitive))
+            {
+                // plain class or struct
+                set.Add(t.MetadataToken);
+            }
+        }
+
     }
 }
