@@ -11,7 +11,6 @@ using System.Linq;
 using System.Text;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using Mono.Collections.Generic;
 using nanoFramework.Tools.MetadataProcessor.Core.Extensions;
 
 namespace nanoFramework.Tools.MetadataProcessor
@@ -72,12 +71,12 @@ namespace nanoFramework.Tools.MetadataProcessor
                 _isCoreLibrary);
             header.Write(binaryWriter, true);
 
-            foreach (var table in GetTables(_tablesContext))
+            foreach (InanoTable table in GetTables(_tablesContext))
             {
-                var tableBegin = (binaryWriter.BaseStream.Position + 3) & 0xFFFFFFFC;
+                long tableBegin = (binaryWriter.BaseStream.Position + 3) & 0xFFFFFFFC;
                 table.Write(binaryWriter);
 
-                var padding = (4 - ((binaryWriter.BaseStream.Position - tableBegin) % 4)) % 4;
+                long padding = (4 - ((binaryWriter.BaseStream.Position - tableBegin) % 4)) % 4;
                 binaryWriter.WriteBytes(new byte[padding]);
 
                 header.UpdateTableOffset(binaryWriter, tableBegin, padding);
@@ -98,10 +97,10 @@ namespace nanoFramework.Tools.MetadataProcessor
             // remove unused types
 
             // build collection with all types except the ones to exclude
-            var setNew = new HashSet<MetadataToken>();
-            var set = new HashSet<MetadataToken>();
+            HashSet<MetadataToken> setNew = new HashSet<MetadataToken>();
+            HashSet<MetadataToken> set = new HashSet<MetadataToken>();
 
-            foreach (var t in _tablesContext.TypeDefinitionTable.Items)
+            foreach (TypeDefinition t in _tablesContext.TypeDefinitionTable.Items)
             {
                 if (!t.IsToExclude())
                 {
@@ -109,22 +108,25 @@ namespace nanoFramework.Tools.MetadataProcessor
                 }
                 else
                 {
-                    if (_verbose) System.Console.WriteLine($"Excluding {t.FullName}");
+                    if (_verbose)
+                    {
+                        Console.WriteLine($"Excluding {t.FullName}");
+                    }
                 }
             }
 
             while (setNew.Count > 0)
             {
-                var setAdd = new HashSet<MetadataToken>();
+                HashSet<MetadataToken> setAdd = new HashSet<MetadataToken>();
 
-                foreach (var t in setNew.OrderBy(t => t.ToInt32()))
+                foreach (MetadataToken t in setNew.OrderBy(t => t.ToInt32()))
                 {
                     set.Add(t);
 
                     if (_verbose)
                     {
-                        var typeDescription = TokenToString(t);
-                        System.Console.WriteLine($"Including {typeDescription}");
+                        string typeDescription = TokenToString(t);
+                        Console.WriteLine($"Including {typeDescription}");
                     }
 
                     HashSet<MetadataToken> setTmp;
@@ -146,7 +148,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                     }
 
                     // copy type def
-                    foreach (var td in setTmp.OrderBy(mt => mt.ToInt32()))
+                    foreach (MetadataToken td in setTmp.OrderBy(mt => mt.ToInt32()))
                     {
                         setAdd.Add(td);
                     }
@@ -155,7 +157,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                 // remove type
                 setNew = new HashSet<MetadataToken>();
 
-                foreach (var t in setAdd.OrderBy(mt => mt.ToInt32()))
+                foreach (MetadataToken t in setAdd.OrderBy(mt => mt.ToInt32()))
                 {
                     if (!set.Contains(t))
                     {
@@ -186,12 +188,12 @@ namespace nanoFramework.Tools.MetadataProcessor
             // renormalise type definitions look-up tables
             // by removing items that are not used
 
-            foreach (var c in _tablesContext.TypeDefinitionTable.Items)
+            foreach (TypeDefinition c in _tablesContext.TypeDefinitionTable.Items)
             {
                 // collect fields to remove
                 List<FieldDefinition> fieldsToRemove = new List<FieldDefinition>();
 
-                foreach (var f in c.Fields)
+                foreach (FieldDefinition f in c.Fields)
                 {
                     if (_tablesContext.FieldsTable.Items.FirstOrDefault(i => i.MetadataToken == f.MetadataToken) == null)
                     {
@@ -205,7 +207,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                 // collect methods to remove
                 List<MethodDefinition> methodsToRemove = new List<MethodDefinition>();
 
-                foreach (var m in c.Methods)
+                foreach (MethodDefinition m in c.Methods)
                 {
                     if (_tablesContext.MethodDefinitionTable.Items.FirstOrDefault(i => i.MetadataToken == m.MetadataToken) == null)
                     {
@@ -219,16 +221,16 @@ namespace nanoFramework.Tools.MetadataProcessor
                 // collect interfaces to remove
                 List<InterfaceImplementation> interfacesToRemove = new List<InterfaceImplementation>();
 
-                foreach (var i in c.Interfaces)
+                foreach (InterfaceImplementation i in c.Interfaces)
                 {
                     // remove unused interfaces
                     bool used = false;
 
                     // because we don't have an interface definition table
                     // have to do it the hard way: search the type definition that contains the interface type
-                    foreach (var t in _tablesContext.TypeDefinitionTable.Items)
+                    foreach (TypeDefinition t in _tablesContext.TypeDefinitionTable.Items)
                     {
-                        var ii1 = t.Interfaces.FirstOrDefault(ii => ii.MetadataToken == i.MetadataToken);
+                        InterfaceImplementation ii1 = t.Interfaces.FirstOrDefault(ii => ii.MetadataToken == i.MetadataToken);
                         if (ii1 != null)
                         {
                             used = true;
@@ -252,9 +254,9 @@ namespace nanoFramework.Tools.MetadataProcessor
 
         private void ShowDependencies(MetadataToken token, HashSet<MetadataToken> set, HashSet<MetadataToken> setTmp)
         {
-            var tokenFrom = TokenToString(token);
+            string tokenFrom = TokenToString(token);
 
-            foreach (var m in setTmp.OrderBy(mt => mt.ToInt32()))
+            foreach (MetadataToken m in setTmp.OrderBy(mt => mt.ToInt32()))
             {
                 if (!set.Contains(m))
                 {
@@ -291,9 +293,9 @@ namespace nanoFramework.Tools.MetadataProcessor
 
         private void ShowDependencies(int token, HashSet<int> set, HashSet<int> setTmp)
         {
-            var tokenFrom = TokenToString(token);
+            string tokenFrom = TokenToString(token);
 
-            foreach (var m in setTmp.OrderBy(mt => mt))
+            foreach (int m in setTmp.OrderBy(mt => mt))
             {
                 if (!set.Contains(m))
                 {
@@ -304,7 +306,7 @@ namespace nanoFramework.Tools.MetadataProcessor
 
         private HashSet<int> BuildDependencyList(int token)
         {
-            var tokens = BuildDependencyList(_tablesContext.AssemblyDefinition.MainModule.LookupToken(token).MetadataToken);
+            HashSet<MetadataToken> tokens = BuildDependencyList(_tablesContext.AssemblyDefinition.MainModule.LookupToken(token).MetadataToken);
 
             var output = new HashSet<int>();
 
@@ -315,12 +317,12 @@ namespace nanoFramework.Tools.MetadataProcessor
 
         private HashSet<MetadataToken> BuildDependencyList(MetadataToken token)
         {
-            var set = new HashSet<MetadataToken>();
+            HashSet<MetadataToken> set = new HashSet<MetadataToken>();
 
             switch (token.TokenType)
             {
                 case TokenType.TypeRef:
-                    var tr = _tablesContext.TypeReferencesTable.Items.FirstOrDefault(i => i.MetadataToken == token);
+                    TypeReference tr = _tablesContext.TypeReferencesTable.Items.FirstOrDefault(i => i.MetadataToken == token);
 
                     if (tr.IsNested)
                     {
@@ -340,12 +342,10 @@ namespace nanoFramework.Tools.MetadataProcessor
 
                 case TokenType.MemberRef:
 
-                    Collection<ParameterDefinition> parameters = null;
-
                     FieldReference fr = null;
 
                     // try to find a method reference
-                    var mr = _tablesContext.MethodReferencesTable.Items.FirstOrDefault(i => i.MetadataToken == token);
+                    MethodReference mr = _tablesContext.MethodReferencesTable.Items.FirstOrDefault(i => i.MetadataToken == token);
 
                     if (mr != null &&
                         mr.ReturnType != null)
@@ -417,11 +417,11 @@ namespace nanoFramework.Tools.MetadataProcessor
                         }
 
                         // parameters
-                        foreach (var p in mr.Parameters)
+                        foreach (ParameterDefinition p in mr.Parameters)
                         {
                             if (p.ParameterType.DeclaringType != null)
                             {
-                                var resolvedType = p.ParameterType.Resolve();
+                                TypeDefinition resolvedType = p.ParameterType.Resolve();
                                 if (resolvedType != null && resolvedType.IsEnum)
                                 {
                                     set.Add(p.ParameterType.MetadataToken);
@@ -501,7 +501,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                                 }
                                 else
                                 {
-                                    var elementType = fr.FieldType.GetElementType();
+                                    TypeReference elementType = fr.FieldType.GetElementType();
 
                                     if (elementType.FullName != "System.Void" &&
                                          elementType.FullName != "System.String" &&
@@ -555,7 +555,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                     break;
 
                 case TokenType.TypeDef:
-                    var td = _tablesContext.TypeDefinitionTable.Items.FirstOrDefault(i => i.MetadataToken == token);
+                    TypeDefinition td = _tablesContext.TypeDefinitionTable.Items.FirstOrDefault(i => i.MetadataToken == token);
 
                     if (td.BaseType != null)
                     {
@@ -568,7 +568,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                     }
 
                     // include attributes
-                    foreach (var c in td.CustomAttributes)
+                    foreach (CustomAttribute c in td.CustomAttributes)
                     {
                         if (!nanoTablesContext.ClassNamesToExclude.Contains(c.AttributeType.FullName) &&
                             c.AttributeType.IsToInclude())
@@ -578,9 +578,9 @@ namespace nanoFramework.Tools.MetadataProcessor
                     }
 
                     // fields
-                    var tdFields = td.Fields.Where(f => !f.IsLiteral);
+                    IEnumerable<FieldDefinition> tdFields = td.Fields.Where(f => !f.IsLiteral);
 
-                    foreach (var f in tdFields)
+                    foreach (FieldDefinition f in tdFields)
                     {
                         if (!nanoTablesContext.ClassNamesToExclude.Contains(f.DeclaringType.FullName))
                         {
@@ -589,7 +589,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                     }
 
                     // generic parameters
-                    foreach (var g in td.GenericParameters)
+                    foreach (GenericParameter g in td.GenericParameters)
                     {
                         if (!nanoTablesContext.ClassNamesToExclude.Contains(g.DeclaringType.FullName))
                         {
@@ -598,7 +598,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                     }
 
                     // methods
-                    foreach (var m in td.Methods)
+                    foreach (MethodDefinition m in td.Methods)
                     {
                         if (!nanoTablesContext.ClassNamesToExclude.Contains(m.DeclaringType.FullName))
                         {
@@ -607,7 +607,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                     }
 
                     // interfaces
-                    foreach (var i in td.Interfaces)
+                    foreach (InterfaceImplementation i in td.Interfaces)
                     {
                         if (!nanoTablesContext.ClassNamesToExclude.Contains(i.InterfaceType.FullName))
                         {
@@ -618,7 +618,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                     break;
 
                 case TokenType.Field:
-                    var fd = _tablesContext.FieldsTable.Items.FirstOrDefault(i => i.MetadataToken == token);
+                    FieldDefinition fd = _tablesContext.FieldsTable.Items.FirstOrDefault(i => i.MetadataToken == token);
 
                     if (fd is TypeReference)
                     {
@@ -661,7 +661,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                     }
 
                     // attributes
-                    foreach (var c in fd.CustomAttributes)
+                    foreach (CustomAttribute c in fd.CustomAttributes)
                     {
                         if (!nanoTablesContext.ClassNamesToExclude.Contains(c.AttributeType.FullName) &&
                             c.AttributeType.IsToInclude())
@@ -673,7 +673,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                     break;
 
                 case TokenType.Method:
-                    var md = _tablesContext.MethodDefinitionTable.Items.FirstOrDefault(i => i.MetadataToken == token);
+                    MethodDefinition md = _tablesContext.MethodDefinitionTable.Items.FirstOrDefault(i => i.MetadataToken == token);
 
                     // return value
                     if (md.ReturnType.IsValueType &&
@@ -711,14 +711,14 @@ namespace nanoFramework.Tools.MetadataProcessor
                     // generic parameters
                     if (md.HasGenericParameters)
                     {
-                        foreach (var gp in md.GenericParameters)
+                        foreach (GenericParameter gp in md.GenericParameters)
                         {
                             set.Add(gp.MetadataToken);
                         }
                     }
 
                     // parameters
-                    foreach (var p in md.Parameters)
+                    foreach (ParameterDefinition p in md.Parameters)
                     {
                         TypeReference parameterType = null;
 
@@ -766,7 +766,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                         {
                             set.Add(parameterType.MetadataToken);
 
-                            foreach (var gp in parameterType.GenericParameters)
+                            foreach (GenericParameter gp in parameterType.GenericParameters)
                             {
                                 set.Add(gp.MetadataToken);
                                 if (parameterType.DeclaringType != null)
@@ -793,11 +793,11 @@ namespace nanoFramework.Tools.MetadataProcessor
                     if (md.HasBody)
                     {
                         // variables
-                        foreach (var v in md.Body.Variables)
+                        foreach (VariableDefinition v in md.Body.Variables)
                         {
                             if (v.VariableType.DeclaringType != null)
                             {
-                                var resolvedType = v.VariableType.Resolve();
+                                TypeDefinition resolvedType = v.VariableType.Resolve();
 
                                 if (resolvedType != null && resolvedType.IsEnum)
                                 {
@@ -847,7 +847,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                             }
                             else if (v.VariableType.IsPointer)
                             {
-                                var message = $"Pointer types in unsafe code aren't supported. Can't use {v.VariableType} variable in \"{md.FullName}\".";
+                                string message = $"Pointer types in unsafe code aren't supported. Can't use {v.VariableType} variable in \"{md.FullName}\".";
 
                                 Console.WriteLine(message);
                                 throw new Exception(message);
@@ -855,7 +855,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                         }
 
                         // op codes
-                        foreach (var i in md.Body.Instructions)
+                        foreach (Instruction i in md.Body.Instructions)
                         {
                             if (i.Operand is MethodReference)
                             {
@@ -901,7 +901,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                             {
                                 var opType = (TypeReference)i.Operand;
 
-                                var opToken = ((IMetadataTokenProvider)i.Operand).MetadataToken;
+                                MetadataToken opToken = ((IMetadataTokenProvider)i.Operand).MetadataToken;
 
                                 if (opToken.TokenType == TokenType.TypeSpec)
                                 {
@@ -928,7 +928,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                             }
                             else if (i.Operand is string)
                             {
-                                var stringId = _tablesContext.StringTable.GetOrCreateStringId((string)i.Operand);
+                                ushort stringId = _tablesContext.StringTable.GetOrCreateStringId((string)i.Operand);
 
                                 var newToken = new MetadataToken(TokenType.String, stringId);
 
@@ -937,7 +937,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                         }
 
                         // exceptions
-                        foreach (var e in md.Body.ExceptionHandlers)
+                        foreach (ExceptionHandler e in md.Body.ExceptionHandlers)
                         {
                             if (e.HandlerType != Mono.Cecil.Cil.ExceptionHandlerType.Filter)
                             {
@@ -950,7 +950,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                     }
 
                     // attributes
-                    foreach (var c in md.CustomAttributes)
+                    foreach (CustomAttribute c in md.CustomAttributes)
                     {
                         if (!nanoTablesContext.ClassNamesToExclude.Contains(c.AttributeType.FullName) &&
                             c.AttributeType.IsToInclude())
@@ -964,9 +964,9 @@ namespace nanoFramework.Tools.MetadataProcessor
                 case TokenType.InterfaceImpl:
                     // because we don't have an interface definition table
                     // have to do it the hard way: search the type definition that contains the interface
-                    foreach (var t in _tablesContext.TypeDefinitionTable.Items)
+                    foreach (TypeDefinition t in _tablesContext.TypeDefinitionTable.Items)
                     {
-                        var ii1 = t.Interfaces.FirstOrDefault(i => i.MetadataToken == token);
+                        InterfaceImplementation ii1 = t.Interfaces.FirstOrDefault(i => i.MetadataToken == token);
                         if (ii1 != null)
                         {
                             set.Add(ii1.InterfaceType.MetadataToken);
@@ -979,7 +979,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                     break;
 
                 case TokenType.MethodSpec:
-                    var ms = _tablesContext.MethodSpecificationTable.Items.FirstOrDefault(i => i.MetadataToken == token);
+                    MethodSpecification ms = _tablesContext.MethodSpecificationTable.Items.FirstOrDefault(i => i.MetadataToken == token);
 
                     if (ms != null)
                     {
@@ -988,12 +988,12 @@ namespace nanoFramework.Tools.MetadataProcessor
                     break;
 
                 case TokenType.GenericParam:
-                    var gpar = _tablesContext.GenericParamsTable.Items.FirstOrDefault(i => i.MetadataToken == token);
+                    GenericParameter gpar = _tablesContext.GenericParamsTable.Items.FirstOrDefault(i => i.MetadataToken == token);
 
                     if (gpar != null)
                     {
                         // need to add their constraints if, any
-                        foreach (var c in gpar.Constraints)
+                        foreach (GenericParameterConstraint c in gpar.Constraints)
                         {
                             set.Add(c.MetadataToken);
                         }
@@ -1026,7 +1026,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             switch (token.TokenType)
             {
                 case TokenType.TypeRef:
-                    var tr = _tablesContext.TypeReferencesTable.Items.FirstOrDefault(i => i.MetadataToken == token);
+                    TypeReference tr = _tablesContext.TypeReferencesTable.Items.FirstOrDefault(i => i.MetadataToken == token);
 
                     if (tr.Scope != null)
                     {
@@ -1041,7 +1041,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                     break;
 
                 case TokenType.TypeDef:
-                    var td = _tablesContext.TypeDefinitionTable.Items.FirstOrDefault(i => i.MetadataToken == token);
+                    TypeDefinition td = _tablesContext.TypeDefinitionTable.Items.FirstOrDefault(i => i.MetadataToken == token);
 
                     if (td.DeclaringType != null)
                     {
@@ -1058,7 +1058,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                     break;
 
                 case TokenType.Field:
-                    var fd = _tablesContext.FieldsTable.Items.FirstOrDefault(i => i.MetadataToken == token);
+                    FieldDefinition fd = _tablesContext.FieldsTable.Items.FirstOrDefault(i => i.MetadataToken == token);
 
                     if (fd.DeclaringType != null)
                     {
@@ -1070,7 +1070,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                     break;
 
                 case TokenType.GenericParam:
-                    var gp = _tablesContext.GenericParamsTable.Items.FirstOrDefault(g => g.MetadataToken == token);
+                    GenericParameter gp = _tablesContext.GenericParamsTable.Items.FirstOrDefault(g => g.MetadataToken == token);
 
                     output.Append($"[GenericParam 0x{token.ToUInt32().ToString("X8")}]");
 
@@ -1090,7 +1090,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                     break;
 
                 case TokenType.Method:
-                    var md = _tablesContext.MethodDefinitionTable.Items.FirstOrDefault(i => i.MetadataToken == token);
+                    MethodDefinition md = _tablesContext.MethodDefinitionTable.Items.FirstOrDefault(i => i.MetadataToken == token);
 
                     if (md.DeclaringType != null)
                     {
@@ -1106,13 +1106,13 @@ namespace nanoFramework.Tools.MetadataProcessor
 
                     // because we don't have an interface definition table
                     // have to do it the hard way: search the type definition that contains the interface
-                    foreach (var t in _tablesContext.TypeDefinitionTable.Items)
+                    foreach (TypeDefinition t in _tablesContext.TypeDefinitionTable.Items)
                     {
-                        var ii = t.Interfaces.FirstOrDefault(i => i.MetadataToken == token);
+                        InterfaceImplementation ii = t.Interfaces.FirstOrDefault(i => i.MetadataToken == token);
                         if (ii != null)
                         {
-                            var classToken = TokenToString(t.MetadataToken);
-                            var interfaceToken = TokenToString(ii.InterfaceType.MetadataToken);
+                            string classToken = TokenToString(t.MetadataToken);
+                            string interfaceToken = TokenToString(ii.InterfaceType.MetadataToken);
 
                             output.Append($"[{classToken} implements {interfaceToken}]");
 
@@ -1128,7 +1128,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                     string typeName = string.Empty;
 
                     // try to find a method reference
-                    var mr = _tablesContext.MethodReferencesTable.Items.FirstOrDefault(i => i.MetadataToken == token);
+                    MethodReference mr = _tablesContext.MethodReferencesTable.Items.FirstOrDefault(i => i.MetadataToken == token);
 
                     if (mr != null)
                     {
@@ -1138,7 +1138,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                     else
                     {
                         // try now with field references
-                        var fr = _tablesContext.FieldReferencesTable.Items.FirstOrDefault(i => i.MetadataToken == token);
+                        FieldReference fr = _tablesContext.FieldReferencesTable.Items.FirstOrDefault(i => i.MetadataToken == token);
 
                         if (fr != null)
                         {
@@ -1148,7 +1148,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                         else
                         {
                             // try now with generic parameters
-                            var gr = _tablesContext.GenericParamsTable.Items.FirstOrDefault(g => g.MetadataToken == token);
+                            GenericParameter gr = _tablesContext.GenericParamsTable.Items.FirstOrDefault(g => g.MetadataToken == token);
 
                             if (gr != null)
                             {
@@ -1180,13 +1180,13 @@ namespace nanoFramework.Tools.MetadataProcessor
                     break;
 
                 case TokenType.AssemblyRef:
-                    var ar = _tablesContext.AssemblyReferenceTable.Items.FirstOrDefault(i => i.MetadataToken == token);
+                    AssemblyNameReference ar = _tablesContext.AssemblyReferenceTable.Items.FirstOrDefault(i => i.MetadataToken == token);
 
                     output.Append($"[{ar.Name}]");
                     break;
 
                 case TokenType.String:
-                    var sr = _tablesContext.StringTable.TryGetString((ushort)token.RID);
+                    string sr = _tablesContext.StringTable.TryGetString((ushort)token.RID);
 
                     if (sr != null)
                     {
