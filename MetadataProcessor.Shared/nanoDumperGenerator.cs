@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -653,12 +653,11 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
             _tablesContext.TypeSpecificationsTable.TryGetTypeReferenceId(typeReference, out ushort index);
 
-            var typeSpec = new TypeSpec();
+            TypeSpec typeSpec = new TypeSpec();
 
             // assume that real token index is the same as ours
             // need to add one because ours is 0 indexed
             realToken = new MetadataToken(TokenType.TypeSpec, index + 1).ToUInt32().ToString("X8");
-
             typeSpec.ReferenceId = $"[{new nanoMetadataToken(NanoClrTable.TBL_TypeSpec, index)}] /*{realToken}*/";
 
             // build name
@@ -666,7 +665,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
             if (typeReference is GenericParameter)
             {
-                var genericParam = typeReference as GenericParameter;
+                GenericParameter genericParam = typeReference as GenericParameter;
 
                 typeSpecName.Append(typeReference.MetadataType);
 
@@ -683,19 +682,19 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
                 typeSpec.Name = typeSpecName.ToString();
             }
-            else if (typeReference is GenericInstanceType)
+            else if (typeReference is GenericInstanceType genericInstanceType)
             {
                 // type is a GenericInstance
                 // can't compare with Cecil MetadataToken because the tables have been cleaned-up and re-indexed
 
                 typeSpec.Name = typeReference.FullName;
 
-                foreach (var mr in _tablesContext.MethodReferencesTable.Items)
+                foreach (MethodReference mr in _tablesContext.MethodReferencesTable.Items)
                 {
                     if (_tablesContext.TypeSpecificationsTable.TryGetTypeReferenceId(mr.DeclaringType, out ushort referenceId) &&
                         referenceId == index)
                     {
-                        var memberRef = new MemberRef()
+                        MemberRef memberRef = new MemberRef()
                         {
                             Name = mr.Name
                         };
@@ -712,12 +711,12 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                     }
                 }
 
-                foreach (var ms in _tablesContext.MethodSpecificationTable.Items)
+                foreach (MethodSpecification ms in _tablesContext.MethodSpecificationTable.Items)
                 {
                     if (_tablesContext.TypeSpecificationsTable.TryGetTypeReferenceId(ms.DeclaringType, out ushort referenceId) &&
                         referenceId == index)
                     {
-                        var memberRef = new MemberRef()
+                        MemberRef memberRef = new MemberRef()
                         {
                             Name = ms.Name
                         };
@@ -734,21 +733,63 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                     }
                 }
 
-                foreach (var fr in _tablesContext.FieldReferencesTable.Items)
+                foreach (FieldReference fr in _tablesContext.FieldReferencesTable.Items)
                 {
                     if (_tablesContext.TypeSpecificationsTable.TryGetTypeReferenceId(fr.DeclaringType, out ushort referenceId) &&
                         referenceId == index)
                     {
-                        var memberRef = new MemberRef()
+                        MemberRef memberRef = new MemberRef()
                         {
                             Name = fr.Name
                         };
+
                         if (_tablesContext.FieldReferencesTable.TryGetFieldReferenceId(fr, out ushort fieldRefId))
                         {
                             realToken = fr.MetadataToken.ToInt32().ToString("X8");
                             memberRef.ReferenceId = $"[{new nanoMetadataToken(NanoClrTable.TBL_FieldRef, fieldRefId)}] /*{realToken}*/";
                             memberRef.Signature = fr.FieldType.TypeSignatureAsString();
                         }
+
+                        typeSpec.MemberReferences.Add(memberRef);
+                    }
+                }
+
+                if (genericInstanceType.ElementType is TypeDefinition definition)
+                {
+                    foreach (MethodDefinition md in definition.Methods)
+                    {
+                        // skip compiler-generated or primitive helpers if you like
+                        MemberRef memberRef = new MemberRef
+                        {
+                            Name = md.Name,
+                            Signature = PrintSignatureForMethod(md)
+                        };
+
+                        // get the MethodDef RID from your MethodDefinitionTable
+                        if (_tablesContext.MethodDefinitionTable.TryGetMethodReferenceId(md, out ushort defId))
+                        {
+                            realToken = md.MetadataToken.ToInt32().ToString("X8");
+                            memberRef.ReferenceId = $"[{new nanoMetadataToken(NanoClrTable.TBL_MethodDef, defId)}] /*{realToken}*/";
+                        }
+
+                        typeSpec.MemberReferences.Add(memberRef);
+                    }
+
+                    // and similarly for fields if you want:
+                    foreach (FieldDefinition fd in definition.Fields)
+                    {
+                        MemberRef memberRef = new MemberRef
+                        {
+                            Name = fd.Name,
+                            Signature = fd.FieldType.TypeSignatureAsString()
+                        };
+
+                        if (_tablesContext.FieldsTable.TryGetFieldReferenceId(fd, false, out ushort fieldId))
+                        {
+                            realToken = fd.MetadataToken.ToInt32().ToString("X8");
+                            memberRef.ReferenceId = $"[{new nanoMetadataToken(NanoClrTable.TBL_FieldDef, fieldId)}] /*{realToken}*/";
+                        }
+
                         typeSpec.MemberReferences.Add(memberRef);
                     }
                 }
