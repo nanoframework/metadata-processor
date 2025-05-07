@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 // Original work from Oleg Rakhmatulin.
@@ -35,13 +35,13 @@ namespace nanoFramework.Tools.MetadataProcessor
             /// <inheritdoc/>
             public bool Equals(MethodReference lhs, MethodReference rhs)
             {
-                return string.Equals(lhs.FullName, rhs.FullName, StringComparison.Ordinal);
+                return lhs.MetadataToken.Equals(rhs.MetadataToken);
             }
 
             /// <inheritdoc/>
             public int GetHashCode(MethodReference that)
             {
-                return that.FullName.GetHashCode();
+                return that.MetadataToken.RID.GetHashCode();
             }
         }
 
