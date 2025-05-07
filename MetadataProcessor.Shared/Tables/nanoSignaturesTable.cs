@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 // Original work from Oleg Rakhmatulin.
@@ -433,20 +433,22 @@ namespace nanoFramework.Tools.MetadataProcessor
             {
                 writer.WriteByte((byte)NanoCLRDataType.DATATYPE_SZARRAY);
 
-                var array = (ArrayType)typeDefinition;
-
-                if (array.ElementType.IsGenericParameter)
+                if (alsoWriteSubType)
                 {
-                    // ECMA 335 VI.B.4.3 Metadata
-                    writer.WriteByte((byte)NanoCLRDataType.DATATYPE_VAR);
+                    ArrayType array = (ArrayType)typeDefinition;
 
-                    // OK to use byte here as we won't support more than 0x7F generic parameters
-                    writer.WriteByte((byte)(array.ElementType as GenericParameter).Position);
-                }
-                else if (alsoWriteSubType)
-                {
+                    if (array.ElementType.IsGenericParameter)
+                    {
+                        // ECMA 335 VI.B.4.3 Metadata
+                        writer.WriteByte((byte)NanoCLRDataType.DATATYPE_VAR);
 
-                    WriteDataType(array.ElementType, writer, true, expandEnumType, isTypeDefinition);
+                        // OK to use byte here as we won't support more than 0x7F generic parameters
+                        writer.WriteByte((byte)(array.ElementType as GenericParameter).Position);
+                    }
+                    else
+                    {
+                        WriteDataType(array.ElementType, writer, true, expandEnumType, isTypeDefinition);
+                    }
                 }
 
                 return;
@@ -458,7 +460,7 @@ namespace nanoFramework.Tools.MetadataProcessor
 
                 if (alsoWriteSubType)
                 {
-                    var resolvedType = typeDefinition.Resolve();
+                    TypeDefinition resolvedType = typeDefinition.Resolve();
 
                     WriteDataType(resolvedType, writer, false, expandEnumType, isTypeDefinition);
                 }
@@ -472,15 +474,18 @@ namespace nanoFramework.Tools.MetadataProcessor
                 // II.23.2.12 Type
                 writer.WriteByte((byte)NanoCLRDataType.DATATYPE_GENERICINST);
 
-                var genericType = (GenericInstanceType)typeDefinition;
-                WriteDataType(genericType.Resolve(), writer, true, expandEnumType, isTypeDefinition);
-
-                // OK to use byte here as we won't support more than 0x7F arguments
-                writer.WriteByte((byte)genericType.GenericArguments.Count);
-
-                foreach (var a in genericType.GenericArguments)
+                if (alsoWriteSubType)
                 {
-                    WriteDataType(a, writer, true, expandEnumType, isTypeDefinition);
+                    GenericInstanceType genericType = (GenericInstanceType)typeDefinition;
+                    WriteDataType(genericType.Resolve(), writer, true, expandEnumType, isTypeDefinition);
+
+                    // OK to use byte here as we won't support more than 0x7F arguments
+                    writer.WriteByte((byte)genericType.GenericArguments.Count);
+
+                    foreach (TypeReference a in genericType.GenericArguments)
+                    {
+                        WriteDataType(a, writer, true, expandEnumType, isTypeDefinition);
+                    }
                 }
 
                 return;
