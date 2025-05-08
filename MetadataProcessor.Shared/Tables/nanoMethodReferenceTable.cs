@@ -41,7 +41,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             /// <inheritdoc/>
             public int GetHashCode(MethodReference that)
             {
-                return that.MetadataToken.RID.GetHashCode();
+                return that.MetadataToken.GetHashCode();
             }
         }
 
