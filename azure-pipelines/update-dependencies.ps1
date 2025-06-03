@@ -20,7 +20,7 @@ Write-Debug "Changing working directory to $env:Agent_TempDirectory"
 Set-Location "$env:Agent_TempDirectory" | Out-Null
 
 # clone repo and checkout
-Write-Debug "Init and featch nf-Visual-Studio-extension repo"
+Write-Debug "Init and fetch nf-Visual-Studio-extension repo"
 
 git clone --depth 1 https://github.com/nanoframework/nf-Visual-Studio-extension repo
 Set-Location repo | Out-Null
@@ -51,12 +51,16 @@ function Get-LatestNugetVersion {
             $versions = $response.versions | Where-Object { $_ -notmatch "preview" }
         }
 
+        Write-Debug "Latest version found: $($versions[-1])"
+
         return $versions[-1]
     }
     catch {
         throw "Error querying NuGet API: $_"
     }
 }
+
+Write-Host "Target version is: $packageTargetVersion."
 
 $latestNugetVersion = Get-LatestNugetVersion -url $nugetApiUrl
 
