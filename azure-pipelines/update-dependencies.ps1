@@ -41,7 +41,17 @@ function Get-LatestNugetVersion {
     )
     try {
         $response = Invoke-RestMethod -Uri $url -Method Get
-        return $response.versions[-1]
+
+        if ($packageTargetVersion -match "preview") {
+            # Select only versions that include 'preview'
+            $versions = $response.versions | Where-Object { $_ -match "preview" }
+        }
+        else {
+            # Exclude any version that includes 'preview'
+            $versions = $response.versions | Where-Object { $_ -notmatch "preview" }
+        }
+
+        return $versions[-1]
     }
     catch {
         throw "Error querying NuGet API: $_"
