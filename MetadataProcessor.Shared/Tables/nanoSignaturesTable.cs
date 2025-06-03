@@ -108,6 +108,10 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// </summary>
         private readonly IDictionary<byte[], ushort> _idsBySignatures =
             new Dictionary<byte[], ushort>(new ByteArrayComparer());
+        /// <summary>
+        /// The signatures as they are written to the output stream.
+        /// </summary>
+        private readonly List<byte> _signatureTable = new List<byte>();
 
         /// <summary>
         /// Assembly tables context - contains all tables used for building target assembly.
@@ -115,11 +119,6 @@ namespace nanoFramework.Tools.MetadataProcessor
         private readonly nanoTablesContext _context;
 
         private readonly bool _verbose = false;
-
-        /// <summary>
-        /// Last available signature id (offset in resulting table).
-        /// </summary>
-        private ushort _lastAvailableId;
 
         /// <summary>
         /// Creates new instance of <see cref="nanoSignaturesTable"/> object.
@@ -468,12 +467,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         public void Write(
             nanoBinaryWriter writer)
         {
-            foreach (var signature in _idsBySignatures
-                .OrderBy(item => item.Value)
-                .Select(item => item.Key))
-            {
-                writer.WriteBytes(signature);
-            }
+            writer.WriteBytes(_signatureTable.ToArray());
         }
 
         private byte[] GetSignature(
@@ -736,18 +730,29 @@ namespace nanoFramework.Tools.MetadataProcessor
                 return id;
             }
 
-            var fullSignatures = GetFullSignaturesArray();
-            for (var i = 0; i <= fullSignatures.Length - signature.Length; ++i)
+            for (int i = 0; i < _signatureTable.Count - signature.Length; i++)
             {
-                if (signature.SequenceEqual(fullSignatures.Skip(i).Take(signature.Length)))
+                bool found = true;
+                for (int j = 0; j < signature.Length; ++j)
                 {
-                    return (ushort)i;
+                    if (_signatureTable[i + j] != signature[j])
+                    {
+                        found = false;
+                        break;
+                    }
+                }
+
+                if (found)
+                {
+                    id = (ushort)i;
+                    _idsBySignatures.Add(signature, id);
+                    return id;
                 }
             }
 
-            id = _lastAvailableId;
+            id = (ushort)_signatureTable.Count;
             _idsBySignatures.Add(signature, id);
-            _lastAvailableId += (ushort)signature.Length;
+            _signatureTable.AddRange(signature);
 
             return id;
         }
@@ -773,20 +778,6 @@ namespace nanoFramework.Tools.MetadataProcessor
             {
                 WriteDataType(typeReference, writer, true, false, false);
             }
-        }
-
-        private byte[] GetFullSignaturesArray()
-        {
-            return _idsBySignatures
-                .OrderBy(item => item.Value)
-                .Select(item => item.Key)
-                .Aggregate(new List<byte>(),
-                    (current, item) =>
-                    {
-                        current.AddRange(item);
-                        return current;
-                    })
-                .ToArray();
         }
 
         private void WriteSubTypeInfo(TypeReference typeDefinition, nanoBinaryWriter writer)
