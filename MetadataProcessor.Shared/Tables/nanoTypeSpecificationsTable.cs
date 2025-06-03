@@ -257,6 +257,26 @@ namespace nanoFramework.Tools.MetadataProcessor
                     }
                 }
             }
+
+            // make sure we pick up *all* GenericInstanceType that we know
+            // about via MethodSpecificationTable as well as TypeReferencesTable
+            IEnumerable<TypeReference> allGenericInstances =
+                _context.MethodSpecificationTable.Items
+                    .OfType<GenericInstanceMethod>()
+                    .Select(ms => ms.DeclaringType as GenericInstanceType)
+                .Concat(_context.TypeReferencesTable.Items.OfType<GenericInstanceType>())
+                .Where(git => git != null)
+                .Distinct(new TypeReferenceEqualityComparer(_context));
+
+            foreach (TypeReference typeRefItem in allGenericInstances)
+            {
+                if (!_idByTypeSpecifications.ContainsKey(typeRefItem))
+                {
+                    ushort sigId = _context.SignaturesTable.GetOrCreateSignatureId(typeRefItem);
+                    _idByTypeSpecifications.Add(typeRefItem, sigId);
+                    ExpandNestedTypeSpecs(typeRefItem);
+                }
+            }
         }
 
         private void FillTypeSpecsFromTypes()
@@ -271,10 +291,39 @@ namespace nanoFramework.Tools.MetadataProcessor
                         {
                             AddIfNew(gp, _context.SignaturesTable.GetOrCreateSignatureId(gp));
                         }
+                        else if (instr.Operand is MethodReference mr)
+                        {
+                            // register return‐type...
+                            ExpandNestedTypeSpecs(mr.ReturnType);
+
+                            // ... and parameters
+                            foreach (ParameterDefinition p in mr.Parameters)
+                            {
+                                ExpandNestedTypeSpecs(p.ParameterType);
+                            }
+                        }
+
+                        // catch field‐refs too
+                        else if (instr.Operand is FieldReference fieldRef)
+                        {
+                            ExpandNestedTypeSpecs(fieldRef.DeclaringType);
+                            ExpandNestedTypeSpecs(fieldRef.FieldType);
+                        }
+                        else if (instr.Operand is GenericInstanceMethod genericInstanceMethod)
+                        {
+                            GenericInstanceType genericInstanceType = genericInstanceMethod.DeclaringType as GenericInstanceType;
+                            if (genericInstanceType != null && !_idByTypeSpecifications.ContainsKey(genericInstanceType))
+                            {
+                                ushort sigId = _context.SignaturesTable.GetOrCreateSignatureId(genericInstanceType);
+                                _idByTypeSpecifications.Add(genericInstanceType, sigId);
+
+                                // also pull in its element‐type and args
+                                ExpandNestedTypeSpecs(genericInstanceType);
+                            }
+                        }
                         else if (instr.Operand is TypeReference tr)
                         {
-                            // refuse multi-dimensional arrays
-                            // we only support jagged arrays
+                            // refuse multi-dimensional arrays (we only support jagged arrays)
                             if (tr.IsArray)
                             {
                                 var at = (ArrayType)tr;
@@ -286,12 +335,15 @@ namespace nanoFramework.Tools.MetadataProcessor
                                 }
                             }
 
-                            // register the type reference itself...
-                            ushort sigId = _context.SignaturesTable.GetOrCreateSignatureId(tr);
-                            AddIfNew(tr, sigId);
+                            // register the type reference itself, if it is a TypeSpec
+                            if (tr is TypeSpecification)
+                            {
+                                ushort sigId = _context.SignaturesTable.GetOrCreateSignatureId(tr);
+                                AddIfNew(tr, sigId);
 
-                            // ... then walk *into* any nested TypeSpecifications it might contain
-                            ExpandNestedTypeSpecs(tr);
+                                // also walk into any nested TypeSpecifications it might contain
+                                ExpandNestedTypeSpecs(tr);
+                            }
                         }
                     }
                 }
@@ -316,7 +368,10 @@ namespace nanoFramework.Tools.MetadataProcessor
                 case GenericInstanceType git:
                     inner = git.ElementType;
                     foreach (var arg in git.GenericArguments)
+                    {
                         ExpandNestedTypeSpecs(arg);
+                    }
+
                     break;
 
                 case ArrayType at:
@@ -340,7 +395,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                     break;
             }
 
-            if (inner != null)
+            if (inner is TypeSpecification)
             {
                 ushort innerId = _context.SignaturesTable.GetOrCreateSignatureId(inner);
                 AddIfNew(inner, innerId);
