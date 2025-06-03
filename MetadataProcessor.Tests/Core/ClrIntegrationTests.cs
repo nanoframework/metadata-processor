@@ -243,7 +243,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
                 if (exitCode == 0)
                 {
                     // look for any error message 
-                    Assert.IsFalse(output.Contains("Error:"), "Unexpected error message in output of NanoCLR");
+                    Assert.IsFalse(output.Contains("Error:"), $"Unexpected error message in output of NanoCLR.{Environment.NewLine}Output is:{Environment.NewLine}{output}");
 
                     // look for the error message reporting that there is no entry point
                     Assert.IsTrue(output.Contains("Cannot find any entrypoint!"));
