@@ -74,24 +74,30 @@ namespace nanoFramework.Tools.MetadataProcessor
             nanoTablesContext context)
             : base(items, new GenericParameterComparer(), context)
         {
-            foreach (var gp in items)
+            foreach (GenericParameter gp in items)
             {
                 MethodDefinition methodWithGenericParam = _context.MethodDefinitionTable.Items.SingleOrDefault(m => m.GenericParameters.Contains(gp));
 
                 if (methodWithGenericParam != null)
                 {
                     // get the first method specification that matches this type AND name
-                    var instanceMethod = _context.MethodSpecificationTable.Items.FirstOrDefault(
+                    GenericInstanceMethod instanceMethod = _context.MethodSpecificationTable.Items.FirstOrDefault(
                         mr => mr.DeclaringType.GetElementType() == methodWithGenericParam.DeclaringType &&
                         mr.Name == methodWithGenericParam.Name) as GenericInstanceMethod;
 
-                    Debug.Assert(
-                        instanceMethod != null,
-                        $"Couldn't find a method specification for type {methodWithGenericParam.DeclaringType} when processing generic parameter {gp}.");
-
-                    _typeForGenericParam.Add(
-                        gp,
-                        instanceMethod.GenericArguments.ElementAt(gp.Position));
+                    if (instanceMethod == null)
+                    {
+                        // No instantiation was ever emitted in the IL, treat the parameter as an "open generic"
+                        _typeForGenericParam.Add(gp, gp);
+                    }
+                    else
+                    {
+                        // found a closed instantiation, so pick the real type argument
+                        _typeForGenericParam.Add(
+                            gp,
+                            instanceMethod.GenericArguments.ElementAt(gp.Position)
+                        );
+                    }
                 }
                 else
                 {
