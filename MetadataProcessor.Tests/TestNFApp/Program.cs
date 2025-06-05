@@ -82,6 +82,7 @@ namespace TestNFApp
             // Generics Tests
             _ = new GenericClassTests();
             _ = new StatckTests();
+            _ = new SimpleListTests();
 
             // null attributes tests
             Console.WriteLine("Null attributes tests");
