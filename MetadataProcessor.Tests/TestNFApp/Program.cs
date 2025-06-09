@@ -17,10 +17,10 @@ namespace TestNFApp
 
             ///////////////////////////////////////////////////////////////////
             // referenced class
-            Debug.WriteLine("++++++++++++++++++++++++++++");
-            Debug.WriteLine("++ Referenced class tests ++");
-            Debug.WriteLine("++++++++++++++++++++++++++++");
-            Debug.WriteLine("");
+            Console.WriteLine("++++++++++++++++++++++++++++");
+            Console.WriteLine("++ Referenced class tests ++");
+            Console.WriteLine("++++++++++++++++++++++++++++");
+            Console.WriteLine("");
 
             // instantiating a class on another assembly
             ClassOnAnotherAssembly anotherClass = new ClassOnAnotherAssembly();
@@ -70,10 +70,11 @@ namespace TestNFApp
             switch (messageType)
             {
                 case IAmAClassWithAnEnum.EnumA.Test:
-                    Console.WriteLine("all good");
+                    Console.WriteLine($"Not good... {messageType}");
                     break;
 
                 default:
+                    Console.WriteLine("all good");
                     break;
             }
 
@@ -100,10 +101,10 @@ namespace TestNFApp
 
         public static void ReflectionTests()
         {
-            Debug.WriteLine("++++++++++++++++++++++");
-            Debug.WriteLine("++ Reflection tests ++");
-            Debug.WriteLine("++++++++++++++++++++++");
-            Debug.WriteLine("");
+            Console.WriteLine("++++++++++++++++++++++");
+            Console.WriteLine("++ Reflection tests ++");
+            Console.WriteLine("++++++++++++++++++++++");
+            Console.WriteLine("");
 
             // Get the type of MyClass1.
             Type myType = typeof(MyClass1);
@@ -128,16 +129,16 @@ namespace TestNFApp
             // Get the methods associated with MyClass1.
             MemberInfo[] myMethods = myType.GetMethods();
 
-            Debug.WriteLine("");
-            Debug.WriteLine($"'{myType.Name}' type has '{myMethods.Length}' methods");
+            Console.WriteLine("");
+            Console.WriteLine($"'{myType.Name}' type has '{myMethods.Length}' methods");
 
             // Display the attributes for each of the methods of MyClass1.
             for (int i = 0; i < myMethods.Length; i++)
             {
                 string methodName = myMethods[i].Name;
 
-                Debug.WriteLine("");
-                Debug.WriteLine($"Getting custom attributes for '{methodName}'");
+                Console.WriteLine("");
+                Console.WriteLine($"Getting custom attributes for '{methodName}'");
 
                 myAttributes = myMethods[i].GetCustomAttributes(true);
 
@@ -204,12 +205,12 @@ namespace TestNFApp
             Console.WriteLine($"MaxAttribute value is: 0x{attMax.Max.ToString("X8")}");
 
             AuthorAttribute attAuthor = (AuthorAttribute)myFieldAttributes[1];
-            Debug.WriteLine("");
-            Debug.WriteLine($"AuthorAttribute value is: '{attAuthor.Author}'");
+            Console.WriteLine("");
+            Console.WriteLine($"AuthorAttribute value is: '{attAuthor.Author}'");
 
-            Debug.WriteLine("");
-            Debug.WriteLine("+++ReflectionTests completed");
-            Debug.WriteLine("");
+            Console.WriteLine("");
+            Console.WriteLine("+++ReflectionTests completed");
+            Console.WriteLine("");
         }
     }
 }

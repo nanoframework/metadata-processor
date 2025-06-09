@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Diagnostics;
 
 namespace TestNFApp
@@ -21,22 +22,22 @@ namespace TestNFApp
     {
         public void Do1()
         {
-            Debug.WriteLine($"{nameof(Do1)}");
+            Console.WriteLine($"{nameof(Do1)}");
         }
 
         public void Do2()
         {
-            Debug.WriteLine($"{nameof(Do2)}");
+            Console.WriteLine($"{nameof(Do2)}");
         }
 
         public void DoThis1()
         {
-            Debug.WriteLine($"{nameof(DoThis1)}");
+            Console.WriteLine($"{nameof(DoThis1)}");
         }
 
         public void DoThis2()
         {
-            Debug.WriteLine($"{nameof(DoThis2)}");
+            Console.WriteLine($"{nameof(DoThis2)}");
         }
     }
 
@@ -44,12 +45,12 @@ namespace TestNFApp
     {
         public void Do1()
         {
-            Debug.WriteLine($"{nameof(Do1)}");
+            Console.WriteLine($"{nameof(Do1)}");
         }
 
         public void Do2()
         {
-            Debug.WriteLine($"{nameof(Do2)}");
+            Console.WriteLine($"{nameof(Do2)}");
         }
     }
 
@@ -57,22 +58,22 @@ namespace TestNFApp
     {
         public void Do1()
         {
-            Debug.WriteLine($"{nameof(Do1)}");
+            Console.WriteLine($"{nameof(Do1)}");
         }
 
         public void Do2()
         {
-            Debug.WriteLine($"{nameof(Do2)}");
+            Console.WriteLine($"{nameof(Do2)}");
         }
 
         public void DoThat1()
         {
-            Debug.WriteLine($"{nameof(DoThat1)}");
+            Console.WriteLine($"{nameof(DoThat1)}");
         }
 
         public void DoThat2()
         {
-            Debug.WriteLine($"{nameof(DoThat2)}");
+            Console.WriteLine($"{nameof(DoThat2)}");
         }
 
     }
@@ -81,12 +82,12 @@ namespace TestNFApp
     {
         public void DoThat1()
         {
-            Debug.WriteLine($"{nameof(DoThat1)}");
+            Console.WriteLine($"{nameof(DoThat1)}");
         }
 
         public void DoThat2()
         {
-            Debug.WriteLine($"{nameof(DoThat2)}");
+            Console.WriteLine($"{nameof(DoThat2)}");
         }
     }
 
@@ -94,12 +95,12 @@ namespace TestNFApp
     {
         public void Do1()
         {
-            Debug.WriteLine($"{nameof(Do1)}");
+            Console.WriteLine($"{nameof(Do1)}");
         }
 
         public void Do2()
         {
-            Debug.WriteLine($"{nameof(Do2)}");
+            Console.WriteLine($"{nameof(Do2)}");
         }
     }
 
@@ -118,7 +119,7 @@ namespace TestNFApp
         {
             T v = t;
 
-            Debug.WriteLine($"{nameof(InstanceGenericDoOne)} --> {v} is <{v.GetType()}>");
+            Console.WriteLine($"{nameof(InstanceGenericDoOne)} --> {v} is <{v.GetType()}>");
         }
 
         public void InstanceGenericDoTwo<T2>(T p1, T2 p2)
@@ -126,14 +127,14 @@ namespace TestNFApp
             T v1 = p1;
             T2 v2 = p2;
 
-            Debug.WriteLine($"{nameof(InstanceGenericDoTwo)}<{v2.GetType()}> --> {v1},{v2} is <{v1.GetType()},{v2.GetType()}>");
+            Console.WriteLine($"{nameof(InstanceGenericDoTwo)}<{v2.GetType()}> --> {v1},{v2} is <{v1.GetType()},{v2.GetType()}>");
         }
 
         public void InstanceGenericDoOneOther<T1>(T1 t)
         {
             T1 v1 = t;
 
-            Debug.WriteLine($"{nameof(InstanceGenericDoOneOther)}<{v1.GetType()}> --> {v1} is <{v1.GetType()}>");
+            Console.WriteLine($"{nameof(InstanceGenericDoOneOther)}<{v1.GetType()}> --> {v1} is <{v1.GetType()}>");
         }
     }
 
@@ -148,7 +149,7 @@ namespace TestNFApp
         {
             T v = t;
 
-            Debug.WriteLine($"{nameof(InstanceGenericDoOne)} --> {v} is <{typeof(T).FullName}>");
+            Console.WriteLine($"{nameof(InstanceGenericDoOne)} --> {v} is <{typeof(T).FullName}>");
         }
 
         public void InstanceGenericDoTwo<T2>(T p1, T1 p2, T2 p3)
@@ -157,7 +158,7 @@ namespace TestNFApp
             T1 v2 = p2;
             T2 v3 = p3;
 
-            Debug.WriteLine($"{nameof(InstanceGenericDoTwo)}<{v3.GetType()}> --> {v1},{v2},{v3} is <{v1.GetType()},{v2.GetType()},{v3.GetType()}>");
+            Console.WriteLine($"{nameof(InstanceGenericDoTwo)}<{v3.GetType()}> --> {v1},{v2},{v3} is <{v1.GetType()},{v2.GetType()},{v3.GetType()}>");
         }
 
         public void InstanceGenericDoOneOther<T2>(T1 p1, T2 p2)
@@ -165,7 +166,7 @@ namespace TestNFApp
             T1 v1 = p1;
             T2 v2 = p2;
 
-            Debug.WriteLine($"{nameof(InstanceGenericDoOneOther)}<{v1.GetType()}> --> {v1},{v2} is <{typeof(T1).FullName},{typeof(T2).FullName}>");
+            Console.WriteLine($"{nameof(InstanceGenericDoOneOther)}<{v1.GetType()}> --> {v1},{v2} is <{typeof(T1).FullName},{typeof(T2).FullName}>");
         }
     }
 
@@ -173,7 +174,7 @@ namespace TestNFApp
     {
         private static void StaticGenericDo<T1, T2>(T1 val, T2 val2) where T1 : IDo where T2 : IDo
         {
-            Debug.WriteLine($">> {nameof(StaticGenericDo)}<{val.GetType()},{val2.GetType()}>");
+            Console.WriteLine($">> {nameof(StaticGenericDo)}<{val.GetType()},{val2.GetType()}>");
 
             val.Do1();
             val.Do2();
@@ -183,7 +184,7 @@ namespace TestNFApp
 
         private static void StaticGenericDoThisAndThat<T1, T2>(T1 val, T2 val2) where T1 : ClassDoThis, IDo where T2 : ClassDoThatInt
         {
-            Debug.WriteLine($">> {nameof(StaticGenericDoThisAndThat)}<{val.GetType()},{val2.GetType()}>");
+            Console.WriteLine($">> {nameof(StaticGenericDoThisAndThat)}<{val.GetType()},{val2.GetType()}>");
 
             val.DoThis1();
             val.DoThis2();
@@ -193,15 +194,19 @@ namespace TestNFApp
 
         public GenericClassTests()
         {
-            Debug.WriteLine("++++++++++++++++++++");
-            Debug.WriteLine("++ Generics Tests ++");
-            Debug.WriteLine("++++++++++++++++++++");
-            Debug.WriteLine("");
+            Console.WriteLine("++++++++++++++++++++");
+            Console.WriteLine("++ Generics Tests ++");
+            Console.WriteLine("++++++++++++++++++++");
+            Console.WriteLine("");
 
+
+            Console.WriteLine("++ ClassDoString ++");
 
             var other = new ClassDoString();
             other.Do1();
             other.Do2();
+
+            Console.WriteLine("++ GenericClass<int> ++");
 
             var gc1 = new GenericClass<int>();
             gc1.NoGenerics();
@@ -210,6 +215,8 @@ namespace TestNFApp
             gc1.InstanceGenericDoOneOther(false);
             gc1.GenericField = 10;
 
+            Console.WriteLine("++ AnotherGenericClass<byte, bool> ++");
+
             var agc1 = new AnotherGenericClass<byte, bool>();
             agc1.InstanceGenericDoOne(22);
             agc1.InstanceGenericDoTwo(33, false, "NINE");
@@ -217,17 +224,27 @@ namespace TestNFApp
             agc1.GenericField = 11;
             agc1.AnotherGenericField = false;
 
+            Console.WriteLine("++ GenericClass<string> ++");
+
             var gc2 = new GenericClass<string>();
             gc2.InstanceGenericDoOne("ONE");
             gc2.InstanceGenericDoTwo("ONE", "TWO");
             gc2.InstanceGenericDoOneOther(33.33);
             gc2.GenericField = "TEN";
 
+            Console.WriteLine("++ StaticGenericDo Int and String ++");
+
             StaticGenericDo(new ClassDoInt(), new ClassDoString());
+
+            Console.WriteLine("++ StaticGenericDo String and Int ++");
 
             StaticGenericDo(new ClassDoString(), new ClassDoInt());
 
+            Console.WriteLine("++ StaticGenericDoThisAndThat This and That ++");
+
             StaticGenericDoThisAndThat(new ClassDoThis(), new ClassDoThatInt());
+
+            Console.WriteLine("++ StaticGenericDoThisAndThat ThisAndThat and ThatInt ++");
 
             StaticGenericDoThisAndThat(new ClassDoThisAndThat(), new ClassDoThatInt());
         }
