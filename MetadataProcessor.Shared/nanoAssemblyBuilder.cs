@@ -829,11 +829,6 @@ namespace nanoFramework.Tools.MetadataProcessor
                                     set.Add(v.VariableType.GetElementType().MetadataToken);
                                 }
                             }
-                            else if (v.VariableType.IsValueType
-                                     && !v.VariableType.IsPrimitive)
-                            {
-                                set.Add(v.VariableType.MetadataToken);
-                            }
                             else if (v.VariableType is GenericInstanceType)
                             {
                                 // Cecil.Mono has a bug providing TypeSpecs Metadata tokens generic parameters variables, so we need to check against our internal table and build one from it
@@ -851,6 +846,11 @@ namespace nanoFramework.Tools.MetadataProcessor
                                 {
                                     Debug.Fail($"Couldn't find a TypeSpec entry for {v.VariableType}");
                                 }
+                            }
+                            else if (v.VariableType.IsValueType
+                                     && !v.VariableType.IsPrimitive)
+                            {
+                                set.Add(v.VariableType.MetadataToken);
                             }
                             else if (v.VariableType.IsPointer)
                             {
@@ -1051,7 +1051,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                                 {
                                     // add "fabricated" token for TypeSpec using the referenceId as RID
                                     set.Add(new MetadataToken(TokenType.TypeSpec, tsRid));
-                                    set.Add(ts.GetElementType().MetadataToken);
+                                    set.Add(ts.MetadataToken);
                                 }
                                 else
                                 {

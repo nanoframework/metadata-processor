@@ -269,8 +269,10 @@ namespace nanoFramework.Tools.MetadataProcessor
             else if (memberReference is MethodReference &&
                  MethodReferencesTable.TryGetMethodReferenceId(memberReference as MethodReference, out referenceId))
             {
-                // check if method is external
-                if (memberReference.DeclaringType.Scope.MetadataScopeType == MetadataScopeType.AssemblyNameReference)
+                // check if method is external, unless it's a closed generic instance
+                if (memberReference.DeclaringType.Scope.MetadataScopeType == MetadataScopeType.AssemblyNameReference
+                    && !(memberReference.DeclaringType is GenericInstanceType genericInstanceType
+                    && genericInstanceType.HasGenericArguments))
                 {
                     // method reference is external
                 }
