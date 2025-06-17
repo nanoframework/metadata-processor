@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 // Original work from Oleg Rakhmatulin.
@@ -477,7 +477,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                 if (alsoWriteSubType)
                 {
                     GenericInstanceType genericType = (GenericInstanceType)typeDefinition;
-                    WriteDataType(genericType.Resolve(), writer, true, expandEnumType, isTypeDefinition);
+                    WriteDataType(genericType.ElementType, writer, true, expandEnumType, isTypeDefinition);
 
                     // OK to use byte here as we won't support more than 0x7F arguments
                     writer.WriteByte((byte)genericType.GenericArguments.Count);
