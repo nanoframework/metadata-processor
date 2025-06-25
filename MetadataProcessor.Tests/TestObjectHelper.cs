@@ -276,6 +276,22 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
             return ret;
         }
 
+        public static TypeDefinition GetTestNFAppGenericClassTypeDefinition(AssemblyDefinition assemblyDefinition)
+        {
+            TypeDefinition ret = null;
+            ModuleDefinition module = assemblyDefinition.Modules[0];
+            ret = module.Types.First(i => i.FullName == "TestNFApp.GenericClass`1");
+            return ret;
+        }
+
+        public static TypeDefinition GetTestNFAppAnotherGenericClassTypeDefinition(AssemblyDefinition assemblyDefinition)
+        {
+            TypeDefinition ret = null;
+            ModuleDefinition module = assemblyDefinition.Modules[0];
+            ret = module.Types.First(i => i.FullName == "TestNFApp.AnotherGenericClass`2");
+            return ret;
+        }
+
         public static MethodDefinition GetTestNFAppOneClassOverAllDummyMethodDefinition(TypeDefinition oneClassOverAllTypeDefinition)
         {
             MethodDefinition ret = GetTestNFAppOneClassOverAllMethodDefinition(oneClassOverAllTypeDefinition, "DummyMethod");

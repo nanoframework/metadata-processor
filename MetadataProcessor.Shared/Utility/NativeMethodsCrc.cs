@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.RegularExpressions;
 using Mono.Cecil;
 using nanoFramework.Tools.MetadataProcessor.Core.Extensions;
 
@@ -62,8 +63,8 @@ namespace nanoFramework.Tools.MetadataProcessor
                 (method.RVA == 0 && !method.IsAbstract))
             {
                 _currentCrc = Crc32.Compute(_name, CurrentCrc);
-                _currentCrc = Crc32.Compute(Encoding.ASCII.GetBytes(GetClassName(type)), CurrentCrc);
-                _currentCrc = Crc32.Compute(Encoding.ASCII.GetBytes(GetMethodName(method)), CurrentCrc);
+                _currentCrc = Crc32.Compute(Encoding.ASCII.GetBytes(GetSafeClassName(type)), CurrentCrc);
+                _currentCrc = Crc32.Compute(Encoding.ASCII.GetBytes(GetSafeMethodName(method)), CurrentCrc);
 
                 _methodsWithNativeImplementation++;
             }
@@ -73,25 +74,26 @@ namespace nanoFramework.Tools.MetadataProcessor
             }
         }
 
-        internal static string GetClassName(
-            TypeDefinition type)
+        internal static string GetSafeClassName(TypeDefinition type)
         {
-            return (type != null
-                ? string.Join("_", GetClassName(type.DeclaringType), type.Namespace, type.Name)
-                    .Replace(".", "_").TrimStart('_')
+            string className = (type != null
+                ? string.Join("_", GetSafeClassName(type.DeclaringType), type.Namespace, type.Name)
+                    .Replace(".", "_")
+                    .TrimStart('_')
                 : string.Empty);
+
+            return CleanupGenericName(className);
         }
 
-        internal static string GetMethodName(
-            MethodDefinition method)
+        internal static string GetSafeMethodName(MethodDefinition method)
         {
-            var name = string.Concat(method.Name, (method.IsStatic ? "___STATIC__" : "___"),
+            string name = string.Concat(method.Name, (method.IsStatic ? "___STATIC__" : "___"),
                 string.Join("__", GetAllParameters(method)));
 
-            var originalName = name.Replace(".", "_")
+            string originalName = name.Replace(".", "_")
                                 .Replace("/", "");
 
-            return originalName;
+            return CleanupGenericName(originalName);
         }
 
         private static IEnumerable<string> GetAllParameters(
@@ -192,7 +194,9 @@ namespace nanoFramework.Tools.MetadataProcessor
                 else
                 {
                     // this is not a generic, get full qualified type name
-                    return parameterType.FullName.Replace(".", String.Empty);
+                    string typeName = parameterType.FullName.Replace(".", String.Empty);
+
+                    return CleanupGenericName(typeName);
                 }
             }
         }
@@ -215,6 +219,15 @@ namespace nanoFramework.Tools.MetadataProcessor
         {
             return (_classNamesToExclude.Contains(td.FullName) ||
                     _classNamesToExclude.Contains(td.DeclaringType?.FullName));
+        }
+
+        internal static string CleanupGenericName(string name)
+        {
+            // Remove generic type notation: anything like <T>, <T1,T2>, `, etc.
+            string fixedName = name
+                    .Replace('`', '_');
+
+            return Regex.Replace(fixedName, @"<[^>]*>", string.Empty);
         }
     }
 }
