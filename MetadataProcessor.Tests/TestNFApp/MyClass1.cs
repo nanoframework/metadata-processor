@@ -31,6 +31,11 @@ namespace TestNFApp
         {
         }
 
+        [DataRow(999, null)]
+        public void MyMethodWithDataRowWithNull()
+        {
+        }
+
         private readonly int _myField;
 
         [Ignore("I'm ignoring you!")]
