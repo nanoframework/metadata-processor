@@ -9,8 +9,12 @@ namespace StubsGenerationTestNFApp
     {
         public static void Main()
         {
-            var nativeMethods = new NativeMethodGeneration();
+            NativeMethodGeneration nativeMethods = new NativeMethodGeneration();
             nativeMethods.Method();
+
+            NativeMethodGenerationGenerics<int> nativeMethodGenerationGenerics = new NativeMethodGenerationGenerics<int>();
+
+            nativeMethodGenerationGenerics.Method<int>();
 
             Thread.Sleep(Timeout.Infinite);
         }

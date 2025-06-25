@@ -16,8 +16,12 @@
     <AssemblyName>StubsGenerationTestNFApp</AssemblyName>
     <TargetFrameworkVersion>v1.0</TargetFrameworkVersion>
   </PropertyGroup>
+  <PropertyGroup Label="nanoFramework">
+    <NFMDP_GENERATE_STUBS>True</NFMDP_GENERATE_STUBS>
+  </PropertyGroup>
   <Import Project="$(NanoFrameworkProjectSystemPath)NFProjectSystem.props" Condition="Exists('$(NanoFrameworkProjectSystemPath)NFProjectSystem.props')" />
   <ItemGroup>
+    <Compile Include="NativeMethodGenerationGenerics.cs" />
     <Compile Include="NativeMethodGeneration.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

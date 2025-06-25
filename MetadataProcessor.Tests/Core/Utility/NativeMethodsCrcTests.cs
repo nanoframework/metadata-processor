@@ -18,14 +18,28 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
             var typeDefinition = TestObjectHelper.GetTestNFAppOneClassOverAllTypeDefinition(nanoTablesContext.AssemblyDefinition);
 
             // test
-            var r = NativeMethodsCrc.GetClassName(typeDefinition);
+            var r = NativeMethodsCrc.GetSafeClassName(typeDefinition);
 
             Assert.AreEqual("TestNFApp_OneClassOverAll", r);
 
             // test
-            r = NativeMethodsCrc.GetClassName(null);
+            r = NativeMethodsCrc.GetSafeClassName(null);
 
             Assert.AreEqual(String.Empty, r);
+        }
+
+        [TestMethod]
+        public void GetClassNameWithGenericsTest()
+        {
+            nanoTablesContext nanoTablesContext = TestObjectHelper.GetTestNFAppNanoTablesContext();
+            TypeDefinition genericTypeDefinition = TestObjectHelper.GetTestNFAppGenericClassTypeDefinition(nanoTablesContext.AssemblyDefinition);
+            TypeDefinition anotherGenericTypeDefinition = TestObjectHelper.GetTestNFAppAnotherGenericClassTypeDefinition(nanoTablesContext.AssemblyDefinition);
+
+            // test
+            Assert.AreEqual("TestNFApp_GenericClass_1", NativeMethodsCrc.GetSafeClassName(genericTypeDefinition));
+            Assert.AreEqual("TestNFApp_AnotherGenericClass_2", NativeMethodsCrc.GetSafeClassName(anotherGenericTypeDefinition));
+
+            Assert.AreEqual(String.Empty, NativeMethodsCrc.GetSafeClassName(null));
         }
 
         [TestMethod]
@@ -36,7 +50,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
             var methodDefinition = TestObjectHelper.GetTestNFAppOneClassOverAllDummyMethodDefinition(typeDefinition);
 
             // test
-            var r = NativeMethodsCrc.GetMethodName(methodDefinition);
+            var r = NativeMethodsCrc.GetSafeMethodName(methodDefinition);
 
             Assert.AreEqual("DummyMethod___VOID", r);
 
@@ -45,7 +59,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
             methodDefinition = TestObjectHelper.GetTestNFAppOneClassOverAllDummyMethodWithParamsDefinition(typeDefinition);
 
             // test
-            r = NativeMethodsCrc.GetMethodName(methodDefinition);
+            r = NativeMethodsCrc.GetSafeMethodName(methodDefinition);
 
             Assert.AreEqual("DummyMethodWithParams___VOID__I4__STRING", r);
 
@@ -54,7 +68,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
             methodDefinition = TestObjectHelper.GetTestNFAppOneClassOverAllDummyStaticMethodDefinition(typeDefinition);
 
             // test
-            r = NativeMethodsCrc.GetMethodName(methodDefinition);
+            r = NativeMethodsCrc.GetSafeMethodName(methodDefinition);
 
             Assert.AreEqual("DummyStaticMethod___STATIC__VOID", r);
 
@@ -63,7 +77,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
             methodDefinition = TestObjectHelper.GetTestNFAppOneClassOverAllDummyStaticMethodWithParamsDefinition(typeDefinition);
 
             // test
-            r = NativeMethodsCrc.GetMethodName(methodDefinition);
+            r = NativeMethodsCrc.GetSafeMethodName(methodDefinition);
 
             Assert.AreEqual("DummyStaticMethodWithParams___STATIC__VOID__I8__SystemDateTime", r);
 

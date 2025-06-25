@@ -83,8 +83,6 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
         private void GenerateStubs()
         {
-            var generatedFiles = new List<string>();
-
             var classList = new AssemblyClassTable
             {
                 AssemblyName = _tablesContext.AssemblyDefinition.Name.Name,
@@ -96,14 +94,14 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
             {
                 if (ShouldIncludeType(c))
                 {
-                    var className = NativeMethodsCrc.GetClassName(c);
+                    string _safeClassName = NativeMethodsCrc.GetSafeClassName(c);
 
                     var classStubs = new AssemblyClassStubs
                     {
                         AssemblyName = _name,
-                        ClassHeaderFileName = className,
-                        ClassName = c.Name,
-                        ShortNameUpper = $"{_assemblyName}_{_safeProjectName}_{className}".ToUpper(),
+                        ClassHeaderFileName = _safeClassName,
+                        ClassName = NativeMethodsCrc.CleanupGenericName(c.Name),
+                        ShortNameUpper = $"{_assemblyName}_{_safeProjectName}_{_safeClassName}".ToUpper(),
                         RootNamespace = _assemblyName,
                         ProjectName = _safeProjectName,
                         HeaderFileName = _safeProjectName
@@ -111,7 +109,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
                     classList.Classes.Add(new Class()
                     {
-                        Name = className
+                        Name = _safeClassName
                     });
                     classList.HeaderFileName = classStubs.HeaderFileName;
 
@@ -125,7 +123,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                         {
                             var newMethod = new MethodStub()
                             {
-                                Declaration = $"Library_{_safeProjectName}_{className}::{NativeMethodsCrc.GetMethodName(m)}"
+                                Declaration = $"Library_{_safeProjectName}_{_safeClassName}::{NativeMethodsCrc.GetSafeMethodName(m)}"
                             };
 
                             if (!_withoutInteropCode)
@@ -143,10 +141,10 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
                                 newMethod.MarshallingReturnType = m.MethodReturnType.ReturnType.ToCLRTypeAsString();
 
-                                declaration.Append($"{m.Name}");
+                                declaration.Append($"{NativeMethodsCrc.CleanupGenericName(m.Name)}");
                                 declaration.Append("( ");
 
-                                StringBuilder marshallingCall = new StringBuilder($"{m.Name}");
+                                StringBuilder marshallingCall = new StringBuilder($"{NativeMethodsCrc.CleanupGenericName(m.Name)}");
                                 marshallingCall.Append("( ");
 
                                 // loop through the parameters
@@ -259,16 +257,16 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                             };
                             Generator generator = compiler.Compile(SkeletonTemplates.ClassWithoutInteropStubTemplate);
 
-                            using (var headerFile = File.CreateText(Path.Combine(_path, $"{_safeProjectName}_{className}.cpp")))
+                            using (StreamWriter headerFile = File.CreateText(Path.Combine(_path, $"{_safeProjectName}_{_safeClassName}.cpp")))
                             {
-                                var output = generator.Render(classStubs);
+                                string output = generator.Render(classStubs);
                                 headerFile.Write(output);
                             }
 
                             // add class to list of classes with stubs
                             classList.ClassesWithStubs.Add(new ClassWithStubs()
                             {
-                                Name = className
+                                Name = _safeClassName
                             });
                         }
                         else
@@ -281,34 +279,34 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                             // user code stub
                             Generator generator = compiler.Compile(SkeletonTemplates.ClassStubTemplate);
 
-                            using (var headerFile = File.CreateText(Path.Combine(_path, $"{_safeProjectName}_{className}.cpp")))
+                            using (StreamWriter headerFile = File.CreateText(Path.Combine(_path, $"{_safeProjectName}_{_safeClassName}.cpp")))
                             {
-                                var output = generator.Render(classStubs);
+                                string output = generator.Render(classStubs);
                                 headerFile.Write(output);
                             }
 
                             // marshal code
                             generator = compiler.Compile(SkeletonTemplates.ClassMarshallingCodeTemplate);
 
-                            using (var headerFile = File.CreateText(Path.Combine(_path, $"{_safeProjectName}_{className}_mshl.cpp")))
+                            using (StreamWriter headerFile = File.CreateText(Path.Combine(_path, $"{_safeProjectName}_{_safeClassName}_mshl.cpp")))
                             {
-                                var output = generator.Render(classStubs);
+                                string output = generator.Render(classStubs);
                                 headerFile.Write(output);
                             }
 
                             // class header
                             generator = compiler.Compile(SkeletonTemplates.ClassHeaderTemplate);
 
-                            using (var headerFile = File.CreateText(Path.Combine(_path, $"{_safeProjectName}_{className}.h")))
+                            using (StreamWriter headerFile = File.CreateText(Path.Combine(_path, $"{_safeProjectName}_{_safeClassName}.h")))
                             {
-                                var output = generator.Render(classStubs);
+                                string output = generator.Render(classStubs);
                                 headerFile.Write(output);
                             }
 
                             // add class to list of classes with stubs
                             classList.ClassesWithStubs.Add(new ClassWithStubs()
                             {
-                                Name = className
+                                Name = _safeClassName
                             });
                         }
                     }
@@ -379,7 +377,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                 {
                     if (ShouldIncludeType(c))
                     {
-                        var className = NativeMethodsCrc.GetClassName(c);
+                        var className = NativeMethodsCrc.GetSafeClassName(c);
 
                         foreach (var m in nanoTablesContext.GetOrderedMethods(c.Methods))
                         {
@@ -392,7 +390,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                             {
                                 assemblyLookup.LookupTable.Add(new MethodStub()
                                 {
-                                    Declaration = $"Library_{_safeProjectName}_{className}::{NativeMethodsCrc.GetMethodName(m)}"
+                                    Declaration = $"Library_{_safeProjectName}_{className}::{NativeMethodsCrc.GetSafeMethodName(m)}"
                                 });
                             }
                             else
@@ -458,7 +456,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                     var classData = new Class()
                     {
                         AssemblyName = _safeProjectName,
-                        Name = NativeMethodsCrc.GetClassName(c)
+                        Name = NativeMethodsCrc.GetSafeClassName(c)
                     };
 
                     // If class name starts from <PrivateImplementationDetails>,
@@ -525,7 +523,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                             {
                                 classData.Methods.Add(new MethodStub()
                                 {
-                                    Declaration = NativeMethodsCrc.GetMethodName(m)
+                                    Declaration = NativeMethodsCrc.GetSafeMethodName(m)
                                 });
                             }
                         }
