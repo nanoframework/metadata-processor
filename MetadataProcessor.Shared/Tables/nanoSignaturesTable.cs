@@ -817,7 +817,15 @@ namespace nanoFramework.Tools.MetadataProcessor
                         break;
                     case NanoCLRDataType.DATATYPE_STRING:
                         writer.Write((byte)nanoSerializationType.ELEMENT_TYPE_STRING);
-                        writer.Write(_context.StringTable.GetOrCreateStringId((string)argument.Value));
+                        if (argument.Value == null)
+                        {
+                            // write sentinel for null string
+                            writer.Write((ushort)0xFFFF);
+                        }
+                        else
+                        {
+                            writer.Write(_context.StringTable.GetOrCreateStringId((string)argument.Value));
+                        }
                         break;
                     default:
                         Debug.Fail(dataType.ToString());
