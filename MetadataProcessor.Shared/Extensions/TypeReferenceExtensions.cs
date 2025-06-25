@@ -381,5 +381,12 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
         {
             return nanoHelpers.FixTypeNames(value.Name);
         }
+
+        public static bool IsToExclude(this TypeReference value)
+        {
+            return nanoTablesContext.ClassNamesToExclude.Contains(value.FullName) ||
+                   nanoTablesContext.ClassNamesToExclude.Contains(value.Name) ||
+                   nanoTablesContext.ClassNamesToExclude.Contains(value.DeclaringType?.FullName);
+        }
     }
 }

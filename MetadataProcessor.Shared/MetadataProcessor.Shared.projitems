@@ -37,6 +37,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\MethodSpecificationExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\ParameterDefintionExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\TypeDefinitionExtensions.cs" />
+    <Compile Include="..\MetadataProcessor.Shared\Extensions\TypeSpecificationExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\TypeReferenceExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)InanoTable.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Mono.Cecil\CodeWriter.cs" />
