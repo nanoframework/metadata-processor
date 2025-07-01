@@ -287,33 +287,20 @@ namespace nanoFramework.Tools.MetadataProcessor
         {
             foreach (TypeDefinition td in _context.TypeDefinitionTable.Items)
             {
+                // Fields of the type
+                foreach (var field in td.Fields.Where(f => !f.IsLiteral))
+                {
+                    if (field.FieldType is ArrayType array && array.ElementType is GenericParameter)
+                    {
+                        AddIfNew(field.FieldType, _context.SignaturesTable.GetOrCreateSignatureId(field.FieldType));
+                    }
+                }
+
                 foreach (MethodDefinition m in td.Methods.Where(m => m.HasBody))
                 {
                     foreach (Instruction instr in m.Body.Instructions)
                     {
-                        if (instr.Operand is GenericParameter gp)
-                        {
-                            AddIfNew(gp, _context.SignaturesTable.GetOrCreateSignatureId(gp));
-                        }
-                        else if (instr.Operand is MethodReference mr)
-                        {
-                            // register return‐type...
-                            ExpandNestedTypeSpecs(mr.ReturnType);
-
-                            // ... and parameters
-                            foreach (ParameterDefinition p in mr.Parameters)
-                            {
-                                ExpandNestedTypeSpecs(p.ParameterType);
-                            }
-                        }
-
-                        // catch field‐refs too
-                        else if (instr.Operand is FieldReference fieldRef)
-                        {
-                            ExpandNestedTypeSpecs(fieldRef.DeclaringType);
-                            ExpandNestedTypeSpecs(fieldRef.FieldType);
-                        }
-                        else if (instr.Operand is GenericInstanceMethod genericInstanceMethod)
+                        if (instr.Operand is GenericInstanceMethod genericInstanceMethod)
                         {
                             GenericInstanceType genericInstanceType = genericInstanceMethod.DeclaringType as GenericInstanceType;
                             if (genericInstanceType != null
@@ -326,6 +313,40 @@ namespace nanoFramework.Tools.MetadataProcessor
                                 // also pull in its element‐type and args
                                 ExpandNestedTypeSpecs(genericInstanceType);
                             }
+
+                            // capture the *return‐type* of the instantiation (e.g. T[] for Array.Empty<T>())
+                            TypeReference returnType = genericInstanceMethod.ReturnType;
+                            ExpandNestedTypeSpecs(returnType);
+
+                            if (returnType is ArrayType)
+                            {
+                                if (!_idByTypeSpecifications.ContainsKey(returnType.GetElementType())
+                                    && !returnType.GetElementType().IsToExclude())
+                                {
+                                    AddIfNew(returnType.GetElementType(), _context.SignaturesTable.GetOrCreateSignatureId(returnType.GetElementType()));
+                                }
+                            }
+                        }
+                        else if (instr.Operand is MethodReference mr)
+                        {
+                            // register return‐type...
+                            ExpandNestedTypeSpecs(mr.ReturnType);
+
+                            // ... and parameters
+                            foreach (ParameterDefinition p in mr.Parameters)
+                            {
+                                ExpandNestedTypeSpecs(p.ParameterType);
+                            }
+                        }
+                        else if (instr.Operand is GenericParameter gp)
+                        {
+                            AddIfNew(gp, _context.SignaturesTable.GetOrCreateSignatureId(gp));
+                        }
+                        // catch field‐refs too
+                        else if (instr.Operand is FieldReference fieldRef)
+                        {
+                            ExpandNestedTypeSpecs(fieldRef.DeclaringType);
+                            ExpandNestedTypeSpecs(fieldRef.FieldType);
                         }
                         else if (instr.Operand is TypeReference tr)
                         {
