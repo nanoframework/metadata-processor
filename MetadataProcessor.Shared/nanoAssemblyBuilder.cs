@@ -895,7 +895,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                                 {
                                     // Cecil.Mono has a bug providing TypeSpecs Metadata tokens generic parameters variables, so we need to check against our internal table and build one from it
                                     if (_tablesContext.TypeSpecificationsTable
-                                            .TryGetTypeReferenceId(arrayType, out ushort arraySpecId))
+                                            .TryGetTypeReferenceId(arrayType.GetElementType(), out ushort arraySpecId))
                                     {
                                         // add "fabricated" token for TypeSpec using the referenceId as RID
                                         set.Add(new MetadataToken(TokenType.TypeSpec, arraySpecId));
@@ -1186,7 +1186,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                         if (ret is ArrayType arr)
                         {
                             if (_tablesContext.TypeSpecificationsTable.TryGetTypeReferenceId(
-                                arr,
+                                arr.GetElementType(),
                                 out ushort arrRid))
                             {
                                 // add "fabricated" token for TypeSpec using the referenceId as RID
