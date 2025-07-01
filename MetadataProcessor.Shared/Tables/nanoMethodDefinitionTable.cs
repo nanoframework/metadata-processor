@@ -33,13 +33,13 @@ namespace nanoFramework.Tools.MetadataProcessor
             /// <inheritdoc/>
             public bool Equals(MethodDefinition lhs, MethodDefinition rhs)
             {
-                return string.Equals(lhs.FullName, rhs.FullName, StringComparison.Ordinal);
+                return lhs.MetadataToken.Equals(rhs.MetadataToken);
             }
 
             /// <inheritdoc/>
             public int GetHashCode(MethodDefinition that)
             {
-                return that.FullName.GetHashCode();
+                return that.MetadataToken.GetHashCode();
             }
         }
 
