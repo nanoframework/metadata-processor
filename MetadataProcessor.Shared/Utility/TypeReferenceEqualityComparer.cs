@@ -79,13 +79,17 @@ namespace nanoFramework.Tools.MetadataProcessor
                 // provide an hash code based on the TypeSpec signature 
                 return xSignatureId;
             }
-            else if (obj is GenericParameter)
+            else if (obj is GenericParameter genericParam)
             {
                 // provide an hash code based on the generic parameter position and type, 
                 // which is what makes it unique when comparing GenericParameter as a TypeReference
-                var genericParam = obj as GenericParameter;
 
-                return genericParam.Position * 10 + (int)genericParam.Type;
+                int hash = 17;
+                hash = unchecked(hash * 31 + genericParam.DeclaringType?.MetadataToken.ToInt32() ?? 0);
+                hash = unchecked(hash * 31 + genericParam.Position);
+                hash = unchecked(hash * 31 + (int)genericParam.Type);
+
+                return hash;
             }
             else
             {
