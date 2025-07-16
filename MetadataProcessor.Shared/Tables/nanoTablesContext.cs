@@ -281,7 +281,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                     // method reference belongs to a TypeSpec
 
                     // find MethodDef for this 
-                    var methodRef = MethodReferencesTable.Items.FirstOrDefault(m => m.DeclaringType.MetadataToken == memberReference.DeclaringType.MetadataToken && m.Name == memberReference.Name);
+                    var methodRef = MethodReferencesTable.Items.FirstOrDefault(m => m.DeclaringType.MetadataToken == memberReference.DeclaringType.MetadataToken && m.MetadataToken == memberReference.MetadataToken);
 
                     if (!MethodReferencesTable.TryGetMethodReferenceId(methodRef, out referenceId))
                     {
