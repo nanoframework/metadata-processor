@@ -22,7 +22,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         //////////////////////////////////////////////////////////////////////////////////////////////
         // <SYNC-WITH-NATIVE>                                                                       //
         // when updating this size here need to update matching define in nanoCLR_Types.h in native //
-        private const int sizeOf_CLR_RECORD_FIELDDEF = 8;
+        private const int sizeOf_CLR_RECORD_FIELDDEF = 10;
         //////////////////////////////////////////////////////////////////////////////////////////////
         //////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -35,13 +35,13 @@ namespace nanoFramework.Tools.MetadataProcessor
             /// <inheritdoc/>
             public bool Equals(FieldDefinition lhs, FieldDefinition rhs)
             {
-                return string.Equals(lhs.FullName, rhs.FullName, StringComparison.Ordinal);
+                return lhs.MetadataToken.Equals(rhs.MetadataToken);
             }
 
             /// <inheritdoc/>
             public int GetHashCode(FieldDefinition that)
             {
-                return that.FullName.GetHashCode();
+                return that.MetadataToken.GetHashCode();
             }
         }
 
@@ -81,6 +81,7 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             var writerStartPosition = writer.BaseStream.Position;
 
+            WriteStringReference(writer, item.DeclaringType.Name);
             WriteStringReference(writer, item.Name);
             writer.WriteUInt16(_context.SignaturesTable.GetOrCreateSignatureId(item));
 
