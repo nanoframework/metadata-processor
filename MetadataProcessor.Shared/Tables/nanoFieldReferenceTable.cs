@@ -22,7 +22,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         //////////////////////////////////////////////////////////////////////////////////////////////
         // <SYNC-WITH-NATIVE>                                                                       //
         // when updating this size here need to update matching define in nanoCLR_Types.h in native //
-        private const int sizeOf_CLR_RECORD_FIELDREF = 6;
+        private const int sizeOf_CLR_RECORD_FIELDREF = 8;
         //////////////////////////////////////////////////////////////////////////////////////////////
         //////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -35,13 +35,13 @@ namespace nanoFramework.Tools.MetadataProcessor
             /// <inheritdoc/>
             public bool Equals(FieldReference lhs, FieldReference rhs)
             {
-                return string.Equals(lhs.FullName, rhs.FullName, StringComparison.Ordinal);
+                return lhs.MetadataToken.Equals(rhs.MetadataToken);
             }
 
             /// <inheritdoc/>
             public int GetHashCode(FieldReference that)
             {
-                return that.FullName.GetHashCode();
+                return that.MetadataToken.GetHashCode();
             }
         }
 
@@ -98,6 +98,9 @@ namespace nanoFramework.Tools.MetadataProcessor
             {
                 throw new ArgumentException($"Can't find a type reference for {item.DeclaringType}.");
             }
+
+            // Type
+            WriteStringReference(writer, item.DeclaringType.Name);
 
             // Name
             WriteStringReference(writer, item.Name);
