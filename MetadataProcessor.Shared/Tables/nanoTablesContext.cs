@@ -324,7 +324,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             if (fieldReference is FieldDefinition)
             {
                 // field definition is internal
-                if (FieldsTable.TryGetFieldReferenceId(fieldReference as FieldDefinition, false, out referenceId))
+                if (FieldsTable.TryGetFieldDefinitionId(fieldReference as FieldDefinition, false, out referenceId))
                 {
                     // field reference is internal => field definition
                     ownerTable = NanoClrTable.TBL_FieldDef;
@@ -381,7 +381,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                     TypeSpecificationsTable.TryGetTypeReferenceId((TypeReference)token, out referenceId);
                     return (uint)0x09000000 | referenceId;
                 case TokenType.Field:
-                    FieldsTable.TryGetFieldReferenceId((FieldDefinition)token, false, out referenceId);
+                    FieldsTable.TryGetFieldDefinitionId((FieldDefinition)token, false, out referenceId);
                     return (uint)0x05000000 | referenceId;
                 case TokenType.GenericParam:
                     GenericParamsTable.TryGetParameterId((GenericParameter)token, out referenceId);

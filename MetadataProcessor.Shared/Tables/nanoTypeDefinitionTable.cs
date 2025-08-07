@@ -229,7 +229,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             foreach (var field in fieldsList.Where(item => item.IsStatic))
             {
                 ushort fieldReferenceId;
-                if (_context.FieldsTable.TryGetFieldReferenceId(field, false, out fieldReferenceId))
+                if (_context.FieldsTable.TryGetFieldDefinitionId(field, false, out fieldReferenceId))
                 {
                     if (staticFieldsCount == 0)
                     {
@@ -254,7 +254,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             foreach (var field in fieldsList.Where(item => !item.IsStatic))
             {
                 ushort fieldReferenceId;
-                if (_context.FieldsTable.TryGetFieldReferenceId(field, false, out fieldReferenceId))
+                if (_context.FieldsTable.TryGetFieldDefinitionId(field, false, out fieldReferenceId))
                 {
                     if (instanceFieldsCount == 0)
                     {
