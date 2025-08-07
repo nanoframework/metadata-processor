@@ -328,7 +328,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                     uint att = (uint)f.Attributes;
 
                     string realToken = f.MetadataToken.ToInt32().ToString("X8");
-                    _tablesContext.FieldsTable.TryGetFieldReferenceId(f, false, out referenceId);
+                    _tablesContext.FieldsTable.TryGetFieldDefinitionId(f, false, out referenceId);
 
                     var fieldDef = new FieldDef()
                     {
@@ -784,7 +784,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                             Signature = fd.FieldType.TypeSignatureAsString()
                         };
 
-                        if (_tablesContext.FieldsTable.TryGetFieldReferenceId(fd, false, out ushort fieldId))
+                        if (_tablesContext.FieldsTable.TryGetFieldDefinitionId(fd, false, out ushort fieldId))
                         {
                             realToken = fd.MetadataToken.ToInt32().ToString("X8");
                             memberRef.ReferenceId = $"[{new nanoMetadataToken(NanoClrTable.TBL_FieldDef, fieldId)}] /*{realToken}*/";

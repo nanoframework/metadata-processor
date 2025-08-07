@@ -194,7 +194,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             foreach (var field in fields.Where(item => !item.HasConstant))
             {
                 ushort fieldToken;
-                _context.FieldsTable.TryGetFieldReferenceId(field, false, out fieldToken);
+                _context.FieldsTable.TryGetFieldDefinitionId(field, false, out fieldToken);
                 yield return new Tuple<uint, uint>(
                     field.MetadataToken.ToUInt32(), 0x05000000 | (uint)fieldToken);
             }

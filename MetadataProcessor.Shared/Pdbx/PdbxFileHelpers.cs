@@ -148,7 +148,7 @@ namespace nanoFramework.Tools.MetadataProcessor
     {
         public Field(nanoTablesContext context, FieldDefinition field)
         {
-            context.FieldsTable.TryGetFieldReferenceId(field, false, out ushort fieldToken);
+            context.FieldsTable.TryGetFieldDefinitionId(field, false, out ushort fieldToken);
 
             Token = new Token(field.MetadataToken, NanoClrTable.TBL_FieldDef.ToNanoTokenType() | fieldToken);
 

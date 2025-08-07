@@ -92,15 +92,15 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
 
             FieldDefinition maxField = nanoTablesContext.FieldsTable.Items.FirstOrDefault(f => f.Name == "_max");
             string maxFieldRealToken = maxField.MetadataToken.ToInt32().ToString("X8");
-            nanoTablesContext.FieldsTable.TryGetFieldReferenceId(maxField, false, out ushort maxFieldReferenceId);
+            nanoTablesContext.FieldsTable.TryGetFieldDefinitionId(maxField, false, out ushort maxFieldReferenceId);
 
             FieldDefinition sField = nanoTablesContext.FieldsTable.Items.FirstOrDefault(f => f.Name == "_s");
             string sFieldRealToken = sField.MetadataToken.ToInt32().ToString("X8");
-            nanoTablesContext.FieldsTable.TryGetFieldReferenceId(sField, false, out ushort sFieldReferenceId);
+            nanoTablesContext.FieldsTable.TryGetFieldDefinitionId(sField, false, out ushort sFieldReferenceId);
 
             FieldDefinition bField = nanoTablesContext.FieldsTable.Items.FirstOrDefault(f => f.Name == "_b");
             string bFieldRealToken = bField.MetadataToken.ToInt32().ToString("X8");
-            nanoTablesContext.FieldsTable.TryGetFieldReferenceId(bField, false, out ushort bFieldReferenceId);
+            nanoTablesContext.FieldsTable.TryGetFieldDefinitionId(bField, false, out ushort bFieldReferenceId);
 
 
             typeFlags = (uint)nanoTypeDefinitionTable.GetFlags(type1, nanoTablesContext.MethodDefinitionTable);

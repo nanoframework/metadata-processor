@@ -94,22 +94,24 @@ namespace nanoFramework.Tools.MetadataProcessor
         }
 
         /// <summary>
-        /// Gets field reference identifier (if field is defined inside target assembly).
+        /// Gets field definition identifier (if field is defined inside target assembly).
         /// </summary>
         /// <param name="field">Field definition in Mono.Cecil format.</param>
-        /// <param name="trackMaxReferenceId">If set to <c>true</c> we should track max ID value.</param>
-        /// <param name="referenceId">Field reference identifier for filling.</param>
+        /// <param name="trackMaxDefinitionId">If set to <c>true</c> we should track max ID value.</param>
+        /// <param name="definitionId">Field definition identifier for filling.</param>
         /// <returns>Returns <c>true</c> if item found, otherwise returns <c>false</c>.</returns>
-        public bool TryGetFieldReferenceId(
+        public bool TryGetFieldDefinitionId(
             FieldDefinition field,
-            bool trackMaxReferenceId,
-            out ushort referenceId)
+            bool trackMaxDefinitionId,
+            out ushort definitionId)
         {
-            var found = TryGetIdByValue(field, out referenceId);
-            if (trackMaxReferenceId && found)
+            bool found = TryGetIdByValue(field, out definitionId);
+
+            if (trackMaxDefinitionId && found)
             {
-                _maxReferenceId = Math.Max(_maxReferenceId, referenceId + 1);
+                _maxReferenceId = Math.Max(_maxReferenceId, definitionId + 1);
             }
+
             return found;
         }
 

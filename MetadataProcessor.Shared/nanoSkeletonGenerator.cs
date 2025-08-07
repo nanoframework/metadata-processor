@@ -498,7 +498,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                     {
                         FixFieldName(f, out string fixedFieldName, out string fieldWarning);
 
-                        if (_tablesContext.FieldsTable.TryGetFieldReferenceId(f, false, out ushort fieldRefId))
+                        if (_tablesContext.FieldsTable.TryGetFieldDefinitionId(f, false, out ushort fieldRefId))
                         {
                             classData.InstanceFields.Add(new InstanceField()
                             {
