@@ -21,28 +21,15 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
 
         public static NanoClrTable ToNanoCLRTable(this MethodSpecification value)
         {
-            // this one has to be before the others because generic parameters are also "other" types
-            if (value.Resolve() is MethodDefinition)
+            if (value.DeclaringType.Scope.MetadataScopeType == MetadataScopeType.AssemblyNameReference)
             {
-                return NanoClrTable.TBL_MethodDef;
-            }
-            else if (value.Resolve() is MethodReference ||
-                    value.Resolve() is MethodSpecification)
-            {
-                if (value.DeclaringType.Scope.MetadataScopeType == MetadataScopeType.AssemblyNameReference)
-                {
-                    // method ref is external
-                    return NanoClrTable.TBL_MethodRef;
-                }
-                else
-                {
-                    // method ref is internal
-                    return NanoClrTable.TBL_MethodDef;
-                }
+                // method ref is external
+                return NanoClrTable.TBL_MethodRef;
             }
             else
             {
-                throw new ArgumentException("Unknown conversion to CLR Table.");
+                // method ref is internal
+                return NanoClrTable.TBL_MethodDef;
             }
         }
     }
