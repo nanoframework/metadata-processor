@@ -99,9 +99,13 @@ namespace nanoFramework.Tools.MetadataProcessor
             var writerStartPosition = writer.BaseStream.Position;
 
             // Method
-            if (_context.MethodSpecificationTable.TryGetMethodSpecificationId(item, out ushort referenceId))
+            if (_context.MethodDefinitionTable.TryGetMethodReferenceId(item.Resolve(), out ushort referenceId))
             {
-                // method is method spec
+                // method is method def
+            }
+            else if (_context.MethodReferencesTable.TryGetMethodReferenceId(item.Resolve(), out referenceId))
+            {
+                // method is method ref
             }
             else
             {
