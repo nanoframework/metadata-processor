@@ -103,7 +103,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             {
                 // method is method def
             }
-            else if (_context.MethodReferencesTable.TryGetMethodReferenceId(item.Resolve(), out referenceId))
+            else if (_context.MethodReferencesTable.TryGetMethodReferenceId(item.ElementMethod, out referenceId))
             {
                 // method is method ref
             }
