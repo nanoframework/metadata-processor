@@ -76,14 +76,14 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// <summary>
         /// Gets method specification ID if possible.
         /// </summary>
-        /// <param name="genericParameter">Method reference metadata in Mono.Cecil format.</param>
+        /// <param name="methodSpec">Method reference metadata in Mono.Cecil format.</param>
         /// <param name="referenceId">Method reference ID in .NET nanoFramework format.</param>
         /// <returns>Returns <c>true</c> if reference found, otherwise returns <c>false</c>.</returns>
         public bool TryGetMethodSpecificationId(
-            MethodSpecification genericParameter,
+            MethodSpecification methodSpec,
             out ushort referenceId)
         {
-            return TryGetIdByValue(genericParameter, out referenceId);
+            return TryGetIdByValue(methodSpec, out referenceId);
         }
 
         /// <inheritdoc/>
@@ -101,11 +101,15 @@ namespace nanoFramework.Tools.MetadataProcessor
             // Method
             if (_context.MethodDefinitionTable.TryGetMethodReferenceId(item.Resolve(), out ushort referenceId))
             {
-                // method is method definition
+                // method is method def
+            }
+            else if (_context.MethodReferencesTable.TryGetMethodReferenceId(item.ElementMethod, out referenceId))
+            {
+                // method is method ref
             }
             else
             {
-                Debug.Fail($"Can't find a reference for {item.Resolve()}");
+                Debug.Fail($"Can't find a reference for {item}");
             }
 
             writer.WriteUInt16((ushort)(item.ToEncodedNanoMethodToken() | referenceId));
