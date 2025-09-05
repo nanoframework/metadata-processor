@@ -33,7 +33,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             /// <inheritdoc/>
             public bool Equals(MethodDefinition lhs, MethodDefinition rhs)
             {
-                return lhs.MetadataToken.Equals(rhs.MetadataToken);
+                return lhs.MetadataToken.Equals(rhs.MetadataToken) && lhs.Name == rhs.Name;
             }
 
             /// <inheritdoc/>
