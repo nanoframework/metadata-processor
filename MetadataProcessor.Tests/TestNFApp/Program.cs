@@ -88,6 +88,10 @@ namespace TestNFApp
             Console.WriteLine("Null attributes tests");
             _ = new ClassWithNullAttribs();
 
+            // testing Span<>
+            Console.WriteLine("Span<> tests");
+            _ = new TestingSpan();
+
             Console.WriteLine("Exiting TestNFApp");
         }
 
