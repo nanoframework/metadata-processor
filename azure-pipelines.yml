@@ -74,7 +74,7 @@ jobs:
 
         # find PR
         "Getting PR #$env:System_PullRequest_PullRequestNumber details..." | Write-Host -ForegroundColor White -NoNewline
-        $pr = Invoke-WebRequest "https://api.github.com/repos/$env:Build_Repository_Name/pulls/$env:System_PullRequest_PullRequestNumber" | ConvertFrom-Json
+        $pr = Invoke-RestMethod -Uri "https://api.github.com/repos/$env:Build_Repository_Name/pulls/$env:System_PullRequest_PullRequestNumber" -Header @{"Authorization"="$auth"} -ContentType "application/json" -Method GET
 
         if($($pr.number) -eq "$env:System_PullRequest_PullRequestNumber")
         {
@@ -103,7 +103,7 @@ jobs:
         
         # get PR associate with commit
         $prUrl = "https://api.github.com/repos/nanoframework/metadata-processor/commits/$commitId/pulls"
-        $commit = Invoke-RestMethod -Uri $prUrl -ContentType "application/json" -Headers @{"Accept"="application/vnd.github.groot-preview+json"} -Method GET
+        $commit = Invoke-RestMethod -Uri $prUrl -ContentType "application/json" -Header @{"Authorization"="$auth"} -Method GET
 
         if($commit -ne $null)
         {
