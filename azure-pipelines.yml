@@ -157,7 +157,7 @@ jobs:
     condition: ne( variables['StartReleaseCandidate'], true )
     displayName: Install nanoFramework MSBuild components
     env:
-      GITHUB_TOKEN: $(GitHubToken)
+      GitHubToken: $(GitHubToken)
 
   - task: NuGetCommand@2
     displayName: NuGet restore
