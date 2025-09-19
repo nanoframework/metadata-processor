@@ -186,7 +186,7 @@ jobs:
     condition: ne( variables['StartReleaseCandidate'], true )
     displayName: Install nanoFramework MSBuild components
     env:
-      GITHUB_TOKEN: $(GitHubToken)
+      GitHubToken: $(GitHubToken)
 
   - template: azure-pipelines-templates/check-nf-interpreter-to-test.yml
 
