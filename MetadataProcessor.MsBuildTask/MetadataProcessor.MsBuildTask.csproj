@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<OutputType>Library</OutputType>
 
-		<TargetFrameworks>net6.0;net472</TargetFrameworks>
+		<TargetFrameworks>net8.0;net472</TargetFrameworks>
 		<PackageId>nanoFramework.Tools.MetadataProcessor.MsBuildTask</PackageId>
 		<AssemblyName>nanoFramework.Tools.MetadataProcessor.MsBuildTask</AssemblyName>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
