@@ -1241,6 +1241,21 @@ namespace nanoFramework.Tools.MetadataProcessor
                                 set.Add(genericInstanceType.ElementType.MetadataToken);
                             }
                         }
+
+                        // pin generic parameters, if any
+                        foreach (TypeReference genericArgType in ((GenericInstanceMethod)ms)?.GenericArguments)
+                        {
+                            if (genericArgType is GenericInstanceType genericInstanceType)
+                            {
+                                set.Add(genericInstanceType.MetadataToken);
+                                set.Add(genericInstanceType.ElementType.MetadataToken);
+                            }
+                            else if (genericArgType.MetadataType == MetadataType.Class
+                               || (genericArgType.IsValueType && !genericArgType.IsPrimitive))
+                            {
+                                set.Add(genericArgType.MetadataToken);
+                            }
+                        }
                     }
                     break;
 
