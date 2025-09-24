@@ -631,15 +631,15 @@ namespace nanoFramework.Tools.MetadataProcessor
                     {
                         set.Add(fd.MetadataToken);
                     }
-                    else if (fd.FieldType.IsValueType &&
-                             !fd.FieldType.IsPrimitive)
-                    {
-                        set.Add(fd.FieldType.MetadataToken);
-                    }
                     else if (fd.FieldType is GenericInstanceType)
                     {
                         set.Add(fd.FieldType.MetadataToken);
                         set.Add(fd.FieldType.GetElementType().MetadataToken);
+                    }
+                    else if (fd.FieldType.IsValueType &&
+                             !fd.FieldType.IsPrimitive)
+                    {
+                        set.Add(fd.FieldType.MetadataToken);
                     }
                     else if (fd.FieldType.IsArray)
                     {
@@ -759,15 +759,15 @@ namespace nanoFramework.Tools.MetadataProcessor
                         {
                             set.Add(parameterType.MetadataToken);
                         }
-                        else if (parameterType.IsValueType &&
-                                 !parameterType.IsPrimitive)
-                        {
-                            set.Add(parameterType.MetadataToken);
-                        }
                         else if (parameterType is GenericInstanceType)
                         {
                             set.Add(parameterType.MetadataToken);
                             set.Add(parameterType.GetElementType().MetadataToken);
+                        }
+                        else if (parameterType.IsValueType &&
+                                 !parameterType.IsPrimitive)
+                        {
+                            set.Add(parameterType.MetadataToken);
                         }
                         else if (parameterType is GenericParameter)
                         {
@@ -914,15 +914,15 @@ namespace nanoFramework.Tools.MetadataProcessor
                                         set.Add(elementType.MetadataToken);
                                     }
                                 }
-                                else if (returnType.MetadataType == MetadataType.Class
-                                    || (returnType.IsValueType && !returnType.IsPrimitive))
-                                {
-                                    set.Add(returnType.MetadataToken);
-                                }
                                 else if (returnType is GenericInstanceType genericInstanceType)
                                 {
                                     set.Add(genericInstanceType.MetadataToken);
                                     set.Add(genericInstanceType.ElementType.MetadataToken);
+                                }
+                                else if (returnType.MetadataType == MetadataType.Class
+                                    || (returnType.IsValueType && !returnType.IsPrimitive))
+                                {
+                                    set.Add(returnType.MetadataToken);
                                 }
 
                                 // capture any *parameter* types
@@ -951,16 +951,17 @@ namespace nanoFramework.Tools.MetadataProcessor
                                             set.Add(elementType.MetadataToken);
                                         }
                                     }
-                                    else if (parameterType.MetadataType == MetadataType.Class
-                                        || (parameterType.IsValueType && !parameterType.IsPrimitive))
-                                    {
-                                        set.Add(parameterType.MetadataToken);
-                                    }
                                     else if (parameterType is GenericInstanceType genericInstanceType)
                                     {
                                         set.Add(genericInstanceType.MetadataToken);
                                         set.Add(genericInstanceType.ElementType.MetadataToken);
                                     }
+                                    else if (parameterType.MetadataType == MetadataType.Class
+                                        || (parameterType.IsValueType && !parameterType.IsPrimitive))
+                                    {
+                                        set.Add(parameterType.MetadataToken);
+                                    }
+
                                 }
 
                                 // after handling a GenericInstanceMethod, OK skip the other branches
@@ -1000,16 +1001,17 @@ namespace nanoFramework.Tools.MetadataProcessor
                                         set.Add(elementType.MetadataToken);
                                     }
                                 }
-                                else if (returnType.MetadataType == MetadataType.Class
-                                    || (returnType.IsValueType && !returnType.IsPrimitive))
-                                {
-                                    set.Add(returnType.MetadataToken);
-                                }
                                 else if (returnType is GenericInstanceType gitRt)
                                 {
                                     set.Add(gitRt.MetadataToken);
                                     set.Add(gitRt.ElementType.MetadataToken);
                                 }
+                                else if (returnType.MetadataType == MetadataType.Class
+                                    || (returnType.IsValueType && !returnType.IsPrimitive))
+                                {
+                                    set.Add(returnType.MetadataToken);
+                                }
+
 
                                 // capture any parameters
                                 foreach (ParameterDefinition p in ((MethodReference)i.Operand).Parameters)
@@ -1027,16 +1029,17 @@ namespace nanoFramework.Tools.MetadataProcessor
                                             set.Add(e.MetadataToken);
                                         }
                                     }
-                                    else if (typeReference.MetadataType == MetadataType.Class
-                                        || (typeReference.IsValueType && !typeReference.IsPrimitive))
-                                    {
-                                        set.Add(typeReference.MetadataToken);
-                                    }
                                     else if (typeReference is GenericInstanceType genericInstanceType)
                                     {
                                         set.Add(genericInstanceType.MetadataToken);
                                         set.Add(genericInstanceType.ElementType.MetadataToken);
                                     }
+                                    else if (typeReference.MetadataType == MetadataType.Class
+                                        || (typeReference.IsValueType && !typeReference.IsPrimitive))
+                                    {
+                                        set.Add(typeReference.MetadataToken);
+                                    }
+
                                 }
                             }
                             else if (i.Operand is MethodReference methodReference)
@@ -1201,16 +1204,17 @@ namespace nanoFramework.Tools.MetadataProcessor
 
                             set.Add(arr.ElementType.MetadataToken);
                         }
-                        else if (ret.MetadataType == MetadataType.Class
-                                 || (ret.IsValueType && !ret.IsPrimitive))
-                        {
-                            set.Add(ret.MetadataToken);
-                        }
                         else if (ret is GenericInstanceType genericInstanceType)
                         {
                             set.Add(genericInstanceType.MetadataToken);
                             set.Add(genericInstanceType.ElementType.MetadataToken);
                         }
+                        else if (ret.MetadataType == MetadataType.Class
+                                 || (ret.IsValueType && !ret.IsPrimitive))
+                        {
+                            set.Add(ret.MetadataToken);
+                        }
+
 
                         // pin each PARAMETER type as well
                         foreach (ParameterDefinition p in ms.Parameters)
@@ -1230,16 +1234,17 @@ namespace nanoFramework.Tools.MetadataProcessor
 
                                 set.Add(ap.ElementType.MetadataToken);
                             }
-                            else if (parameterType.MetadataType == MetadataType.Class
-                                     || (parameterType.IsValueType && !parameterType.IsPrimitive))
-                            {
-                                set.Add(parameterType.MetadataToken);
-                            }
                             else if (parameterType is GenericInstanceType genericInstanceType)
                             {
                                 set.Add(genericInstanceType.MetadataToken);
                                 set.Add(genericInstanceType.ElementType.MetadataToken);
                             }
+                            else if (parameterType.MetadataType == MetadataType.Class
+                                     || (parameterType.IsValueType && !parameterType.IsPrimitive))
+                            {
+                                set.Add(parameterType.MetadataToken);
+                            }
+
                         }
 
                         // pin generic parameters, if any
