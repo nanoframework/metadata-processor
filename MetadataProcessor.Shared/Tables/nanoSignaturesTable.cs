@@ -625,9 +625,9 @@ namespace nanoFramework.Tools.MetadataProcessor
                 // generic arguments count
                 writer.Write((byte)(genericInstance.GenericArguments.Count));
 
-                foreach (var argument in genericInstance.GenericArguments)
+                foreach (TypeReference argument in genericInstance.GenericArguments)
                 {
-                    WriteTypeInfo(argument.GetElementType(), binaryWriter);
+                    WriteTypeInfo(argument, binaryWriter);
                 }
 
                 return buffer.ToArray();
