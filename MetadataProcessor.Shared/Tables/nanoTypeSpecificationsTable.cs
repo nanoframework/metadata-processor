@@ -298,6 +298,11 @@ namespace nanoFramework.Tools.MetadataProcessor
 
                 foreach (MethodDefinition m in td.Methods.Where(m => m.HasBody))
                 {
+                    foreach (VariableDefinition variable in m.Body.Variables)
+                    {
+                        ExpandNestedTypeSpecs(variable.VariableType);
+                    }
+
                     foreach (Instruction instr in m.Body.Instructions)
                     {
                         if (instr.Operand is GenericInstanceMethod genericInstanceMethod)
@@ -398,6 +403,9 @@ namespace nanoFramework.Tools.MetadataProcessor
                     {
                         ExpandNestedTypeSpecs(arg);
                     }
+
+                    ushort declId = _context.SignaturesTable.GetOrCreateSignatureId(git);
+                    AddIfNew(git, declId);
 
                     break;
 
