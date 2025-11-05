@@ -132,6 +132,11 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
                 return genericParamTypeSig.ToString();
             }
 
+            if (type is GenericInstanceType genericInstance)
+            {
+                return $"{genericInstance.FullName}";
+            }
+
             return "";
         }
 
