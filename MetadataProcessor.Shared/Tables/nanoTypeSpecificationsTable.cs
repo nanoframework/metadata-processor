@@ -471,16 +471,147 @@ namespace nanoFramework.Tools.MetadataProcessor
                     ushort gpSig = _context.SignaturesTable.GetOrCreateSignatureId(gp);
                     AddIfNew(gp, gpSig);
                 }
+            }
+        }
 
-                // seed the *open* GenericInstanceType (e.g. Action`1<T>)
-                var openGeneric = new GenericInstanceType(td);
-                foreach (GenericParameter gp in td.GenericParameters)
+        internal void RemoveEmptyItems()
+        {
+            var itemsToRemove = new List<TypeReference>();
+
+            foreach (var kvp in _idByTypeSpecifications.ToList())
+            {
+                TypeReference typeReference = kvp.Key;
+                ushort sigId = kvp.Value;
+
+                // Get the index of this TypeSpec in the collection
+                if (!TryGetTypeReferenceId(typeReference, out ushort index))
                 {
-                    openGeneric.GenericArguments.Add(gp);
+                    continue;
                 }
 
-                ushort openSig = _context.SignaturesTable.GetOrCreateSignatureId(openGeneric);
-                AddIfNew(openGeneric, openSig);
+                bool hasMemberReferences = false;
+
+                // Check if this TypeSpec has any member references
+                if (typeReference is GenericParameter)
+                {
+                    // Generic parameters might be referenced without explicit member refs
+                    // Keep them for now
+                    continue;
+                }
+                else if (typeReference.IsArray)
+                {
+                    // Arrays might be referenced without explicit member refs
+                    // Keep them for now
+                    continue;
+                }
+                else if (typeReference is ByReferenceType || typeReference is PointerType)
+                {
+                    // ByRef and Pointer types might be referenced without explicit member refs
+                    // Keep them for now
+                    continue;
+                }
+                else if (typeReference is GenericInstanceType genericInstanceType)
+                {
+                    // Check MethodReferencesTable
+                    foreach (MethodReference mr in _context.MethodReferencesTable.Items)
+                    {
+                        if (TryGetTypeReferenceId(mr.DeclaringType, out ushort referenceId)
+                            && referenceId == index
+                            && _context.MethodReferencesTable.TryGetMethodReferenceId(mr, out ushort _))
+                        {
+                            hasMemberReferences = true;
+                            break;
+                        }
+                    }
+
+                    // Check MethodSpecificationTable if no refs found yet
+                    if (!hasMemberReferences)
+                    {
+                        foreach (MethodSpecification ms in _context.MethodSpecificationTable.Items)
+                        {
+                            if (TryGetTypeReferenceId(ms.DeclaringType, out ushort referenceId)
+                                && referenceId == index
+                                && _context.MethodSpecificationTable.TryGetMethodSpecificationId(ms, out ushort _))
+                            {
+                                hasMemberReferences = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    // Check FieldReferencesTable if no refs found yet
+                    if (!hasMemberReferences)
+                    {
+                        foreach (FieldReference fr in _context.FieldReferencesTable.Items)
+                        {
+                            if (TryGetTypeReferenceId(fr.DeclaringType, out ushort referenceId)
+                                && referenceId == index
+                                && _context.FieldReferencesTable.TryGetFieldReferenceId(fr, out ushort _))
+                            {
+                                hasMemberReferences = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    // Check if the ElementType is a TypeDefinition with methods/fields
+                    if (!hasMemberReferences && genericInstanceType.ElementType is TypeDefinition definition)
+                    {
+                        // Check if any of the definition's methods are in MethodDefinitionTable
+                        foreach (MethodDefinition md in definition.Methods)
+                        {
+                            if (_context.MethodDefinitionTable.TryGetMethodReferenceId(md, out ushort _))
+                            {
+                                hasMemberReferences = true;
+                                break;
+                            }
+                        }
+
+                        // Check if any of the definition's fields are in FieldsTable
+                        if (!hasMemberReferences)
+                        {
+                            foreach (FieldDefinition fd in definition.Fields)
+                            {
+                                if (_context.FieldsTable.TryGetFieldDefinitionId(fd, false, out ushort _))
+                                {
+                                    hasMemberReferences = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    // For other TypeSpecification types (arrays, pointers, etc.)
+                    // check member references tables
+                    foreach (MemberReference mr in _context.MemberReferencesTable.Items)
+                    {
+                        try
+                        {
+                            if (TryGetTypeReferenceId(mr.DeclaringType, out ushort referenceId) && referenceId == index)
+                            {
+                                hasMemberReferences = true;
+                                break;
+                            }
+                        }
+                        catch
+                        {
+                            // ignore errors here, as the TypeSpec might not be available
+                        }
+                    }
+                }
+
+                if (!hasMemberReferences)
+                {
+                    itemsToRemove.Add(typeReference);
+                }
+            }
+
+            // Remove items that have no member references
+            foreach (var item in itemsToRemove)
+            {
+                _idByTypeSpecifications.Remove(item);
             }
         }
     }

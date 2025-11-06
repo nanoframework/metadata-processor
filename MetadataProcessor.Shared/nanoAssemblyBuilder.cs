@@ -248,6 +248,8 @@ namespace nanoFramework.Tools.MetadataProcessor
                 interfacesToRemove.Select(i => c.Interfaces.Remove(i)).ToList();
             }
 
+            _tablesContext.TypeSpecificationsTable.RemoveEmptyItems();
+
             // flag minimize completed
             _tablesContext.MinimizeComplete = true;
         }
