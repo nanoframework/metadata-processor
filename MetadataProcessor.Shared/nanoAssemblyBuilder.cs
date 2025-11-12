@@ -1056,7 +1056,6 @@ namespace nanoFramework.Tools.MetadataProcessor
                                 {
                                     // add "fabricated" token for TypeSpec using the referenceId as RID
                                     set.Add(new MetadataToken(TokenType.TypeSpec, tsRid));
-                                    set.Add(ts.MetadataToken);
                                 }
                                 else
                                 {
