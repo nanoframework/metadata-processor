@@ -29,7 +29,7 @@ steps:
         # look for test prompt in PR commit message
         # pattern is "[tested against nanoclr buildId NNN]"
 
-        if($prCommitMessage -match "\[tested against nanoclr buildId (\d+)\]")
+        if($prCommitMessage -match "\[tested against nanoclr buildId (\d+)\][\s.]*")
         {
           $buildId = $matches[1]
           "AZDO build ID found: $buildId" | Write-Host -ForegroundColor White
@@ -46,7 +46,7 @@ steps:
   - task: DownloadPipelineArtifact@2
     condition: >-
       and(
-        eq(variables['DownloadNanoClrPreview'], true),
+        succeeded(),
         ne(variables['NFINTERPRETER_BUILDID'], '')
       )
     displayName: Download nanoCLR preview
@@ -64,7 +64,6 @@ steps:
     condition: >-
       and(
         succeeded(),
-        eq(variables['DownloadNanoClrPreview'], true),
         ne(variables['NFINTERPRETER_BUILDID'], '')
       )
     displayName: Set nanoCLR preview path

@@ -63,36 +63,18 @@ jobs:
 
       # default to false
       $update = $false
-      $downloadPreview = $false
+
+      # compute authorization header in format "AUTHORIZATION: basic 'encoded token'"
+      # 'encoded token' is the Base64 of the string "nfbot:personal-token"
+      $auth = "basic $([System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes("nfbot:$(GitHubToken)")))"
 
       if($env:System_PullRequest_PullRequestNumber -ne $null)
       {
         # PR build
-        # compute authorization header in format "AUTHORIZATION: basic 'encoded token'"
-        # 'encoded token' is the Base64 of the string "nfbot:personal-token"
-        $auth = "basic $([System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes("nfbot:$(GitHubToken)")))"
 
         # find PR
         "Getting PR #$env:System_PullRequest_PullRequestNumber details..." | Write-Host -ForegroundColor White -NoNewline
         $pr = Invoke-RestMethod -Uri "https://api.github.com/repos/$env:Build_Repository_Name/pulls/$env:System_PullRequest_PullRequestNumber" -Header @{"Authorization"="$auth"} -ContentType "application/json" -Method GET
-
-        if($($pr.number) -eq "$env:System_PullRequest_PullRequestNumber")
-        {
-          'OK' | Write-Host -ForegroundColor Green
-        }
-
-        # grab PR commit message
-        $prCommitMessage = $($pr.body)
-  
-        # debug output
-        # echo "=====`r`n$($prCommitMessage)`r`n====="
-
-        # check if should download nanoCLR to run unit tests
-        if($prCommitMessage -match "\[tested against nanoclr buildId (\d+)\]")
-        {
-          Write-Host "##[command] **Download preview nanoCLR for unit tests**"
-          $downloadPreview = $true
-        }
       }
       else
       {
@@ -131,7 +113,6 @@ jobs:
 
       # set variables to forward to jobs
       echo "##vso[task.setvariable variable=RUN_UPDATE_DEPENDENTS;isOutput=true]$update"
-      echo "##vso[task.setvariable variable=DOWNLOAD_PREVIEW_NANOCLR;isOutput=true]$downloadPreview"
     name: GetPRLabels
     displayName:  Check build conditions
 
@@ -160,8 +141,6 @@ jobs:
       value: 'nanoFramework.Tools.MetadataProcessor.sln'
     - name: NF_MDP_MSBUILDTASK_PATH
       value: '$(System.DefaultWorkingDirectory)/MetadataProcessor.MsBuildTask/bin/Release/net472'
-    - name: DownloadNanoClrPreview
-      value: $[ dependencies.Build_Prep.outputs['GetPRLabels.DOWNLOAD_PREVIEW_NANOCLR'] ]
 
   steps:
 
