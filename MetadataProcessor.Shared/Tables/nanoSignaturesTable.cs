@@ -437,18 +437,8 @@ namespace nanoFramework.Tools.MetadataProcessor
                 {
                     ArrayType array = (ArrayType)typeDefinition;
 
-                    if (array.ElementType.IsGenericParameter)
-                    {
-                        // ECMA 335 VI.B.4.3 Metadata
-                        writer.WriteByte((byte)NanoCLRDataType.DATATYPE_VAR);
-
-                        // OK to use byte here as we won't support more than 0x7F generic parameters
-                        writer.WriteByte((byte)(array.ElementType as GenericParameter).Position);
-                    }
-                    else
-                    {
-                        WriteDataType(array.ElementType, writer, true, expandEnumType, isTypeDefinition);
-                    }
+                    // Recursively encode the element type, which handles generic parameters correctly
+                    WriteDataType(array.ElementType, writer, true, expandEnumType, isTypeDefinition);
                 }
 
                 return;
