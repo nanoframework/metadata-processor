@@ -191,13 +191,18 @@ namespace nanoFramework.Tools.MetadataProcessor
                     // check if it's generic
                     return "DATATYPE_GENERICTYPE";
                 }
-                else
+                else if(parameterType.IsPointer)
                 {
-                    // this is not a generic, get full qualified type name
-                    string typeName = parameterType.FullName.Replace(".", String.Empty);
-
-                    return CleanupGenericName(typeName);
+                    if (nanoSignaturesTable.PrimitiveTypes.TryGetValue(parameterType.GetElementType().FullName, out myType))
+                    {
+                        return $"{myType}ptr";
+                    }
                 }
+
+                // last attempt: get full qualified type name
+                string typeName = parameterType.FullName.Replace(".", string.Empty);
+
+                return CleanupGenericName(typeName);
             }
         }
 
