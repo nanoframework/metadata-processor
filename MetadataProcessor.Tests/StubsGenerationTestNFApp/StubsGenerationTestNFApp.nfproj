@@ -15,6 +15,7 @@
     <RootNamespace>StubsGenerationTestNFApp</RootNamespace>
     <AssemblyName>StubsGenerationTestNFApp</AssemblyName>
     <TargetFrameworkVersion>v1.0</TargetFrameworkVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Label="nanoFramework">
     <NFMDP_GENERATE_STUBS>True</NFMDP_GENERATE_STUBS>

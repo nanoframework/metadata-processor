@@ -27,5 +27,8 @@ namespace StubsGenerationTestNFApp
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         private static extern byte NativeStaticMethodReturningByte(char charParam);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        public extern unsafe void MethodWithPointerParm(void* pointer, int length);
     }
 }
