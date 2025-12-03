@@ -372,6 +372,30 @@ namespace nanoFramework.Tools.MetadataProcessor
                 //Debug.Fail("Gotcha!");
             }
 
+            if (typeDefinition is RequiredModifierType requiredModifier)
+            {
+                if (alsoWriteSubType)
+                {
+                    writer.WriteByte((byte)nanoSerializationType.ELEMENT_TYPE_CMOD_REQD);
+                    WriteSubTypeInfo(requiredModifier.ModifierType, writer);
+                }
+
+                WriteDataType(requiredModifier.ElementType, writer, alsoWriteSubType, expandEnumType, isTypeDefinition);
+                return;
+            }
+
+            if (typeDefinition is OptionalModifierType optionalModifier)
+            {
+                if (alsoWriteSubType)
+                {
+                    writer.WriteByte((byte)nanoSerializationType.ELEMENT_TYPE_CMOD_OPT);
+                    WriteSubTypeInfo(optionalModifier.ModifierType, writer);
+                }
+
+                WriteDataType(optionalModifier.ElementType, writer, alsoWriteSubType, expandEnumType, isTypeDefinition);
+                return;
+            }
+
             if (typeDefinition.MetadataType == MetadataType.Class)
             {
                 writer.WriteByte((byte)NanoCLRDataType.DATATYPE_CLASS);
@@ -893,7 +917,17 @@ namespace nanoFramework.Tools.MetadataProcessor
             // If there is modifier on type record of local variable, we put it before type of local variable.
             if (typeReference.IsOptionalModifier)
             {
-                writer.WriteByte(0x0); // OpTypeModifier ???
+                var optMod = typeReference as OptionalModifierType;
+                writer.WriteByte((byte)nanoSerializationType.ELEMENT_TYPE_CMOD_OPT);
+                WriteSubTypeInfo(optMod.ModifierType, writer);
+                typeReference = optMod.ElementType;
+            }
+            else if (typeReference.IsRequiredModifier)
+            {
+                var reqMod = typeReference as RequiredModifierType;
+                writer.WriteByte((byte)nanoSerializationType.ELEMENT_TYPE_CMOD_REQD);
+                WriteSubTypeInfo(reqMod.ModifierType, writer);
+                typeReference = reqMod.ElementType;
             }
 
             var byReference = typeReference as ByReferenceType;
