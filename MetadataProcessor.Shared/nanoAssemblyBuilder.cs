@@ -381,43 +381,79 @@ namespace nanoFramework.Tools.MetadataProcessor
                             }
                         }
 
-                        if (mr.MethodReturnType.ReturnType.IsValueType &&
-                            !mr.MethodReturnType.ReturnType.IsPrimitive)
+                        // return type modifiers - handle modifiers properly
+                        TypeReference mrReturnType = mr.ReturnType;
+
+                        // Unwrap any modifiers and add them to dependencies
+                        while (mrReturnType is RequiredModifierType mrReqMod)
                         {
-                            set.Add(mr.MethodReturnType.ReturnType.MetadataToken);
+                            set.Add(mrReqMod.ModifierType.MetadataToken);
+                            mrReturnType = mrReqMod.ElementType;
                         }
-                        else if (mr.ReturnType.IsArray)
+
+                        while (mrReturnType is OptionalModifierType mrOptMod)
                         {
-                            if (mr.ReturnType.DeclaringType != null)
+                            set.Add(mrOptMod.ModifierType.MetadataToken);
+                            mrReturnType = mrOptMod.ElementType;
+                        }
+
+                        // Handle by-reference types
+                        if (mrReturnType is ByReferenceType mrByRef)
+                        {
+                            mrReturnType = mrByRef.ElementType;
+
+                            // Check again for modifiers inside the by-reference
+                            while (mrReturnType is RequiredModifierType mrReqMod2)
                             {
-                                set.Add(mr.ReturnType.DeclaringType.MetadataToken);
+                                set.Add(mrReqMod2.ModifierType.MetadataToken);
+                                mrReturnType = mrReqMod2.ElementType;
+                            }
+
+                            while (mrReturnType is OptionalModifierType mrOptMod2)
+                            {
+                                set.Add(mrOptMod2.ModifierType.MetadataToken);
+                                mrReturnType = mrOptMod2.ElementType;
+                            }
+                        }
+
+                        // Now process the actual return type
+                        if (mrReturnType.IsValueType &&
+                            !mrReturnType.IsPrimitive)
+                        {
+                            set.Add(mrReturnType.MetadataToken);
+                        }
+                        else if (mrReturnType.IsArray)
+                        {
+                            if (mrReturnType.DeclaringType != null)
+                            {
+                                set.Add(mrReturnType.DeclaringType.MetadataToken);
                             }
                             else
                             {
-                                if (mr.ReturnType.GetElementType().FullName != "System.Void" &&
-                                     mr.ReturnType.GetElementType().FullName != "System.String" &&
-                                     mr.ReturnType.GetElementType().FullName != "System.Object" &&
-                                    !mr.ReturnType.GetElementType().IsPrimitive)
+                                if (mrReturnType.GetElementType().FullName != "System.Void" &&
+                                    mrReturnType.GetElementType().FullName != "System.String" &&
+                                    mrReturnType.GetElementType().FullName != "System.Object" &&
+                                    !mrReturnType.GetElementType().IsPrimitive)
                                 {
-                                    set.Add(mr.ReturnType.GetElementType().MetadataToken);
+                                    set.Add(mrReturnType.GetElementType().MetadataToken);
                                 }
                             }
                         }
                         else
                         {
-                            if (mr.ReturnType.MetadataType == MetadataType.ValueType)
+                            if (mrReturnType.MetadataType == MetadataType.ValueType)
                             {
-                                if (mr.ReturnType.FullName != "System.Void" &&
-                                     mr.ReturnType.FullName != "System.String" &&
-                                     mr.ReturnType.FullName != "System.Object" &&
-                                    !mr.ReturnType.IsPrimitive)
+                                if (mrReturnType.FullName != "System.Void" &&
+                                    mrReturnType.FullName != "System.String" &&
+                                    mrReturnType.FullName != "System.Object" &&
+                                    !mrReturnType.IsPrimitive)
                                 {
-                                    set.Add(mr.ReturnType.MetadataToken);
+                                    set.Add(mrReturnType.MetadataToken);
                                 }
                             }
-                            if (mr.ReturnType.MetadataType == MetadataType.Class)
+                            if (mrReturnType.MetadataType == MetadataType.Class)
                             {
-                                set.Add(mr.ReturnType.MetadataToken);
+                                set.Add(mrReturnType.MetadataToken);
                             }
                         }
 
@@ -684,37 +720,71 @@ namespace nanoFramework.Tools.MetadataProcessor
                 case TokenType.Method:
                     MethodDefinition md = _tablesContext.MethodDefinitionTable.Items.FirstOrDefault(i => i.MetadataToken == token);
 
-                    // return value
-                    if (md.ReturnType.IsValueType
-                        && !md.ReturnType.IsPrimitive)
+                    // return value - handle modifiers properly
+                    TypeReference mdReturnType = md.ReturnType;
+
+                    // Unwrap any modifiers and add them to dependencies
+                    while (mdReturnType is RequiredModifierType mdReqMod)
                     {
-                        set.Add(md.ReturnType.MetadataToken);
+                        set.Add(mdReqMod.ModifierType.MetadataToken);
+                        mdReturnType = mdReqMod.ElementType;
                     }
-                    else if (md.ReturnType.IsArray)
+
+                    while (mdReturnType is OptionalModifierType mdOptMod)
                     {
-                        if (md.ReturnType.DeclaringType != null)
+                        set.Add(mdOptMod.ModifierType.MetadataToken);
+                        mdReturnType = mdOptMod.ElementType;
+                    }
+
+                    // Handle by-reference types
+                    if (mdReturnType is ByReferenceType mdByRef)
+                    {
+                        mdReturnType = mdByRef.ElementType;
+
+                        // Check again for modifiers inside the by-reference
+                        while (mdReturnType is RequiredModifierType mdReqMod2)
                         {
-                            set.Add(md.ReturnType.DeclaringType.MetadataToken);
+                            set.Add(mdReqMod2.ModifierType.MetadataToken);
+                            mdReturnType = mdReqMod2.ElementType;
+                        }
+
+                        while (mdReturnType is OptionalModifierType mdOptMod2)
+                        {
+                            set.Add(mdOptMod2.ModifierType.MetadataToken);
+                            mdReturnType = mdOptMod2.ElementType;
+                        }
+                    }
+
+                    // Now process the actual return type
+                    if (mdReturnType.IsValueType
+                  && !mdReturnType.IsPrimitive)
+                    {
+                        set.Add(mdReturnType.MetadataToken);
+                    }
+                    else if (mdReturnType.IsArray)
+                    {
+                        if (mdReturnType.DeclaringType != null)
+                        {
+                            set.Add(mdReturnType.DeclaringType.MetadataToken);
                         }
                         else
                         {
-                            if (md.ReturnType.GetElementType().FullName != "System.Void" &&
-                                md.ReturnType.GetElementType().FullName != "System.String" &&
-                                md.ReturnType.GetElementType().FullName != "System.Object" &&
-                                !md.ReturnType.GetElementType().IsPrimitive)
+                            if (mdReturnType.GetElementType().FullName != "System.Void" &&
+                                      mdReturnType.GetElementType().FullName != "System.String" &&
+                           mdReturnType.GetElementType().FullName != "System.Object" &&
+                           !mdReturnType.GetElementType().IsPrimitive)
                             {
-                                set.Add(md.ReturnType.GetElementType().MetadataToken);
+                                set.Add(mdReturnType.GetElementType().MetadataToken);
                             }
                         }
                     }
-                    else if (!md.ReturnType.IsValueType &&
-                             !md.ReturnType.IsPrimitive &&
-                             !md.ReturnType.IsByReference &&
-                              md.ReturnType.FullName != "System.Void" &&
-                              md.ReturnType.FullName != "System.String" &&
-                              md.ReturnType.FullName != "System.Object")
+                    else if (!mdReturnType.IsValueType &&
+                           !mdReturnType.IsPrimitive &&
+               mdReturnType.FullName != "System.Void" &&
+                     mdReturnType.FullName != "System.String" &&
+                 mdReturnType.FullName != "System.Object")
                     {
-                        set.Add(md.ReturnType.MetadataToken);
+                        set.Add(mdReturnType.MetadataToken);
                     }
 
                     // generic parameters
@@ -1352,18 +1422,18 @@ namespace nanoFramework.Tools.MetadataProcessor
 
                     output.Append($"[GenericParam 0x{token.ToUInt32().ToString("X8")}]");
 
-                    if (gp.DeclaringType != null)
+                    if (gp?.DeclaringType != null)
                     {
                         output.Append(TokenToString(gp.DeclaringType.MetadataToken));
                         output.Append("::");
                     }
-                    else if (gp.DeclaringMethod != null)
+                    else if (gp?.DeclaringMethod != null)
                     {
                         output.Append(TokenToString(gp.DeclaringMethod.MetadataToken));
                         output.Append("::");
                     }
 
-                    output.Append(gp.Name);
+                    output.Append(gp?.Name);
 
                     break;
 

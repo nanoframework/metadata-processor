@@ -74,6 +74,26 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
                 }
             }
 
+            if (type is RequiredModifierType requiredModifier)
+            {
+                StringBuilder reqModSig = new StringBuilder();
+                reqModSig.Append(requiredModifier.ElementType.TypeSignatureAsString());
+                reqModSig.Append(" modreq(");
+                reqModSig.Append(requiredModifier.ModifierType.FullName);
+                reqModSig.Append(")");
+                return reqModSig.ToString();
+            }
+
+            if (type is OptionalModifierType optionalModifier)
+            {
+                StringBuilder optModSig = new StringBuilder();
+                optModSig.Append(optionalModifier.ElementType.TypeSignatureAsString());
+                optModSig.Append(" modopt(");
+                optModSig.Append(optionalModifier.ModifierType.FullName);
+                optModSig.Append(")");
+                return optModSig.ToString();
+            }
+
             if (type.MetadataType == MetadataType.Class)
             {
                 StringBuilder classSig = new StringBuilder("CLASS ");
