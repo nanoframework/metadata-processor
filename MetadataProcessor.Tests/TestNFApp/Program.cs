@@ -92,6 +92,11 @@ namespace TestNFApp
             Console.WriteLine("Span<> tests");
             _ = new TestingSpan();
 
+            // testing ReadOnlySpan<>
+            Console.WriteLine("ReadOnlySpan<> tests");
+            _ = new TestingReadOnlySpan();
+
+            // 
             Console.WriteLine("Exiting TestNFApp");
         }
 
