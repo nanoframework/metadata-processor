@@ -654,6 +654,8 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
             // get real token for the TypeSpec
             string realToken = string.Empty;
 
+            // DEVELOPER NOTE: this call should be checked for success
+            // it's OK to skip this as this is "only" for dumping purposes
             _tablesContext.TypeSpecificationsTable.TryGetTypeReferenceId(typeReference, out ushort index);
 
             TypeSpec typeSpec = new TypeSpec();
@@ -865,6 +867,8 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                         sig.Append($"class {l.VariableType.FullName}");
                     }
 
+                    // DEVELOPER NOTE: this call should be checked for success
+                    // it's OK to skip this as this is "only" for dumping purposes
                     _tablesContext.TypeSpecificationsTable.TryGetTypeReferenceId(l.VariableType as TypeSpecification, out ushort referenceId);
 
                     sig.Append($"[{new nanoMetadataToken(NanoClrTable.TBL_TypeSpec, referenceId)}] /*{l.VariableType.GetElementType().MetadataToken.ToInt32().ToString("X8")}*/");

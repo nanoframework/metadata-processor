@@ -914,10 +914,6 @@ namespace nanoFramework.Tools.MetadataProcessor
                                     // add the metadata token for the element type
                                     set.Add(v.VariableType.GetElementType().MetadataToken);
                                 }
-                                else
-                                {
-                                    Debug.Fail($"Couldn't find a TypeSpec entry for {v.VariableType}");
-                                }
                             }
                             else if (v.VariableType.IsValueType
                                      && !v.VariableType.IsPrimitive)

@@ -74,10 +74,15 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             if (obj is TypeSpecification)
             {
-                ushort xSignatureId = _context.SignaturesTable.GetOrCreateSignatureId(obj);
+                ushort signatureId = _context.SignaturesTable.GetOrCreateSignatureId(obj);
 
-                // provide an hash code based on the TypeSpec signature 
-                return xSignatureId;
+                // Combine signature ID with metadata token hash for better distribution
+                // Use unchecked to allow overflow and maintain consistent hash code behavior
+                int hash = 17;
+                hash = unchecked(hash * 31 + signatureId);
+                hash = unchecked(hash * 31 + obj.MetadataToken.GetHashCode());
+
+                return hash;
             }
             else if (obj is GenericParameter genericParam)
             {
