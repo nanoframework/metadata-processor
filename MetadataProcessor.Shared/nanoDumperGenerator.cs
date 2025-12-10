@@ -84,54 +84,56 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
         private void DumpCustomAttributes(DumpAllTable dumpTable)
         {
-            foreach (var a in _tablesContext.TypeDefinitionTable.Items.Where(td => td.HasCustomAttributes))
+            // Loop through all attributes from the AttributesTable
+            foreach (var attributeTuple in _tablesContext.AttributesTable.GetAllAttributes())
             {
-                foreach (var ma in a.Methods)
+                CustomAttribute customAttr = attributeTuple.Item1;
+                ICustomAttributeProvider owner = attributeTuple.Item2;
+
+                string ownerDescription;
+                ushort ownerIndex;
+                NanoClrTable ownerTable;
+
+                // Determine the owner type and get its reference ID
+                if (owner is TypeDefinition typeDef)
                 {
-                    if (ma.HasCustomAttributes)
+                    _tablesContext.TypeDefinitionTable.TryGetTypeReferenceId(typeDef, out ownerIndex);
+                    ownerTable = NanoClrTable.TBL_TypeDef;
+                    ownerDescription = $"{typeDef.FullName} [{new nanoMetadataToken(ownerTable, ownerIndex)}] /*{typeDef.MetadataToken.ToInt32():X8}*/";
+                }
+                else if (owner is MethodDefinition methodDef)
+                {
+                    _tablesContext.MethodDefinitionTable.TryGetMethodReferenceId(methodDef, out ownerIndex);
+                    ownerTable = NanoClrTable.TBL_MethodDef;
+                    ownerDescription = $"{methodDef.DeclaringType.FullName}::{methodDef.Name} [{new nanoMetadataToken(ownerTable, ownerIndex)}] /*{methodDef.MetadataToken.ToInt32():X8}*/";
+                }
+                else if (owner is FieldDefinition fieldDef)
+                {
+                    _tablesContext.FieldsTable.TryGetFieldDefinitionId(fieldDef, false, out ownerIndex);
+                    ownerTable = NanoClrTable.TBL_FieldDef;
+                    ownerDescription = $"{fieldDef.DeclaringType.FullName}::{fieldDef.Name} [{new nanoMetadataToken(ownerTable, ownerIndex)}] /*{fieldDef.MetadataToken.ToInt32():X8}*/";
+                }
+                else
+                {
+                    // Unknown owner type, skip
+                    continue;
+                }
+
+                var attribute = new AttributeCustom()
+                {
+                    OwnerIndex = ownerDescription,
+                    CtorTypeToken = $"{customAttr.Constructor.DeclaringType.FullName}::.ctor /*{customAttr.Constructor.MetadataToken.ToInt32():X8}*/"
+                };
+
+                if (customAttr.HasConstructorArguments)
+                {
+                    foreach (var value in customAttr.ConstructorArguments)
                     {
-                        var attribute = new AttributeCustom()
-                        {
-                            Name = a.Module.Assembly.Name.Name,
-                            ReferenceId = ma.MetadataToken.ToInt32().ToString("X8"),
-                            TypeToken = ma.CustomAttributes[0].Constructor.MetadataToken.ToInt32().ToString("X8")
-                        };
-
-                        if (ma.CustomAttributes[0].HasConstructorArguments)
-                        {
-                            foreach (var value in ma.CustomAttributes[0].ConstructorArguments)
-                            {
-                                attribute.FixedArgs.AddRange(BuildFixedArgsAttribute(value));
-                            }
-                        }
-
-                        dumpTable.Attributes.Add(attribute);
+                        attribute.FixedArgs.AddRange(BuildFixedArgsAttribute(value));
                     }
                 }
 
-                foreach (var fa in a.Fields)
-                {
-                    if (fa.HasCustomAttributes)
-                    {
-                        var attribute = new AttributeCustom()
-                        {
-                            Name = a.Module.Assembly.Name.Name,
-                            ReferenceId = fa.MetadataToken.ToInt32().ToString("X8"),
-                            TypeToken = fa.CustomAttributes[0].Constructor.MetadataToken.ToInt32().ToString("X8")
-                        };
-
-                        if (!nanoTablesContext.IgnoringAttributes.Contains(fa.CustomAttributes[0].AttributeType.FullName)
-                            && fa.CustomAttributes[0].HasConstructorArguments)
-                        {
-                            foreach (CustomAttributeArgument value in fa.CustomAttributes[0].ConstructorArguments)
-                            {
-                                attribute.FixedArgs.AddRange(BuildFixedArgsAttribute(value));
-                            }
-                        }
-
-                        dumpTable.Attributes.Add(attribute);
-                    }
-                }
+                dumpTable.Attributes.Add(attribute);
             }
         }
 
@@ -164,11 +166,11 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                     break;
 
                 case nanoSerializationType.ELEMENT_TYPE_STRING:
-                    newArg.Text = (string)value.Value;
+                    newArg.Text = value.Value == null ? "<null>" : (string)value.Value;
                     break;
 
                 case nanoSerializationType.ELEMENT_TYPE_OBJECT:
-                    newArg.Text = (string)value.Value;
+                    newArg.Text = value.Value == null ? "<null>" : value.Value.ToString();
                     break;
 
                 case nanoSerializationType.ELEMENT_TYPE_I1:
@@ -204,7 +206,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                     break;
 
                 default:
-                    newArg.Text = value.Value.ToString();
+                    newArg.Text = value.Value == null ? "<null>" : value.Value.ToString();
                     break;
             }
 
@@ -599,6 +601,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                 typeRef.ReferenceId = $"[{new nanoMetadataToken(t.MetadataToken, referenceId)}] /*{realToken}*/";
 
                 // list member refs               
+
                 foreach (var m in _tablesContext.MethodReferencesTable.Items.Where(mr => mr.DeclaringType == t))
                 {
                     var memberRef = new MemberRef()

@@ -1153,7 +1153,7 @@ namespace nanoFramework.Tools.MetadataProcessor
 
                                 if (opToken.TokenType == TokenType.TypeSpec)
                                 {
-                                    // Cecil.Mono has a bug providing TypeSpecs Metadata tokens generic parameters variables,
+                                    // Cecil.Mono has a bug providing TypeSpecs Metadata tokens generic parameters,
                                     // so we need to check against our internal table and build one from it
                                     if (_tablesContext.TypeSpecificationsTable.TryGetTypeReferenceId(
                                         opType,

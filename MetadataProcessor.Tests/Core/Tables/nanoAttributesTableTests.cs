@@ -18,9 +18,9 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
         [TestMethod]
         public void ConstructorTest()
         {
-            var typesAttributes = new Tuple<CustomAttribute, ushort>[0];
-            var fieldsAttributes = new Tuple<CustomAttribute, ushort>[0];
-            var methodsAttributes = new Tuple<CustomAttribute, ushort>[0];
+            var typesAttributes = new Tuple<CustomAttribute, ICustomAttributeProvider>[0];
+            var fieldsAttributes = new Tuple<CustomAttribute, ICustomAttributeProvider>[0];
+            var methodsAttributes = new Tuple<CustomAttribute, ICustomAttributeProvider>[0];
             var context = TestObjectHelper.GetTestNFAppNanoTablesContext();
 
             // test
@@ -42,12 +42,12 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
             var referencedMetadataTokens = new HashSet<MetadataToken>();
             referencedMetadataTokens.Add(customAttribute1.Constructor.MetadataToken);
 
-            var tuple0 = new Tuple<CustomAttribute, ushort>(customAttribute0, 1);
-            var tuple1 = new Tuple<CustomAttribute, ushort>(customAttribute1, 2);
+            var tuple0 = new Tuple<CustomAttribute, ICustomAttributeProvider>(customAttribute0, testClassTypeDefinition);
+            var tuple1 = new Tuple<CustomAttribute, ICustomAttributeProvider>(customAttribute1, testClassTypeDefinition);
 
-            var typesAttributes = new Tuple<CustomAttribute, ushort>[] { tuple0, tuple1 };
-            var fieldsAttributes = new Tuple<CustomAttribute, ushort>[0];
-            var methodsAttributes = new Tuple<CustomAttribute, ushort>[0];
+            var typesAttributes = new Tuple<CustomAttribute, ICustomAttributeProvider>[] { tuple0, tuple1 };
+            var fieldsAttributes = new Tuple<CustomAttribute, ICustomAttributeProvider>[0];
+            var methodsAttributes = new Tuple<CustomAttribute, ICustomAttributeProvider>[0];
             var context = TestObjectHelper.GetTestNFAppNanoTablesContext();
 
             var iut = new nanoAttributesTable(typesAttributes, fieldsAttributes, methodsAttributes, context);
@@ -61,13 +61,17 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
                 iut.Write(writer);
             });
 
+            // Get the expected reference ID for the type definition
+            ushort expectedTypeRefId = 0;
+            context.TypeDefinitionTable.TryGetTypeReferenceId(testClassTypeDefinition, out expectedTypeRefId);
+
             var methodReferenceId = context.GetMethodReferenceId(customAttribute1.Constructor);
             var signatureId = context.SignaturesTable.GetOrCreateSignatureId(customAttribute1);
             CollectionAssert.AreEqual(
                 new byte[]
                 {
                     0x04, 0,
-                    (byte)(tuple1.Item2 & 0xff), (byte)(tuple1.Item2 >> 8),
+                    (byte)(expectedTypeRefId & 0xff), (byte)(expectedTypeRefId >> 8),
                     (byte)(methodReferenceId & 0xff), (byte)(methodReferenceId >> 8),
                     (byte)(signatureId & 0xff), (byte)(signatureId >> 8),
                 },
@@ -80,7 +84,6 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
         {
             var nanoTablesContext = TestObjectHelper.GetTestNFAppNanoTablesContext();
             var typeDefinition = TestObjectHelper.GetTestNFAppOneClassOverAllTypeDefinition(nanoTablesContext.AssemblyDefinition);
-
             var dummyFieldDefinition = TestObjectHelper.GetTestNFAppOneClassOverAllDummyFieldDefinition(typeDefinition);
 
             Assert.IsTrue(dummyFieldDefinition.CustomAttributes.Count > 1);
@@ -90,12 +93,12 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
             var referencedMetadataTokens = new HashSet<MetadataToken>();
             referencedMetadataTokens.Add(customAttribute1.Constructor.MetadataToken);
 
-            var tuple0 = new Tuple<CustomAttribute, ushort>(customAttribute0, 1);
-            var tuple1 = new Tuple<CustomAttribute, ushort>(customAttribute1, 2);
+            var tuple0 = new Tuple<CustomAttribute, ICustomAttributeProvider>(customAttribute0, dummyFieldDefinition);
+            var tuple1 = new Tuple<CustomAttribute, ICustomAttributeProvider>(customAttribute1, dummyFieldDefinition);
 
-            var typesAttributes = new Tuple<CustomAttribute, ushort>[0];
-            var fieldsAttributes = new Tuple<CustomAttribute, ushort>[] { tuple0, tuple1 };
-            var methodsAttributes = new Tuple<CustomAttribute, ushort>[0];
+            var typesAttributes = new Tuple<CustomAttribute, ICustomAttributeProvider>[0];
+            var fieldsAttributes = new Tuple<CustomAttribute, ICustomAttributeProvider>[] { tuple0, tuple1 };
+            var methodsAttributes = new Tuple<CustomAttribute, ICustomAttributeProvider>[0];
             var context = TestObjectHelper.GetTestNFAppNanoTablesContext();
 
             var iut = new nanoAttributesTable(typesAttributes, fieldsAttributes, methodsAttributes, context);
@@ -109,13 +112,17 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
                 iut.Write(writer);
             });
 
+            // Get the expected reference ID for the field definition
+            ushort expectedFieldRefId = 0;
+            context.FieldsTable.TryGetFieldDefinitionId(dummyFieldDefinition, false, out expectedFieldRefId);
+
             var methodReferenceId = context.GetMethodReferenceId(customAttribute1.Constructor);
             var signatureId = context.SignaturesTable.GetOrCreateSignatureId(customAttribute1);
             CollectionAssert.AreEqual(
                 new byte[]
                 {
                     0x05, 0,
-                    (byte)(tuple1.Item2 & 0xff), (byte)(tuple1.Item2 >> 8),
+                    (byte)(expectedFieldRefId & 0xff), (byte)(expectedFieldRefId >> 8),
                     (byte)(methodReferenceId & 0xff), (byte)(methodReferenceId >> 8),
                     (byte)(signatureId & 0xff), (byte)(signatureId >> 8),
                 },
@@ -136,12 +143,12 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
             var referencedMetadataTokens = new HashSet<MetadataToken>();
             referencedMetadataTokens.Add(customAttribute1.Constructor.MetadataToken);
 
-            var tuple0 = new Tuple<CustomAttribute, ushort>(customAttribute0, 1);
-            var tuple1 = new Tuple<CustomAttribute, ushort>(customAttribute1, 2);
+            var tuple0 = new Tuple<CustomAttribute, ICustomAttributeProvider>(customAttribute0, methodDefinition);
+            var tuple1 = new Tuple<CustomAttribute, ICustomAttributeProvider>(customAttribute1, methodDefinition);
 
-            var typesAttributes = new Tuple<CustomAttribute, ushort>[0];
-            var fieldsAttributes = new Tuple<CustomAttribute, ushort>[0];
-            var methodsAttributes = new Tuple<CustomAttribute, ushort>[] { tuple0, tuple1 };
+            var typesAttributes = new Tuple<CustomAttribute, ICustomAttributeProvider>[0];
+            var fieldsAttributes = new Tuple<CustomAttribute, ICustomAttributeProvider>[0];
+            var methodsAttributes = new Tuple<CustomAttribute, ICustomAttributeProvider>[] { tuple0, tuple1 };
             var context = TestObjectHelper.GetTestNFAppNanoTablesContext();
 
             var iut = new nanoAttributesTable(typesAttributes, fieldsAttributes, methodsAttributes, context);
@@ -155,13 +162,17 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
                 iut.Write(writer);
             });
 
+            // Get the expected reference ID for the method definition
+            ushort expectedMethodRefId = 0;
+            context.MethodDefinitionTable.TryGetMethodReferenceId(methodDefinition, out expectedMethodRefId);
+
             var methodReferenceId = context.GetMethodReferenceId(customAttribute1.Constructor);
             var signatureId = context.SignaturesTable.GetOrCreateSignatureId(customAttribute1);
             CollectionAssert.AreEqual(
                 new byte[]
                 {
                     0x06, 0,
-                    (byte)(tuple1.Item2 & 0xff), (byte)(tuple1.Item2 >> 8),
+                    (byte)(expectedMethodRefId & 0xff), (byte)(expectedMethodRefId >> 8),
                     (byte)(methodReferenceId & 0xff), (byte)(methodReferenceId >> 8),
                     (byte)(signatureId & 0xff), (byte)(signatureId >> 8),
                 },

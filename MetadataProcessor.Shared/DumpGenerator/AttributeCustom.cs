@@ -7,11 +7,9 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 {
     public class AttributeCustom
     {
-        public string ReferenceId;
+        public string OwnerIndex;
 
-        public string Name;
-
-        public string TypeToken;
+        public string CtorTypeToken;
 
         public List<AttFixedArgs> FixedArgs = new List<AttFixedArgs>();
     }

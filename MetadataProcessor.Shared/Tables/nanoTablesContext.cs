@@ -523,7 +523,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         public static List<string> ClassNamesToExclude { get; private set; }
         public bool MinimizeComplete { get; internal set; } = false;
 
-        private IEnumerable<Tuple<CustomAttribute, ushort>> GetAttributes(
+        private IEnumerable<Tuple<CustomAttribute, ICustomAttributeProvider>> GetAttributes(
             IEnumerable<ICustomAttributeProvider> types,
             bool applyAttributesCompression)
         {
@@ -533,13 +533,13 @@ namespace nanoFramework.Tools.MetadataProcessor
                     (item, index) => item.CustomAttributes
                         .Where(attr => !IsAttribute(attr.AttributeType))
                         .OrderByDescending(attr => attr.AttributeType.FullName)
-                        .Select(attr => new Tuple<CustomAttribute, ushort>(attr, (ushort)index)));
+                        .Select(attr => new Tuple<CustomAttribute, ICustomAttributeProvider>(attr, item)));
 
             }
             return types.SelectMany(
                 (item, index) => item.CustomAttributes
                     .Where(attr => !IsAttribute(attr.AttributeType))
-                    .Select(attr => new Tuple<CustomAttribute, ushort>(attr, (ushort)index)));
+                    .Select(attr => new Tuple<CustomAttribute, ICustomAttributeProvider>(attr, item)));
         }
 
         private bool IsAttribute(
