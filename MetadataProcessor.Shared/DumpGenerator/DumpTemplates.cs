@@ -107,7 +107,7 @@ Generic Parameters{{#newline}}
 {{#newline}}
 
 {{#each Attributes}}
-Attribute: {{Name}}::[{{ReferenceId}} {{TypeToken}}]{{#newline}}
+Attribute: {{OwnerIndex}} {{CtorTypeToken}}{{#newline}}
 -------------------------------------------------------{{#newline}}
 {{#if FixedArgs}}Fixed Arguments:{{#newline}}{{#else}}{{#newline}}{{/if}}
 {{#each FixedArgs}}
