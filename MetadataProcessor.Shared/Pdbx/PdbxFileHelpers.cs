@@ -178,11 +178,14 @@ namespace nanoFramework.Tools.MetadataProcessor
     {
         public TypeSpec(nanoTablesContext context, TypeReference item)
         {
-            context.TypeSpecificationsTable.TryGetTypeReferenceId(item, out ushort nanoToken);
+            // sanity check for bug in Mono.Cecil where TypeSpecification instances may show with RID = 0
+            if (!context.TypeSpecificationsTable.TryGetTypeReferenceId(item, out ushort nanoToken))
+            {
+                // OK to return here
+                return;
+            }
 
-            // assume that real token index is the same as ours
-            // need to add one because ours is 0 indexed
-            var clrToken = new MetadataToken(TokenType.TypeSpec, nanoToken + 1);
+            var clrToken = new MetadataToken(TokenType.TypeSpec, nanoToken);
 
             Token = new Token(clrToken, NanoClrTable.TBL_TypeSpec.ToNanoTokenType() | nanoToken);
 

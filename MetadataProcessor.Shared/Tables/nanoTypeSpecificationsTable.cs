@@ -47,7 +47,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                     throw new ArgumentNullException(nameof(y));
                 }
 
-                return string.Equals(x.MetadataToken, y.MetadataToken);
+                return x.MetadataToken.Equals(y.MetadataToken);
             }
 
             /// <inheritdoc/>
@@ -116,6 +116,15 @@ namespace nanoFramework.Tools.MetadataProcessor
             TypeReference typeReference,
             out ushort referenceId)
         {
+            // sanity check for bug in Mono.Cecil where TypeSpecification instances may show with RID = 0
+            if (typeReference is TypeSpecification && typeReference.MetadataToken.RID == 0)
+            {
+                referenceId = 0;
+
+                // don't add this invalid entry
+                return false;
+            }
+
             if (_idByTypeSpecifications.TryGetValue(typeReference, out referenceId))
             {
                 referenceId = (ushort)Array.IndexOf(_idByTypeSpecifications.Values.ToArray(), referenceId);
@@ -125,6 +134,7 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             return false;
         }
+
         public TypeReference TryGetTypeSpecification(MetadataToken token)
         {
             // try a direct match on the TypeReference itself
@@ -454,6 +464,13 @@ namespace nanoFramework.Tools.MetadataProcessor
             TypeReference tr,
             ushort sigId)
         {
+            // sanity check for bug in Mono.Cecil where TypeSpecification instances may show with RID = 0
+            if (tr is TypeSpecification && tr.MetadataToken.RID == 0)
+            {
+                // don't add this invalid entry
+                return;
+            }
+
             if (!_idByTypeSpecifications.ContainsKey(tr)
                 && !tr.IsToExclude())
             {
