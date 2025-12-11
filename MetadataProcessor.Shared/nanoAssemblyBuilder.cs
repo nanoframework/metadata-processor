@@ -366,14 +366,14 @@ namespace nanoFramework.Tools.MetadataProcessor
                                     set.Add(new MetadataToken(
                                         TokenType.TypeSpec,
                                         referenceId));
-
-                                    // add the metadata token for the element type
-                                    set.Add(mr.DeclaringType.GetElementType().MetadataToken);
                                 }
                                 else
                                 {
                                     Debug.Fail($"Couldn't find a TypeSpec entry for {mr.DeclaringType}");
                                 }
+
+                                // add the metadata token for the element type
+                                set.Add(mr.DeclaringType.GetElementType().MetadataToken);
                             }
                             else
                             {
@@ -511,14 +511,14 @@ namespace nanoFramework.Tools.MetadataProcessor
                                         set.Add(new MetadataToken(
                                             TokenType.TypeSpec,
                                             referenceId));
-
-                                        // add the metadata token for the element type
-                                        set.Add(fr.DeclaringType.GetElementType().MetadataToken);
                                     }
                                     else
                                     {
                                         Debug.Fail($"Couldn't find a TypeSpec entry for {fr.DeclaringType}");
                                     }
+
+                                    // add the metadata token for the element type
+                                    set.Add(fr.DeclaringType.GetElementType().MetadataToken);
                                 }
                                 else
                                 {
@@ -833,7 +833,16 @@ namespace nanoFramework.Tools.MetadataProcessor
                         }
                         else if (parameterType is GenericInstanceType)
                         {
-                            set.Add(parameterType.MetadataToken);
+                            // Cecil.Mono has a bug providing TypeSpecs Metadata tokens generic parameters variables, so we need to check against our internal table and build one from it
+                            if (_tablesContext.TypeSpecificationsTable.TryGetTypeReferenceId(parameterType, out ushort referenceId))
+                            {
+                                // add "fabricated" token for TypeSpec using the referenceId as RID
+                                set.Add(new MetadataToken(
+                                    TokenType.TypeSpec,
+                                    referenceId));
+                            }
+
+                            // add the metadata token for the element type
                             set.Add(parameterType.GetElementType().MetadataToken);
                         }
                         else if (parameterType.IsValueType &&
@@ -910,10 +919,10 @@ namespace nanoFramework.Tools.MetadataProcessor
                                     set.Add(new MetadataToken(
                                         TokenType.TypeSpec,
                                         referenceId));
-
-                                    // add the metadata token for the element type
-                                    set.Add(v.VariableType.GetElementType().MetadataToken);
                                 }
+
+                                // add the metadata token for the element type
+                                set.Add(v.VariableType.GetElementType().MetadataToken);
                             }
                             else if (v.VariableType.IsValueType
                                      && !v.VariableType.IsPrimitive)
@@ -967,13 +976,13 @@ namespace nanoFramework.Tools.MetadataProcessor
                                     {
                                         // add "fabricated" token for TypeSpec using the referenceId as RID
                                         set.Add(new MetadataToken(TokenType.TypeSpec, arraySpecId));
-
-                                        set.Add(arrayType.GetElementType().MetadataToken);
                                     }
                                     else
                                     {
                                         Debug.Fail($"Missing Array TypeSpec for {arrayType}");
                                     }
+
+                                    set.Add(arrayType.GetElementType().MetadataToken);
 
                                     // still pin the element T itself
                                     TypeReference elementType = arrayType.GetElementType();
@@ -1157,13 +1166,14 @@ namespace nanoFramework.Tools.MetadataProcessor
                                     {
                                         // add "fabricated" token for TypeSpec using the referenceId as RID
                                         set.Add(new MetadataToken(TokenType.TypeSpec, referenceId));
-                                        // add the metadata token for the element type
-                                        set.Add(opType.GetElementType().MetadataToken);
                                     }
                                     else
                                     {
                                         Debug.Fail($"Couldn't find a TypeSpec entry for {opType}");
                                     }
+
+                                    // add the metadata token for the element type
+                                    set.Add(opType.GetElementType().MetadataToken);
                                 }
                                 else
                                 {
@@ -1261,15 +1271,13 @@ namespace nanoFramework.Tools.MetadataProcessor
                             {
                                 // add "fabricated" token for TypeSpec using the referenceId as RID
                                 set.Add(new MetadataToken(TokenType.TypeSpec, arrRid));
-
-                                set.Add(arr.GetElementType().MetadataToken);
                             }
                             else
                             {
                                 Debug.Fail($"Missing Array TypeSpec for {arr}");
                             }
 
-                            set.Add(arr.ElementType.MetadataToken);
+                            set.Add(arr.GetElementType().MetadataToken);
                         }
                         else if (ret is GenericInstanceType genericInstanceType)
                         {
@@ -1299,7 +1307,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                                     set.Add(new MetadataToken(TokenType.TypeSpec, apRid));
                                 }
 
-                                set.Add(ap.ElementType.MetadataToken);
+                                set.Add(ap.GetElementType().MetadataToken);
                             }
                             else if (parameterType is GenericInstanceType genericInstanceType)
                             {
