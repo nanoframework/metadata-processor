@@ -298,13 +298,16 @@ namespace nanoFramework.Tools.MetadataProcessor.MsBuildTask
             FileStream logOutputStream = null;
             StreamWriter logWriter = null;
             string logFile = "";
+            TextWriter originalConsoleOut = null;
 
             try
             {
                 if (Verbose)
                 {
-                    logFile = Path.ChangeExtension(fileName, "log.txt");
+                    // Save original
+                    originalConsoleOut = Console.Out;
 
+                    logFile = Path.ChangeExtension(fileName, "log.txt");
                     logOutputStream = new FileStream(logFile, FileMode.OpenOrCreate, FileAccess.Write);
                     logWriter = new StreamWriter(logOutputStream);
                     Console.SetOut(logWriter);
@@ -401,6 +404,12 @@ namespace nanoFramework.Tools.MetadataProcessor.MsBuildTask
                 {
                     logWriter?.Close();
                     logOutputStream?.Close();
+
+                    if (originalConsoleOut != null)
+                    {
+                        // Restore original
+                        Console.SetOut(originalConsoleOut);
+                    }
                 }
             }
         }
