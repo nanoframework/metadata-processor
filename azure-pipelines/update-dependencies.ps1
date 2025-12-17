@@ -11,7 +11,7 @@ $auth = "basic $([System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.G
 $prTitle = ""
 $newBranchName = "develop-nfbot/update-dependencies/" + [guid]::NewGuid().ToString()
 $packageTargetVersion = gh release view --json tagName --jq .tagName
-$packageTargetVersion = $packageTargetVersion -replace "v"
+$packageTargetVersion = $packageTargetVersion -replace "^v"
 $packageName = "nanoframework.tools.metadataprocessor.msbuildtask"
 $repoMainBranch = "main"
 
@@ -65,7 +65,7 @@ Write-Host "Target version is: $packageTargetVersion."
 $latestNugetVersion = Get-LatestNugetVersion -url $nugetApiUrl
 
 while ($latestNugetVersion -ne $packageTargetVersion) {
-    Write-Host "Latest version still not available from nuget.org feed. Waiting 5 minutes..."
+    Write-Host "Target version ($packageTargetVersion) still not available from nuget.org feed. Waiting 5 minutes..."
     Start-Sleep -Seconds 300
     $latestNugetVersion = Get-LatestNugetVersion -url $nugetApiUrl
 }
