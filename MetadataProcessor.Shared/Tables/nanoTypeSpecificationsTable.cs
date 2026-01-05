@@ -82,6 +82,11 @@ namespace nanoFramework.Tools.MetadataProcessor
         private Dictionary<TypeReference, ushort> _idByTypeSpecifications;
 
         /// <summary>
+        /// Maps type reference to its index in the table (insertion order).
+        /// </summary>
+        private Dictionary<TypeReference, ushort> _indexByTypeReference;
+
+        /// <summary>
         /// Assembly tables context - contains all tables used for building target assembly.
         /// </summary>
         private readonly nanoTablesContext _context;
@@ -100,6 +105,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             _context = context;
 
             _idByTypeSpecifications = new Dictionary<TypeReference, ushort>(new TypeReferenceEqualityComparer(context));
+            _indexByTypeReference = new Dictionary<TypeReference, ushort>(new TypeReferenceEqualityComparer(context));
 
             AddTypeLevelGenericParameters();
             FillTypeSpecsFromTypes();
@@ -112,23 +118,28 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// <param name="typeReference">Type reference in Mono.Cecil format.</param>
         /// <param name="referenceId">Type Specification identifier for filling.</param>
         /// <returns>Returns <c>true</c> if item found, otherwise returns <c>false</c>.</returns>
+        /// <summary>
+        /// Gets type specification identifier.
+        /// </summary>
+        /// <param name="typeReference">Type reference in Mono.Cecil format.</param>
+        /// <param name="referenceId">Type Specification identifier for filling.</param>
+        /// <returns>Returns <c>true</c> if item found, otherwise returns <c>false</c>.</returns>
         public bool TryGetTypeReferenceId(
             TypeReference typeReference,
             out ushort referenceId)
         {
+            referenceId = 0;
+
             // sanity check for bug in Mono.Cecil where TypeSpecification instances may show with RID = 0
             if (typeReference is TypeSpecification && typeReference.MetadataToken.RID == 0)
             {
-                referenceId = 0;
 
                 // don't add this invalid entry
                 return false;
             }
 
-            if (_idByTypeSpecifications.TryGetValue(typeReference, out referenceId))
+            if (_indexByTypeReference != null && _indexByTypeReference.TryGetValue(typeReference, out referenceId))
             {
-                referenceId = (ushort)Array.IndexOf(_idByTypeSpecifications.Values.ToArray(), referenceId);
-
                 return true;
             }
 
@@ -473,7 +484,9 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             if (!tr.IsToExclude() && !_idByTypeSpecifications.ContainsKey(tr))
             {
+                ushort index = (ushort)_idByTypeSpecifications.Count;
                 _idByTypeSpecifications.Add(tr, sigId);
+                _indexByTypeReference.Add(tr, index);
             }
         }
 
@@ -624,10 +637,21 @@ namespace nanoFramework.Tools.MetadataProcessor
                 }
             }
 
-            // Remove items that have no member references
-            foreach (var item in itemsToRemove)
+            // remove items that have no member references and rebuild index
+            foreach (TypeReference item in itemsToRemove)
             {
                 _idByTypeSpecifications.Remove(item);
+                _indexByTypeReference.Remove(item);
+            }
+
+            // rebuild the index mapping after removal
+            _indexByTypeReference.Clear();
+
+            ushort newIndex = 0;
+
+            foreach (var kvp in _idByTypeSpecifications)
+            {
+                _indexByTypeReference.Add(kvp.Key, newIndex++);
             }
         }
     }
