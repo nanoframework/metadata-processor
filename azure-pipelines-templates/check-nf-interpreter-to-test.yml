@@ -57,7 +57,7 @@ steps:
       buildVersionToDownload: specific
       allowFailedBuilds: true
       pipelineId: $(NFINTERPRETER_BUILDID)
-      artifactName: 'nanoclr_cli'
+      artifactName: 'nanoclr_dll'
       targetPath: '$(Pipeline.Workspace)/nanoclr'
 
   - task: PowerShell@2
