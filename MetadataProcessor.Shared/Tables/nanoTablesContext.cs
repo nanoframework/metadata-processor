@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Mono.Cecil;
+using nanoFramework.Tools.MetadataProcessor.Core.Extensions;
 
 namespace nanoFramework.Tools.MetadataProcessor
 {
@@ -110,35 +111,6 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             var mainModule = AssemblyDefinition.MainModule;
 
-            // External references
-
-            AssemblyReferenceTable = new nanoAssemblyReferenceTable(
-                mainModule.AssemblyReferences, this);
-
-            var typeReferences = mainModule.GetTypeReferences();
-
-            TypeReferencesTable = new nanoTypeReferenceTable(
-                typeReferences, this);
-
-            var typeReferencesNames = new HashSet<string>(
-                typeReferences.Select(item => item.FullName),
-                StringComparer.Ordinal);
-
-            var memberReferences = mainModule.GetMemberReferences()
-                .Where(item =>
-                    (typeReferencesNames.Contains(item.DeclaringType.FullName) ||
-                    item.DeclaringType.GetElementType().IsPrimitive ||
-                    item.ContainsGenericParameter ||
-                    item.DeclaringType.IsGenericInstance))
-                .ToList();
-
-            MemberReferencesTable = new nanoMemberReferencesTable(memberReferences, this);
-
-            FieldReferencesTable = new nanoFieldReferenceTable(
-                memberReferences.OfType<FieldReference>(), this);
-            MethodReferencesTable = new nanoMethodReferenceTable(
-                memberReferences.OfType<MethodReference>(), this);
-
             // Internal types definitions
 
             List<TypeDefinition> types = GetOrderedTypes(mainModule, explicitTypesOrder);
@@ -167,6 +139,38 @@ namespace nanoFramework.Tools.MetadataProcessor
                 GetAttributes(fields, applyAttributesCompression),
                 GetAttributes(methods, applyAttributesCompression),
                 this);
+
+
+            // External references
+
+            AssemblyReferenceTable = new nanoAssemblyReferenceTable(
+                mainModule.AssemblyReferences, this);
+
+            var typeReferences = mainModule.GetTypeReferences();
+
+            TypeReferencesTable = new nanoTypeReferenceTable(
+                typeReferences, this);
+
+            var typeReferencesNames = new HashSet<string>(
+                typeReferences.Select(item => item.FullName),
+                StringComparer.Ordinal);
+
+            var memberReferences = mainModule.GetMemberReferences()
+                .Where(item =>
+                    !item.DeclaringType.IsToExclude() &&
+                    !item.DeclaringType.GetElementType().IsToExclude() &&
+                    (typeReferencesNames.Contains(item.DeclaringType.FullName) ||
+                    item.DeclaringType.GetElementType().IsPrimitive ||
+                    item.ContainsGenericParameter ||
+                    item.DeclaringType.IsGenericInstance))
+                .ToList();
+
+            MemberReferencesTable = new nanoMemberReferencesTable(memberReferences, this);
+
+            FieldReferencesTable = new nanoFieldReferenceTable(
+                memberReferences.OfType<FieldReference>(), this);
+            MethodReferencesTable = new nanoMethodReferenceTable(
+                memberReferences.OfType<MethodReference>(), this);
 
             // Resources information
 

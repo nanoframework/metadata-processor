@@ -471,8 +471,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                 return;
             }
 
-            if (!_idByTypeSpecifications.ContainsKey(tr)
-                && !tr.IsToExclude())
+            if (!tr.IsToExclude() && !_idByTypeSpecifications.ContainsKey(tr))
             {
                 _idByTypeSpecifications.Add(tr, sigId);
             }
