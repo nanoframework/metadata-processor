@@ -321,7 +321,16 @@ namespace nanoFramework.Tools.MetadataProcessor.MsBuildTask
             try
             {
                 // compile assembly (1st pass)
-                if (Verbose) Log.LogCommandLine(MessageImportance.Normal, "Compiling assembly..");
+                if (Verbose)
+                {
+                    var message = "[MDP] Compiling assembly...";
+                    Log.LogCommandLine(MessageImportance.Normal, message);
+                    Console.WriteLine(message);
+
+                    var timeMessage = $"[MDP] Started at: {DateTime.Now.ToString("HH:mm:ss.fff")}";
+                    Log.LogMessage(timeMessage);
+                    Console.WriteLine(timeMessage);
+                }
 
                 _assemblyBuilder = new nanoAssemblyBuilder(
                     _assemblyDefinition,
@@ -332,7 +341,17 @@ namespace nanoFramework.Tools.MetadataProcessor.MsBuildTask
                 using (var stream = File.Open(Path.ChangeExtension(fileName, "tmp"), FileMode.Create, FileAccess.ReadWrite))
                 using (var writer = new BinaryWriter(stream))
                 {
+                    DateTime startTime = DateTime.Now;
+
                     _assemblyBuilder.Write(GetBinaryWriter(writer));
+
+                    if (Verbose)
+                    {
+                        TimeSpan elapsed = DateTime.Now - startTime;
+                        var message = $"[MDP] Writting assembly tables took {elapsed.Minutes:D2}:{elapsed.Seconds:D2}.{elapsed.Milliseconds:D3}";
+                        Log.LogMessage(message);
+                        Console.WriteLine(message);
+                    }
                 }
             }
             catch (Exception)
@@ -354,33 +373,88 @@ namespace nanoFramework.Tools.MetadataProcessor.MsBuildTask
                 File.Delete(Path.ChangeExtension(fileName, "tmp"));
 
                 // minimize (has to be called after the 1st compile pass)
-                if (Verbose) Log.LogCommandLine(MessageImportance.Normal, "Minimizing assembly..");
+                if (Verbose)
+                {
+                    var message = "Minimizing assembly..";
+                    Log.LogCommandLine(MessageImportance.Normal, message);
+                    Console.WriteLine(message);
+                }
+
+                DateTime startTime = DateTime.Now;
 
                 _assemblyBuilder.Minimize();
 
+                if (Verbose)
+                {
+                    TimeSpan elapsed = DateTime.Now - startTime;
+                    var message = $"[MDP] Minimizing assembly took {elapsed.Minutes:D2}:{elapsed.Seconds:D2}.{elapsed.Milliseconds:D3}";
+                    Log.LogMessage(message);
+                    Console.WriteLine(message);
+                }
+
                 // compile assembly (2nd pass after minimize)
-                if (Verbose) Log.LogCommandLine(MessageImportance.Normal, "Recompiling assembly..");
+                if (Verbose)
+                {
+                    var message = "[MDP] Recompiling assembly..";
+                    Log.LogCommandLine(MessageImportance.Normal, message);
+                    Console.WriteLine(message);
+                }
 
                 using (var stream = File.Open(fileName, FileMode.Create, FileAccess.ReadWrite))
                 using (var writer = new BinaryWriter(stream))
                 {
+                    startTime = DateTime.Now;
+
                     _assemblyBuilder.Write(GetBinaryWriter(writer));
+
+                    if (Verbose)
+                    {
+                        TimeSpan elapsed = DateTime.Now - startTime;
+                        var message = $"[MDP] Writting assembly tables took {elapsed.Minutes:D2}:{elapsed.Seconds:D2}.{elapsed.Milliseconds:D3}";
+                        Log.LogMessage(message);
+                        Console.WriteLine(message);
+                    }
                 }
+
+                startTime = DateTime.Now;
 
                 // output PDBX
                 _assemblyBuilder.Write(Path.ChangeExtension(fileName, "pdbx"));
 
+                if (Verbose)
+                {
+                    TimeSpan elapsed = DateTime.Now - startTime;
+                    var message = $"[MDP] Outputting PDBX file took {elapsed.Minutes:D2}:{elapsed.Seconds:D2}.{elapsed.Milliseconds:D3}";
+                    Log.LogMessage(message);
+                    Console.WriteLine(message);
+                }
+
                 // output assembly metadata
                 if (DumpMetadata)
                 {
-                    if (Verbose) Log.LogCommandLine(MessageImportance.Normal, "Dumping assembly metadata..");
+                    if (Verbose)
+                    {
+                        var message = "[MDP] Dumping assembly metadata..";
+                        Log.LogCommandLine(MessageImportance.Normal, message);
+                        Console.WriteLine(message);
+                    }
 
                     DumpFile = Path.ChangeExtension(fileName, "dump.txt");
+
+                    startTime = DateTime.Now;
 
                     nanoDumperGenerator dumper = new nanoDumperGenerator(
                         _assemblyBuilder.TablesContext,
                         DumpFile);
                     dumper.DumpAll();
+
+                    if (Verbose)
+                    {
+                        TimeSpan elapsed = DateTime.Now - startTime;
+                        var message = $"[MDP] Dumping metadata took {elapsed.Minutes:D2}:{elapsed.Seconds:D2}.{elapsed.Milliseconds:D3}";
+                        Log.LogMessage(message);
+                        Console.WriteLine(message);
+                    }
                 }
 
                 // set environment variable with assembly native checksum
@@ -402,6 +476,10 @@ namespace nanoFramework.Tools.MetadataProcessor.MsBuildTask
             {
                 if (Verbose)
                 {
+                    var endMessage = $"[MDP] Completed at: {DateTime.Now.ToString("HH:mm:ss.fff")}";
+                    Log.LogMessage(endMessage);
+                    Console.WriteLine(endMessage);
+
                     logWriter?.Close();
                     logOutputStream?.Close();
 
