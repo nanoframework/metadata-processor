@@ -400,7 +400,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                                 assemblyLookup.LookupTable.Add(new MethodStub()
                                 {
 #if DEBUG && VERBOSE_OUTPUT
-                                    Declaration = $"nullptr, // <<<<< Library_{_safeProjectName}_{NativeMethodsCrc.GetClassName(c)}::{NativeMethodsCrc.GetMethodName(m)}",
+                                    Declaration = $"nullptr, // <<<<< Library_{_safeProjectName}_{NativeMethodsCrc.GetSafeClassName(c)}::{NativeMethodsCrc.GetSafeMethodName(m)}",
 #else
                                     Declaration = "nullptr"
 #endif
@@ -417,7 +417,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                             assemblyLookup.LookupTable.Add(new MethodStub()
                             {
 #if DEBUG && VERBOSE_OUTPUT
-                                Declaration = $"nullptr, // <<<<< Library_{_safeProjectName}_{NativeMethodsCrc.GetClassName(c)}::{NativeMethodsCrc.GetMethodName(m)}",
+                                Declaration = $"nullptr, // <<<<< Library_{_safeProjectName}_{NativeMethodsCrc.GetSafeClassName(c)}::{NativeMethodsCrc.GetSafeMethodName(m)}",
 #else
                                 Declaration = "nullptr"
 #endif
