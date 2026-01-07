@@ -3,7 +3,6 @@
 
 // Original work from Oleg Rakhmatulin.
 
-using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -57,21 +56,22 @@ namespace nanoFramework.Tools.MetadataProcessor
 
         public void UpdateCrc(MethodDefinition method)
         {
-            var type = method.DeclaringType;
+            TypeDefinition type = method.DeclaringType;
 
+            // Always update CRC for every method to make it position-dependent.
+            // This ensures any structural change (adding methods, reordering, etc.) will change the CRC.
             if (type.IncludeInStub() &&
                 (method.RVA == 0 && !method.IsAbstract))
             {
-                _currentCrc = Crc32.Compute(_name, CurrentCrc);
-                _currentCrc = Crc32.Compute(Encoding.ASCII.GetBytes(GetSafeClassName(type)), CurrentCrc);
-                _currentCrc = Crc32.Compute(Encoding.ASCII.GetBytes(GetSafeMethodName(method)), CurrentCrc);
+                _currentCrc = Crc32.Compute(_name, _currentCrc);
+                _currentCrc = Crc32.Compute(Encoding.ASCII.GetBytes(GetSafeClassName(type)), _currentCrc);
+                _currentCrc = Crc32.Compute(Encoding.ASCII.GetBytes(GetSafeMethodName(method)), _currentCrc);
 
                 _methodsWithNativeImplementation++;
             }
-            else
-            {
-                _currentCrc = Crc32.Compute(_null, CurrentCrc);
-            }
+
+            // Always add nullptr marker to make CRC position-dependent
+            _currentCrc = Crc32.Compute(_null, _currentCrc);
         }
 
         internal static string GetSafeClassName(TypeDefinition type)
@@ -191,7 +191,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                     // check if it's generic
                     return "DATATYPE_GENERICTYPE";
                 }
-                else if(parameterType.IsPointer)
+                else if (parameterType.IsPointer)
                 {
                     if (nanoSignaturesTable.PrimitiveTypes.TryGetValue(parameterType.GetElementType().FullName, out myType))
                     {
