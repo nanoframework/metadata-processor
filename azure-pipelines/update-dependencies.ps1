@@ -13,7 +13,12 @@ $newBranchName = "develop-nfbot/update-dependencies/" + [guid]::NewGuid().ToStri
 $packageTargetVersion = gh release view --json tagName --jq .tagName
 $packageTargetVersion = $packageTargetVersion -replace "^v"
 $packageName = "nanoframework.tools.metadataprocessor.msbuildtask"
-$repoMainBranch = "main"
+$repoBranch = "main"
+
+if ($packageTargetVersion -match "preview") {
+    # switch to develop branch for preview versions
+    $repoBranch = "develop"
+}
 
 # working directory is agent temp directory
 Write-Debug "Changing working directory to $env:Agent_TempDirectory"
@@ -29,8 +34,8 @@ git config --global user.name nfbot
 git config --global user.email nanoframework@outlook.com
 git config --global core.autocrlf true
 
-Write-Host "Checkout $repoMainBranch branch..."
-git checkout --quiet $repoMainBranch | Out-Null
+Write-Host "Checkout $repoBranch branch..."
+git checkout --quiet $repoBranch | Out-Null
 
 # check if nuget package is already available from nuget.org
 $nugetApiUrl = "https://api.nuget.org/v3-flatcontainer/$packageName/index.json"
