@@ -96,6 +96,10 @@ namespace TestNFApp
             Console.WriteLine("ReadOnlySpan<> tests");
             _ = new TestingReadOnlySpan();
 
+            // generic interface TypeSpec regression test
+            Console.WriteLine("GenericInterfaceTypeSpec tests");
+            _ = new GenericInterfaceTypeSpecTests();
+
             // 
             Console.WriteLine("Exiting TestNFApp");
         }

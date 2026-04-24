@@ -799,7 +799,14 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                     }
                 }
 
-                Debug.Assert(typeSpec.MemberReferences.Count > 0, $"Couldn't find any MethodRef for TypeSpec[{typeReference}] {typeReference.FullName}");
+                if (typeSpec.MemberReferences.Count == 0)
+                {
+                    // A TypeSpec used only as an interface implementation has no member references — that is valid.
+                    bool usedAsInterface = _tablesContext.TypeDefinitionTable.Items
+                        .Any(td => td.Interfaces.Any(i => i.InterfaceType.FullName == typeReference.FullName));
+
+                    Debug.Assert(usedAsInterface, $"Couldn't find any MethodRef for TypeSpec[{typeReference}] {typeReference.FullName}");
+                }
             }
 
             dumpTable.TypeSpecifications.Add(typeSpec);

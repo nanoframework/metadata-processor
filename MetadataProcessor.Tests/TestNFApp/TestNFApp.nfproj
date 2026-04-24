@@ -40,6 +40,7 @@
     <Compile Include="TestingReadOnlySpan.cs" />
     <Compile Include="TestingSpan.cs" />
     <Compile Include="TestingDestructors.cs" />
+    <Compile Include="GenericInterfaceTypeSpecTests.cs" />
     <Compile Include="TestingDelegates.cs" />
   </ItemGroup>
   <ItemGroup>
