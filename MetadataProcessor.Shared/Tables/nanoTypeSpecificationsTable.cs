@@ -317,6 +317,18 @@ namespace nanoFramework.Tools.MetadataProcessor
                     }
                 }
 
+                // Interface implementations on the type
+                if (td.HasInterfaces)
+                {
+                    foreach (InterfaceImplementation iface in td.Interfaces)
+                    {
+                        if (iface.InterfaceType is TypeSpecification)
+                        {
+                            ExpandNestedTypeSpecs(iface.InterfaceType);
+                        }
+                    }
+                }
+
                 foreach (MethodDefinition m in td.Methods.Where(m => m.HasBody))
                 {
                     foreach (VariableDefinition variable in m.Body.Variables)
@@ -606,6 +618,20 @@ namespace nanoFramework.Tools.MetadataProcessor
                                     hasMemberReferences = true;
                                     break;
                                 }
+                            }
+                        }
+                    }
+
+                    // Check if used as an interface type on any TypeDefinition
+                    if (!hasMemberReferences)
+                    {
+                        string genericInstanceFullName = genericInstanceType.FullName;
+                        foreach (TypeDefinition td in _context.TypeDefinitionTable.Items)
+                        {
+                            if (td.HasInterfaces && td.Interfaces.Any(i => i.InterfaceType.FullName == genericInstanceFullName))
+                            {
+                                hasMemberReferences = true;
+                                break;
                             }
                         }
                     }
