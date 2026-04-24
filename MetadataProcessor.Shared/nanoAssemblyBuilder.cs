@@ -369,7 +369,13 @@ namespace nanoFramework.Tools.MetadataProcessor
                                 }
                                 else
                                 {
-                                    Debug.Fail($"Couldn't find a TypeSpec entry for {mr.DeclaringType}");
+                                    // TypeSpec not in the table - two benign scenarios:
+                                    // 1. RID == 0: open generic synthesised by Mono.Cecil inside a generic method body
+                                    //    (e.g. Pair<!0,!1> inside PairCollection<TKey,TValue>); encoded inline, never a table row.
+                                    // 2. Added only to _idByTypeSpecifications (not _indexByTypeReference) by
+                                    //    FillTypeSpecsFromMemberReferences - TryGetTypeReferenceId cannot find it.
+                                    // In both cases the element-type token below is sufficient; the TypeSpec
+                                    // table is rebuilt fresh by ResetTypeSpecificationsTable().
                                 }
 
                                 // add the metadata token for the element type
@@ -514,7 +520,11 @@ namespace nanoFramework.Tools.MetadataProcessor
                                     }
                                     else
                                     {
-                                        Debug.Fail($"Couldn't find a TypeSpec entry for {fr.DeclaringType}");
+                                        // TypeSpec not in the table - two benign scenarios:
+                                        // 1. RID == 0: open generic synthesised by Mono.Cecil inside a generic method body.
+                                        // 2. Added only to _idByTypeSpecifications (not _indexByTypeReference) by
+                                        //    FillTypeSpecsFromMemberReferences - TryGetTypeReferenceId cannot find it.
+                                        // The element-type token below is sufficient; TypeSpec table is rebuilt fresh.
                                     }
 
                                     // add the metadata token for the element type

@@ -252,11 +252,11 @@ namespace nanoFramework.Tools.MetadataProcessor
                         // get index of signature for the TypeSpecification 
                         ushort signatureId = _context.SignaturesTable.GetOrCreateSignatureId(m.DeclaringType);
 
-                        if (!_idByTypeSpecifications.TryGetValue(m.DeclaringType, out ushort referenceId))
-                        {
-                            // is not on the list yet, add it
-                            _idByTypeSpecifications.Add(m.DeclaringType, signatureId);
-                        }
+                        // Use AddIfNew so the entry lands in both _idByTypeSpecifications and
+                        // _indexByTypeReference, making it reachable by TryGetTypeReferenceId.
+                        // RID==0 entries (open generics synthesised by Mono.Cecil for method bodies)
+                        // are intentionally skipped by AddIfNew.
+                        AddIfNew(m.DeclaringType, signatureId);
                     }
                 }
             }
@@ -269,7 +269,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                 {
                     // create or get the signature ID for this instanced type
                     ushort sigId = _context.SignaturesTable.GetOrCreateSignatureId(genericInstanceType);
-                    _idByTypeSpecifications.Add(genericInstanceType, sigId);
+                    AddIfNew(genericInstanceType, sigId);
 
                     // (and don’t forget to pull in any nested generic-parameter args)
                     foreach (GenericParameter arg in genericInstanceType.GenericArguments.OfType<GenericParameter>())
@@ -277,7 +277,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                         if (!_idByTypeSpecifications.ContainsKey(arg) && !arg.IsToExclude())
                         {
                             ushort argSig = _context.SignaturesTable.GetOrCreateSignatureId(arg);
-                            _idByTypeSpecifications.Add(arg, argSig);
+                            AddIfNew(arg, argSig);
                         }
                     }
                 }
@@ -298,7 +298,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                 if (!_idByTypeSpecifications.ContainsKey(typeRefItem) && !typeRefItem.IsToExclude())
                 {
                     ushort sigId = _context.SignaturesTable.GetOrCreateSignatureId(typeRefItem);
-                    _idByTypeSpecifications.Add(typeRefItem, sigId);
+                    AddIfNew(typeRefItem, sigId);
                     ExpandNestedTypeSpecs(typeRefItem);
                 }
             }
@@ -334,7 +334,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                                 && !genericInstanceType.IsToExclude())
                             {
                                 ushort sigId = _context.SignaturesTable.GetOrCreateSignatureId(genericInstanceType);
-                                _idByTypeSpecifications.Add(genericInstanceType, sigId);
+                                AddIfNew(genericInstanceType, sigId);
 
                                 // also pull in its element‐type and args
                                 ExpandNestedTypeSpecs(genericInstanceType);
