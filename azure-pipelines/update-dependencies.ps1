@@ -10,7 +10,15 @@ $auth = "basic $([System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.G
 # init/reset these
 $prTitle = ""
 $newBranchName = "develop-nfbot/update-dependencies/" + [guid]::NewGuid().ToString()
-$packageTargetVersion = gh release view --json tagName --jq .tagName
+$packageTargetVersion = $env:Build_SourceBranch
+
+# check if this is running from a checked out tag
+if ($packageTargetVersion -notlike "refs/tags/*") {
+    throw "ERROR: Branch name is not a tag! Either provide the version or checkout a tag before calling."
+}
+
+# extract version from ref (refs/tags/v1.2.3)
+$packageTargetVersion = $packageTargetVersion -replace "refs/tags/", ""
 $packageTargetVersion = $packageTargetVersion -replace "^v"
 $packageName = "nanoframework.tools.metadataprocessor.msbuildtask"
 $repoBranch = "main"
