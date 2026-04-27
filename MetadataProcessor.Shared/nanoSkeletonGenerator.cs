@@ -459,12 +459,20 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                         Name = NativeMethodsCrc.GetSafeClassName(c)
                     };
 
-                    // If class name starts from <PrivateImplementationDetails>,
-                    // then we need to exclude this class as actually this is static data object 
-                    // described in metadata.
-                    if (classData.Name.StartsWith("<PrivateImplementationDetails>"))
+                    // Exclude Roslyn-generated compiler helper type <PrivateImplementationDetails>
+                    // which holds embedded static data (hash-named fields) and has no nanoFramework relevance.
+                    // Check the original type name (c.Name) because the sanitized classData.Name has
+                    // angle-bracket content stripped, leaving an empty string that never matches.
+                    if (c.Name.StartsWith("<PrivateImplementationDetails>"))
                     {
                         // Go to the next class. This metadata describes global variable, not a type
+                        continue;
+                    }
+
+                    // Guard against any other compiler-generated type whose sanitized name is empty,
+                    // which would produce a broken struct name (e.g. Library_nf_system_collections_).
+                    if (string.IsNullOrWhiteSpace(classData.Name))
+                    {
                         continue;
                     }
 

@@ -3,6 +3,7 @@
 
 using System;
 using Mono.Cecil;
+using nanoFramework.Tools.MetadataProcessor;
 
 namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
 {
@@ -109,6 +110,11 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
                 }
             }
 
+            // Sanitize the enum name so that generic-type notation (backtick, angle brackets)
+            // does not produce invalid C++ identifiers (e.g. Dictionary`2_InsertionBehavior →
+            // Dictionary_2_InsertionBehavior).
+            enumName = NativeMethodsCrc.CleanupGenericName(enumName);
+
             EnumDeclaration myEnum = new EnumDeclaration()
             {
                 EnumName = enumName,
@@ -129,7 +135,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core.Extensions
                     // pattern: nnnn_yyyyy
                     var emunItem = new EnumItem()
                     {
-                        Name = $"{enumName}_{f.Name}",
+                        Name = NativeMethodsCrc.CleanupGenericName($"{enumName}_{f.Name}"),
                     };
 
                     emunItem.Value = f.Constant.ToString();
