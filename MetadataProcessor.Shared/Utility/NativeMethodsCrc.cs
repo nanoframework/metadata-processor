@@ -228,7 +228,11 @@ namespace nanoFramework.Tools.MetadataProcessor
 
         internal static string CleanupGenericName(string name)
         {
-            // Remove generic type notation: anything like <T>, <T1,T2>, `, etc.
+            // Replace the CLR backtick-N generic arity notation with an underscore
+            // (e.g. Dictionary`2 → Dictionary_2). The trailing _N is the arity of the
+            // generic type and is the correct disambiguation token — it is unique per
+            // type definition and matches what the rest of the toolchain (CRC, method
+            // lookup) emits.
             string fixedName = name
                     .Replace('`', '_');
 
