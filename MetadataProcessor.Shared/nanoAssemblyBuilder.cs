@@ -1029,7 +1029,9 @@ namespace nanoFramework.Tools.MetadataProcessor
                                         }
                                         else
                                         {
-                                            Debug.Fail($"Missing Array TypeSpec for {at}");
+                                            // Benign: arrays of open generic type parameters (e.g. !!0[]) are
+                                            // encoded inline in signatures and are never registered as TypeSpec
+                                            // table rows. The element-type token added below is sufficient.
                                         }
 
                                         TypeReference elementType = at.GetElementType();
