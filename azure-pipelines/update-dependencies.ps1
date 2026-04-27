@@ -142,7 +142,7 @@ if ($repoStatus -ne "") {
     # we are hardcoding to 'main' branch to have a fixed one
     # this is very important for tags (which don't have branch information)
     # considering that the base branch can be changed at the PR there is no big deal about this 
-    $prRequestBody = @{title = "$prTitle"; body = "$commitMessage"; head = "$newBranchName"; base = "$repoMainBranch" } | ConvertTo-Json
+    $prRequestBody = @{title = "$prTitle"; body = "$commitMessage"; head = "$newBranchName"; base = "$repoBranch" } | ConvertTo-Json
     $githubApiEndpoint = "https://api.github.com/repos/nanoframework/nf-Visual-Studio-extension/pulls"
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
