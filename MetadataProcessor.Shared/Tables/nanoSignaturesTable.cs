@@ -433,8 +433,13 @@ namespace nanoFramework.Tools.MetadataProcessor
 
                 if (alsoWriteSubType)
                 {
-                    // following ECMA-335 VI.B.4.3 Metadata
-                    writer.WriteByte((byte)(typeDefinition as GenericParameter).Position);
+                    // Nested helper types in the managed assembly already expose generic
+                    // parameter positions relative to the emitted TypeSpec arg list.
+                    // Adding declaring-type offsets here over-adjusts Dictionary<TKey, TValue>
+                    // nested types such as KeyCollection / ValueCollection, producing VAR(2)
+                    // and VAR(3) instead of the correct VAR(0) / VAR(1).
+                    GenericParameter varParam = (GenericParameter)typeDefinition;
+                    writer.WriteByte((byte)varParam.Position);
                 }
 
                 return;
@@ -493,8 +498,52 @@ namespace nanoFramework.Tools.MetadataProcessor
                     GenericInstanceType genericType = (GenericInstanceType)typeDefinition;
                     WriteDataType(genericType.ElementType, writer, true, expandEnumType, isTypeDefinition);
 
+                    // For nested generic types the nanoFramework runtime requires cumulative
+                    // type arguments: the enclosing type's args must appear first, followed by
+                    // the nested type's own args (ECMA-335 §I.8.9.3 / §II.23.2.14).
+                    //
+                    // Standard Roslyn follows this rule and Mono.Cecil exposes all cumulative
+                    // args in GenericArguments.  However, when a TypeSpec is derived from a
+                    // method-signature substitution (e.g. the return type of List<int>.GetEnumerator()
+                    // resolved against its declaring GenericInstanceType) Mono.Cecil may present
+                    // only the nested type's *own* args.  In that case the declaring type, if it
+                    // is itself a GenericInstanceType, carries the missing enclosing args and we
+                    // prepend them here.
+                    TypeReference elementType = genericType.ElementType;
+                    TypeReference declaringTypeRef = elementType.DeclaringType;
+
+                    System.Collections.Generic.IList<TypeReference> enclosingArgs =
+                        System.Array.Empty<TypeReference>();
+
+                    if (declaringTypeRef != null && declaringTypeRef.HasGenericParameters)
+                    {
+                        // How many args does the enclosing type contribute?
+                        int innerOwnParamCount = elementType.HasGenericParameters
+                            ? elementType.GenericParameters.Count
+                            : 0;
+                        int totalExpected = declaringTypeRef.GenericParameters.Count + innerOwnParamCount;
+
+                        if (genericType.GenericArguments.Count < totalExpected)
+                        {
+                            // The enclosing type's concrete args are missing from GenericArguments.
+                            // If the declaring TypeReference happens to be a GenericInstanceType
+                            // (e.g. when the type was obtained through method-signature resolution),
+                            // we can recover them directly.
+                            if (declaringTypeRef is GenericInstanceType declaringGenericInst)
+                            {
+                                enclosingArgs = declaringGenericInst.GenericArguments;
+                            }
+                        }
+                    }
+
                     // OK to use byte here as we won't support more than 0x7F arguments
-                    writer.WriteByte((byte)genericType.GenericArguments.Count);
+                    writer.WriteByte((byte)(enclosingArgs.Count + genericType.GenericArguments.Count));
+
+                    // Write enclosing type's args first (if any were missing and recovered).
+                    foreach (TypeReference enclosingArg in enclosingArgs)
+                    {
+                        WriteDataType(enclosingArg, writer, true, expandEnumType, isTypeDefinition);
+                    }
 
                     foreach (TypeReference a in genericType.GenericArguments)
                     {

@@ -100,6 +100,10 @@ namespace TestNFApp
             Console.WriteLine("GenericInterfaceTypeSpec tests");
             _ = new GenericInterfaceTypeSpecTests();
 
+            // nested generic TypeSpec cumulative VAR index regression test
+            Console.WriteLine("NestedGenericTypeSpec tests");
+            _ = new NestedGenericTypeSpecTests();
+
             // 
             Console.WriteLine("Exiting TestNFApp");
         }

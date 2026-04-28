@@ -15,8 +15,6 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
     [TestClass]
     public class DumperTests
     {
-        private ushort refId;
-
         [TestMethod]
 #if !DEBUG
         [Ignore("This test is ignored in Release builds.")]
@@ -44,12 +42,25 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
             // search for several bits
 
             // AssemblyRefs
-            Assert.IsTrue(dumpFileContent.Contains("AssemblyRef [00000000] /*23000001*/\r\n-------------------------------------------------------\r\n'mscorlib'"));
-            Assert.IsTrue(dumpFileContent.Contains("AssemblyRef [00000001] /*23000002*/\r\n-------------------------------------------------------\r\n'TestNFClassLibrary'"));
+            foreach (AssemblyNameReference assemblyRef in nanoTablesContext.AssemblyReferenceTable.Items)
+            {
+                string assemblyRealToken = assemblyRef.MetadataToken.ToInt32().ToString("X8");
+                ushort assemblyReferenceId = nanoTablesContext.AssemblyReferenceTable.GetReferenceId(assemblyRef);
+                string expectedAssemblyRef = $"AssemblyRef [{new nanoMetadataToken(assemblyRef.MetadataToken, assemblyReferenceId)}] /*{assemblyRealToken}*/\r\n-------------------------------------------------------\r\n'{assemblyRef.Name}'";
+
+                Assert.IsTrue(dumpFileContent.Contains(expectedAssemblyRef), $"Missing AssemblyRef for '{assemblyRef.Name}'");
+            }
 
             // TypeRefs
-            Assert.IsTrue(dumpFileContent.Contains("TypeRef [01000000] /*01000001*/\r\n-------------------------------------------------------\r\nScope: [0000] /*01000001*/\r\n    'System.Diagnostics.DebuggableAttribute'"));
-            Assert.IsTrue(dumpFileContent.Contains("TypeRef [0100001E] /*0100001F*/\r\n-------------------------------------------------------\r\nScope: [0001] /*0100001F*/\r\n    'TestNFClassLibrary.ClassOnAnotherAssembly'"));
+            foreach (TypeReference typeRefItem in nanoTablesContext.TypeReferencesTable.Items.OrderBy(tr => tr.MetadataToken.ToInt32()))
+            {
+                string typeRealToken = typeRefItem.MetadataToken.ToInt32().ToString("X8");
+                nanoTablesContext.TypeReferencesTable.TryGetTypeReferenceId(typeRefItem, out ushort typeReferenceId);
+                ushort scopeId = nanoTablesContext.TypeReferencesTable.GetScope(typeRefItem);
+                string expectedTypeRef = $"TypeRef [{new nanoMetadataToken(typeRefItem.MetadataToken, typeReferenceId)}] /*{typeRealToken}*/\r\n-------------------------------------------------------\r\nScope: [{scopeId:x4}] /*{typeRealToken}*/\r\n    '{typeRefItem.FullName}'";
+
+                Assert.IsTrue(dumpFileContent.Contains(expectedTypeRef), $"Missing TypeRef for '{typeRefItem.FullName}'");
+            }
 
             // TestNFApp.DummyCustomAttribute1
             string typeName = "TestNFApp.DummyCustomAttribute1";

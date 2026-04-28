@@ -117,13 +117,18 @@ namespace nanoFramework.Tools.MetadataProcessor
             // Instantiation
             writer.WriteUInt16(_context.SignaturesTable.GetOrCreateSignatureId(item));
 
-            // Container
+            // Container: TypeSpec row index for the method's declaring generic type.
+            // For generic methods on non-generic declaring types (e.g. EqualityHelper.Equals<T>)
+            // there is no TypeSpec, so write 0xFFFF as a sentinel so the runtime knows
+            // not to use this field as a generic-type context.
             if (_context.TypeSpecificationsTable.TryGetTypeReferenceId(item.DeclaringType, out referenceId))
             {
-                // method is method definition
+                writer.WriteUInt16(referenceId);
             }
-
-            writer.WriteUInt16(referenceId);
+            else
+            {
+                writer.WriteUInt16(0xFFFF);
+            }
 
             var writerEndPosition = writer.BaseStream.Position;
 

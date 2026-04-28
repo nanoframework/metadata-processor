@@ -24,6 +24,7 @@
     <Compile Include="DataRowAttribute.cs" />
     <Compile Include="DummyCustomAttribute1.cs" />
     <Compile Include="DummyCustomAttribute2.cs" />
+    <Compile Include="NestedGenericTypeSpecTests.cs" />
     <Compile Include="SimpleList.cs" />
     <Compile Include="StackClass.cs" />
     <Compile Include="IgnoreAttribute.cs" />
