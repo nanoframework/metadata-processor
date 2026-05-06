@@ -104,6 +104,10 @@ namespace TestNFApp
             Console.WriteLine("NestedGenericTypeSpec tests");
             _ = new NestedGenericTypeSpecTests();
 
+            // nested generic TypeSpec with shared Enumerator name regression test
+            Console.WriteLine("NestedGenericEnumeratorTests");
+            _ = new NestedGenericEnumeratorTests();
+
             // 
             Console.WriteLine("Exiting TestNFApp");
         }

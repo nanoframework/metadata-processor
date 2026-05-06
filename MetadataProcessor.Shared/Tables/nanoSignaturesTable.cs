@@ -514,38 +514,65 @@ namespace nanoFramework.Tools.MetadataProcessor
 
                     System.Collections.Generic.IList<TypeReference> enclosingArgs =
                         System.Array.Empty<TypeReference>();
+                    System.Collections.Generic.IList<TypeReference> ownArgs =
+                        genericType.GenericArguments;
 
                     if (declaringTypeRef != null && declaringTypeRef.HasGenericParameters)
                     {
                         // How many args does the enclosing type contribute?
+                        int enclosingParamCount = declaringTypeRef.GenericParameters.Count;
                         int innerOwnParamCount = elementType.HasGenericParameters
                             ? elementType.GenericParameters.Count
                             : 0;
-                        int totalExpected = declaringTypeRef.GenericParameters.Count + innerOwnParamCount;
+                        int totalExpected = enclosingParamCount + innerOwnParamCount;
 
                         if (genericType.GenericArguments.Count < totalExpected)
                         {
                             // The enclosing type's concrete args are missing from GenericArguments.
-                            // If the declaring TypeReference happens to be a GenericInstanceType
-                            // (e.g. when the type was obtained through method-signature resolution),
-                            // we can recover them directly.
-                            if (declaringTypeRef is GenericInstanceType declaringGenericInst)
+                            // Check if genericType.DeclaringType is a GenericInstanceType - if so,
+                            // it carries the concrete args for the parent generic type.
+                            if (genericType.DeclaringType is GenericInstanceType declaringGenericInst)
                             {
                                 enclosingArgs = declaringGenericInst.GenericArguments;
                             }
+                            else if (declaringTypeRef is GenericInstanceType declaringTypeGenericInst)
+                            {
+                                // Fallback: element's declaring type might be instantiated
+                                enclosingArgs = declaringTypeGenericInst.GenericArguments;
+                            }
+                            // ownArgs already contains only the nested type's own args
+                        }
+                        else if (genericType.GenericArguments.Count >= totalExpected)
+                        {
+                            // Mono.Cecil has provided cumulative args. Split them into parent and nested parts.
+                            TypeReference[] parentArgs = new TypeReference[enclosingParamCount];
+                            TypeReference[] nestedArgs = new TypeReference[genericType.GenericArguments.Count - enclosingParamCount];
+                            
+                            for (int i = 0; i < enclosingParamCount; i++)
+                            {
+                                parentArgs[i] = genericType.GenericArguments[i];
+                            }
+                            for (int i = 0; i < nestedArgs.Length; i++)
+                            {
+                                nestedArgs[i] = genericType.GenericArguments[enclosingParamCount + i];
+                            }
+                            
+                            enclosingArgs = parentArgs;
+                            ownArgs = nestedArgs;
                         }
                     }
 
                     // OK to use byte here as we won't support more than 0x7F arguments
-                    writer.WriteByte((byte)(enclosingArgs.Count + genericType.GenericArguments.Count));
+                    writer.WriteByte((byte)(enclosingArgs.Count + ownArgs.Count));
 
-                    // Write enclosing type's args first (if any were missing and recovered).
+                    // Write enclosing type's args first.
                     foreach (TypeReference enclosingArg in enclosingArgs)
                     {
                         WriteDataType(enclosingArg, writer, true, expandEnumType, isTypeDefinition);
                     }
 
-                    foreach (TypeReference a in genericType.GenericArguments)
+                    // Then write the nested type's own args.
+                    foreach (TypeReference a in ownArgs)
                     {
                         WriteDataType(a, writer, true, expandEnumType, isTypeDefinition);
                     }
