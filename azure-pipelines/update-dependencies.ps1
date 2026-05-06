@@ -35,15 +35,19 @@ Set-Location "$env:Agent_TempDirectory" | Out-Null
 # clone repo and checkout
 Write-Debug "Init and fetch nf-Visual-Studio-extension repo"
 
-git clone --depth 1 https://github.com/nanoframework/nf-Visual-Studio-extension repo
+git clone --depth 1 --branch $repoBranch https://github.com/nanoframework/nf-Visual-Studio-extension repo
+
+if ($LASTEXITCODE -ne 0) {
+    throw "ERROR: Failed to clone branch '$repoBranch' from nf-Visual-Studio-extension."
+}
+
 Set-Location repo | Out-Null
 git config --global gc.auto 0
 git config --global user.name nfbot
 git config --global user.email nanoframework@outlook.com
 git config --global core.autocrlf true
 
-Write-Host "Checkout $repoBranch branch..."
-git checkout --quiet $repoBranch | Out-Null
+Write-Host "Checked out $repoBranch branch."
 
 # check if nuget package is already available from nuget.org
 $nugetApiUrl = "https://api.nuget.org/v3-flatcontainer/$packageName/index.json"
