@@ -903,7 +903,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                         break;
                     case NanoCLRDataType.DATATYPE_CHAR:
                         writer.Write((byte)nanoSerializationType.ELEMENT_TYPE_CHAR);
-                        writer.Write((char)argument.Value);
+                        writer.Write((ushort)(char)argument.Value);
                         break;
                     case NanoCLRDataType.DATATYPE_STRING:
                         writer.Write((byte)nanoSerializationType.ELEMENT_TYPE_STRING);
@@ -936,11 +936,127 @@ namespace nanoFramework.Tools.MetadataProcessor
                     WriteAttributeArgumentValue(writer, (CustomAttributeArgument)attributeArgument.Value);
                 }
             }
+            else if (argument.Type.IsArray)
+            {
+                var elementType = argument.Type.GetElementType();
+
+                if (!s_primitiveTypes.TryGetValue(elementType.FullName, out dataType) ||
+                    dataType == NanoCLRDataType.DATATYPE_VOID ||
+                    dataType == NanoCLRDataType.DATATYPE_OBJECT)
+                {
+                    throw new ArgumentException($"Failed to generate signature for CustomAttribute. Unsupported array type: {argument.Type.FullName}.");
+                }
+
+                writer.Write((byte)nanoSerializationType.ELEMENT_TYPE_SZARRAY);
+                WriteAttributeArrayArgumentValue(writer, dataType, (CustomAttributeArgument[])argument.Value);
+            }
 
             if (argument.Type.FullName == "System.Type")
             {
                 writer.Write((byte)nanoSerializationType.ELEMENT_TYPE_STRING);
                 writer.Write(_context.StringTable.GetOrCreateStringId(((TypeReference)argument.Value).FullName));
+            }
+        }
+
+        private void WriteAttributeArrayArgumentValue(
+            BinaryWriter writer,
+            NanoCLRDataType dataType,
+            CustomAttributeArgument[] arguments)
+        {
+            writer.Write((byte)GetSerializationType(dataType));
+            writer.Write((byte)arguments.Length);
+
+            foreach (var item in arguments)
+            {
+                WriteAttributeArrayElementValue(writer, dataType, item.Value);
+            }
+        }
+
+        private void WriteAttributeArrayElementValue(
+            BinaryWriter writer,
+            NanoCLRDataType dataType,
+            object value)
+        {
+            switch (dataType)
+            {
+                case NanoCLRDataType.DATATYPE_BOOLEAN:
+                    writer.Write((byte)((bool)value ? 1 : 0));
+                    break;
+                case NanoCLRDataType.DATATYPE_I1:
+                    writer.Write((sbyte)value);
+                    break;
+                case NanoCLRDataType.DATATYPE_U1:
+                    writer.Write((byte)value);
+                    break;
+                case NanoCLRDataType.DATATYPE_I2:
+                    writer.Write((short)value);
+                    break;
+                case NanoCLRDataType.DATATYPE_U2:
+                    writer.Write((ushort)value);
+                    break;
+                case NanoCLRDataType.DATATYPE_I4:
+                    writer.Write((int)value);
+                    break;
+                case NanoCLRDataType.DATATYPE_U4:
+                    writer.Write((uint)value);
+                    break;
+                case NanoCLRDataType.DATATYPE_I8:
+                    writer.Write((long)value);
+                    break;
+                case NanoCLRDataType.DATATYPE_U8:
+                    writer.Write((ulong)value);
+                    break;
+                case NanoCLRDataType.DATATYPE_R4:
+                    writer.Write((float)value);
+                    break;
+                case NanoCLRDataType.DATATYPE_R8:
+                    writer.Write((double)value);
+                    break;
+                case NanoCLRDataType.DATATYPE_CHAR:
+                    writer.Write((ushort)(char)value);
+                    break;
+                case NanoCLRDataType.DATATYPE_STRING:
+                    writer.Write(value == null
+                        ? (ushort)0xFFFF
+                        : _context.StringTable.GetOrCreateStringId((string)value));
+                    break;
+                default:
+                    throw new ArgumentException($"Failed to generate signature for CustomAttribute. Unsupported array element type: {dataType}.");
+            }
+        }
+
+        private static nanoSerializationType GetSerializationType(NanoCLRDataType dataType)
+        {
+            switch (dataType)
+            {
+                case NanoCLRDataType.DATATYPE_BOOLEAN:
+                    return nanoSerializationType.ELEMENT_TYPE_BOOLEAN;
+                case NanoCLRDataType.DATATYPE_CHAR:
+                    return nanoSerializationType.ELEMENT_TYPE_CHAR;
+                case NanoCLRDataType.DATATYPE_I1:
+                    return nanoSerializationType.ELEMENT_TYPE_I1;
+                case NanoCLRDataType.DATATYPE_U1:
+                    return nanoSerializationType.ELEMENT_TYPE_U1;
+                case NanoCLRDataType.DATATYPE_I2:
+                    return nanoSerializationType.ELEMENT_TYPE_I2;
+                case NanoCLRDataType.DATATYPE_U2:
+                    return nanoSerializationType.ELEMENT_TYPE_U2;
+                case NanoCLRDataType.DATATYPE_I4:
+                    return nanoSerializationType.ELEMENT_TYPE_I4;
+                case NanoCLRDataType.DATATYPE_U4:
+                    return nanoSerializationType.ELEMENT_TYPE_U4;
+                case NanoCLRDataType.DATATYPE_I8:
+                    return nanoSerializationType.ELEMENT_TYPE_I8;
+                case NanoCLRDataType.DATATYPE_U8:
+                    return nanoSerializationType.ELEMENT_TYPE_U8;
+                case NanoCLRDataType.DATATYPE_R4:
+                    return nanoSerializationType.ELEMENT_TYPE_R4;
+                case NanoCLRDataType.DATATYPE_R8:
+                    return nanoSerializationType.ELEMENT_TYPE_R8;
+                case NanoCLRDataType.DATATYPE_STRING:
+                    return nanoSerializationType.ELEMENT_TYPE_STRING;
+                default:
+                    throw new ArgumentException($"Failed to generate signature for CustomAttribute. Unsupported type: {dataType}.");
             }
         }
 
