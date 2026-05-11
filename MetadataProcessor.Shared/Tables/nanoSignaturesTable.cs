@@ -927,6 +927,12 @@ namespace nanoFramework.Tools.MetadataProcessor
             {
                 var paramCollection = (CustomAttributeArgument[])argument.Value;
 
+                if (paramCollection == null)
+                {
+                    throw new ArgumentException(
+                        $"Failed to generate signature for CustomAttribute. Null arrays are not supported for {argument.Type.FullName}.");
+                }
+
                 // add count of array elements that will follow
                 writer.Write((byte)paramCollection.Length);
 
@@ -947,8 +953,16 @@ namespace nanoFramework.Tools.MetadataProcessor
                     throw new ArgumentException($"Failed to generate signature for CustomAttribute. Unsupported array type: {argument.Type.FullName}.");
                 }
 
+                var values = (CustomAttributeArgument[])argument.Value;
+
+                if (values == null)
+                {
+                    throw new ArgumentException(
+                        $"Failed to generate signature for CustomAttribute. Null arrays are not supported for {argument.Type.FullName}.");
+                }
+
                 writer.Write((byte)nanoSerializationType.ELEMENT_TYPE_SZARRAY);
-                WriteAttributeArrayArgumentValue(writer, dataType, (CustomAttributeArgument[])argument.Value);
+                WriteAttributeArrayArgumentValue(writer, dataType, values);
             }
 
             if (argument.Type.FullName == "System.Type")
@@ -963,6 +977,13 @@ namespace nanoFramework.Tools.MetadataProcessor
             NanoCLRDataType dataType,
             CustomAttributeArgument[] arguments)
         {
+            if (arguments.Length > byte.MaxValue)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(arguments),
+                    $"Custom attribute arrays longer than {byte.MaxValue} elements are not supported by the current encoding.");
+            }
+
             writer.Write((byte)GetSerializationType(dataType));
             writer.Write((byte)arguments.Length);
 
