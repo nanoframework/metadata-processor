@@ -116,11 +116,11 @@ namespace nanoFramework.Tools.MetadataProcessor.MsBuildTask
 
         public override bool Execute()
         {
-            string taskVersion = typeof(MetaDataProcessorTask).Assembly
-                .GetCustomAttributes(typeof(System.Reflection.AssemblyInformationalVersionAttribute), false)
-                is System.Reflection.AssemblyInformationalVersionAttribute[] attrs && attrs.Length > 0
-                    ? attrs[0].InformationalVersion
-                    : typeof(MetaDataProcessorTask).Assembly.GetName().Version?.ToString() ?? "unknown";
+            System.Reflection.Assembly taskAssembly = typeof(MetaDataProcessorTask).Assembly;
+            object[] infoVerAttrs = taskAssembly.GetCustomAttributes(typeof(System.Reflection.AssemblyInformationalVersionAttribute), false);
+            string taskVersion = infoVerAttrs.Length > 0
+                ? ((System.Reflection.AssemblyInformationalVersionAttribute)infoVerAttrs[0]).InformationalVersion
+                : taskAssembly.GetName().Version?.ToString() ?? "unknown";
 
             // report to VS output window what step the build is 
             Log.LogCommandLine(MessageImportance.Normal, $"Starting nanoFramework MetadataProcessor (v{taskVersion}).");
@@ -190,7 +190,7 @@ namespace nanoFramework.Tools.MetadataProcessor.MsBuildTask
                     }
                     else
                     {
-                        if (Verbose) Log.LogCommandLine(MessageImportance.Normal, $"Compiling {Path.GetFileNameWithoutExtension(Compile)} into nanoCLR format..");
+                        if (Verbose) Log.LogCommandLine(MessageImportance.Normal, $"Compiling {Path.GetFileNameWithoutExtension(Compile)} into nanoCLR format.");
 
                         ExecuteCompile(Compile);
                     }
