@@ -116,8 +116,14 @@ namespace nanoFramework.Tools.MetadataProcessor.MsBuildTask
 
         public override bool Execute()
         {
+            string taskVersion = typeof(MetaDataProcessorTask).Assembly
+                .GetCustomAttributes(typeof(System.Reflection.AssemblyInformationalVersionAttribute), false)
+                is System.Reflection.AssemblyInformationalVersionAttribute[] attrs && attrs.Length > 0
+                    ? attrs[0].InformationalVersion
+                    : typeof(MetaDataProcessorTask).Assembly.GetName().Version?.ToString() ?? "unknown";
+
             // report to VS output window what step the build is 
-            Log.LogCommandLine(MessageImportance.Normal, "Starting nanoFramework MetadataProcessor..");
+            Log.LogCommandLine(MessageImportance.Normal, $"Starting nanoFramework MetadataProcessor (v{taskVersion}).");
 
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // developer note: to debug this task set an environment variable like this:
@@ -135,7 +141,7 @@ namespace nanoFramework.Tools.MetadataProcessor.MsBuildTask
                 if (LoadHints != null &&
                     LoadHints.Any())
                 {
-                    if (Verbose) Log.LogCommandLine(MessageImportance.Normal, "Processing load hints..");
+                    if (Verbose) Log.LogCommandLine(MessageImportance.Normal, "Processing load hints");
 
                     foreach (var hint in LoadHints)
                     {
@@ -168,7 +174,7 @@ namespace nanoFramework.Tools.MetadataProcessor.MsBuildTask
                 // Analyses a .NET assembly
                 if (!string.IsNullOrEmpty(Parse))
                 {
-                    if (Verbose) Log.LogCommandLine(MessageImportance.Normal, $"Analysing .NET assembly {Path.GetFileNameWithoutExtension(Parse)}..");
+                    if (Verbose) Log.LogCommandLine(MessageImportance.Normal, $"Analysing .NET assembly {Path.GetFileNameWithoutExtension(Parse)}");
 
                     ExecuteParse(Parse);
                 }
@@ -285,6 +291,10 @@ namespace nanoFramework.Tools.MetadataProcessor.MsBuildTask
 
                 _assemblyDefinition = AssemblyDefinition.ReadAssembly(fileName,
                     new ReaderParameters { AssemblyResolver = new LoadHintsAssemblyResolver(_loadHints) });
+
+                Log.LogMessage(MessageImportance.Low, $"[MDP] Assembly parsed: {_assemblyDefinition.FullName}");
+                Log.LogMessage(MessageImportance.Low, $"[MDP]   Types       : {_assemblyDefinition.MainModule.Types.Count}");
+                Log.LogMessage(MessageImportance.Low, $"[MDP]   References  : {_assemblyDefinition.MainModule.AssemblyReferences.Count}");
             }
             catch (Exception)
             {
@@ -338,6 +348,17 @@ namespace nanoFramework.Tools.MetadataProcessor.MsBuildTask
                     Verbose,
                     IsCoreLibrary);
 
+                Log.LogMessage(MessageImportance.Low, "[MDP] Tables context built:");
+                Log.LogMessage(MessageImportance.Low, $"[MDP]   Type definitions    : {_assemblyBuilder.TablesContext.TypeDefinitionTable.Items.Count()}");
+                Log.LogMessage(MessageImportance.Low, $"[MDP]   Method definitions  : {_assemblyBuilder.TablesContext.MethodDefinitionTable.Items.Count()}");
+                Log.LogMessage(MessageImportance.Low, $"[MDP]   Field definitions   : {_assemblyBuilder.TablesContext.FieldsTable.Items.Count()}");
+                Log.LogMessage(MessageImportance.Low, $"[MDP]   Assembly references : {_assemblyBuilder.TablesContext.AssemblyReferenceTable.Items.Count()}");
+                Log.LogMessage(MessageImportance.Low, $"[MDP]   Type references     : {_assemblyBuilder.TablesContext.TypeReferencesTable.Items.Count()}");
+                Log.LogMessage(MessageImportance.Low, $"[MDP]   Member references   : {_assemblyBuilder.TablesContext.MemberReferencesTable.Items.Count()}");
+
+                LogExcludedTypesDetailed();
+                LogNativeCrcDetailed();
+
                 using (var stream = File.Open(Path.ChangeExtension(fileName, "tmp"), FileMode.Create, FileAccess.ReadWrite))
                 using (var writer = new BinaryWriter(stream))
                 {
@@ -352,6 +373,8 @@ namespace nanoFramework.Tools.MetadataProcessor.MsBuildTask
                         Log.LogMessage(message);
                         Console.WriteLine(message);
                     }
+
+                    Log.LogMessage(MessageImportance.Low, $"[MDP] 1st pass PE size: {stream.Length} bytes");
                 }
             }
             catch (Exception)
@@ -392,6 +415,14 @@ namespace nanoFramework.Tools.MetadataProcessor.MsBuildTask
                     Console.WriteLine(message);
                 }
 
+                Log.LogMessage(MessageImportance.Low, "[MDP] Post-minimize tables:");
+                Log.LogMessage(MessageImportance.Low, $"[MDP]   Type definitions    : {_assemblyBuilder.TablesContext.TypeDefinitionTable.Items.Count()}");
+                Log.LogMessage(MessageImportance.Low, $"[MDP]   Method definitions  : {_assemblyBuilder.TablesContext.MethodDefinitionTable.Items.Count()}");
+                Log.LogMessage(MessageImportance.Low, $"[MDP]   Field definitions   : {_assemblyBuilder.TablesContext.FieldsTable.Items.Count()}");
+                Log.LogMessage(MessageImportance.Low, $"[MDP]   Assembly references : {_assemblyBuilder.TablesContext.AssemblyReferenceTable.Items.Count()}");
+                Log.LogMessage(MessageImportance.Low, $"[MDP]   Type references     : {_assemblyBuilder.TablesContext.TypeReferencesTable.Items.Count()}");
+                Log.LogMessage(MessageImportance.Low, $"[MDP]   Member references   : {_assemblyBuilder.TablesContext.MemberReferencesTable.Items.Count()}");
+
                 // compile assembly (2nd pass after minimize)
                 if (Verbose)
                 {
@@ -414,6 +445,8 @@ namespace nanoFramework.Tools.MetadataProcessor.MsBuildTask
                         Log.LogMessage(message);
                         Console.WriteLine(message);
                     }
+
+                    Log.LogMessage(MessageImportance.Low, $"[MDP] Final PE size: {stream.Length} bytes -> '{fileName}'");
                 }
 
                 startTime = DateTime.Now;
@@ -428,6 +461,8 @@ namespace nanoFramework.Tools.MetadataProcessor.MsBuildTask
                     Log.LogMessage(message);
                     Console.WriteLine(message);
                 }
+
+                Log.LogMessage(MessageImportance.Low, $"[MDP] PDBX written -> '{Path.ChangeExtension(fileName, "pdbx")}'");
 
                 // output assembly metadata
                 if (DumpMetadata)
@@ -462,6 +497,8 @@ namespace nanoFramework.Tools.MetadataProcessor.MsBuildTask
 
                 // store assembly native checksum
                 _nativeChecksum = _assemblyBuilder.GetNativeChecksum();
+
+                Log.LogMessage(MessageImportance.Low, $"[MDP] Native checksum: {_nativeChecksum}");
             }
             catch (ArgumentException ex)
             {
@@ -492,6 +529,55 @@ namespace nanoFramework.Tools.MetadataProcessor.MsBuildTask
             }
         }
 
+        private void LogNativeCrcDetailed()
+        {
+            IReadOnlyList<string> entries = _assemblyBuilder.TablesContext.NativeMethodsCrc.GetCrcLog();
+
+            if (entries.Count == 0)
+            {
+                Log.LogMessage(MessageImportance.Low, "[MDP] Native CRC: no methods with native implementation found.");
+                return;
+            }
+
+            Log.LogMessage(MessageImportance.Low, $"[MDP] Native CRC method list ({entries.Count} entries):");
+            Log.LogMessage(MessageImportance.Low,  "[MDP]    idx  CRC after     Method signature");
+
+            foreach (string entry in entries)
+            {
+                Log.LogMessage(MessageImportance.Low, $"[MDP] {entry}");
+            }
+
+            Log.LogMessage(MessageImportance.Low, $"[MDP] Native CRC final value: 0x{_assemblyBuilder.TablesContext.NativeMethodsCrc.CurrentCrc:X8}");
+        }
+
+        private void LogExcludedTypesDetailed()
+        {
+            var excludedTypes = nanoTablesContext.ClassNamesToExclude;
+
+            if (excludedTypes == null || excludedTypes.Count == 0)
+            {
+                return;
+            }
+
+            var distinctExcludedTypes = excludedTypes
+                .Where(item => !string.IsNullOrWhiteSpace(item))
+                .Distinct(StringComparer.Ordinal)
+                .OrderBy(item => item, StringComparer.Ordinal)
+                .ToList();
+
+            if (distinctExcludedTypes.Count == 0)
+            {
+                return;
+            }
+
+            Log.LogMessage(MessageImportance.Low, $"[MDP] Types excluded from processing ({distinctExcludedTypes.Count}):");
+
+            foreach (var typeName in distinctExcludedTypes)
+            {
+                Log.LogMessage(MessageImportance.Low, $"[MDP]   - {typeName}");
+            }
+        }
+
         private void AddClassToExclude(
             string className)
         {
@@ -517,6 +603,8 @@ namespace nanoFramework.Tools.MetadataProcessor.MsBuildTask
                     IsCoreLibrary);
 
                 skeletonGenerator.GenerateSkeleton();
+
+                Log.LogMessage(MessageImportance.Low, $"[MDP] Skeleton generated: '{name}' for project '{project}' @ '{file}' (withoutInterop={withoutInteropCode})");
             }
             catch (Exception)
             {

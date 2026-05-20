@@ -26,6 +26,7 @@ namespace nanoFramework.Tools.MetadataProcessor
 
         private int _methodsWithNativeImplementation = 0;
         private uint _currentCrc = 0;
+        private readonly List<string> _crcLog = new List<string>();
 
         public NativeMethodsCrc(
             AssemblyDefinition assembly,
@@ -60,18 +61,29 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             // Always update CRC for every method to make it position-dependent.
             // This ensures any structural change (adding methods, reordering, etc.) will change the CRC.
+            string logClassName = null;
+            string logMethodName = null;
+
             if (type.IncludeInStub() &&
                 (method.RVA == 0 && !method.IsAbstract))
             {
+                logClassName = GetSafeClassName(type);
+                logMethodName = GetSafeMethodName(method);
+
                 _currentCrc = Crc32.Compute(_name, _currentCrc);
-                _currentCrc = Crc32.Compute(Encoding.ASCII.GetBytes(GetSafeClassName(type)), _currentCrc);
-                _currentCrc = Crc32.Compute(Encoding.ASCII.GetBytes(GetSafeMethodName(method)), _currentCrc);
+                _currentCrc = Crc32.Compute(Encoding.ASCII.GetBytes(logClassName), _currentCrc);
+                _currentCrc = Crc32.Compute(Encoding.ASCII.GetBytes(logMethodName), _currentCrc);
 
                 _methodsWithNativeImplementation++;
             }
 
             // Always add nullptr marker to make CRC position-dependent
             _currentCrc = Crc32.Compute(_null, _currentCrc);
+
+            if (logClassName != null)
+            {
+                _crcLog.Add($"  [{_methodsWithNativeImplementation,4}] 0x{_currentCrc:X8}  {logClassName}::{logMethodName}");
+            }
         }
 
         internal static string GetSafeClassName(TypeDefinition type)
@@ -205,6 +217,12 @@ namespace nanoFramework.Tools.MetadataProcessor
                 return CleanupGenericName(typeName);
             }
         }
+
+        /// <summary>
+        /// Returns the collected CRC log entries, one per native method processed.
+        /// Each entry includes the running index, the CRC after that method and the safe method signature.
+        /// </summary>
+        public IReadOnlyList<string> GetCrcLog() => _crcLog;
 
         internal void UpdateCrc(nanoTypeDefinitionTable typeDefinitionTable)
         {
