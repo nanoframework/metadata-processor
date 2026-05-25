@@ -40,6 +40,9 @@ namespace nanoFramework.Tools.MetadataProcessor
                 "System.Runtime.CompilerServices.RefSafetyRulesAttribute",
                 "System.Reflection.FieldNoReflectionAttribute",
 
+                // Roslyn compiler-synthesized embedded attributes (not meaningful at runtime)
+                "Microsoft.CodeAnalysis.EmbeddedAttribute",
+
                 // Debugger-specific attributes
                 "System.Diagnostics.DebuggableAttribute",
                 "System.Diagnostics.DebuggerBrowsableAttribute",
@@ -733,6 +736,9 @@ namespace nanoFramework.Tools.MetadataProcessor
             ClassNamesToExclude.Add("ThisAssembly");
             ClassNamesToExclude.Add("System.Runtime.CompilerServices.RefSafetyRulesAttribute");
             ClassNamesToExclude.Add("System.Runtime.CompilerServices.AccessedThroughPropertyAttribute");
+
+            // Roslyn compiler-synthesized embedded attribute type (not meaningful at runtime).
+            ClassNamesToExclude.Add("Microsoft.CodeAnalysis.EmbeddedAttribute");
         }
 
     }
