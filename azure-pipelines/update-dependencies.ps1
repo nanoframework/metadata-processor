@@ -104,14 +104,34 @@ if (-not $solutionFile) {
 
 Write-Host "Using solution file: $solutionFile"
 
-# update the package reference in all projects via nuget CLI
-nuget update $solutionFile -Id nanoFramework.Tools.MetadataProcessor.MsBuildTask -Version $packageTargetVersion -noninteractive
+# directly update the PackageReference version in all project files
+# nuget update does NOT support PackageReference style - use regex replacement instead
+$packageId = "nanoFramework.Tools.MetadataProcessor.MsBuildTask"
+$updateCount = 0
 
-if ($LASTEXITCODE -ne 0) {
-    throw "ERROR: 'nuget update' failed for $solutionFile."
+Get-ChildItem -Recurse -Filter "*.csproj" | ForEach-Object {
+    $filePath = $_.FullName
+    $content = Get-Content $filePath -Raw
+
+    if ($content -notmatch [regex]::Escape($packageId)) { return }
+
+    # match: Include="<packageId>" Version="<old-version>" (attribute style)
+    $pattern = '(Include="' + [regex]::Escape($packageId) + '"\s+Version=")[^"]+(")'
+    $replacement = '$1' + $packageTargetVersion + '$2'
+    $newContent = $content -replace $pattern, $replacement
+
+    if ($newContent -ne $content) {
+        Set-Content -Path $filePath -Value $newContent -NoNewline
+        Write-Host "Updated version in $($_.Name)"
+        $updateCount++
+    }
 }
 
-# restore packages and regenerate the lock file
+if ($updateCount -eq 0) {
+    throw "ERROR: No .csproj files found with a PackageReference to '$packageId'."
+}
+
+# restore packages and regenerate the lock files
 nuget restore $solutionFile -uselockfile
 
 if ($LASTEXITCODE -ne 0) {
