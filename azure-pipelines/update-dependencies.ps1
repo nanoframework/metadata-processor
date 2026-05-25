@@ -95,12 +95,28 @@ Write-Host "Version $latestNugetVersion available from nuget.org feed. Proceedin
 "*****************************************************************************************************" | Write-Host
 "Updating nanoFramework.Tools.MetadataProcessor.MsBuildTask.Net package in VS2019 & VS2022 solution..." | Write-Host
 
-dotnet restore
-dotnet remove VisualStudio.Extension-2019/VisualStudio.Extension-vs2019.csproj package nanoFramework.Tools.MetadataProcessor.MsBuildTask
-dotnet add VisualStudio.Extension-2019/VisualStudio.Extension-vs2019.csproj package nanoFramework.Tools.MetadataProcessor.MsBuildTask --version $packageTargetVersion --no-restore 
-dotnet remove VisualStudio.Extension-2022/VisualStudio.Extension-vs2022.csproj package nanoFramework.Tools.MetadataProcessor.MsBuildTask
-dotnet add VisualStudio.Extension-2022/VisualStudio.Extension-vs2022.csproj package nanoFramework.Tools.MetadataProcessor.MsBuildTask --version $packageTargetVersion --no-restore 
-nuget restore -uselockfile
+# find solution file in the repo root
+$solutionFile = (Get-ChildItem -Filter "*.sln" | Select-Object -First 1).FullName
+
+if (-not $solutionFile) {
+    throw "ERROR: Could not find a solution file in the repository."
+}
+
+Write-Host "Using solution file: $solutionFile"
+
+# update the package reference in all projects via nuget CLI
+nuget update $solutionFile -Id nanoFramework.Tools.MetadataProcessor.MsBuildTask -Version $packageTargetVersion -noninteractive
+
+if ($LASTEXITCODE -ne 0) {
+    throw "ERROR: 'nuget update' failed for $solutionFile."
+}
+
+# restore packages and regenerate the lock file
+nuget restore $solutionFile -uselockfile
+
+if ($LASTEXITCODE -ne 0) {
+    throw "ERROR: 'nuget restore' failed for $solutionFile."
+}
 
 "Bumping nanoFramework.Tools.MetadataProcessor.MsBuildTask to $packageTargetVersion." | Write-Host -ForegroundColor Cyan                
 
