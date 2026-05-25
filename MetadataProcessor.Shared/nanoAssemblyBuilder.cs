@@ -26,7 +26,44 @@ namespace nanoFramework.Tools.MetadataProcessor
         private readonly bool _verbose;
         private readonly bool _isCoreLibrary;
 
+        private nanoAssemblyDefinition _lastHeader;
+
         public nanoTablesContext TablesContext => _tablesContext;
+
+        /// <summary>
+        /// Assembly body CRC32 from the most recent final write pass.
+        /// </summary>
+        public uint LastAssemblyCrc32 => _lastHeader?.LastAssemblyCrc32 ?? 0u;
+
+        /// <summary>
+        /// Header CRC32 from the most recent final write pass.
+        /// </summary>
+        public uint LastHeaderCrc32 => _lastHeader?.LastHeaderCrc32 ?? 0u;
+
+        /// <summary>
+        /// Total PE stream size from the most recent final write pass.
+        /// </summary>
+        public long LastTotalSize => _lastHeader?.LastTotalSize ?? 0L;
+
+        /// <summary>
+        /// Header region size hashed for the header CRC32.
+        /// </summary>
+        public long LastHeaderSize => _lastHeader?.LastHeaderSize ?? 0L;
+
+        /// <summary>
+        /// Body region size hashed for the assembly body CRC32.
+        /// </summary>
+        public long LastBodySize => _lastHeader?.LastBodySize ?? 0L;
+
+        /// <summary>
+        /// Native methods checksum embedded in the header.
+        /// </summary>
+        public uint LastNativeMethodsChecksum => _lastHeader?.LastNativeMethodsChecksum ?? 0u;
+
+        /// <summary>
+        /// Assembly version embedded in the header.
+        /// </summary>
+        public System.Version LastAssemblyVersion => _lastHeader?.LastAssemblyVersion;
 
         /// <summary>
         /// Creates new instance of <see cref="nanoAssemblyBuilder"/> object.
@@ -84,6 +121,8 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             binaryWriter.BaseStream.Seek(0, SeekOrigin.Begin);
             header.Write(binaryWriter, false);
+
+            _lastHeader = header;
         }
 
         /// <summary>
