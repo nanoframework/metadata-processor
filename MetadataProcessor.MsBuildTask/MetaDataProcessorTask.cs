@@ -349,12 +349,7 @@ namespace nanoFramework.Tools.MetadataProcessor.MsBuildTask
                     IsCoreLibrary);
 
                 Log.LogMessage(MessageImportance.Low, "[MDP] Tables context built:");
-                Log.LogMessage(MessageImportance.Low, $"[MDP]   Type definitions    : {_assemblyBuilder.TablesContext.TypeDefinitionTable.Items.Count()}");
-                Log.LogMessage(MessageImportance.Low, $"[MDP]   Method definitions  : {_assemblyBuilder.TablesContext.MethodDefinitionTable.Items.Count()}");
-                Log.LogMessage(MessageImportance.Low, $"[MDP]   Field definitions   : {_assemblyBuilder.TablesContext.FieldsTable.Items.Count()}");
-                Log.LogMessage(MessageImportance.Low, $"[MDP]   Assembly references : {_assemblyBuilder.TablesContext.AssemblyReferenceTable.Items.Count()}");
-                Log.LogMessage(MessageImportance.Low, $"[MDP]   Type references     : {_assemblyBuilder.TablesContext.TypeReferencesTable.Items.Count()}");
-                Log.LogMessage(MessageImportance.Low, $"[MDP]   Member references   : {_assemblyBuilder.TablesContext.MemberReferencesTable.Items.Count()}");
+                LogTablesDetailed();
 
                 LogExcludedTypesDetailed();
                 LogNativeCrcDetailed();
@@ -416,12 +411,7 @@ namespace nanoFramework.Tools.MetadataProcessor.MsBuildTask
                 }
 
                 Log.LogMessage(MessageImportance.Low, "[MDP] Post-minimize tables:");
-                Log.LogMessage(MessageImportance.Low, $"[MDP]   Type definitions    : {_assemblyBuilder.TablesContext.TypeDefinitionTable.Items.Count()}");
-                Log.LogMessage(MessageImportance.Low, $"[MDP]   Method definitions  : {_assemblyBuilder.TablesContext.MethodDefinitionTable.Items.Count()}");
-                Log.LogMessage(MessageImportance.Low, $"[MDP]   Field definitions   : {_assemblyBuilder.TablesContext.FieldsTable.Items.Count()}");
-                Log.LogMessage(MessageImportance.Low, $"[MDP]   Assembly references : {_assemblyBuilder.TablesContext.AssemblyReferenceTable.Items.Count()}");
-                Log.LogMessage(MessageImportance.Low, $"[MDP]   Type references     : {_assemblyBuilder.TablesContext.TypeReferencesTable.Items.Count()}");
-                Log.LogMessage(MessageImportance.Low, $"[MDP]   Member references   : {_assemblyBuilder.TablesContext.MemberReferencesTable.Items.Count()}");
+                LogTablesDetailed();
 
                 // compile assembly (2nd pass after minimize)
                 if (Verbose)
@@ -448,6 +438,8 @@ namespace nanoFramework.Tools.MetadataProcessor.MsBuildTask
 
                     Log.LogMessage(MessageImportance.Low, $"[MDP] Final PE size: {stream.Length} bytes -> '{fileName}'");
                 }
+
+                LogAssemblyDefinitionCrcDetailed();
 
                 startTime = DateTime.Now;
 
@@ -527,6 +519,71 @@ namespace nanoFramework.Tools.MetadataProcessor.MsBuildTask
                     }
                 }
             }
+        }
+
+        private void LogTablesDetailed()
+        {
+            nanoTablesContext ctx = _assemblyBuilder.TablesContext;
+
+            // Type definitions
+            List<TypeDefinition> typeDefs = ctx.TypeDefinitionTable.Items.ToList();
+            Log.LogMessage(MessageImportance.Low, $"[MDP]   Type definitions    : {typeDefs.Count}");
+            foreach (TypeDefinition t in typeDefs)
+            {
+                Log.LogMessage(MessageImportance.Low, $"[MDP]     {t.FullName}");
+            }
+
+            // Method definitions
+            List<MethodDefinition> methodDefs = ctx.MethodDefinitionTable.Items.ToList();
+            Log.LogMessage(MessageImportance.Low, $"[MDP]   Method definitions  : {methodDefs.Count}");
+            foreach (MethodDefinition m in methodDefs)
+            {
+                Log.LogMessage(MessageImportance.Low, $"[MDP]     {m.DeclaringType.FullName}::{m.Name}");
+            }
+
+            // Field definitions
+            List<FieldDefinition> fieldDefs = ctx.FieldsTable.Items.ToList();
+            Log.LogMessage(MessageImportance.Low, $"[MDP]   Field definitions   : {fieldDefs.Count}");
+            foreach (FieldDefinition f in fieldDefs)
+            {
+                Log.LogMessage(MessageImportance.Low, $"[MDP]     {f.DeclaringType.FullName}::{f.Name}");
+            }
+
+            // Assembly references
+            List<AssemblyNameReference> asmRefs = ctx.AssemblyReferenceTable.Items.ToList();
+            Log.LogMessage(MessageImportance.Low, $"[MDP]   Assembly references : {asmRefs.Count}");
+            foreach (AssemblyNameReference a in asmRefs)
+            {
+                Log.LogMessage(MessageImportance.Low, $"[MDP]     {a.FullName}");
+            }
+
+            // Type references
+            List<TypeReference> typeRefs = ctx.TypeReferencesTable.Items.ToList();
+            Log.LogMessage(MessageImportance.Low, $"[MDP]   Type references     : {typeRefs.Count}");
+            foreach (TypeReference t in typeRefs)
+            {
+                Log.LogMessage(MessageImportance.Low, $"[MDP]     {t.FullName}");
+            }
+
+            // Member references
+            List<MemberReference> memberRefs = ctx.MemberReferencesTable.Items.ToList();
+            Log.LogMessage(MessageImportance.Low, $"[MDP]   Member references   : {memberRefs.Count}");
+            foreach (MemberReference m in memberRefs)
+            {
+                Log.LogMessage(MessageImportance.Low, $"[MDP]     {m.DeclaringType.FullName}::{m.Name}");
+            }
+        }
+
+        private void LogAssemblyDefinitionCrcDetailed()
+        {
+            Log.LogMessage(MessageImportance.Low, $"[MDP] Assembly PE CRC inputs:");
+            Log.LogMessage(MessageImportance.Low, $"[MDP]   Assembly version          : {_assemblyBuilder.LastAssemblyVersion}");
+            Log.LogMessage(MessageImportance.Low, $"[MDP]   Native methods checksum   : 0x{_assemblyBuilder.LastNativeMethodsChecksum:X8}");
+            Log.LogMessage(MessageImportance.Low, $"[MDP]   Total PE size             : {_assemblyBuilder.LastTotalSize} bytes");
+            Log.LogMessage(MessageImportance.Low, $"[MDP]   Header region             : offset 0x0000, length {_assemblyBuilder.LastHeaderSize} bytes");
+            Log.LogMessage(MessageImportance.Low, $"[MDP]   Body region               : offset 0x{_assemblyBuilder.LastHeaderSize:X4}, length {_assemblyBuilder.LastBodySize} bytes");
+            Log.LogMessage(MessageImportance.Low, $"[MDP]   CRC32 body                : 0x{_assemblyBuilder.LastAssemblyCrc32:X8}");
+            Log.LogMessage(MessageImportance.Low, $"[MDP]   CRC32 header              : 0x{_assemblyBuilder.LastHeaderCrc32:X8}");
         }
 
         private void LogNativeCrcDetailed()

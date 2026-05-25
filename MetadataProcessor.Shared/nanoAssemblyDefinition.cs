@@ -76,6 +76,41 @@ namespace nanoFramework.Tools.MetadataProcessor
         }
 
         /// <summary>
+        /// Assembly CRC32 computed during the last final write pass.
+        /// </summary>
+        public uint LastAssemblyCrc32 { get; private set; }
+
+        /// <summary>
+        /// Header CRC32 computed during the last final write pass.
+        /// </summary>
+        public uint LastHeaderCrc32 { get; private set; }
+
+        /// <summary>
+        /// Total PE stream length (bytes) at the time of the last final write pass.
+        /// </summary>
+        public long LastTotalSize { get; private set; }
+
+        /// <summary>
+        /// Header region size (bytes) hashed for the header CRC32.
+        /// </summary>
+        public long LastHeaderSize { get; private set; }
+
+        /// <summary>
+        /// Body region offset (= header size) and length hashed for the assembly body CRC32.
+        /// </summary>
+        public long LastBodySize { get; private set; }
+
+        /// <summary>
+        /// Native methods checksum value embedded in the header at the time of the last final write pass.
+        /// </summary>
+        public uint LastNativeMethodsChecksum { get; private set; }
+
+        /// <summary>
+        /// Assembly version embedded in the header at the time of the last final write pass.
+        /// </summary>
+        public System.Version LastAssemblyVersion { get; private set; }
+
+        /// <summary>
         /// Writes header information into output stream (w/o CRC and table offsets/paddings).
         /// </summary>
         /// <param name="writer">Binary writer with correct endianness.</param>
@@ -151,6 +186,13 @@ namespace nanoFramework.Tools.MetadataProcessor
                 // order matters!
                 // need to compute Assembly CRC32 before header CRC32
 
+                // capture inputs for logging
+                LastTotalSize = writer.BaseStream.Length;
+                LastHeaderSize = _headerSize;
+                LastBodySize = writer.BaseStream.Length - _headerSize;
+                LastNativeMethodsChecksum = _context.NativeMethodsCrc.CurrentCrc;
+                LastAssemblyVersion = _context.AssemblyDefinition.Name.Version;
+
                 // set writer position at Assembly CRC32 position
                 writer.BaseStream.Seek(c_AssemblyCrc32Position, SeekOrigin.Begin);
 
@@ -159,6 +201,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                     _headerSize,
                     writer.BaseStream.Length - _headerSize);
                 writer.WriteUInt32(assemblyCrc32);
+                LastAssemblyCrc32 = assemblyCrc32;
 
                 // set writer position at Header CRC32 position
                 writer.BaseStream.Seek(c_HeaderCrc32Position, SeekOrigin.Begin);
@@ -168,6 +211,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                     0,
                     _headerSize);
                 writer.WriteUInt32(headerCrc32);
+                LastHeaderCrc32 = headerCrc32;
             }
         }
 
