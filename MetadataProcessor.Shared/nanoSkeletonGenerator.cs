@@ -588,7 +588,16 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
             fixedFieldName = string.Empty;
             fieldWarning = string.Empty;
 
-            if (Regex.IsMatch(field.Name, @"<\w+>k__BackingField"))
+            // Roslyn-generated delegate cache fields: <N>__MethodName
+            // Strip angle brackets and number to create a valid C++ identifier
+            if (Regex.IsMatch(field.Name, @"^<\d+>__\w+"))
+            {
+                // Transform <0>__WorkingThread to __WorkingThread
+                fixedFieldName = Regex.Replace(field.Name, @"^<\d+>", "");
+                fieldWarning = $"// renamed compiler-generated field '{field.Name}'";
+            }
+            // Auto-property backing fields: <PropertyName>k__BackingField
+            else if (Regex.IsMatch(field.Name, @"<\w+>k__BackingField"))
             {
                 fixedFieldName = $"{field.Name.Replace("<", "").Replace(">k__BackingField", "")}";
                 fieldWarning = $"// renamed backing field '{field.Name}'";
