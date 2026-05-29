@@ -10,18 +10,26 @@ $auth = "basic $([System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.G
 # init/reset these
 $prTitle = ""
 $newBranchName = "develop-nfbot/update-dependencies/" + [guid]::NewGuid().ToString()
-$packageTargetVersion = $env:Build_SourceBranch
-
-# check if this is running from a checked out tag
-if ($packageTargetVersion -notlike "refs/tags/*") {
-    throw "ERROR: Branch name is not a tag! Either provide the version or checkout a tag before calling."
-}
-
-# extract version from ref (refs/tags/v1.2.3)
-$packageTargetVersion = $packageTargetVersion -replace "refs/tags/", ""
-$packageTargetVersion = $packageTargetVersion -replace "^v"
 $packageName = "nanoframework.tools.metadataprocessor.msbuildtask"
 $repoBranch = "main"
+
+# resolve target version: prefer explicit TARGET_VERSION env var, fall back to the build tag
+if (![string]::IsNullOrEmpty($env:TARGET_VERSION)) {
+    $packageTargetVersion = $env:TARGET_VERSION
+    Write-Host "Using TARGET_VERSION from environment: $packageTargetVersion"
+}
+else {
+    $packageTargetVersion = $env:Build_SourceBranch
+
+    # check if this is running from a checked out tag
+    if ($packageTargetVersion -notlike "refs/tags/*") {
+        throw "ERROR: Branch name is not a tag and TARGET_VERSION is not set! Either set TARGET_VERSION or checkout a tag before calling."
+    }
+
+    # extract version from ref (refs/tags/v1.2.3)
+    $packageTargetVersion = $packageTargetVersion -replace "refs/tags/", ""
+    $packageTargetVersion = $packageTargetVersion -replace "^v"
+}
 
 if ($packageTargetVersion -match "preview") {
     # switch to develop branch for preview versions
@@ -104,34 +112,56 @@ if (-not $solutionFile) {
 
 Write-Host "Using solution file: $solutionFile"
 
-# directly update the PackageReference version in all project files
-# nuget update does NOT support PackageReference style - use regex replacement instead
-$packageId = "nanoFramework.Tools.MetadataProcessor.MsBuildTask"
-$updateCount = 0
+# update the PackageReference version directly in csproj files
+# the VS extension uses old-style MSBuild format (with MSBuild XML namespace) and PackageReference style
+# with Version as a child element — nuget update does not support this, so XML manipulation is required
+$updatedFiles = @()
+$csprojFiles = Get-ChildItem -Recurse -Filter "*.csproj"
 
-Get-ChildItem -Recurse -Filter "*.csproj" | ForEach-Object {
-    $filePath = $_.FullName
-    $content = Get-Content $filePath -Raw
+foreach ($csproj in $csprojFiles) {
+    [xml]$content = Get-Content $csproj.FullName -Raw -Encoding UTF8
 
-    if ($content -notmatch [regex]::Escape($packageId)) { return }
+    # build a namespace manager to handle the MSBuild default namespace
+    $ns = New-Object System.Xml.XmlNamespaceManager($content.NameTable)
+    $nsUri = $content.DocumentElement.NamespaceURI
 
-    # match: Include="<packageId>" Version="<old-version>" (attribute style)
-    $pattern = '(Include="' + [regex]::Escape($packageId) + '"\s+Version=")[^"]+(")'
-    $replacement = '$1' + $packageTargetVersion + '$2'
-    $newContent = $content -replace $pattern, $replacement
+    if (![string]::IsNullOrEmpty($nsUri)) {
+        $ns.AddNamespace("ms", $nsUri)
+        $packageRefs = $content.SelectNodes("//ms:PackageReference[@Include='nanoFramework.Tools.MetadataProcessor.MsBuildTask']", $ns)
+    }
+    else {
+        $packageRefs = $content.SelectNodes("//PackageReference[@Include='nanoFramework.Tools.MetadataProcessor.MsBuildTask']")
+    }
 
-    if ($newContent -ne $content) {
-        Set-Content -Path $filePath -Value $newContent -NoNewline
-        Write-Host "Updated version in $($_.Name)"
-        $updateCount++
+    if ($packageRefs.Count -gt 0) {
+        foreach ($ref in $packageRefs) {
+            # version can be an XML attribute or a child element — handle both
+            if ($ref.HasAttribute("Version")) {
+                $ref.SetAttribute("Version", $packageTargetVersion)
+            }
+            else {
+                # use LocalName to match regardless of namespace
+                $versionNode = $ref.ChildNodes | Where-Object { $_.LocalName -eq "Version" } | Select-Object -First 1
+                if ($versionNode) {
+                    $versionNode.InnerText = $packageTargetVersion
+                }
+            }
+        }
+
+        $content.Save($csproj.FullName)
+        Write-Host "Updated PackageReference in $($csproj.Name)"
+        $updatedFiles += $csproj.FullName
     }
 }
 
-if ($updateCount -eq 0) {
-    throw "ERROR: No .csproj files found with a PackageReference to '$packageId'."
+if ($updatedFiles.Count -eq 0) {
+    Write-Warning "No .csproj files found with a PackageReference to 'nanoFramework.Tools.MetadataProcessor.MsBuildTask'. Nothing was updated."
+}
+else {
+    Write-Host "Updated $($updatedFiles.Count) file(s)."
 }
 
-# restore packages and regenerate the lock files
+# restore packages and regenerate the lock file
 nuget restore $solutionFile -uselockfile
 
 if ($LASTEXITCODE -ne 0) {
