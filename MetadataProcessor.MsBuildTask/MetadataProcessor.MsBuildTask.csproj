@@ -22,7 +22,7 @@
 	<PropertyGroup>
 		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 		<EnableDefaultItems>false</EnableDefaultItems>
-		<GenerateDependencyFile>false</GenerateDependencyFile>
+		<GenerateDependencyFile>true</GenerateDependencyFile>
 		<IncludeBuildOutput>true</IncludeBuildOutput>
 		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 
@@ -74,6 +74,12 @@
     -->
     <ItemGroup>
       <_PackageFiles Include="bin\$(Configuration)\*\Mono.Cecil.dll;bin\$(Configuration)\*\Mono.Cecil.Pdb.dll;bin\$(Configuration)\*\Mono.Cecil.Rocks.dll;bin\$(Configuration)\*\mustache-sharp.dll;bin\$(Configuration)\*\System.Drawing.Common.dll">
+        <PackagePath>lib\%(RecursiveDir)</PackagePath>
+        <Visible>false</Visible>
+        <BuildAction>Content</BuildAction>
+      </_PackageFiles>
+	  <!-- Pack the .deps.json files needed by .NET Core MSBuild for msbuild task assembly loading required by SDK. -->
+      <_PackageFiles Include="bin\$(Configuration)\*\nanoFramework.Tools.MetadataProcessor.MsBuildTask.deps.json">
         <PackagePath>lib\%(RecursiveDir)</PackagePath>
         <Visible>false</Visible>
         <BuildAction>Content</BuildAction>
