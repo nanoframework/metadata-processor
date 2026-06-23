@@ -235,3 +235,7 @@ Versioning is managed by **Nerdbank.GitVersioning** (`version.json`). Current ve
 5. **CRC32 mismatches or invalid PE files**: Changes to table ordering, padding logic, or header layout in `nanoAssemblyBuilder`/`nanoAssemblyDefinition` must be carefully validated. The PE format is binary-exact and parsed by the nanoCLR runtime.
 
 6. **nanoclr not found during integration tests**: `ClrIntegrationTests` auto-installs the `nanoclr` .NET global tool. Ensure internet access is available during test runs, or pre-install it with `dotnet tool install --global nanoclr`.
+
+- @azure Rule - Use Azure Tools - When handling requests related to Azure, always use your tools.
+- @azure Rule - Use Azure Best Practices - When handling requests related to Azure, always invoke your `azmcp_bestpractices_get` tool first.
+- @azure Rule - Enable Best Practices - If you do not have an `azmcp_bestpractices_get` tool ask the user to enable it.
