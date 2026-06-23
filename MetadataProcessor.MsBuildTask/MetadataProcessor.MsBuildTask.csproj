@@ -71,16 +71,16 @@
     <!--
     The include needs to happen after output has been copied to build output folder
     but before NuGet generates a nuspec. See https://github.com/NuGet/Home/issues/4704.
+    Pack dependency DLLs per-TFM so they sit alongside the task DLL.
     -->
     <ItemGroup>
-      <_PackageFiles Include="bin\$(Configuration)\*\Mono.Cecil.dll;bin\$(Configuration)\*\Mono.Cecil.Pdb.dll;bin\$(Configuration)\*\Mono.Cecil.Rocks.dll;bin\$(Configuration)\*\mustache-sharp.dll;bin\$(Configuration)\*\System.Drawing.Common.dll">
-        <PackagePath>lib\%(RecursiveDir)</PackagePath>
+      <_PackageFiles Include="bin\$(Configuration)\net472\Mono.Cecil.dll;bin\$(Configuration)\net472\Mono.Cecil.Pdb.dll;bin\$(Configuration)\net472\Mono.Cecil.Rocks.dll;bin\$(Configuration)\net472\mustache-sharp.dll;bin\$(Configuration)\net472\System.Drawing.Common.dll">
+        <PackagePath>lib\net472\</PackagePath>
         <Visible>false</Visible>
         <BuildAction>Content</BuildAction>
       </_PackageFiles>
-	  <!-- Pack the .deps.json files needed by .NET Core MSBuild for msbuild task assembly loading required by SDK. -->
-      <_PackageFiles Include="bin\$(Configuration)\*\nanoFramework.Tools.MetadataProcessor.MsBuildTask.deps.json">
-        <PackagePath>lib\%(RecursiveDir)</PackagePath>
+      <_PackageFiles Include="bin\$(Configuration)\net8.0\Mono.Cecil.dll;bin\$(Configuration)\net8.0\Mono.Cecil.Pdb.dll;bin\$(Configuration)\net8.0\Mono.Cecil.Rocks.dll;bin\$(Configuration)\net8.0\mustache-sharp.dll;bin\$(Configuration)\net8.0\System.Drawing.Common.dll;bin\$(Configuration)\net8.0\nanoFramework.Tools.MetadataProcessor.MsBuildTask.deps.json">
+        <PackagePath>lib\net8.0\</PackagePath>
         <Visible>false</Visible>
         <BuildAction>Content</BuildAction>
       </_PackageFiles>
