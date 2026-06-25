@@ -16,7 +16,7 @@ namespace nanoFramework.Tools.MetadataProcessor
     {
         internal readonly bool _verbose;
 
-        internal static HashSet<string> IgnoringAttributes { get; } = new HashSet<string>(StringComparer.Ordinal)
+        private static readonly HashSet<string> s_defaultIgnoringAttributes = new HashSet<string>(StringComparer.Ordinal)
             {
                 // Assembly-level attributes
                 "System.Reflection.AssemblyFileVersionAttribute",
@@ -70,6 +70,8 @@ namespace nanoFramework.Tools.MetadataProcessor
                 "System.STAThreadAttribute",
             };
 
+        internal static HashSet<string> IgnoringAttributes { get; private set; } = new HashSet<string>(s_defaultIgnoringAttributes, StringComparer.Ordinal);
+
         public nanoTablesContext(
             AssemblyDefinition assemblyDefinition,
             List<string> explicitTypesOrder,
@@ -82,6 +84,9 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             ClassNamesToExclude = new List<string>();
             _verbose = verbose;
+
+            // reset per-context ignored attributes from the immutable defaults
+            IgnoringAttributes = new HashSet<string>(s_defaultIgnoringAttributes, StringComparer.Ordinal);
 
             // add default types to exclude
             SetDefaultTypesToExclude();
