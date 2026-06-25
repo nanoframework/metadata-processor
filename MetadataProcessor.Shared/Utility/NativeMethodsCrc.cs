@@ -22,18 +22,14 @@ namespace nanoFramework.Tools.MetadataProcessor
 
         private readonly byte[] _name;
 
-        private readonly List<string> _classNamesToExclude;
-
         private int _methodsWithNativeImplementation = 0;
         private uint _currentCrc = 0;
         private readonly List<string> _crcLog = new List<string>();
 
         public NativeMethodsCrc(
-            AssemblyDefinition assembly,
-            List<string> classNamesToExclude)
+            AssemblyDefinition assembly)
         {
             _name = Encoding.ASCII.GetBytes(assembly.Name.Name);
-            _classNamesToExclude = classNamesToExclude;
         }
 
         /// <summary>
@@ -240,8 +236,8 @@ namespace nanoFramework.Tools.MetadataProcessor
 
         private bool IsClassToExclude(TypeDefinition td)
         {
-            return (_classNamesToExclude.Contains(td.FullName) ||
-                    _classNamesToExclude.Contains(td.DeclaringType?.FullName));
+            return (nanoTablesContext.ClassNamesToExclude.Contains(td.FullName) ||
+                    nanoTablesContext.ClassNamesToExclude.Contains(td.DeclaringType?.FullName));
         }
 
         internal static string CleanupGenericName(string name)

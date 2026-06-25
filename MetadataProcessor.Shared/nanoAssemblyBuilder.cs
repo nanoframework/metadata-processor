@@ -76,7 +76,6 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// </param>
         public nanoAssemblyBuilder(
             AssemblyDefinition assemblyDefinition,
-            List<string> classNamesToExclude,
             bool verbose,
             bool isCoreLibrary = false,
             List<string> explicitTypesOrder = null,
@@ -86,7 +85,6 @@ namespace nanoFramework.Tools.MetadataProcessor
             _tablesContext = new nanoTablesContext(
                 assemblyDefinition,
                 explicitTypesOrder,
-                classNamesToExclude,
                 stringSorter,
                 applyAttributesCompression,
                 verbose,

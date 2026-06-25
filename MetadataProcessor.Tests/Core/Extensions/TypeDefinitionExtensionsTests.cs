@@ -110,8 +110,6 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Extensions
             nanoTablesContext nanoTablesContext = new nanoTablesContext(
                 assemblyDefinition,
                 null,
-                // adding this here, equivalent to the NFMDP_PE_ExcludeClassByName project property
-                new List<string>() { "TestNFClassLibrary.IAmATypeToExclude" },
                 null,
                 false,
                 false,
@@ -128,7 +126,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Extensions
             Assert.IsNotNull(testNFLibraryModule.Types.FirstOrDefault(i => i.FullName == "TestNFClassLibrary.IAmATypeToExclude"), "TestNFClassLibrary.IAmATypeToExclude type not found");
 
             // test if <TestNFClassLibrary.IAmATypeToExclude> type is to be excluded
-            // this is being excluded with the NFMDP_PE_ExcludeClassByName project property
+            // this is being excluded with the ExcludeType attribute
             Assert.IsTrue(testNFLibraryModule.Types.First(i => i.FullName == "TestNFClassLibrary.IAmATypeToExclude").IsToExclude(), "TestNFClassLibrary.IAmATypeToExclude type is not listed to be excluded, when it should");
 
             // test if <TestNFClassLibrary.IAmAlsoATypeToExclude> type is present
@@ -155,7 +153,6 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Extensions
             nanoTablesContext context = new nanoTablesContext(
                 mscorlibAssemblyDefinition,
                 null,
-                new List<string>(),
                 null,
                 false,
                 false,

@@ -34,7 +34,6 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
             ret = new nanoTablesContext(
                 assemblyDefinition,
                 null,
-                new List<string>(),
                 null,
                 false,
                 false,
@@ -50,7 +49,6 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
             return new nanoTablesContext(
                 assemblyDefinition,
                 null,
-                new List<string>(),
                 null,
                 false,
                 false,

@@ -28,11 +28,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <NFMDP_PE_ExcludeClassByName Include="TestNFClassLibrary.IAmATypeToExclude">
-      <InProject>false</InProject>
-    </NFMDP_PE_ExcludeClassByName>
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\..\mscorlib\nanoFramework.CoreLibrary\CoreLibrary.nfproj" />
   </ItemGroup>
   <Import Project="$(NanoFrameworkProjectSystemPath)NFProjectSystem.CSharp.targets" Condition="Exists('$(NanoFrameworkProjectSystemPath)NFProjectSystem.CSharp.targets')" />

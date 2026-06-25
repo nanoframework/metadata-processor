@@ -267,12 +267,6 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
                     "mscorlib.dll")
             };
 
-            // class names to exclude from processing
-            var classNamesToExclude = new List<string>
-            {
-                "THIS_NAME_DOES_NOT_EXIST_IN_THE_PROJECT"
-            };
-
             // Conpile StubsGenerationNFApp
             string stubsGenerationFileToParse = TestObjectHelper.StubsGenerationNFAppFullPath;
             string stubsGenerationFileToCompile = Path.ChangeExtension(stubsGenerationFileToParse, "pe");
@@ -286,7 +280,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
                 stubsGenerationFileToParse,
                 new ReaderParameters { AssemblyResolver = new LoadHintsAssemblyResolver(loadHints) });
 
-            nanoAssemblyBuilder assemblyBuilder = new nanoAssemblyBuilder(assemblyDefinition, classNamesToExclude, false);
+            nanoAssemblyBuilder assemblyBuilder = new nanoAssemblyBuilder(assemblyDefinition, false);
 
             using (FileStream stream = File.Open(
                        Path.ChangeExtension(stubsGenerationFileToCompile, "tmp"),
@@ -334,7 +328,6 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
 
             assemblyBuilder = new nanoAssemblyBuilder(
                 assemblyDefinition,
-                new List<string>(),
                 false);
 
             using (FileStream stream = File.Open(

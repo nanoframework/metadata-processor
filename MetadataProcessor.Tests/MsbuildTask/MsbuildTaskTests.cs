@@ -22,27 +22,19 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.MsbuildTask
                 ["mscorlib"] = Path.Combine(Directory.GetParent(TestObjectHelper.NFAppFullPath).FullName, "mscorlib.dll")
             };
 
-            // class names to exclude from processing
-            var classNamesToExclude = new List<string>
-            {
-                "THIS_NAME_DOES_NOT_EXIST_IN_THE_PROJECT"
-            };
-
             var fileToParse = TestObjectHelper.NFAppFullPath;
             var fileToCompiler = Path.ChangeExtension(fileToParse, "pe");
 
-            ProcessAssembly(loadHints, classNamesToExclude, fileToParse, fileToCompiler);
+            ProcessAssembly(loadHints, fileToParse, fileToCompiler);
         }
 
         private void ProcessAssembly(
             Dictionary<string, string> loadHints,
-            List<string> classNamesToExclude,
             string fileToParse,
             string fileToCompile)
         {
             ProcessAssembly(
                 loadHints,
-                classNamesToExclude,
                 fileToParse,
                 fileToCompile,
                 null,
@@ -55,7 +47,6 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.MsbuildTask
 
         private void ProcessAssembly(
             Dictionary<string, string> loadHints,
-            List<string> classNamesToExclude,
             string fileToParse,
             string fileToCompile,
             string GenerateSkeletonFile,
@@ -80,7 +71,6 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.MsbuildTask
             // compile
             var _assemblyBuilder = new nanoAssemblyBuilder(
                 assemblyDefinition,
-                classNamesToExclude,
                 true,
                 false);
 
