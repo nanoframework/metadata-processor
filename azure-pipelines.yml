@@ -166,6 +166,8 @@ jobs:
     displayName: Install nanoFramework MSBuild components
     inputs:
       GitHubToken: $(GitHubToken)
+      usePreview: true
+
 
   - template: azure-pipelines-templates/check-nf-interpreter-to-test.yml
 
