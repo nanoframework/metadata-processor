@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Mono.Cecil;
 
@@ -132,7 +131,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
         {
             var assemblyDefinition = TestObjectHelper.GetTestNFAppAssemblyDefinition();
 
-            var iut = new NativeMethodsCrc(assemblyDefinition, new List<string>());
+            var iut = new NativeMethodsCrc(assemblyDefinition);
 
             // test
             Assert.AreEqual((uint)0, iut.CurrentCrc);
@@ -146,7 +145,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
             var nonExternMethodDefinition = TestObjectHelper.GetTestNFAppOneClassOverAllDummyMethodDefinition(typeDefinition);
             var externMethodDefinition = TestObjectHelper.GetTestNFAppOneClassOverAllDummyExternMethodDefinition(typeDefinition);
 
-            var iut = new NativeMethodsCrc(assemblyDefinition, new List<string>());
+            var iut = new NativeMethodsCrc(assemblyDefinition);
 
             // test
             iut.UpdateCrc(nonExternMethodDefinition);
@@ -177,7 +176,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
         {
             var context = TestObjectHelper.GetTestNFAppNanoTablesContext();
 
-            var iut = new NativeMethodsCrc(context.AssemblyDefinition, new List<string>());
+            var iut = new NativeMethodsCrc(context.AssemblyDefinition);
 
             // test
             iut.UpdateCrc(context.TypeDefinitionTable);

@@ -16,7 +16,7 @@ namespace nanoFramework.Tools.MetadataProcessor
     {
         internal readonly bool _verbose;
 
-        internal static HashSet<string> IgnoringAttributes { get; } = new HashSet<string>(StringComparer.Ordinal)
+        private static readonly HashSet<string> s_defaultIgnoringAttributes = new HashSet<string>(StringComparer.Ordinal)
             {
                 // Assembly-level attributes
                 "System.Reflection.AssemblyFileVersionAttribute",
@@ -70,10 +70,11 @@ namespace nanoFramework.Tools.MetadataProcessor
                 "System.STAThreadAttribute",
             };
 
+        internal static HashSet<string> IgnoringAttributes { get; private set; } = new HashSet<string>(s_defaultIgnoringAttributes, StringComparer.Ordinal);
+
         public nanoTablesContext(
             AssemblyDefinition assemblyDefinition,
             List<string> explicitTypesOrder,
-            List<string> classNamesToExclude,
             ICustomStringSorter stringSorter,
             bool applyAttributesCompression,
             bool verbose,
@@ -81,33 +82,14 @@ namespace nanoFramework.Tools.MetadataProcessor
         {
             AssemblyDefinition = assemblyDefinition;
 
-            ClassNamesToExclude = classNamesToExclude;
+            ClassNamesToExclude = new List<string>();
             _verbose = verbose;
+
+            // reset per-context ignored attributes from the immutable defaults
+            IgnoringAttributes = new HashSet<string>(s_defaultIgnoringAttributes, StringComparer.Ordinal);
 
             // add default types to exclude
             SetDefaultTypesToExclude();
-
-            // check CustomAttributes against list of classes to exclude
-            foreach (CustomAttribute item in assemblyDefinition.CustomAttributes)
-            {
-                // add it to ignore list, if it's not already there
-                if ((ClassNamesToExclude.Contains(item.AttributeType.FullName) ||
-                     ClassNamesToExclude.Contains(item.AttributeType.DeclaringType?.FullName)) &&
-                    !(IgnoringAttributes.Contains(item.AttributeType.FullName) ||
-                      IgnoringAttributes.Contains(item.AttributeType.DeclaringType?.FullName)))
-                {
-                    IgnoringAttributes.Add(item.AttributeType.FullName);
-                }
-            }
-
-            // check ignoring attributes against ClassNamesToExclude 
-            foreach (string className in ClassNamesToExclude)
-            {
-                if (!IgnoringAttributes.Contains(className))
-                {
-                    IgnoringAttributes.Add(className);
-                }
-            }
 
             var mainModule = AssemblyDefinition.MainModule;
 
@@ -120,6 +102,10 @@ namespace nanoFramework.Tools.MetadataProcessor
             // get types to exclude from the types attributes
             ProcessTypesToExclude(types);
 
+            SyncIgnoredAttributesFromAssemblyAttributes(assemblyDefinition.CustomAttributes);
+            SyncIgnoredAttributesFromClassNamesToExclude();
+            LogClassNamesToExcludeIfVerbose();
+
             var fields = types
                 .SelectMany(item => GetOrderedFields(item.Fields.Where(field => !field.HasConstant)))
                 .ToList();
@@ -129,8 +115,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             MethodDefinitionTable = new nanoMethodDefinitionTable(methods, this);
 
             NativeMethodsCrc = new NativeMethodsCrc(
-                assemblyDefinition,
-                ClassNamesToExclude);
+                assemblyDefinition);
 
             NativeMethodsCrc.UpdateCrc(TypeDefinitionTable);
 
@@ -526,6 +511,53 @@ namespace nanoFramework.Tools.MetadataProcessor
 
         public static List<string> ClassNamesToExclude { get; private set; }
         public bool MinimizeComplete { get; internal set; } = false;
+
+        private static void SyncIgnoredAttributesFromAssemblyAttributes(IEnumerable<CustomAttribute> customAttributes)
+        {
+            foreach (CustomAttribute item in customAttributes)
+            {
+                // add it to ignore list, if it's not already there
+                if ((ClassNamesToExclude.Contains(item.AttributeType.FullName) ||
+                     ClassNamesToExclude.Contains(item.AttributeType.DeclaringType?.FullName)) &&
+                    !(IgnoringAttributes.Contains(item.AttributeType.FullName) ||
+                      IgnoringAttributes.Contains(item.AttributeType.DeclaringType?.FullName)))
+                {
+                    IgnoringAttributes.Add(item.AttributeType.FullName);
+                }
+            }
+        }
+
+        private static void SyncIgnoredAttributesFromClassNamesToExclude()
+        {
+            foreach (string className in ClassNamesToExclude)
+            {
+                if (!IgnoringAttributes.Contains(className))
+                {
+                    IgnoringAttributes.Add(className);
+                }
+            }
+        }
+
+        private void LogClassNamesToExcludeIfVerbose()
+        {
+            if (!_verbose)
+            {
+                return;
+            }
+
+            var excludedTypes = new HashSet<string>(StringComparer.Ordinal);
+
+            foreach (string className in ClassNamesToExclude)
+            {
+                if (string.IsNullOrWhiteSpace(className) ||
+                    !excludedTypes.Add(className))
+                {
+                    continue;
+                }
+
+                Console.WriteLine($"Adding '{className}' to collection of classes to exclude");
+            }
+        }
 
         private IEnumerable<Tuple<CustomAttribute, ICustomAttributeProvider>> GetAttributes(
             IEnumerable<ICustomAttributeProvider> types,

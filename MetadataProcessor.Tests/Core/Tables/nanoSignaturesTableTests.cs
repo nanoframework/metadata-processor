@@ -30,7 +30,6 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
             nanoTablesContext context = new nanoTablesContext(
                 mscorlibAssemblyDefinition,
                 null,
-                new List<string>(),
                 null,
                 false,
                 false,

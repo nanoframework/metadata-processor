@@ -34,9 +34,6 @@ namespace nanoFramework.Tools.MetadataProcessor.MsBuildTask
 
         public string LoadStrings { get; set; }
 
-        [Obsolete("Use ExcludeTypeAttribute instead of passing this parameter. This will be removed in a future version of MDP.")]
-        public ITaskItem[] ExcludeClassByName { get; set; }
-
         public ITaskItem[] ImportResources { get; set; }
 
         public string Parse { get; set; }
@@ -108,7 +105,6 @@ namespace nanoFramework.Tools.MetadataProcessor.MsBuildTask
         private nanoAssemblyBuilder _assemblyBuilder;
         private readonly IDictionary<string, string> _loadHints =
             new Dictionary<string, string>(StringComparer.Ordinal);
-        private readonly List<string> _classNamesToExclude = new List<string>();
         private string _nativeChecksum = "";
 
         #endregion
@@ -151,23 +147,6 @@ namespace nanoFramework.Tools.MetadataProcessor.MsBuildTask
                         _loadHints[assemblyName] = assemblyPath;
 
                         if (Verbose) Log.LogCommandLine(MessageImportance.Normal, $"Adding load hint: {assemblyName} @ '{assemblyPath}'");
-                    }
-                }
-
-                // class names to exclude from processing
-                if (ExcludeClassByName != null &&
-                    ExcludeClassByName.Any())
-                {
-                    if (Verbose) Log.LogCommandLine(MessageImportance.Normal, "Processing class exclusion list.");
-
-                    foreach (ITaskItem className in ExcludeClassByName)
-                    {
-                        _classNamesToExclude.Add(className.ToString());
-
-                        if (Verbose)
-                        {
-                            Log.LogCommandLine(MessageImportance.Normal, $"Adding '{className.ToString()}' to collection of classes to exclude");
-                        }
                     }
                 }
 
@@ -344,7 +323,6 @@ namespace nanoFramework.Tools.MetadataProcessor.MsBuildTask
 
                 _assemblyBuilder = new nanoAssemblyBuilder(
                     _assemblyDefinition,
-                    _classNamesToExclude,
                     Verbose,
                     IsCoreLibrary);
 
@@ -633,12 +611,6 @@ namespace nanoFramework.Tools.MetadataProcessor.MsBuildTask
             {
                 Log.LogMessage(MessageImportance.Low, $"[MDP]   - {typeName}");
             }
-        }
-
-        private void AddClassToExclude(
-            string className)
-        {
-            _classNamesToExclude.Add(className);
         }
 
         private void ExecuteGenerateSkeleton(

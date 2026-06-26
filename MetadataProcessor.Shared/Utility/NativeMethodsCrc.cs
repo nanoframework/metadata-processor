@@ -3,6 +3,7 @@
 
 // Original work from Oleg Rakhmatulin.
 
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -22,18 +23,22 @@ namespace nanoFramework.Tools.MetadataProcessor
 
         private readonly byte[] _name;
 
-        private readonly List<string> _classNamesToExclude;
+        private readonly HashSet<string> _classNamesToExclude;
 
         private int _methodsWithNativeImplementation = 0;
         private uint _currentCrc = 0;
         private readonly List<string> _crcLog = new List<string>();
 
         public NativeMethodsCrc(
-            AssemblyDefinition assembly,
-            List<string> classNamesToExclude)
+            AssemblyDefinition assembly)
         {
             _name = Encoding.ASCII.GetBytes(assembly.Name.Name);
-            _classNamesToExclude = classNamesToExclude;
+
+            // Snapshot the current exclusion list so this instance is isolated
+            // from later nanoTablesContext instances that may replace the static.
+            _classNamesToExclude = nanoTablesContext.ClassNamesToExclude != null
+                ? new HashSet<string>(nanoTablesContext.ClassNamesToExclude, StringComparer.Ordinal)
+                : new HashSet<string>(StringComparer.Ordinal);
         }
 
         /// <summary>

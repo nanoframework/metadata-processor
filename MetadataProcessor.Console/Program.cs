@@ -22,8 +22,6 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
             private AssemblyDefinition _assemblyDefinition;
             private nanoAssemblyBuilder _assemblyBuilder;
 
-            private List<string> _classNamesToExclude = new List<string>();
-
             internal string PeFileName;
 
             internal bool Verbose { get; set; }
@@ -57,7 +55,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
                 {
                     if (Verbose) System.Console.WriteLine("Compiling assembly...");
 
-                    _assemblyBuilder = new nanoAssemblyBuilder(_assemblyDefinition, _classNamesToExclude, VerboseMinimize, isCoreLibrary);
+                    _assemblyBuilder = new nanoAssemblyBuilder(_assemblyDefinition, VerboseMinimize, isCoreLibrary);
 
                     using (var stream = File.Open(Path.ChangeExtension(fileName, "tmp"), FileMode.Create, FileAccess.ReadWrite))
                     using (var writer = new BinaryWriter(stream))
@@ -120,12 +118,6 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
                 string assemblyFileName)
             {
                 _loadHints[assemblyName] = assemblyFileName;
-            }
-
-            public void AddClassToExclude(
-                string className)
-            {
-                _classNamesToExclude.Add(className);
             }
 
             public void GenerateSkeleton(
@@ -208,7 +200,6 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
                     System.Console.WriteLine("-parse <path-to-assembly-file>                        Analyses .NET assembly.");
                     System.Console.WriteLine("-compile <path-to-PE-file> <isCoreLibrary>            Compiles an assembly into nanoCLR format and (true/false) if this it's a core library.");
                     System.Console.WriteLine("-loadHints <assembly-name> <path-to-assembly-file>    Loads one (or more) assembly file(s) as a dependency(ies).");
-                    System.Console.WriteLine("-excludeClassByName <class-name>                      Removes the class from an assembly.");
                     System.Console.WriteLine("-generateskeleton                                     Generate skeleton files with stubs to add native code for an assembly.");
                     System.Console.WriteLine("-generateDependency                                   Generates an XML file with the relationship between assemblies.");
                     System.Console.WriteLine("-verbose                                              Outputs each command before executing it.");
@@ -234,14 +225,6 @@ namespace nanoFramework.Tools.MetadataProcessor.Console
                     md.Compile(md.PeFileName, isCoreLibrary);
 
                     i += 2;
-                }
-                else if (arg == "-excludeclassbyname" && i + 1 < args.Length)
-                {
-                    System.Console.WriteLine("*********************************************** WARNING *************************************************");
-                    System.Console.WriteLine("Use ExcludeTypeAttribute instead of passing this option. This will be removed in a future version of MDP.");
-                    System.Console.WriteLine("*********************************************************************************************************");
-
-                    md.AddClassToExclude(args[++i]);
                 }
                 else if (arg == "-verbose")
                 {

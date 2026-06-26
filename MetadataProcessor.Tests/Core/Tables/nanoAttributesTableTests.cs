@@ -184,7 +184,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
         public void TestCodeAnalysisAttributes()
         {
             var assemblyDefinition = TestObjectHelper.GetTestNFAppAssemblyDefinitionWithLoadHints();
-            var assemblyBuilder = new nanoAssemblyBuilder(assemblyDefinition, new List<string>(), false);
+            var assemblyBuilder = new nanoAssemblyBuilder(assemblyDefinition, false);
 
             using (var stream = File.Open(Path.GetTempFileName(), FileMode.Create, FileAccess.ReadWrite))
             using (var writer = new BinaryWriter(stream))
