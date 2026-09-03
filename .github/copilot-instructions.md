@@ -142,6 +142,15 @@ Several code sections must remain in sync with external repositories. These are 
 
 When modifying code near these tags, **do not change the semantics** without coordinating with the corresponding external code.
 
+### Documentation policy
+
+Source comments stay minimal — one line flagging a non-obvious invariant, with
+a `see <Dir>/CLAUDE.md "Section Title"` pointer where deeper reasoning exists.
+Deductions, empirical findings, and design rationale belong in a `CLAUDE.md`
+next to the source it documents, not as comment blocks in `.cs` files. See
+`MetadataProcessor.Shared/Pdbx/CLAUDE.md` for an example (PDBX `TypeSpec`
+generic-argument representation).
+
 ---
 
 ## Architecture: How the Metadata Processor Works
