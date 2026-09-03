@@ -11,10 +11,9 @@
 //
 // Fixture: TestNFApp/GenericParameterArgumentTypeSpecTests.cs, GenParamContainer<T>.
 
+using System;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Mono.Cecil;
-using nanoFramework.Tools.MetadataProcessor.Core.Extensions;
 
 namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
 {
@@ -45,25 +44,22 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
             return assemblyBuilder.TablesContext;
         }
 
-        private static TypeDefinition FindContainerType(nanoTablesContext context)
+        // Matches by structure (GenericTypeDefName + argument shape), not by re-deriving a Cecil
+        // TypeReference (e.g. a field's FieldType) and asking nanoTypeSpecificationsTable whether it's a
+        // registered key: that table populates itself once, at nanoTablesContext construction time, using
+        // TypeSpecification equality based on a signature ID computed at that moment (see
+        // TypeReferenceEqualityComparer). A TypeReference read fresh off the assembly after
+        // Write/Minimize/Write is not guaranteed to hash/compare equal to what was cached then, so
+        // re-querying the table from a test is timing-fragile. The already-built Pdbx model has no such
+        // dependency -- this is also how a real consumer (CorDebugTypeParameter) finds its data, from the
+        // materialized model, never by re-deriving a Cecil reference.
+        private static TypeSpec FindTypeSpec(Pdbx pdbx, Func<TypeSpec, bool> predicate, string description)
         {
-            return context.AssemblyDefinition.MainModule.Types.First(t => t.Name == "GenParamContainer`1");
-        }
+            int matchCount = pdbx.Assembly.TypeSpecs.Count(predicate);
 
-        private static TypeSpec FindTypeSpecFor(nanoTablesContext context, Pdbx pdbx, TypeReference genericInstance)
-        {
-            Assert.IsTrue(
-                context.TypeSpecificationsTable.TryGetTypeReferenceId(genericInstance, out ushort typeSpecId),
-                "genericInstance is not registered in the TypeSpecifications table.");
+            Assert.AreEqual(1, matchCount, $"Expected exactly one TypeSpec matching {description}, found {matchCount}.");
 
-            string expectedNanoToken =
-                (NanoClrTable.TBL_TypeSpec.ToNanoTokenType() | typeSpecId).ToString("X8");
-
-            TypeSpec typeSpec = pdbx.Assembly.TypeSpecs.FirstOrDefault(ts => ts.Token?.NanoCLR == expectedNanoToken);
-
-            Assert.IsNotNull(typeSpec, "No TypeSpec entry found for the expected NanoCLR token.");
-
-            return typeSpec;
+            return pdbx.Assembly.TypeSpecs.First(predicate);
         }
 
         // Type-owned case (VAR): GenParamContainer<T>.Slot is typed GenParamPair<T,int> -- T is the
@@ -74,28 +70,25 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
             nanoTablesContext context = BuildTestNFAppPdbxContext();
             var pdbx = new Pdbx(context);
 
-            TypeDefinition containerType = FindContainerType(context);
-            FieldDefinition slotField = containerType.Fields.First(f => f.Name == "Slot");
-
-            TypeSpec typeSpec = FindTypeSpecFor(context, pdbx, slotField.FieldType);
-
-            Assert.IsTrue(typeSpec.IsGenericInstance);
-            Assert.IsNotNull(typeSpec.GenericArguments);
-            Assert.AreEqual(2, typeSpec.GenericArguments.Count);
+            TypeSpec typeSpec = FindTypeSpec(
+                pdbx,
+                ts => ts.IsGenericInstance
+                    && ts.GenericTypeDefName != null && ts.GenericTypeDefName.EndsWith("GenParamPair`2")
+                    && ts.GenericArguments?.Count == 2
+                    && ts.GenericArguments[0].IsGenericParameter && !ts.GenericArguments[0].GenericParamIsMethodOwned
+                    && ts.GenericArguments[1].IsPrimitive,
+                "GenParamPair<T,int> (Slot field type)");
 
             TypeSpecArg firstArg = typeSpec.GenericArguments[0];
 
-            Assert.IsTrue(firstArg.IsGenericParameter, "First argument (T) should be recorded as a generic parameter.");
             Assert.IsFalse(firstArg.IsPrimitive);
             Assert.IsNull(firstArg.TypeToken);
             Assert.IsNull(firstArg.ClassName);
-            Assert.IsFalse(firstArg.GenericParamIsMethodOwned, "T is declared by the type, not a method.");
             Assert.AreEqual(0, firstArg.GenericParamPosition);
             Assert.IsNotNull(firstArg.GenericParamToken, "T is declared locally, so its TBL_GenericParam token should resolve.");
 
             TypeSpecArg secondArg = typeSpec.GenericArguments[1];
 
-            Assert.IsTrue(secondArg.IsPrimitive, "Second argument (int) should resolve as a primitive.");
             Assert.AreEqual(NanoCLRDataType.DATATYPE_I4.ToString(), secondArg.PrimitiveType);
             Assert.IsFalse(secondArg.IsGenericParameter);
         }
@@ -108,26 +101,22 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
             nanoTablesContext context = BuildTestNFAppPdbxContext();
             var pdbx = new Pdbx(context);
 
-            TypeDefinition containerType = FindContainerType(context);
-            MethodDefinition wrapMethod = containerType.Methods.First(m => m.Name == "Wrap");
-
-            TypeSpec typeSpec = FindTypeSpecFor(context, pdbx, wrapMethod.ReturnType);
-
-            Assert.IsTrue(typeSpec.IsGenericInstance);
-            Assert.IsNotNull(typeSpec.GenericArguments);
-            Assert.AreEqual(2, typeSpec.GenericArguments.Count);
+            TypeSpec typeSpec = FindTypeSpec(
+                pdbx,
+                ts => ts.IsGenericInstance
+                    && ts.GenericTypeDefName != null && ts.GenericTypeDefName.EndsWith("GenParamPair`2")
+                    && ts.GenericArguments?.Count == 2
+                    && ts.GenericArguments[0].IsGenericParameter && ts.GenericArguments[0].GenericParamIsMethodOwned
+                    && ts.GenericArguments[1].IsGenericParameter && !ts.GenericArguments[1].GenericParamIsMethodOwned,
+                "GenParamPair<U,T> (Wrap<U> return type)");
 
             TypeSpecArg firstArg = typeSpec.GenericArguments[0];
 
-            Assert.IsTrue(firstArg.IsGenericParameter, "First argument (U) should be recorded as a generic parameter.");
-            Assert.IsTrue(firstArg.GenericParamIsMethodOwned, "U is declared by the Wrap<U> method.");
             Assert.AreEqual(0, firstArg.GenericParamPosition);
             Assert.IsNotNull(firstArg.GenericParamToken);
 
             TypeSpecArg secondArg = typeSpec.GenericArguments[1];
 
-            Assert.IsTrue(secondArg.IsGenericParameter, "Second argument (T) should be recorded as a generic parameter.");
-            Assert.IsFalse(secondArg.GenericParamIsMethodOwned, "T is declared by the enclosing type, not Wrap<U>.");
             Assert.AreEqual(0, secondArg.GenericParamPosition);
             Assert.IsNotNull(secondArg.GenericParamToken);
 
