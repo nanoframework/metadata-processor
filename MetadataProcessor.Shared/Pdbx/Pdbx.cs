@@ -86,11 +86,12 @@ namespace nanoFramework.Tools.MetadataProcessor
 
         public List<Member> Members { get; set; }
 
-        /// <summary>
-        /// The open generic TypeDef this TypeSpec closes over (for example <c>Box`1</c> for
-        /// <c>Box&lt;int&gt;</c>). Only set when <see cref="IsGenericInstance"/> is <see langword="true"/>.
-        /// </summary>
+        // NanoCLR TypeDef token of the open generic (e.g. Box`1), local assembly only.
+        // See Pdbx/CLAUDE.md "Why classes get a name fallback".
         public Token GenericTypeDef { get; set; }
+
+        // Cross-assembly fallback for GenericTypeDef: Cecil's unmodified FullName.
+        public string GenericTypeDefName { get; set; }
 
         /// <summary>
         /// The type arguments that close <see cref="GenericTypeDef"/>, in declaration order. Only set when
@@ -99,40 +100,37 @@ namespace nanoFramework.Tools.MetadataProcessor
         public List<TypeSpecArg> GenericArguments { get; set; }
     }
 
-    /// <summary>
-    /// One type argument of a closed generic instance (see <see cref="TypeSpec.GenericArguments"/>).
-    /// Every reference here is a NanoCLR token, never a CLR one -- CLR tokens for TypeSpec entries are not
-    /// reliably available (a generic instance used only as a field type or a method return type has no
-    /// backing PE metadata row, so Mono.Cecil reports RID 0 for it), while the NanoCLR token is always the
-    /// one this table itself assigns and is what the wire protocol (Debugging_Resolve_Type) already resolves.
-    /// </summary>
+    // One type argument of a closed generic instance (TypeSpec.GenericArguments).
+    // See Pdbx/CLAUDE.md "Why arguments are addressed by NanoCLR token, not CLR token".
     public partial class TypeSpecArg
     {
         public bool IsPrimitive { get; set; }
 
-        /// <summary>
-        /// Set only when <see cref="IsPrimitive"/> is <see langword="true"/>. The name of a
-        /// <c>NanoCLRDataType</c> member (for example <c>DATATYPE_I4</c>).
-        /// </summary>
+        // Set when IsPrimitive: a NanoCLRDataType member name (e.g. "DATATYPE_I4").
         public string PrimitiveType { get; set; }
 
-        /// <summary>
-        /// Set only when <see cref="IsPrimitive"/> is <see langword="false"/>. The NanoCLR TypeDef token of
-        /// a class declared in the same assembly as this TypeSpec, or the NanoCLR TypeSpec token of a nested
-        /// generic instance (also always local to this assembly). <see langword="null"/> when the argument
-        /// is an ordinary class declared in a different assembly -- there is no TypeRef entry in this model
-        /// to address it by token, so <see cref="ClassName"/> is the only way to resolve it in that case.
-        /// </summary>
+        // Local-assembly NanoCLR token (TypeDef or nested TypeSpec). Null for a foreign class --
+        // see ClassName -- or for a generic-parameter argument -- see IsGenericParameter.
         public Token TypeToken { get; set; }
 
-        /// <summary>
-        /// Set only for ordinary (non-generic-instance) class arguments: Cecil's own
-        /// <c>TypeReference.FullName</c>, exactly as recorded in <see cref="Class.Name"/> for that class --
-        /// never passed through the FixTypeNames helper. Used to resolve the class by name (across every
-        /// loaded assembly) when <see cref="TypeToken"/> could not be resolved because the class is declared
-        /// in a different assembly than this TypeSpec.
-        /// </summary>
+        // Cross-assembly fallback for TypeToken: Cecil's unmodified FullName.
         public string ClassName { get; set; }
+
+        // True for a bare VAR/MVAR argument (e.g. T in Pair<T,int> inside the generic type that
+        // declares T) rather than a closed type. TypeToken/ClassName are not used in this case.
+        // See Pdbx/CLAUDE.md "Bare generic parameters (VAR/MVAR) as arguments".
+        public bool IsGenericParameter { get; set; }
+
+        // Set when IsGenericParameter: the NanoCLR TBL_GenericParam token of the parameter's own
+        // declaration.
+        public Token GenericParamToken { get; set; }
+
+        // Set when IsGenericParameter: true for a method type parameter (MVAR), false for a type
+        // parameter (VAR).
+        public bool GenericParamIsMethodOwned { get; set; }
+
+        // Set when IsGenericParameter: zero-based position on its owner.
+        public int GenericParamPosition { get; set; }
     }
 
     public partial class Member
