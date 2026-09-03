@@ -21,6 +21,30 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
     [TestClass]
     public class nanoTypeSpecArgGenericParameterTests
     {
+        // Pdbx construction (via the Method constructor, PdbxFileHelpers.cs) reads
+        // nanoTypeDefinitionTable's byte-code-offset table, which is only populated as a side effect of
+        // nanoAssemblyBuilder.Write() running after Minimize() -- see nanoPdbxFileWriter's only other
+        // caller, nanoAssemblyBuilder.Write(string), which always runs Write() then Minimize() then
+        // Write() again before ever constructing a Pdbx. A bare TestObjectHelper.GetTestNFAppNanoTablesContext()
+        // context (no builder pass run against it) throws KeyNotFoundException in GetByteCodeOffsets.
+        private static nanoTablesContext BuildTestNFAppPdbxContext()
+        {
+            var assemblyDefinition = TestObjectHelper.GetTestNFAppAssemblyDefinitionWithLoadHints();
+            var assemblyBuilder = new nanoAssemblyBuilder(assemblyDefinition, false);
+
+            TestObjectHelper.DoWithNanoBinaryWriter(
+                bw => nanoBinaryWriter.CreateLittleEndianBinaryWriter(bw),
+                (ms, bw, writer) => assemblyBuilder.Write(writer));
+
+            assemblyBuilder.Minimize();
+
+            TestObjectHelper.DoWithNanoBinaryWriter(
+                bw => nanoBinaryWriter.CreateLittleEndianBinaryWriter(bw),
+                (ms, bw, writer) => assemblyBuilder.Write(writer));
+
+            return assemblyBuilder.TablesContext;
+        }
+
         private static TypeDefinition FindContainerType(nanoTablesContext context)
         {
             return context.AssemblyDefinition.MainModule.Types.First(t => t.Name == "GenParamContainer`1");
@@ -47,7 +71,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
         [TestMethod]
         public void BuildTypeSpecArg_TypeOwnedGenericParameterArgument_IsRecordedExplicitly()
         {
-            nanoTablesContext context = TestObjectHelper.GetTestNFAppNanoTablesContext();
+            nanoTablesContext context = BuildTestNFAppPdbxContext();
             var pdbx = new Pdbx(context);
 
             TypeDefinition containerType = FindContainerType(context);
@@ -81,7 +105,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
         [TestMethod]
         public void BuildTypeSpecArg_MethodOwnedGenericParameterArgument_IsRecordedExplicitly()
         {
-            nanoTablesContext context = TestObjectHelper.GetTestNFAppNanoTablesContext();
+            nanoTablesContext context = BuildTestNFAppPdbxContext();
             var pdbx = new Pdbx(context);
 
             TypeDefinition containerType = FindContainerType(context);
