@@ -93,10 +93,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         // Cross-assembly fallback for GenericTypeDef: Cecil's unmodified FullName.
         public string GenericTypeDefName { get; set; }
 
-        /// <summary>
-        /// The type arguments that close <see cref="GenericTypeDef"/>, in declaration order. Only set when
-        /// <see cref="IsGenericInstance"/> is <see langword="true"/>.
-        /// </summary>
+        // Type arguments that close GenericTypeDef, in declaration order.
         public List<TypeSpecArg> GenericArguments { get; set; }
     }
 
