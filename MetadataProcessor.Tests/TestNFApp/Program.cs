@@ -108,6 +108,10 @@ namespace TestNFApp
             Console.WriteLine("NestedGenericEnumeratorTests");
             _ = new NestedGenericEnumeratorTests();
 
+            // generic-instance TypeSpec whose own argument is a bare generic parameter (VAR/MVAR)
+            Console.WriteLine("GenericParameterArgumentTypeSpec tests");
+            _ = new GenericParameterArgumentTypeSpecTests();
+
             // 
             Console.WriteLine("Exiting TestNFApp");
         }

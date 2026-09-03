@@ -219,6 +219,19 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             if (item.IsGenericInstance)
             {
+                var genericInstance = (GenericInstanceType)item;
+
+                // ElementType is always the open generic TypeDef, never a TypeSpecification.
+                GenericTypeDef = ResolveLocalClassToken(context, genericInstance.ElementType);
+                GenericTypeDefName = genericInstance.ElementType.FullName;
+
+                GenericArguments = new List<TypeSpecArg>();
+
+                foreach (var argument in genericInstance.GenericArguments)
+                {
+                    GenericArguments.Add(BuildTypeSpecArg(context, argument));
+                }
+
                 foreach (var mr in context.MethodReferencesTable.Items)
                 {
                     if (context.TypeSpecificationsTable.TryGetTypeReferenceId(mr.DeclaringType, out ushort referenceId) &&
@@ -243,6 +256,100 @@ namespace nanoFramework.Tools.MetadataProcessor
                     }
                 }
             }
+        }
+
+        // Builds one generic type argument: primitive, bare generic parameter, or class/nested-TypeSpec
+        // token. See Pdbx/CLAUDE.md "Bare generic parameters (VAR/MVAR) as arguments".
+        private static TypeSpecArg BuildTypeSpecArg(nanoTablesContext context, TypeReference argumentType)
+        {
+            var arg = new TypeSpecArg();
+
+            if (nanoSignaturesTable.PrimitiveTypes.TryGetValue(argumentType.FullName, out NanoCLRDataType dataType))
+            {
+                arg.IsPrimitive = true;
+                arg.PrimitiveType = dataType.ToString();
+
+                return arg;
+            }
+
+            if (argumentType.IsGenericParameter)
+            {
+                // Not a TypeSpecification (GenericParameter is a TypeReference sibling, not a subtype), so
+                // this must be checked before the TypeSpecification branch below.
+                var genericParameter = (GenericParameter)argumentType;
+
+                arg.IsGenericParameter = true;
+                arg.GenericParamIsMethodOwned = genericParameter.Owner is MethodDefinition;
+                arg.GenericParamPosition = genericParameter.Position;
+
+                if (context.GenericParamsTable.TryGetParameterId(genericParameter, out ushort genericParamId))
+                {
+                    arg.GenericParamToken = new Token(
+                        genericParameter.MetadataToken,
+                        NanoClrTable.TBL_GenericParam.ToNanoTokenType() | genericParamId);
+                }
+
+                return arg;
+            }
+
+            arg.IsPrimitive = false;
+
+            if (argumentType is TypeSpecification)
+            {
+                // nested generic instance (or array/pointer/by-ref type) -- only describable through its
+                // own TypeSpec entry, which is always local to this assembly's TypeSpec table.
+                arg.TypeToken = ResolveTypeSpecToken(context, argumentType);
+
+                return arg;
+            }
+
+            // Ordinary class: token when local, name always (fallback for a foreign assembly).
+            arg.ClassName = argumentType.FullName;
+            arg.TypeToken = ResolveLocalClassToken(context, argumentType);
+
+            return arg;
+        }
+
+        // Resolves the NanoCLR token of a nested TypeSpec entry (generic instance, array, pointer, or
+        // by-ref type), or null when it is not registered in this assembly's TypeSpec table.
+        private static Token ResolveTypeSpecToken(nanoTablesContext context, TypeReference typeSpecification)
+        {
+            if (context.TypeSpecificationsTable.TryGetTypeReferenceId(typeSpecification, out ushort typeSpecId))
+            {
+                var clrToken = new MetadataToken(TokenType.TypeSpec, typeSpecId);
+
+                return new Token(clrToken, NanoClrTable.TBL_TypeSpec.ToNanoTokenType() | typeSpecId);
+            }
+
+            return null;
+        }
+
+        // Resolves the NanoCLR TypeDef token of a class declared in the assembly being processed, or
+        // null (an external class -- see Pdbx/CLAUDE.md "Why classes get a name fallback"; an unresolvable
+        // foreign assembly is folded into the same null, see "ResolveLocalClassToken" there).
+        private static Token ResolveLocalClassToken(nanoTablesContext context, TypeReference typeReference)
+        {
+            TypeDefinition typeDefinition = typeReference as TypeDefinition;
+
+            if (typeDefinition == null)
+            {
+                try
+                {
+                    typeDefinition = typeReference.Resolve();
+                }
+                catch (AssemblyResolutionException)
+                {
+                    return null;
+                }
+            }
+
+            if (typeDefinition != null &&
+                context.TypeDefinitionTable.TryGetTypeReferenceId(typeDefinition, out ushort typeDefId))
+            {
+                return new Token(typeDefinition.MetadataToken, NanoClrTable.TBL_TypeDef.ToNanoTokenType() | typeDefId);
+            }
+
+            return null;
         }
     }
 
