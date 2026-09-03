@@ -219,6 +219,19 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             if (item.IsGenericInstance)
             {
+                var genericInstance = (GenericInstanceType)item;
+
+                // ElementType is always the open generic TypeDef (never itself a TypeSpecification), so the
+                // local-class resolver is enough here. When it is declared in a different assembly this is left null.
+                GenericTypeDef = ResolveLocalClassToken(context, genericInstance.ElementType);
+
+                GenericArguments = new List<TypeSpecArg>();
+
+                foreach (var argument in genericInstance.GenericArguments)
+                {
+                    GenericArguments.Add(BuildTypeSpecArg(context, argument));
+                }
+
                 foreach (var mr in context.MethodReferencesTable.Items)
                 {
                     if (context.TypeSpecificationsTable.TryGetTypeReferenceId(mr.DeclaringType, out ushort referenceId) &&
@@ -243,6 +256,82 @@ namespace nanoFramework.Tools.MetadataProcessor
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Builds the structured description of one generic type argument: a primitive element type, or the
+        /// NanoCLR token of a class (TypeDef/TypeRef) or nested TypeSpec. Returns an argument with neither
+        /// <see cref="TypeSpecArg.PrimitiveType"/> nor <see cref="TypeSpecArg.TypeToken"/> set when the
+        /// argument cannot be resolved to a token (for example an unresolved generic parameter) -- callers
+        /// are expected to treat that as "cannot fully describe this instance".
+        /// </summary>
+        private static TypeSpecArg BuildTypeSpecArg(nanoTablesContext context, TypeReference argumentType)
+        {
+            var arg = new TypeSpecArg();
+
+            if (nanoSignaturesTable.PrimitiveTypes.TryGetValue(argumentType.FullName, out NanoCLRDataType dataType))
+            {
+                arg.IsPrimitive = true;
+                arg.PrimitiveType = dataType.ToString();
+
+                return arg;
+            }
+
+            arg.IsPrimitive = false;
+
+            if (argumentType is TypeSpecification)
+            {
+                // nested generic instance (or array/pointer/by-ref type) -- only describable through its
+                // own TypeSpec entry, which is always local to this assembly's TypeSpec table.
+                arg.TypeToken = ResolveTypeSpecToken(context, argumentType);
+
+                return arg;
+            }
+
+            // Ordinary class. Prefer a NanoCLR TypeDef token: it is unambiguous and cheap to resolve, but it
+            // only exists when the class is declared in the assembly currently being processed -- the pdbx
+            // model has no TypeRef list, so there is no way for the debugger to chase a foreign-assembly
+            // TypeRef token back to a class.
+            arg.ClassName = argumentType.FullName;
+            arg.TypeToken = ResolveLocalClassToken(context, argumentType);
+
+            return arg;
+        }
+
+        /// <summary>
+        /// Resolves the NanoCLR token of a nested TypeSpec entry (a generic instance, array, pointer, or
+        /// by-ref type -- anything Mono.Cecil models as a <see cref="TypeSpecification"/>).
+        /// </summary>
+        /// <returns>The token, or <see langword="null"/> when the type is not registered in this assembly TypeSpec table.</returns>
+        private static Token ResolveTypeSpecToken(nanoTablesContext context, TypeReference typeSpecification)
+        {
+            if (context.TypeSpecificationsTable.TryGetTypeReferenceId(typeSpecification, out ushort typeSpecId))
+            {
+                var clrToken = new MetadataToken(TokenType.TypeSpec, typeSpecId);
+
+                return new Token(clrToken, NanoClrTable.TBL_TypeSpec.ToNanoTokenType() | typeSpecId);
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Resolves the NanoCLR TypeDef token of a class, but only when it is declared in the assembly
+        /// currently being processed (see the remarks on <see cref="BuildTypeSpecArg"/> for why an external
+        /// class cannot be addressed by token here).
+        /// </summary>
+        /// <returns>The token, or <see langword="null"/> when the type is not a local TypeDef.</returns>
+        private static Token ResolveLocalClassToken(nanoTablesContext context, TypeReference typeReference)
+        {
+            TypeDefinition typeDefinition = typeReference as TypeDefinition ?? typeReference.Resolve();
+
+            if (typeDefinition != null &&
+                context.TypeDefinitionTable.TryGetTypeReferenceId(typeDefinition, out ushort typeDefId))
+            {
+                return new Token(typeDefinition.MetadataToken, NanoClrTable.TBL_TypeDef.ToNanoTokenType() | typeDefId);
+            }
+
+            return null;
         }
     }
 
