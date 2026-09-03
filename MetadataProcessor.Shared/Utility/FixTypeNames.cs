@@ -8,7 +8,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         internal static string FixTypeNames(string name)
         {
             // This is used to remedy the wrong output from Cecil.Mono
-            // Reported jbevain/cecil#715 
+            // Reported jbevain/cecil/issues/715
             // OK to remove if implemented
 
             // following II.23.2.16 Short form signatures
@@ -19,8 +19,8 @@ namespace nanoFramework.Tools.MetadataProcessor
             fixedName = fixedName.Replace("System.Void", "void");
             fixedName = fixedName.Replace("System.Boolean", "bool");
             fixedName = fixedName.Replace("System.Char", "char");
-            fixedName = fixedName.Replace("System.Byte", "int8");
-            fixedName = fixedName.Replace("System.Sbyte", "uint8");
+            fixedName = fixedName.Replace("System.Byte", "uint8");
+            fixedName = fixedName.Replace("System.Sbyte", "int8");
             fixedName = fixedName.Replace("System.Int16", "int16");
             fixedName = fixedName.Replace("System.UInt16", "uint16");
             fixedName = fixedName.Replace("System.Int32", "int32");
