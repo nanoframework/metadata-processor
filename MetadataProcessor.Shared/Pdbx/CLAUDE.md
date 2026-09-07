@@ -62,16 +62,26 @@ Falling through to the ordinary-class branch for this case doesn't crash —
 unqualified `ClassName` ("T") with no token, losing which parameter it is and
 whose type or method declares it. `TypeSpecArg.IsGenericParameter` +
 `GenericParamToken`/`GenericParamIsMethodOwned`/`GenericParamPosition` address
-it directly instead: the parameter's own declaration already has a real,
-stable Cecil `MetadataToken` (declarations are real table rows, unlike
-generic-instance arguments — see §1), resolved via the existing
-`nanoGenericParamTable.TryGetParameterId`.
+it directly instead, resolved via `nanoGenericParamTable.TryGetParameterId`.
 
-Verified against real Cecil data that type-owned and method-owned parameters
-land in the same `GenericArguments` list with distinct tokens even at the same
-`Position` (e.g. `Pair<U,T>` inside a method `Wrap<U>` on `Container<T>`: `U`
-is MVAR position 0 with one token, `T` is VAR position 0 with a different one)
-— `GenericParamIsMethodOwned` is what disambiguates them.
+**`Owner`/`MetadataToken` are not reliable on the `GenericParameter` object
+itself — use `.Type` (`GenericParameterType.Method` vs `.Type`) for VAR/MVAR,
+never `Owner is MethodDefinition`.** Verified by comparing a fresh Cecil parse
+of a test assembly against what `nanoTypeSpecificationsTable` actually stores
+after the full `Write→Minimize→Write` pipeline: a parameter reached via a
+*field* type (e.g. `Container<T>.Slot`'s `T`) keeps its real declaration
+(`Owner` a `TypeDefinition`, a valid `MetadataToken` RID) both times. The same
+kind of parameter reached via a *generic method's return type* (a
+`GenericInstanceMethod` call site, e.g. `Wrap<U>`'s `Pair<U,T>`) is stored as a
+bare shape by the time `BuildTypeSpecArg` sees it: `Owner` null,
+`MetadataToken` RID 0, for *both* its VAR and MVAR arguments — even the VAR
+one, despite the identical `T` resolving fine via the field-type path. `.Type`
+survives this degradation; `Owner`/`MetadataToken` do not. So
+`GenericParamToken` legitimately stays null for this shape on both arguments,
+including the type-owned one — `BuildTypeSpecArg` has no way to recover it
+(it never sees which method/type this shape came from), and that's fine: the
+consumer only needs `IsGenericParameter` + `GenericParamIsMethodOwned` +
+`GenericParamPosition` to fail closed correctly (§4).
 
 Tests: `TestNFApp/GenericParameterArgumentTypeSpecTests.cs` (fixture, both
 cases) and `Core/Tables/nanoTypeSpecArgGenericParameterTests.cs` (assertions).

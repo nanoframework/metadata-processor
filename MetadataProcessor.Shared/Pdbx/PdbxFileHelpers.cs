@@ -278,8 +278,13 @@ namespace nanoFramework.Tools.MetadataProcessor
                 // this must be checked before the TypeSpecification branch below.
                 var genericParameter = (GenericParameter)argumentType;
 
+                // Owner/MetadataToken are not reliable here -- for a parameter reached via a generic
+                // method's return type (a GenericInstanceMethod call site), Cecil stores it as a bare
+                // VAR/MVAR shape with Owner null and MetadataToken RID 0, even though the same parameter
+                // carries its real declaration (Owner, valid token) when reached via a field type. Type
+                // (VAR vs MVAR) survives regardless -- see Pdbx/CLAUDE.md "Bare generic parameters".
                 arg.IsGenericParameter = true;
-                arg.GenericParamIsMethodOwned = genericParameter.Owner is MethodDefinition;
+                arg.GenericParamIsMethodOwned = genericParameter.Type == GenericParameterType.Method;
                 arg.GenericParamPosition = genericParameter.Position;
 
                 if (context.GenericParamsTable.TryGetParameterId(genericParameter, out ushort genericParamId))
