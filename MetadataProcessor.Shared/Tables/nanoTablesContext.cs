@@ -146,6 +146,8 @@ namespace nanoFramework.Tools.MetadataProcessor
             // get types to exclude from the types attributes
             ProcessTypesToExclude(types);
 
+            CascadePropertyAttributesToAccessors(types);
+
             var fields = types
                 .SelectMany(item => GetOrderedFields(item.Fields.Where(field => !field.HasConstant)))
                 .ToList();
@@ -303,6 +305,83 @@ namespace nanoFramework.Tools.MetadataProcessor
                 (item, index) => item.CustomAttributes
                     .Where(attr => !IsAttribute(attr.AttributeType))
                     .Select(attr => new Tuple<CustomAttribute, ushort>(attr, (ushort)index)));
+        }
+
+        private static void CascadePropertyAttributesToAccessors(IEnumerable<TypeDefinition> types)
+        {
+            foreach (var property in types.SelectMany(type => type.Properties))
+            {
+                foreach (var accessor in new[] { property.GetMethod, property.SetMethod }.Where(method => method != null))
+                {
+                    foreach (var attribute in property.CustomAttributes)
+                    {
+                        if (!accessor.CustomAttributes.Any(existingAttribute => AreAttributesEqual(existingAttribute, attribute)))
+                        {
+                            accessor.CustomAttributes.Add(attribute);
+                        }
+                    }
+                }
+            }
+        }
+
+        private static bool AreAttributesEqual(CustomAttribute first, CustomAttribute second)
+        {
+            return first.Constructor.FullName == second.Constructor.FullName &&
+                first.ConstructorArguments.SequenceEqual(second.ConstructorArguments, CustomAttributeArgumentComparer.Instance) &&
+                first.Fields.OrderBy(argument => argument.Name).SequenceEqual(
+                    second.Fields.OrderBy(argument => argument.Name), CustomAttributeNamedArgumentComparer.Instance) &&
+                first.Properties.OrderBy(argument => argument.Name).SequenceEqual(
+                    second.Properties.OrderBy(argument => argument.Name), CustomAttributeNamedArgumentComparer.Instance);
+        }
+
+        private sealed class CustomAttributeArgumentComparer : IEqualityComparer<CustomAttributeArgument>
+        {
+            internal static readonly CustomAttributeArgumentComparer Instance = new CustomAttributeArgumentComparer();
+
+            public bool Equals(CustomAttributeArgument first, CustomAttributeArgument second)
+            {
+                return first.Type.FullName == second.Type.FullName && ValuesEqual(first.Value, second.Value);
+            }
+
+            public int GetHashCode(CustomAttributeArgument argument)
+            {
+                throw new NotSupportedException();
+            }
+
+            private static bool ValuesEqual(object first, object second)
+            {
+                if (first is CustomAttributeArgument[] firstArray && second is CustomAttributeArgument[] secondArray)
+                {
+                    return firstArray.SequenceEqual(secondArray, Instance);
+                }
+
+                if (first is CustomAttributeArgument firstArgument && second is CustomAttributeArgument secondArgument)
+                {
+                    return Instance.Equals(firstArgument, secondArgument);
+                }
+
+                if (first is TypeReference firstType && second is TypeReference secondType)
+                {
+                    return firstType.FullName == secondType.FullName;
+                }
+
+                return Equals(first, second);
+            }
+        }
+
+        private sealed class CustomAttributeNamedArgumentComparer : IEqualityComparer<CustomAttributeNamedArgument>
+        {
+            internal static readonly CustomAttributeNamedArgumentComparer Instance = new CustomAttributeNamedArgumentComparer();
+
+            public bool Equals(CustomAttributeNamedArgument first, CustomAttributeNamedArgument second)
+            {
+                return first.Name == second.Name && CustomAttributeArgumentComparer.Instance.Equals(first.Argument, second.Argument);
+            }
+
+            public int GetHashCode(CustomAttributeNamedArgument argument)
+            {
+                throw new NotSupportedException();
+            }
         }
 
         private bool IsAttribute(

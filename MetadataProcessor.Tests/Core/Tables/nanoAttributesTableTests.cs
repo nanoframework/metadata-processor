@@ -32,6 +32,30 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
         }
 
         [TestMethod]
+        public void PropertyAttributesAreCascadedToAccessorsWithoutDuplicates()
+        {
+            var context = TestObjectHelper.GetTestNFAppNanoTablesContext();
+            var typeDefinition = TestObjectHelper.GetTestNFAppOneClassOverAllTypeDefinition(context.AssemblyDefinition);
+            var property = typeDefinition.Properties.Single(item => item.Name == "DummyProperty");
+
+            Assert.IsTrue(context.MethodDefinitionTable.TryGetMethodReferenceId(property.GetMethod, out var getterId));
+            Assert.IsTrue(context.MethodDefinitionTable.TryGetMethodReferenceId(property.SetMethod, out var setterId));
+
+            var bytesWritten = TestObjectHelper.DoWithNanoBinaryWriter((bw) => nanoBinaryWriter.CreateLittleEndianBinaryWriter(bw), (ms, bw, writer) =>
+            {
+                context.AttributesTable.Write(writer);
+            });
+
+            var methodAttributeTargets = Enumerable.Range(0, bytesWritten.Length / 8)
+                .Where(index => BitConverter.ToUInt16(bytesWritten, index * 8) == 0x0006)
+                .Select(index => BitConverter.ToUInt16(bytesWritten, index * 8 + 2))
+                .ToList();
+
+            Assert.AreEqual(2, methodAttributeTargets.Count(target => target == getterId));
+            Assert.AreEqual(2, methodAttributeTargets.Count(target => target == setterId));
+        }
+
+        [TestMethod]
         public void RemoveUnusedItems_TypesAttributesTest()
         {
             var nanoTablesContext = TestObjectHelper.GetTestNFAppNanoTablesContext();
