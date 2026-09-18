@@ -24,7 +24,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
 
 #if DEBUG
         // path to local instance of nanoCLR DLL (to be used when debugging)
-        private static string _localClrInstancePath = "E:\\GitHub\\nf-interpreter\\build\\bin\\Debug\\net6.0\\NanoCLR\\nanoFramework.nanoCLR.dll";
+        private static string _localClrInstancePath = "E:\\GitHub\\nf-interpreter\\build\\bin\\Debug\\net8.0\\nanoFramework.nanoCLR.CLI.dll";
 #endif
 
         public static bool NanoClrIsInstalled { get; private set; } = false;
@@ -318,12 +318,71 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
 
                     // look for the error message reporting that there is no entry point
                     Assert.IsFalse(output.Contains("Cannot find any entrypoint!"));
+
+                    // attribute declared on a property (MyClass1.MyField) has to be reachable through the getter
+                    Assert.IsTrue(output.Contains(">>>>>>> get_MyField has 'IgnoreAttribute' attribute"), $"Attribute declared on property wasn't cascaded to the getter.{Environment.NewLine}Output is:{Environment.NewLine}{output}");
+
+                    // attributes declared on properties have to be reachable through the accessors, without duplicating
+                    // the ones declared on the accessor itself (see TestNFApp.PropertyAttributesTestClass)
+                    AssertAccessorAttributes(output, "OneClassOverAll", "get_DummyProperty", 1, 1);
+                    AssertAccessorAttributes(output, "OneClassOverAll", "set_DummyProperty", 1, 1);
+
+                    AssertAccessorAttributes(output, "PropertyAttributesTestClass", "get_GetOnlyProperty", 1, 1);
+                    AssertAccessorNotPresent(output, "PropertyAttributesTestClass", "set_GetOnlyProperty");
+
+                    AssertAccessorNotPresent(output, "PropertyAttributesTestClass", "get_SetOnlyProperty");
+                    AssertAccessorAttributes(output, "PropertyAttributesTestClass", "set_SetOnlyProperty", 1, 1);
+
+                    AssertAccessorAttributes(output, "PropertyAttributesTestClass", "get_PropertyWithSetterAttribute", 1, 1);
+                    AssertAccessorAttributes(output, "PropertyAttributesTestClass", "set_PropertyWithSetterAttribute", 1, 1);
+
+                    AssertAccessorAttributes(output, "PropertyAttributesTestClass", "get_PropertyWithOtherAttributeOnSetter", 1, 0);
+                    AssertAccessorAttributes(output, "PropertyAttributesTestClass", "set_PropertyWithOtherAttributeOnSetter", 1, 1);
+
+                    AssertAccessorAttributes(output, "PropertyAttributesTestClass", "get_SetterOnlyAttribute", 0, 0);
+                    AssertAccessorAttributes(output, "PropertyAttributesTestClass", "set_SetterOnlyAttribute", 1, 0);
+
+                    AssertAccessorAttributes(output, "PropertyAttributesTestClass", "get_GetterOnlyAttribute", 1, 0);
+                    AssertAccessorAttributes(output, "PropertyAttributesTestClass", "set_GetterOnlyAttribute", 0, 0);
+
+                    AssertAccessorNotPresent(output, "PropertyAttributesTestClass", "get_SetOnlyPropertyWithSetterAttribute");
+                    AssertAccessorAttributes(output, "PropertyAttributesTestClass", "set_SetOnlyPropertyWithSetterAttribute", 1, 1);
                 }
                 else
                 {
                     Assert.Fail($"nanoCLR ended with '{exitCode}' exit code.\r\n>>>>>>>>>>>>>\r\n{output}\r\n<<<<<<<<<<<<<");
                 }
             }
+        }
+
+        private static void AssertAccessorAttributes(
+            string output,
+            string typeName,
+            string accessorName,
+            int expectedDummyCustomAttribute1Count,
+            int expectedDummyCustomAttribute2Count)
+        {
+            Assert.IsTrue(
+                output.Contains($"'{typeName}.{accessorName}' method has {expectedDummyCustomAttribute1Count + expectedDummyCustomAttribute2Count} custom attributes"),
+                $"Unexpected number of attributes on {typeName}.{accessorName}.{Environment.NewLine}Output is:{Environment.NewLine}{output}");
+
+            Assert.IsTrue(
+                output.Contains($">>>>>>> {typeName}.{accessorName} has 'DummyCustomAttribute1' attribute {expectedDummyCustomAttribute1Count} time(s)"),
+                $"Expecting DummyCustomAttribute1 {expectedDummyCustomAttribute1Count} time(s) on {typeName}.{accessorName}.{Environment.NewLine}Output is:{Environment.NewLine}{output}");
+
+            Assert.IsTrue(
+                output.Contains($">>>>>>> {typeName}.{accessorName} has 'DummyCustomAttribute2' attribute {expectedDummyCustomAttribute2Count} time(s)"),
+                $"Expecting DummyCustomAttribute2 {expectedDummyCustomAttribute2Count} time(s) on {typeName}.{accessorName}.{Environment.NewLine}Output is:{Environment.NewLine}{output}");
+        }
+
+        private static void AssertAccessorNotPresent(
+            string output,
+            string typeName,
+            string accessorName)
+        {
+            Assert.IsTrue(
+                output.Contains($"'{typeName}.{accessorName}' accessor not present"),
+                $"{typeName}.{accessorName} wasn't expected to exist.{Environment.NewLine}Output is:{Environment.NewLine}{output}");
         }
 
         private string ComposeLocalClrInstancePath()
