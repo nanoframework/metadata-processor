@@ -146,7 +146,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             // get types to exclude from the types attributes
             ProcessTypesToExclude(types);
 
-            CascadePropertyAttributesToAccessors(types);
+            FindPropertyAttributesFromAccessors(types);
 
             var fields = types
                 .SelectMany(item => GetOrderedFields(item.Fields.Where(field => !field.HasConstant)))
@@ -310,7 +310,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// <summary>
         /// Copies the custom attributes declared on properties onto their get/set accessor methods.
         /// </summary>
-        private static void CascadePropertyAttributesToAccessors(IEnumerable<TypeDefinition> types)
+        private static void FindPropertyAttributesFromAccessors(IEnumerable<TypeDefinition> types)
         {
             foreach (PropertyDefinition property in types.SelectMany(type => type.Properties).Where(p => p.HasCustomAttributes))
             {
