@@ -11,7 +11,12 @@ namespace TestNFApp
     {
         [DummyCustomAttribute1]
         [DummyCustomAttribute2]
-        public int DummyProperty { get; set; }
+        public int DummyProperty
+        {
+            [DummyCustomAttribute1]
+            get;
+            set;
+        }
 
         [DummyCustomAttribute1]
         [DummyCustomAttribute2]
