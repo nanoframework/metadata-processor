@@ -234,9 +234,72 @@ namespace TestNFApp
             Console.WriteLine("");
             Console.WriteLine($"AuthorAttribute value is: '{attAuthor.Author}'");
 
+            PropertyAttributesTests();
+
             Console.WriteLine("");
             Console.WriteLine("+++ReflectionTests completed");
             Console.WriteLine("");
+        }
+
+        private static void PropertyAttributesTests()
+        {
+            Console.WriteLine("");
+            Console.WriteLine("+++Starting PropertyAttributesTests");
+
+            DumpAccessorsAttributes(typeof(OneClassOverAll), "DummyProperty");
+            DumpAccessorsAttributes(typeof(PropertyAttributesTestClass), "GetOnlyProperty");
+            DumpAccessorsAttributes(typeof(PropertyAttributesTestClass), "SetOnlyProperty");
+            DumpAccessorsAttributes(typeof(PropertyAttributesTestClass), "PropertyWithSetterAttribute");
+            DumpAccessorsAttributes(typeof(PropertyAttributesTestClass), "PropertyWithOtherAttributeOnSetter");
+            DumpAccessorsAttributes(typeof(PropertyAttributesTestClass), "SetterOnlyAttribute");
+            DumpAccessorsAttributes(typeof(PropertyAttributesTestClass), "GetterOnlyAttribute");
+            DumpAccessorsAttributes(typeof(PropertyAttributesTestClass), "SetOnlyPropertyWithSetterAttribute");
+
+            Console.WriteLine("");
+            Console.WriteLine("+++PropertyAttributesTests completed");
+        }
+
+        private static void DumpAccessorsAttributes(Type type, string propertyName)
+        {
+            string[] accessorNames = new string[] { $"get_{propertyName}", $"set_{propertyName}" };
+
+            foreach (string accessorName in accessorNames)
+            {
+                MethodInfo accessor = type.GetMethod(accessorName);
+
+                if (accessor == null)
+                {
+                    Console.WriteLine("");
+                    Console.WriteLine($"'{type.Name}.{accessorName}' accessor not present");
+                    continue;
+                }
+
+                object[] accessorAttributes = accessor.GetCustomAttributes(false);
+
+                Console.WriteLine("");
+                Console.WriteLine($"'{type.Name}.{accessorName}' method has {accessorAttributes.Length} custom attributes");
+
+                int dummyCustomAttribute1Count = 0;
+                int dummyCustomAttribute2Count = 0;
+
+                for (int i = 0; i < accessorAttributes.Length; i++)
+                {
+                    Console.WriteLine($"  {accessorAttributes[i]}");
+
+                    if (accessorAttributes[i] is DummyCustomAttribute1)
+                    {
+                        dummyCustomAttribute1Count++;
+                    }
+
+                    if (accessorAttributes[i] is DummyCustomAttribute2)
+                    {
+                        dummyCustomAttribute2Count++;
+                    }
+                }
+
+                Console.WriteLine($"  >>>>>>> {type.Name}.{accessorName} has 'DummyCustomAttribute1' attribute {dummyCustomAttribute1Count} time(s)");
+                Console.WriteLine($"  >>>>>>> {type.Name}.{accessorName} has 'DummyCustomAttribute2' attribute {dummyCustomAttribute2Count} time(s)");
+            }
         }
     }
 }
