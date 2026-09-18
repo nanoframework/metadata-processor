@@ -146,6 +146,8 @@ namespace nanoFramework.Tools.MetadataProcessor
             // get types to exclude from the types attributes
             ProcessTypesToExclude(types);
 
+            FindPropertyAttributesFromAccessors(types);
+
             var fields = types
                 .SelectMany(item => GetOrderedFields(item.Fields.Where(field => !field.HasConstant)))
                 .ToList();
@@ -303,6 +305,49 @@ namespace nanoFramework.Tools.MetadataProcessor
                 (item, index) => item.CustomAttributes
                     .Where(attr => !IsAttribute(attr.AttributeType))
                     .Select(attr => new Tuple<CustomAttribute, ushort>(attr, (ushort)index)));
+        }
+
+        /// <summary>
+        /// Copies the custom attributes declared on properties onto their get/set accessor methods.
+        /// </summary>
+        private static void FindPropertyAttributesFromAccessors(IEnumerable<TypeDefinition> types)
+        {
+            foreach (PropertyDefinition property in types.SelectMany(type => type.Properties).Where(p => p.HasCustomAttributes))
+            {
+                foreach (MethodDefinition accessor in new[] { property.GetMethod, property.SetMethod })
+                {
+                    if (accessor == null)
+                    {
+                        continue;
+                    }
+
+                    foreach (CustomAttribute attribute in property.CustomAttributes)
+                    {
+                        if (!accessor.CustomAttributes.Any(existing => IsSameAttribute(existing, attribute)))
+                        {
+                            accessor.CustomAttributes.Add(attribute);
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Checks if two custom attributes are the same attribute: same constructor and same arguments.
+        /// </summary>
+        internal static bool IsSameAttribute(CustomAttribute first, CustomAttribute second)
+        {
+            if (ReferenceEquals(first, second))
+            {
+                return true;
+            }
+
+            if (first.Constructor.MetadataToken != second.Constructor.MetadataToken)
+            {
+                return false;
+            }
+
+            return first.GetBlob().SequenceEqual(second.GetBlob());
         }
 
         private bool IsAttribute(
