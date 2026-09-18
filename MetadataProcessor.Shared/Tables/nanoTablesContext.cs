@@ -307,15 +307,23 @@ namespace nanoFramework.Tools.MetadataProcessor
                     .Select(attr => new Tuple<CustomAttribute, ushort>(attr, (ushort)index)));
         }
 
+        /// <summary>
+        /// Copies the custom attributes declared on properties onto their get/set accessor methods.
+        /// </summary>
         private static void CascadePropertyAttributesToAccessors(IEnumerable<TypeDefinition> types)
         {
-            foreach (var property in types.SelectMany(type => type.Properties))
+            foreach (PropertyDefinition property in types.SelectMany(type => type.Properties).Where(p => p.HasCustomAttributes))
             {
-                foreach (var accessor in new[] { property.GetMethod, property.SetMethod }.Where(method => method != null))
+                foreach (MethodDefinition accessor in new[] { property.GetMethod, property.SetMethod })
                 {
-                    foreach (var attribute in property.CustomAttributes)
+                    if (accessor == null)
                     {
-                        if (!accessor.CustomAttributes.Any(existingAttribute => AreAttributesEqual(existingAttribute, attribute)))
+                        continue;
+                    }
+
+                    foreach (CustomAttribute attribute in property.CustomAttributes)
+                    {
+                        if (!accessor.CustomAttributes.Any(existing => IsSameAttribute(existing, attribute)))
                         {
                             accessor.CustomAttributes.Add(attribute);
                         }
@@ -324,64 +332,22 @@ namespace nanoFramework.Tools.MetadataProcessor
             }
         }
 
-        private static bool AreAttributesEqual(CustomAttribute first, CustomAttribute second)
+        /// <summary>
+        /// Checks if two custom attributes are the same attribute: same constructor and same arguments.
+        /// </summary>
+        internal static bool IsSameAttribute(CustomAttribute first, CustomAttribute second)
         {
-            return first.Constructor.FullName == second.Constructor.FullName &&
-                first.ConstructorArguments.SequenceEqual(second.ConstructorArguments, CustomAttributeArgumentComparer.Instance) &&
-                first.Fields.OrderBy(argument => argument.Name).SequenceEqual(
-                    second.Fields.OrderBy(argument => argument.Name), CustomAttributeNamedArgumentComparer.Instance) &&
-                first.Properties.OrderBy(argument => argument.Name).SequenceEqual(
-                    second.Properties.OrderBy(argument => argument.Name), CustomAttributeNamedArgumentComparer.Instance);
-        }
-
-        private sealed class CustomAttributeArgumentComparer : IEqualityComparer<CustomAttributeArgument>
-        {
-            internal static readonly CustomAttributeArgumentComparer Instance = new CustomAttributeArgumentComparer();
-
-            public bool Equals(CustomAttributeArgument first, CustomAttributeArgument second)
+            if (ReferenceEquals(first, second))
             {
-                return first.Type.FullName == second.Type.FullName && ValuesEqual(first.Value, second.Value);
+                return true;
             }
 
-            public int GetHashCode(CustomAttributeArgument argument)
+            if (first.Constructor.MetadataToken != second.Constructor.MetadataToken)
             {
-                throw new NotSupportedException();
+                return false;
             }
 
-            private static bool ValuesEqual(object first, object second)
-            {
-                if (first is CustomAttributeArgument[] firstArray && second is CustomAttributeArgument[] secondArray)
-                {
-                    return firstArray.SequenceEqual(secondArray, Instance);
-                }
-
-                if (first is CustomAttributeArgument firstArgument && second is CustomAttributeArgument secondArgument)
-                {
-                    return Instance.Equals(firstArgument, secondArgument);
-                }
-
-                if (first is TypeReference firstType && second is TypeReference secondType)
-                {
-                    return firstType.FullName == secondType.FullName;
-                }
-
-                return Equals(first, second);
-            }
-        }
-
-        private sealed class CustomAttributeNamedArgumentComparer : IEqualityComparer<CustomAttributeNamedArgument>
-        {
-            internal static readonly CustomAttributeNamedArgumentComparer Instance = new CustomAttributeNamedArgumentComparer();
-
-            public bool Equals(CustomAttributeNamedArgument first, CustomAttributeNamedArgument second)
-            {
-                return first.Name == second.Name && CustomAttributeArgumentComparer.Instance.Equals(first.Argument, second.Argument);
-            }
-
-            public int GetHashCode(CustomAttributeNamedArgument argument)
-            {
-                throw new NotSupportedException();
-            }
+            return first.GetBlob().SequenceEqual(second.GetBlob());
         }
 
         private bool IsAttribute(
