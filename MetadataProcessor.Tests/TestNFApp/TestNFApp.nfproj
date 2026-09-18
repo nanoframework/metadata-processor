@@ -33,6 +33,7 @@
     <Compile Include="OneClassOverAll.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="PropertyAttributesTestClass.cs" />
     <Compile Include="TestingDestructors.cs" />
     <Compile Include="TestingDelegates.cs" />
   </ItemGroup>
