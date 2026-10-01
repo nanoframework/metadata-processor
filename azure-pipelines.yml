@@ -417,9 +417,10 @@ jobs:
     displayName: Update dependent class libs
     inputs:
       targetType: filePath
-      filePath: azure-pipelines/update-dependencies.ps1
+      filePath: azure-pipelines/update-dependents.ps1
     env:
       GITHUB_TOKEN: $(GitHubToken)
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
 
 ##################################
 # report build failure to Discord
