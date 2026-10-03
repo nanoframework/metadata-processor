@@ -11,10 +11,11 @@ namespace System.IO
         {
             // This test checks if MDP can minimize the assembly using an enum that is defined in another assembly
             // and the class calling it is in a different assembly BUT in the same namespace.
-            var ioException = new IOException(
+            IOException.IOExceptionErrorCode dummyEnum = IOException.IOExceptionErrorCode.DirectoryNotFound;
+
+            _ = new IOException(
                     string.Empty,
-                    (int)IOException.IOExceptionErrorCode.DirectoryNotFound);
+                    (int)dummyEnum);
         }
     }
-
 }
