@@ -179,6 +179,9 @@ namespace nanoFramework.Tools.MetadataProcessor
                     continue;
                 }
 
+                // static fields take assembly-wide slots, even in the types skipped below
+                List<FieldDefinition> staticFields = c.Fields.Where(f => f.IsStatic && !f.IsLiteral).ToList();
+
                 // Developer notes:
                 // - Exclude Roslyn-generated compiler helper type <PrivateImplementationDetails>
                 // which holds embedded static data (hash-named fields) and has no nanoFramework relevance.
@@ -186,6 +189,8 @@ namespace nanoFramework.Tools.MetadataProcessor
                 // angle-bracket content stripped, leaving an empty string that never matches.
                 if (c.Name.StartsWith("<PrivateImplementationDetails>"))
                 {
+                    staticFieldCount += staticFields.Count;
+
                     continue;
                 }
 
@@ -194,10 +199,10 @@ namespace nanoFramework.Tools.MetadataProcessor
                 // Guard against any other compiler-generated type whose sanitized name is empty
                 if (string.IsNullOrWhiteSpace(safeClassName))
                 {
+                    staticFieldCount += staticFields.Count;
+
                     continue;
                 }
-
-                List<FieldDefinition> staticFields = c.Fields.Where(f => f.IsStatic && !f.IsLiteral).ToList();
 
                 if (IsCompilerGenerated(c))
                 {
@@ -316,7 +321,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             uint crc,
             string value)
         {
-            byte[] bytes = Encoding.ASCII.GetBytes(value + "\0");
+            byte[] bytes = Encoding.UTF8.GetBytes(value + "\0");
 
             return Crc32.Compute(bytes, crc);
         }
