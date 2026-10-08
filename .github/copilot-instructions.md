@@ -180,7 +180,7 @@ generic-argument representation).
 | `nanoSkeletonGenerator` | Generates C/C++ native interop stubs using mustache templates |
 | `nanoDumperGenerator` | Generates human-readable assembly metadata dumps |
 | `LoadHintsAssemblyResolver` | Custom Mono.Cecil resolver that uses `-loadHints` paths |
-| `NativeMethodsCrc` | Computes CRC32 over native method signatures |
+| `NativeContract` | Computes native slots, native-visible type layouts and the native contract hash |
 
 ---
 

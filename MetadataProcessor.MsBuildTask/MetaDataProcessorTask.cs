@@ -95,7 +95,7 @@ namespace nanoFramework.Tools.MetadataProcessor.MsBuildTask
         public ITaskItem[] FilesWritten { get { return _filesWritten.ToArray(); } }
 
         [Output]
-        public ITaskItem NativeChecksum { get { return new TaskItem(_nativeChecksum); } }
+        public ITaskItem NativeContractHash { get { return new TaskItem(_nativeContractHash); } }
 
         #endregion
 
@@ -105,7 +105,7 @@ namespace nanoFramework.Tools.MetadataProcessor.MsBuildTask
         private nanoAssemblyBuilder _assemblyBuilder;
         private readonly IDictionary<string, string> _loadHints =
             new Dictionary<string, string>(StringComparer.Ordinal);
-        private string _nativeChecksum = "";
+        private string _nativeContractHash = "";
 
         #endregion
 
@@ -330,7 +330,7 @@ namespace nanoFramework.Tools.MetadataProcessor.MsBuildTask
                 LogTablesDetailed();
 
                 LogExcludedTypesDetailed();
-                LogNativeCrcDetailed();
+                LogNativeContractDetailed();
 
                 using (var stream = File.Open(Path.ChangeExtension(fileName, "tmp"), FileMode.Create, FileAccess.ReadWrite))
                 using (var writer = new BinaryWriter(stream))
@@ -390,6 +390,7 @@ namespace nanoFramework.Tools.MetadataProcessor.MsBuildTask
 
                 Log.LogMessage(MessageImportance.Low, "[MDP] Post-minimize tables:");
                 LogTablesDetailed();
+                LogNativeContractDetailed();
 
                 // compile assembly (2nd pass after minimize)
                 if (Verbose)
@@ -462,13 +463,13 @@ namespace nanoFramework.Tools.MetadataProcessor.MsBuildTask
                     }
                 }
 
-                // set environment variable with assembly native checksum
-                Environment.SetEnvironmentVariable("AssemblyNativeChecksum", _assemblyBuilder.GetNativeChecksum(), EnvironmentVariableTarget.Process);
+                // set environment variable with the native contract hash
+                Environment.SetEnvironmentVariable("NF_NATIVE_CONTRACT_HASH", _assemblyBuilder.GetNativeContractHash(), EnvironmentVariableTarget.Process);
 
-                // store assembly native checksum
-                _nativeChecksum = _assemblyBuilder.GetNativeChecksum();
+                // store the native contract hash
+                _nativeContractHash = _assemblyBuilder.GetNativeContractHash();
 
-                Log.LogMessage(MessageImportance.Low, $"[MDP] Native checksum: {_nativeChecksum}");
+                Log.LogMessage(MessageImportance.Low, $"[MDP] Native contract hash: {_nativeContractHash}");
             }
             catch (ArgumentException ex)
             {
@@ -556,7 +557,7 @@ namespace nanoFramework.Tools.MetadataProcessor.MsBuildTask
         {
             Log.LogMessage(MessageImportance.Low, $"[MDP] Assembly PE CRC inputs:");
             Log.LogMessage(MessageImportance.Low, $"[MDP]   Assembly version          : {_assemblyBuilder.LastAssemblyVersion}");
-            Log.LogMessage(MessageImportance.Low, $"[MDP]   Native methods checksum   : 0x{_assemblyBuilder.LastNativeMethodsChecksum:X8}");
+            Log.LogMessage(MessageImportance.Low, $"[MDP]   Native contract hash      : 0x{_assemblyBuilder.LastNativeMethodsChecksum:X8}");
             Log.LogMessage(MessageImportance.Low, $"[MDP]   Total PE size             : {_assemblyBuilder.LastTotalSize} bytes");
             Log.LogMessage(MessageImportance.Low, $"[MDP]   Header region             : offset 0x0000, length {_assemblyBuilder.LastHeaderSize} bytes");
             Log.LogMessage(MessageImportance.Low, $"[MDP]   Body region               : offset 0x{_assemblyBuilder.LastHeaderSize:X4}, length {_assemblyBuilder.LastBodySize} bytes");
@@ -564,25 +565,26 @@ namespace nanoFramework.Tools.MetadataProcessor.MsBuildTask
             Log.LogMessage(MessageImportance.Low, $"[MDP]   CRC32 header              : 0x{_assemblyBuilder.LastHeaderCrc32:X8}");
         }
 
-        private void LogNativeCrcDetailed()
+        private void LogNativeContractDetailed()
         {
-            IReadOnlyList<string> entries = _assemblyBuilder.TablesContext.NativeMethodsCrc.GetCrcLog();
+            NativeContract nativeContract = _assemblyBuilder.TablesContext.NativeContract;
+            IReadOnlyList<string> entries = nativeContract.GetContractLog();
 
             if (entries.Count == 0)
             {
-                Log.LogMessage(MessageImportance.Low, "[MDP] Native CRC: no methods with native implementation found.");
+                Log.LogMessage(MessageImportance.Low, "[MDP] Native contract: no native methods found.");
                 return;
             }
 
-            Log.LogMessage(MessageImportance.Low, $"[MDP] Native CRC method list ({entries.Count} entries):");
-            Log.LogMessage(MessageImportance.Low,  "[MDP]    idx  CRC after     Method signature");
+            Log.LogMessage(MessageImportance.Low, $"[MDP] Native contract ({nativeContract.Methods.Count} native methods, {nativeContract.Types.Count} types with field layout):");
+            Log.LogMessage(MessageImportance.Low,  "[MDP]   slot  Method signature / type layout");
 
             foreach (string entry in entries)
             {
                 Log.LogMessage(MessageImportance.Low, $"[MDP] {entry}");
             }
 
-            Log.LogMessage(MessageImportance.Low, $"[MDP] Native CRC final value: 0x{_assemblyBuilder.TablesContext.NativeMethodsCrc.CurrentCrc:X8}");
+            Log.LogMessage(MessageImportance.Low, $"[MDP] Native contract hash: 0x{nativeContract.Hash:X8}");
         }
 
         private void LogExcludedTypesDetailed()

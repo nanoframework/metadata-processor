@@ -89,7 +89,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Utility\nanoSerializationType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utility\nanoStringsConstants.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utility\nanoTypeDefinitionFlags.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Utility\NativeMethodsCrc.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utility\NativeContract.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utility\TypeReferenceEqualityComparer.cs" />
   </ItemGroup>
 </Project>

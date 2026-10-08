@@ -38,6 +38,8 @@ namespace nanoFramework.Tools.MetadataProcessor
                 "System.Runtime.CompilerServices.IndexerNameAttribute",
                 "System.Runtime.CompilerServices.MethodImplOptions",
                 "System.Runtime.CompilerServices.RefSafetyRulesAttribute",
+                "System.Runtime.CompilerServices.CompilerGeneratedAttribute",
+                "System.Runtime.CompilerServices.InlineArrayAttribute",
                 "System.Reflection.FieldNoReflectionAttribute",
 
                 // Roslyn compiler-synthesized embedded attributes (not meaningful at runtime)
@@ -116,10 +118,9 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             MethodDefinitionTable = new nanoMethodDefinitionTable(methods, this);
 
-            NativeMethodsCrc = new NativeMethodsCrc(
-                assemblyDefinition);
-
-            NativeMethodsCrc.UpdateCrc(TypeDefinitionTable);
+            // native contract (native slots, field layouts and contract hash)
+            // computed here so it's available for the 1st pass; recomputed after minimization
+            NativeContract = NativeContract.Build(this);
 
             AttributesTable = new nanoAttributesTable(
                 GetAttributes(types, applyAttributesCompression),
@@ -473,7 +474,18 @@ namespace nanoFramework.Tools.MetadataProcessor
 
         public AssemblyDefinition AssemblyDefinition { get; private set; }
 
-        public NativeMethodsCrc NativeMethodsCrc { get; private set; }
+        /// <summary>
+        /// Native contract of the assembly: native methods slots, field layouts and contract hash.
+        /// </summary>
+        public NativeContract NativeContract { get; private set; }
+
+        /// <summary>
+        /// Rebuilds the native contract from the current tables (required after minimization).
+        /// </summary>
+        internal void RebuildNativeContract()
+        {
+            NativeContract = NativeContract.Build(this);
+        }
 
         public nanoAssemblyReferenceTable AssemblyReferenceTable { get; private set; }
 
