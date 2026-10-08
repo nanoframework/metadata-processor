@@ -46,6 +46,25 @@ namespace nanoFramework.Tools.MetadataProcessor
         public NanoClrTable TableIndex => NanoClrTable.TBL_MethodDef;
 
         /// <summary>
+        /// Gets the value to be written in the RVA field of a method definition:
+        /// the native slot for native methods, the byte code offset otherwise (0xFFFF for methods without body).
+        /// </summary>
+        /// <param name="context">Assembly tables context.</param>
+        /// <param name="method">Method definition.</param>
+        public static ushort GetRva(
+            nanoTablesContext context,
+            MethodDefinition method)
+        {
+            if (context.NativeContract != null &&
+                context.NativeContract.TryGetSlot(method, out ushort slot))
+            {
+                return slot;
+            }
+
+            return context.ByteCodeTable.GetMethodRva(method);
+        }
+
+        /// <summary>
         /// Creates new instance of <see cref="nanoMethodDefinitionTable"/> object.
         /// </summary>
         /// <param name="items">List of methods definitions in Mono.Cecil format.</param>
@@ -88,11 +107,11 @@ namespace nanoFramework.Tools.MetadataProcessor
             // Name
             WriteStringReference(writer, item.Name);
 
-            // RVA
-            writer.WriteUInt16(_context.ByteCodeTable.GetMethodRva(item));
+            // RVA (native slot for native methods)
+            writer.WriteUInt16(GetRva(_context, item));
 
             // Flags
-            writer.WriteUInt32(GetFlags(item));
+            writer.WriteUInt32(GetFlags(item, _context));
 
             var parametersCount = (byte)item.Parameters.Count;
             if (!item.IsStatic)
@@ -168,7 +187,17 @@ namespace nanoFramework.Tools.MetadataProcessor
             Debug.Assert((writerEndPosition - writerStartPosition) == sizeOf_CLR_RECORD_METHODDEF);
         }
 
-        public static uint GetFlags(MethodDefinition method)
+        /// <summary>
+        /// Gets the flags of a method definition.
+        /// </summary>
+        /// <param name="method">Method definition.</param>
+        /// <param name="context">
+        /// Assembly tables context. Required to set MD_Native (native methods are only known through the native contract).
+        /// When <c>null</c> MD_Native is never set.
+        /// </param>
+        public static uint GetFlags(
+            MethodDefinition method,
+            nanoTablesContext context = null)
         {
             const uint MD_Scope_Private = 0x00000001; // Accessible only by the parent type.
             const uint MD_Scope_FamANDAssem = 0x00000002; // Accessible by sub-types only in this Assembly.
@@ -191,6 +220,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             const uint MD_Constructor = 0x00001000;
             const uint MD_StaticConstructor = 0x00002000;
             const uint MD_Finalizer = 0x00004000;
+            const uint MD_Native = 0x00008000; // Method implemented in native code. RVA holds the native slot instead of a byte code offset.
 
             const uint MD_DelegateConstructor = 0x00010000;
             const uint MD_DelegateInvoke = 0x00020000;
@@ -342,6 +372,12 @@ namespace nanoFramework.Tools.MetadataProcessor
             if (method.IsGenericInstance)
             {
                 flag |= MD_IsGenericInstance;
+            }
+
+            if (context?.NativeContract != null &&
+                context.NativeContract.TryGetSlot(method, out _))
+            {
+                flag |= MD_Native;
             }
 
             return flag;

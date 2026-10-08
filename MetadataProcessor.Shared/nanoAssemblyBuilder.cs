@@ -56,7 +56,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         public long LastBodySize => _lastHeader?.LastBodySize ?? 0L;
 
         /// <summary>
-        /// Native methods checksum embedded in the header.
+        /// Native contract hash embedded in the header (nativeMethodsChecksum field).
         /// </summary>
         public uint LastNativeMethodsChecksum => _lastHeader?.LastNativeMethodsChecksum ?? 0u;
 
@@ -287,6 +287,9 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             _tablesContext.TypeSpecificationsTable.RemoveEmptyItems();
 
+            // native contract has to be rebuilt with the minimized tables
+            _tablesContext.RebuildNativeContract();
+
             // flag minimize completed
             _tablesContext.MinimizeComplete = true;
         }
@@ -312,17 +315,17 @@ namespace nanoFramework.Tools.MetadataProcessor
         }
 
         /// <summary>
-        /// Returns the native checksum of the assembly.
+        /// Returns the native contract hash of the assembly.
         /// </summary>
-        /// <returns>Native checksum of the assembly.</returns>
+        /// <returns>Native contract hash of the assembly.</returns>
         /// <remarks>
-        /// Need to call <see cref="Minimize()"/> before calling this method otherwise the checksum is not available.
+        /// Need to call <see cref="Minimize()"/> before calling this method otherwise the native contract hash is not available.
         /// </remarks>
-        public string GetNativeChecksum()
+        public string GetNativeContractHash()
         {
             if (_tablesContext.MinimizeComplete)
             {
-                return $"0x{_tablesContext.NativeMethodsCrc.CurrentCrc.ToString("X8")}";
+                return $"0x{_tablesContext.NativeContract.Hash.ToString("X8")}";
             }
             else
             {
@@ -1666,7 +1669,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             yield return context.ResourceDataTable;
 
             context.ByteCodeTable.UpdateStringTable();
-            context.StringTable.GetOrCreateStringId(
+            context.StringTable.GetOrCreateAssemblyNameId(
                 context.AssemblyDefinition.Name.Name);
 
             yield return context.StringTable;

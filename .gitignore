@@ -23,3 +23,4 @@ ps_modules
 
 #SoundCloud
 *.sonarqube/
+MetadataProcessor.Tests/StubsGenerationTestNFApp/Stubs

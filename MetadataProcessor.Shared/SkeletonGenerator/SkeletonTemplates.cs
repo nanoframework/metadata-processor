@@ -122,7 +122,7 @@ const CLR_RT_NativeAssemblyData g_CLR_AssemblyNative_{{Name}} ={{#newline}}
     ""{{AssemblyName}}"",{{#newline}}
     {{NativeCRC32}},{{#newline}}
     method_lookup,{{#newline}}
-    { {{NativeVersion.Major}}, {{NativeVersion.Minor}}, {{NativeVersion.Build}}, {{NativeVersion.Revision}} }{{#newline}}
+    ARRAYSIZE(method_lookup){{#newline}}
 };{{#newline}}
 
 {{#newline}}

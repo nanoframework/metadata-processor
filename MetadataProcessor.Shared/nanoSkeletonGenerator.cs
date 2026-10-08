@@ -1,17 +1,10 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-// uncomment this for verbose output of library method lookup
-#if DEBUG
-//#define VERBOSE_OUTPUT
-#endif
-
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using Mono.Cecil;
 using Mustache;
 using nanoFramework.Tools.MetadataProcessor.Core.Extensions;
@@ -57,7 +50,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
         public void GenerateSkeleton()
         {
             // check if there are any native methods
-            if (_tablesContext.NativeMethodsCrc.CurrentCrc > 0)
+            if (!_tablesContext.NativeContract.IsEmpty)
             {
                 // create <assembly>.h with the structs declarations
                 GenerateAssemblyHeader();
@@ -68,10 +61,10 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                 // generate stub files for classes, headers and marshalling code, if required
                 GenerateStubs();
 
-                // output native checksum so it shows in build log
-                Console.WriteLine("+++++++++++++++++++++++++++++++++++++++++++");
-                Console.WriteLine($"+ Native declaration checksum: 0x{_tablesContext.NativeMethodsCrc.CurrentCrc.ToString("X8")} +");
-                Console.WriteLine("+++++++++++++++++++++++++++++++++++++++++++");
+                // output native contract hash so it shows in build log
+                Console.WriteLine("++++++++++++++++++++++++++++++++++++++++");
+                Console.WriteLine($"+ Native contract hash: 0x{_tablesContext.NativeContract.Hash.ToString("X8")} +");
+                Console.WriteLine("++++++++++++++++++++++++++++++++++++++++");
             }
             else
             {
@@ -94,13 +87,13 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
             {
                 if (ShouldIncludeType(c))
                 {
-                    string _safeClassName = NativeMethodsCrc.GetSafeClassName(c);
+                    string _safeClassName = NativeContract.GetSafeClassName(c);
 
                     var classStubs = new AssemblyClassStubs
                     {
                         AssemblyName = _name,
                         ClassHeaderFileName = _safeClassName,
-                        ClassName = NativeMethodsCrc.CleanupGenericName(c.Name),
+                        ClassName = NativeContract.CleanupGenericName(c.Name),
                         ShortNameUpper = $"{_assemblyName}_{_safeProjectName}_{_safeClassName}".ToUpper(),
                         RootNamespace = _assemblyName,
                         ProjectName = _safeProjectName,
@@ -115,15 +108,12 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
                     foreach (var m in nanoTablesContext.GetOrderedMethods(c.Methods))
                     {
-                        var rva = _tablesContext.ByteCodeTable.GetMethodRva(m);
-
-                        // check method inclusion
-                        if (rva == 0xFFFF &&
-                            !m.IsAbstract)
+                        // check method inclusion: native methods only
+                        if (_tablesContext.NativeContract.TryGetSlot(m, out _))
                         {
                             var newMethod = new MethodStub()
                             {
-                                Declaration = $"Library_{_safeProjectName}_{_safeClassName}::{NativeMethodsCrc.GetSafeMethodName(m)}"
+                                Declaration = $"Library_{_safeProjectName}_{_safeClassName}::{NativeContract.GetSafeMethodName(m)}"
                             };
 
                             if (!_withoutInteropCode)
@@ -141,10 +131,10 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
                                 newMethod.MarshallingReturnType = m.MethodReturnType.ReturnType.ToCLRTypeAsString();
 
-                                declaration.Append($"{NativeMethodsCrc.CleanupGenericName(m.Name)}");
+                                declaration.Append($"{NativeContract.CleanupGenericName(m.Name)}");
                                 declaration.Append("( ");
 
-                                StringBuilder marshallingCall = new StringBuilder($"{NativeMethodsCrc.CleanupGenericName(m.Name)}");
+                                StringBuilder marshallingCall = new StringBuilder($"{NativeContract.CleanupGenericName(m.Name)}");
                                 marshallingCall.Append("( ");
 
                                 // loop through the parameters
@@ -346,18 +336,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
         private void GenerateAssemblyLookup()
         {
-            // grab native version from assembly attribute
-            var nativeVersionAttribute = _tablesContext.AssemblyDefinition.CustomAttributes.FirstOrDefault(a => a?.AttributeType?.Name == "AssemblyNativeVersionAttribute");
-
-            // check for existing AssemblyNativeVersionAttribute
-            if (nativeVersionAttribute == null)
-            {
-                throw new ArgumentException("Missing AssemblyNativeVersionAttribute." + Environment.NewLine +
-                    "Make sure that AssemblyNativeVersionAttribute is defined in AssemblyInfo.cs, like this:" + Environment.NewLine +
-                    "[assembly: AssemblyNativeVersion(\"1.0.0.0\")]");
-            }
-
-            Version nativeVersion = new Version((string)nativeVersionAttribute.ConstructorArguments[0].Value);
+            NativeContract nativeContract = _tablesContext.NativeContract;
 
             var assemblyLookup = new AssemblyLookupTable()
             {
@@ -365,66 +344,16 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                 Name = _assemblyName,
                 AssemblyName = _tablesContext.AssemblyDefinition.Name.Name,
                 HeaderFileName = _safeProjectName,
-                NativeVersion = nativeVersion,
-                NativeCRC32 = "0x" + _tablesContext.NativeMethodsCrc.CurrentCrc.ToString("X8")
+                NativeCRC32 = "0x" + nativeContract.Hash.ToString("X8")
             };
 
-
-            foreach (TypeDefinition c in _tablesContext.TypeDefinitionTable.Items)
+            // dense lookup table: only native methods, in native slot order
+            foreach (NativeMethodSlot nativeMethod in nativeContract.Methods)
             {
-                // only care about types that have methods
-                if (c.HasMethods)
+                assemblyLookup.LookupTable.Add(new MethodStub()
                 {
-                    if (ShouldIncludeType(c))
-                    {
-                        var className = NativeMethodsCrc.GetSafeClassName(c);
-
-                        foreach (var m in nanoTablesContext.GetOrderedMethods(c.Methods))
-                        {
-                            var rva = _tablesContext.ByteCodeTable.GetMethodRva(m);
-
-                            // check method inclusion
-                            // method is not a native implementation (RVA 0xFFFF) and is not abstract
-                            if ((rva == 0xFFFF &&
-                                    !m.IsAbstract))
-                            {
-                                assemblyLookup.LookupTable.Add(new MethodStub()
-                                {
-                                    Declaration = $"Library_{_safeProjectName}_{className}::{NativeMethodsCrc.GetSafeMethodName(m)}"
-                                });
-                            }
-                            else
-                            {
-                                // method won't be included, still
-                                // need to add a NULL entry for it
-                                assemblyLookup.LookupTable.Add(new MethodStub()
-                                {
-#if DEBUG && VERBOSE_OUTPUT
-                                    Declaration = $"nullptr, // <<<<< Library_{_safeProjectName}_{NativeMethodsCrc.GetSafeClassName(c)}::{NativeMethodsCrc.GetSafeMethodName(m)}",
-#else
-                                    Declaration = "nullptr"
-#endif
-                                });
-                            }
-                        }
-                    }
-                    else
-                    {
-                        // type won't be included, still
-                        // need to add a NULL entry for each method 
-                        foreach (var m in nanoTablesContext.GetOrderedMethods(c.Methods))
-                        {
-                            assemblyLookup.LookupTable.Add(new MethodStub()
-                            {
-#if DEBUG && VERBOSE_OUTPUT
-                                Declaration = $"nullptr, // <<<<< Library_{_safeProjectName}_{NativeMethodsCrc.GetSafeClassName(c)}::{NativeMethodsCrc.GetSafeMethodName(m)}",
-#else
-                                Declaration = "nullptr"
-#endif
-                            });
-                        }
-                    }
-                }
+                    Declaration = $"Library_{_safeProjectName}_{nativeMethod.SafeClassName}::{nativeMethod.SafeMethodName}"
+                });
             }
 
             FormatCompiler compiler = new FormatCompiler();
@@ -439,8 +368,6 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
         private void GenerateAssemblyHeader()
         {
-            int staticFieldCount = 0;
-
             var assemblyData = new AssemblyDeclaration()
             {
                 Name = _assemblyName,
@@ -449,101 +376,58 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                 IsCoreLib = _isCoreLib
             };
 
-            foreach (TypeDefinition c in _tablesContext.TypeDefinitionTable.Items)
+            // classes and structs (except compiler-generated ones) get a declaration with field constants and native methods
+            foreach (NativeTypeLayout type in _tablesContext.NativeContract.Types)
             {
-                if (ShouldIncludeType(c))
+                var classData = new Class()
                 {
-                    var classData = new Class()
+                    AssemblyName = _safeProjectName,
+                    Name = type.SafeClassName
+                };
+
+                // static fields
+                foreach (NativeFieldConstant f in type.StaticFields)
+                {
+                    classData.StaticFields.Add(new StaticField()
                     {
-                        AssemblyName = _safeProjectName,
-                        Name = NativeMethodsCrc.GetSafeClassName(c)
-                    };
+                        Name = f.Name,
+                        ReferenceIndex = f.Index,
+                        FieldWarning = f.Warning
+                    });
+                }
 
-                    // Exclude Roslyn-generated compiler helper type <PrivateImplementationDetails>
-                    // which holds embedded static data (hash-named fields) and has no nanoFramework relevance.
-                    // Check the original type name (c.Name) because the sanitized classData.Name has
-                    // angle-bracket content stripped, leaving an empty string that never matches.
-                    if (c.Name.StartsWith("<PrivateImplementationDetails>"))
+                // instance fields
+                foreach (NativeFieldConstant f in type.InstanceFields)
+                {
+                    classData.InstanceFields.Add(new InstanceField()
                     {
-                        // Go to the next class. This metadata describes global variable, not a type
-                        continue;
-                    }
+                        Name = f.Name,
+                        ReferenceIndex = f.Index,
+                        FieldWarning = f.Warning
+                    });
+                }
 
-                    // Guard against any other compiler-generated type whose sanitized name is empty,
-                    // which would produce a broken struct name (e.g. Library_nf_system_collections_).
-                    if (string.IsNullOrWhiteSpace(classData.Name))
+                // methods
+                if (type.Type.HasMethods)
+                {
+                    foreach (var m in nanoTablesContext.GetOrderedMethods(type.Type.Methods))
                     {
-                        continue;
-                    }
-
-                    // static fields
-                    int fieldCount = 0;
-                    IEnumerable<FieldDefinition> staticFields = c.Fields.Where(f => f.IsStatic && !f.IsLiteral);
-
-                    foreach (FieldDefinition f in staticFields)
-                    {
-                        FixFieldName(f, out string fixedFieldName, out string fieldWarning);
-
-                        classData.StaticFields.Add(new StaticField()
+                        if (_tablesContext.NativeContract.TryGetSlot(m, out _))
                         {
-                            Name = string.IsNullOrEmpty(fixedFieldName) ? f.Name : fixedFieldName,
-                            ReferenceIndex = staticFieldCount + fieldCount++,
-                            FieldWarning = fieldWarning
-                        });
-                    }
-
-                    // update static field counter
-                    staticFieldCount += staticFields.Count();
-
-                    int firstInstanceFieldId = GetInstanceFieldsOffset(c);
-
-                    // 0 based index, need to add 1
-                    firstInstanceFieldId++;
-
-                    // instance fields
-                    fieldCount = 0;
-                    foreach (var f in c.Fields.Where(f => !f.IsStatic && !f.IsLiteral))
-                    {
-                        FixFieldName(f, out string fixedFieldName, out string fieldWarning);
-
-                        if (_tablesContext.FieldsTable.TryGetFieldDefinitionId(f, false, out ushort fieldRefId))
-                        {
-                            classData.InstanceFields.Add(new InstanceField()
+                            classData.Methods.Add(new MethodStub()
                             {
-                                Name = string.IsNullOrEmpty(fixedFieldName) ? f.Name : fixedFieldName,
-                                ReferenceIndex = firstInstanceFieldId++,
-                                FieldWarning = fieldWarning
+                                Declaration = NativeContract.GetSafeMethodName(m)
                             });
                         }
-
-                        fieldCount++;
                     }
+                }
 
-                    // methods
-                    if (c.HasMethods)
-                    {
-                        foreach (var m in nanoTablesContext.GetOrderedMethods(c.Methods))
-                        {
-                            var rva = _tablesContext.ByteCodeTable.GetMethodRva(m);
-
-                            if (rva == 0xFFFF &&
-                                !m.IsAbstract)
-                            {
-                                classData.Methods.Add(new MethodStub()
-                                {
-                                    Declaration = NativeMethodsCrc.GetSafeMethodName(m)
-                                });
-                            }
-                        }
-                    }
-
-                    // anything to add to the header?
-                    if (classData.StaticFields.Count > 0 ||
-                        classData.InstanceFields.Count > 0 ||
-                        classData.Methods.Count > 0)
-                    {
-                        assemblyData.Classes.Add(classData);
-                    }
+                // anything to add to the header?
+                if (classData.StaticFields.Count > 0 ||
+                    classData.InstanceFields.Count > 0 ||
+                    classData.Methods.Count > 0)
+                {
+                    assemblyData.Classes.Add(classData);
                 }
             }
 
@@ -574,80 +458,9 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
             }
         }
 
-        /// <summary>
-        /// Fix field name to a valid C++ identifier.
-        /// </summary>
-        /// <param name="field">The field definition to work on.</param>
-        /// <param name="fixedFieldName">The fixed field name, or an <see cref="Empty"/> string if no fix is needed.</param>
-        /// <param name="fieldWarning">The warning message to be added to the field declaration, or empty if no warning is needed.</param>
-        private static void FixFieldName(
-            FieldDefinition field,
-            out string fixedFieldName,
-            out string fieldWarning)
-        {
-            fixedFieldName = string.Empty;
-            fieldWarning = string.Empty;
-
-            // Roslyn-generated delegate cache fields: <N>__MethodName
-            // Strip angle brackets and number to create a valid C++ identifier
-            if (Regex.IsMatch(field.Name, @"^<\d+>__\w+"))
-            {
-                // Transform <0>__WorkingThread to __WorkingThread
-                fixedFieldName = Regex.Replace(field.Name, @"^<\d+>", "");
-                fieldWarning = $"// renamed compiler-generated field '{field.Name}'";
-            }
-            // Auto-property backing fields: <PropertyName>k__BackingField
-            else if (Regex.IsMatch(field.Name, @"<\w+>k__BackingField"))
-            {
-                fixedFieldName = $"{field.Name.Replace("<", "").Replace(">k__BackingField", "")}";
-                fieldWarning = $"// renamed backing field '{field.Name}'";
-            }
-        }
-
-        private int GetInstanceFieldsOffset(TypeDefinition c)
-        {
-            // check if this type has a base type different from System.Object
-            if (c.BaseType != null &&
-                c.BaseType.FullName != "System.Object")
-            {
-                // get base parent type fields count
-                return GetNestedFieldsCount(c.BaseType.Resolve());
-            }
-            else
-            {
-                return 0;
-            }
-        }
-
-        private int GetNestedFieldsCount(TypeDefinition c)
-        {
-            ushort tt;
-
-            int fieldCount = 0;
-
-            if (c.BaseType != null &&
-                c.BaseType.FullName != "System.Object")
-            {
-                // get parent type fields count
-                fieldCount = GetNestedFieldsCount(c.BaseType.Resolve());
-
-                // now add the fields count from this type
-                fieldCount += c.Fields.Count(f => !f.IsStatic && !f.IsLiteral);
-
-                return fieldCount;
-            }
-            else
-            {
-                // get the fields count from this type
-                return c.Fields.Count(f => !f.IsStatic && !f.IsLiteral);
-            }
-        }
-
         internal static bool ShouldIncludeType(TypeDefinition type)
         {
-            return type.IncludeInStub()
-                && !type.IsToExclude()
-                && !nanoTablesContext.IgnoringAttributes.Contains(type.FullName);
+            return NativeContract.IsStubIncludedType(type);
         }
     }
 }

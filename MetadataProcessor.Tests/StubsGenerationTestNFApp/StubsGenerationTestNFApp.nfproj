@@ -22,6 +22,8 @@
   </PropertyGroup>
   <Import Project="$(NanoFrameworkProjectSystemPath)NFProjectSystem.props" Condition="Exists('$(NanoFrameworkProjectSystemPath)NFProjectSystem.props')" />
   <ItemGroup>
+    <Compile Include="FieldNamingTypes.cs" />
+    <Compile Include="NativeContractTypes.cs" />
     <Compile Include="NativeMethodGenerationGenerics.cs" />
     <Compile Include="NativeMethodGeneration.cs" />
     <Compile Include="Program.cs" />

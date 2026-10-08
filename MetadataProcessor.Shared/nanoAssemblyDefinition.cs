@@ -136,8 +136,8 @@ namespace nanoFramework.Tools.MetadataProcessor
             // flags
             writer.WriteUInt32(0);
 
-            // nativeMethodsChecksum
-            writer.WriteUInt32(_context.NativeMethodsCrc.CurrentCrc);
+            // nativeMethodsChecksum (native contract hash)
+            writer.WriteUInt32(_context.NativeContract.Hash);
 
             // version
             writer.WriteVersion(_context.AssemblyDefinition.Name.Version);
@@ -145,7 +145,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             // assemblyName
             writer.WriteUInt16(isPreAllocationCall
                 ? (ushort)0x0000
-                : _context.StringTable.GetOrCreateStringId(_context.AssemblyDefinition.Name.Name));
+                : _context.StringTable.GetOrCreateAssemblyNameId(_context.AssemblyDefinition.Name.Name));
 
             // string table version
             writer.WriteUInt16(1);
@@ -190,7 +190,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                 LastTotalSize = writer.BaseStream.Length;
                 LastHeaderSize = _headerSize;
                 LastBodySize = writer.BaseStream.Length - _headerSize;
-                LastNativeMethodsChecksum = _context.NativeMethodsCrc.CurrentCrc;
+                LastNativeMethodsChecksum = _context.NativeContract.Hash;
                 LastAssemblyVersion = _context.AssemblyDefinition.Name.Version;
 
                 // set writer position at Assembly CRC32 position

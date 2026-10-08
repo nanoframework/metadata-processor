@@ -354,7 +354,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                     {
                         ReferenceId = MethodDefIdToString(m, referenceId),
                         Name = m.FullName(),
-                        RVA = _tablesContext.ByteCodeTable.GetMethodRva(m).ToString("X8"),
+                        RVA = nanoMethodDefinitionTable.GetRva(_tablesContext, m).ToString("X8"),
                         Implementation = "00000000",
                         Signature = PrintSignatureForMethod(m)
                     };
@@ -365,7 +365,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                         methodDef.ReferenceId += " [ENTRYPOINT]";
                     }
 
-                    var methodFlags = nanoMethodDefinitionTable.GetFlags(m);
+                    var methodFlags = nanoMethodDefinitionTable.GetFlags(m, _tablesContext);
                     methodDef.Flags = methodFlags.ToString("X8");
 
                     if (m.HasBody)

@@ -70,7 +70,7 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             var writerStartPosition = writer.BaseStream.Position;
 
-            WriteStringReference(writer, item.Name);
+            writer.WriteUInt16(_context.StringTable.GetOrCreateAssemblyNameId(item.Name));
             writer.WriteVersion(item.Version);
 
             var writerEndPosition = writer.BaseStream.Position;
@@ -82,7 +82,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         protected override void AllocateSingleItemStrings(
             AssemblyNameReference item)
         {
-            GetOrCreateStringId(item.Name);
+            _context.StringTable.GetOrCreateAssemblyNameId(item.Name);
         }
 
         /// <summary>
