@@ -113,6 +113,20 @@ namespace nanoFramework.Tools.MetadataProcessor
         }
 
         /// <summary>
+        /// Gets existing or creates new string reference identifier for an assembly name (of this assembly or of an AssemblyRef).
+        /// </summary>
+        /// <remarks>
+        /// Assembly names are always stored as plain strings in the PE, never as an index in the pre-defined constants table
+        /// (mscorlib included), so tools can read them without a copy of that table.
+        /// </remarks>
+        /// <param name="name">Assembly name.</param>
+        /// <returns>Existing identifier if string already in table or new one.</returns>
+        public ushort GetOrCreateAssemblyNameId(string name)
+        {
+            return GetOrCreateStringId(name, false);
+        }
+
+        /// <summary>
         /// Try to get a string value from the table providing the reference identifier.
         /// </summary>
         /// <param name="id">Existing identifier in table.</param>

@@ -145,7 +145,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             // assemblyName
             writer.WriteUInt16(isPreAllocationCall
                 ? (ushort)0x0000
-                : _context.StringTable.GetOrCreateStringId(_context.AssemblyDefinition.Name.Name));
+                : _context.StringTable.GetOrCreateAssemblyNameId(_context.AssemblyDefinition.Name.Name));
 
             // string table version
             writer.WriteUInt16(1);

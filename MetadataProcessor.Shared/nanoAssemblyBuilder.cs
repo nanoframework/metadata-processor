@@ -1669,7 +1669,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             yield return context.ResourceDataTable;
 
             context.ByteCodeTable.UpdateStringTable();
-            context.StringTable.GetOrCreateStringId(
+            context.StringTable.GetOrCreateAssemblyNameId(
                 context.AssemblyDefinition.Name.Name);
 
             yield return context.StringTable;
