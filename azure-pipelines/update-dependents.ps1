@@ -1,7 +1,7 @@
 # Copyright (c) .NET Foundation and Contributors
 # See LICENSE file in the project root for full license information.
 
-"Updating dependents of nano-debugger" | Write-Host
+"Updating dependents of nanoFramework MDP" | Write-Host
 
 # compute authorization header in format "AUTHORIZATION: basic 'encoded token'"
 # 'encoded token' is the Base64 of the string "nfbot:personal-token"
@@ -10,7 +10,7 @@ $auth = "basic $([System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.G
 # init/reset these
 $prTitle = ""
 $newBranchName = "develop-nfbot/update-dependencies/" + [guid]::NewGuid().ToString()
-$packageName = "nanoframework.tools.debugger.net"
+$packageName = "nanoframework.tools.metadataprocessor.msbuildtask"
 $repoBranch = "main"
 
 # resolve target version: prefer explicit TARGET_VERSION env var, fall back to the build tag
@@ -57,7 +57,7 @@ Write-Debug "Init and featch nf-Visual-Studio-extension repo"
 # VS 2019 & 2022
 
 "********************************************************************************" | Write-Host
-"Updating nanoFramework.Tools.Debugger.Net package in VS2019 & VS2022 solution..." | Write-Host
+"Updating nanoFramework.Tools.MetadataProcessor.MsBuildTask package in VS2019 & VS2022 solution..." | Write-Host
 
 git clone --depth 1 --branch $repoBranch https://github.com/nanoframework/nf-Visual-Studio-extension repo
 
@@ -167,18 +167,18 @@ while (-not (Test-NugetVersionAvailable -url $nugetApiUrl -targetVersion $packag
 Write-Host "Version $packageTargetVersion available from nuget.org feed. Proceeding with update."
 
 dotnet restore
-dotnet remove VisualStudio.Extension-2019/VisualStudio.Extension-vs2019.csproj package nanoFramework.Tools.Debugger.Net 
-dotnet add VisualStudio.Extension-2019/VisualStudio.Extension-vs2019.csproj package nanoFramework.Tools.Debugger.Net --version $packageTargetVersion --no-restore 
-dotnet remove VisualStudio.Extension-2022/VisualStudio.Extension-vs2022.csproj package nanoFramework.Tools.Debugger.Net
-dotnet add VisualStudio.Extension-2022/VisualStudio.Extension-vs2022.csproj package nanoFramework.Tools.Debugger.Net --version $packageTargetVersion --no-restore 
+dotnet remove VisualStudio.Extension-2019/VisualStudio.Extension-vs2019.csproj package nanoFramework.Tools.MetadataProcessor.MsBuildTask 
+dotnet add VisualStudio.Extension-2019/VisualStudio.Extension-vs2019.csproj package nanoFramework.Tools.MetadataProcessor.MsBuildTask --version $packageTargetVersion --no-restore 
+dotnet remove VisualStudio.Extension-2022/VisualStudio.Extension-vs2022.csproj package nanoFramework.Tools.MetadataProcessor.MsBuildTask
+dotnet add VisualStudio.Extension-2022/VisualStudio.Extension-vs2022.csproj package nanoFramework.Tools.MetadataProcessor.MsBuildTask --version $packageTargetVersion --no-restore 
 nuget restore -uselockfile
 
-"Bumping nanoFramework.Tools.Debugger to v$packageTargetVersion." | Write-Host -ForegroundColor Cyan                
+"Bumping nanoFramework.Tools.MetadataProcessor.MsBuildTask to v$packageTargetVersion." | Write-Host -ForegroundColor Cyan                
 
 # build commit message
-$commitMessage += "Bumps nanoFramework.Tools.Debugger to v$packageTargetVersion.`n"
+$commitMessage += "Bumps nanoFramework.Tools.MetadataProcessor.MsBuildTask to v$packageTargetVersion.`n"
 # build PR title
-$prTitle = "Bumps nanoFramework.Tools.Debugger to v$packageTargetVersion"
+$prTitle = "Bumps nanoFramework.Tools.MetadataProcessor.MsBuildTask to v$packageTargetVersion"
 
 # need this line so nfbot flags the PR appropriately
 $commitMessage += "`n[version update]`n`n"
@@ -257,7 +257,7 @@ else
 # nano firmware flasher
 
 "**************************************************************************************" | Write-Host
-"Updating nanoFramework.Tools.Debugger.Net package in nano firmware flasher solution..." | Write-Host
+"Updating nanoFramework.Tools.MetadataProcessor.MsBuildTask package in nano firmware flasher solution..." | Write-Host
 
 Set-Location "$env:Agent_TempDirectory" | Out-Null
 
@@ -275,20 +275,20 @@ Write-Host "Checkout main branch..."
 git checkout --quiet main | Out-Null
 
 dotnet restore
-dotnet remove nanoFirmwareFlasher.Library/nanoFirmwareFlasher.Library.csproj package nanoFramework.Tools.Debugger.Net
-dotnet add nanoFirmwareFlasher.Library/nanoFirmwareFlasher.Library.csproj package nanoFramework.Tools.Debugger.Net --version $packageTargetVersion --no-restore 
-dotnet remove nanoFirmwareFlasher.Tool/nanoFirmwareFlasher.Tool.csproj package nanoFramework.Tools.Debugger.Net
-dotnet add nanoFirmwareFlasher.Tool/nanoFirmwareFlasher.Tool.csproj package nanoFramework.Tools.Debugger.Net --version $packageTargetVersion --no-restore 
-dotnet remove nanoFirmwareFlasher.Tests/nanoFirmwareFlasher.Tests.csproj package nanoFramework.Tools.Debugger.Net
-dotnet add nanoFirmwareFlasher.Tests/nanoFirmwareFlasher.Tests.csproj package nanoFramework.Tools.Debugger.Net --version $packageTargetVersion --no-restore 
+dotnet remove nanoFirmwareFlasher.Library/nanoFirmwareFlasher.Library.csproj package nanoFramework.Tools.MetadataProcessor.MsBuildTask
+dotnet add nanoFirmwareFlasher.Library/nanoFirmwareFlasher.Library.csproj package nanoFramework.Tools.MetadataProcessor.MsBuildTask --version $packageTargetVersion --no-restore 
+dotnet remove nanoFirmwareFlasher.Tool/nanoFirmwareFlasher.Tool.csproj package nanoFramework.Tools.MetadataProcessor.MsBuildTask
+dotnet add nanoFirmwareFlasher.Tool/nanoFirmwareFlasher.Tool.csproj package nanoFramework.Tools.MetadataProcessor.MsBuildTask --version $packageTargetVersion --no-restore 
+dotnet remove nanoFirmwareFlasher.Tests/nanoFirmwareFlasher.Tests.csproj package nanoFramework.Tools.MetadataProcessor.MsBuildTask
+dotnet add nanoFirmwareFlasher.Tests/nanoFirmwareFlasher.Tests.csproj package nanoFramework.Tools.MetadataProcessor.MsBuildTask --version $packageTargetVersion --no-restore 
 dotnet restore --force-evaluate
 
-"Bumping nanoFramework.Tools.Debugger to v$packageTargetVersion." | Write-Host -ForegroundColor Cyan                
+"Bumping nanoFramework.Tools.MetadataProcessor.MsBuildTask to v$packageTargetVersion." | Write-Host -ForegroundColor Cyan                
 
 # build commit message
-$commitMessage = "Bumps nanoFramework.Tools.Debugger to v$packageTargetVersion.`n"
+$commitMessage = "Bumps nanoFramework.Tools.MetadataProcessor.MsBuildTask to v$packageTargetVersion.`n"
 # build PR title
-$prTitle = "Bumps nanoFramework.Tools.Debugger to v$packageTargetVersion"
+$prTitle = "Bumps nanoFramework.Tools.MetadataProcessor.MsBuildTask to v$packageTargetVersion"
 
 # need this line so nfbot flags the PR appropriately
 $commitMessage += "`n[version update]`n`n"
