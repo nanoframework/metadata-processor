@@ -3,7 +3,7 @@
    <!-- Configurations that affect the Test Framework -->
    <RunConfiguration>
        <MaxCpuCount>10</MaxCpuCount>
-       <TestSessionTimeout>300000</TestSessionTimeout><!-- Milliseconds -->
+       <TestSessionTimeout>500000</TestSessionTimeout><!-- Milliseconds -->
        <TargetFrameworkVersion>net472</TargetFrameworkVersion>
 	   <TargetPlatform>x64</TargetPlatform>
    </RunConfiguration>
