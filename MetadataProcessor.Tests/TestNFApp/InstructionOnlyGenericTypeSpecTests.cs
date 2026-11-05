@@ -29,6 +29,11 @@ namespace TestNFApp
             public IEnumerable<uint> Items;
             public IMemberlessGeneric<uint>[] Memberless;
 
+            // Not used by any instruction, so a TypeSpec for these has to come from the field type.
+            public IComparable<uint> OnlyInField;
+            public Pair<uint, uint> StructOnlyInField;
+            public static IEnumerable<ulong> StaticOnlyInField;
+
             public static int Takes(IEnumerable<uint> items, INestedMemberlessGeneric<uint> nested) => 1;
         }
 

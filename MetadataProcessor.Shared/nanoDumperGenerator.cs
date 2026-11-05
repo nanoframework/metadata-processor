@@ -812,7 +812,11 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                             && _tablesContext.TypeSpecificationsTable.TryGetTypeReferenceId(operand, out ushort operandId)
                             && operandId == index));
 
-                    Debug.Assert(usedAsInterface || usedAsOperand, $"Couldn't find any MethodRef for TypeSpec[{typeReference}] {typeReference.FullName}");
+                    // Same for a TypeSpec used only as a field type.
+                    bool usedAsField = _tablesContext.TypeDefinitionTable.Items
+                        .Any(td => td.Fields.Any(f => f.FieldType.FullName == typeReference.FullName));
+
+                    Debug.Assert(usedAsInterface || usedAsOperand || usedAsField, $"Couldn't find any MethodRef for TypeSpec[{typeReference}] {typeReference.FullName}");
                 }
             }
 
