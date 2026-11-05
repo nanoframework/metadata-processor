@@ -87,6 +87,16 @@ namespace nanoFramework.Tools.MetadataProcessor
         private Dictionary<TypeReference, ushort> _indexByTypeReference;
 
         /// <summary>
+        /// Signatures of the generic instances used as field types.
+        /// </summary>
+        private readonly HashSet<ushort> _fieldTypeSignatures = new HashSet<ushort>();
+
+        /// <summary>
+        /// Entries added for field types that have no TypeSpec row in the source assembly (RID = 0).
+        /// </summary>
+        private readonly HashSet<TypeReference> _fieldTypesWithoutRid = new HashSet<TypeReference>();
+
+        /// <summary>
         /// Assembly tables context - contains all tables used for building target assembly.
         /// </summary>
         private readonly nanoTablesContext _context;
@@ -110,6 +120,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             AddTypeLevelGenericParameters();
             FillTypeSpecsFromTypes();
             FillTypeSpecsFromMemberReferences();
+            FillTypeSpecsFromFieldTypes();
         }
 
         /// <summary>
@@ -131,7 +142,9 @@ namespace nanoFramework.Tools.MetadataProcessor
             referenceId = 0;
 
             // sanity check for bug in Mono.Cecil where TypeSpecification instances may show with RID = 0
-            if (typeReference is TypeSpecification && typeReference.MetadataToken.RID == 0)
+            if (typeReference is TypeSpecification
+                && typeReference.MetadataToken.RID == 0
+                && !_fieldTypesWithoutRid.Contains(typeReference))
             {
 
                 // don't add this invalid entry
@@ -300,6 +313,38 @@ namespace nanoFramework.Tools.MetadataProcessor
                     ushort sigId = _context.SignaturesTable.GetOrCreateSignatureId(typeRefItem);
                     AddIfNew(typeRefItem, sigId);
                     ExpandNestedTypeSpecs(typeRefItem);
+                }
+            }
+        }
+
+        // The CLR looks up the TypeSpec of a generic field when initializing it, so it has to have a row.
+        // Field types are inlined in the signature, so they may not have one in the source assembly (RID = 0).
+        // Has to run after all the others: entries with different RIDs don't match as dictionary keys.
+        private void FillTypeSpecsFromFieldTypes()
+        {
+            foreach (TypeDefinition td in _context.TypeDefinitionTable.Items)
+            {
+                foreach (FieldDefinition field in td.Fields.Where(f => !f.IsLiteral))
+                {
+                    if (field.FieldType is GenericInstanceType
+                        && !field.FieldType.IsToExclude()
+                        && _context.FieldsTable.TryGetFieldDefinitionId(field, false, out ushort _))
+                    {
+                        ushort sigId = _context.SignaturesTable.GetOrCreateSignatureId(field.FieldType);
+
+                        _fieldTypeSignatures.Add(sigId);
+
+                        if (!_idByTypeSpecifications.ContainsValue(sigId))
+                        {
+                            if (field.FieldType.MetadataToken.RID == 0)
+                            {
+                                _fieldTypesWithoutRid.Add(field.FieldType);
+                            }
+
+                            _indexByTypeReference.Add(field.FieldType, (ushort)_idByTypeSpecifications.Count);
+                            _idByTypeSpecifications.Add(field.FieldType, sigId);
+                        }
+                    }
                 }
             }
         }
@@ -519,6 +564,20 @@ namespace nanoFramework.Tools.MetadataProcessor
         {
             var itemsToRemove = new List<TypeReference>();
 
+            var usedAsOperand = new HashSet<ushort>();
+
+            foreach (MethodDefinition md in _context.MethodDefinitionTable.Items.Where(m => m.HasBody))
+            {
+                foreach (Instruction instr in md.Body.Instructions)
+                {
+                    if (instr.Operand is GenericInstanceType operand
+                        && TryGetTypeReferenceId(operand, out ushort operandIndex))
+                    {
+                        usedAsOperand.Add(operandIndex);
+                    }
+                }
+            }
+
             foreach (var kvp in _idByTypeSpecifications.ToList())
             {
                 TypeReference typeReference = kvp.Key;
@@ -549,6 +608,10 @@ namespace nanoFramework.Tools.MetadataProcessor
                 {
                     // ByRef and Pointer types might be referenced without explicit member refs
                     // Keep them for now
+                    continue;
+                }
+                else if (usedAsOperand.Contains(index) || _fieldTypeSignatures.Contains(sigId))
+                {
                     continue;
                 }
                 else if (typeReference is GenericInstanceType genericInstanceType)
