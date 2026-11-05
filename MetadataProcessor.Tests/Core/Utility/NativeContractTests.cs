@@ -287,7 +287,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
 
             Assert.AreEqual(NativeContract.GetSafeMethodName(first), NativeContract.GetSafeMethodName(second));
 
-            Assert.ThrowsException<ArgumentException>(() => BuildContext(assembly));
+            Assert.ThrowsExactly<ArgumentException>(() => BuildContext(assembly));
         }
 
         #endregion
@@ -422,8 +422,8 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
         [TestMethod]
         public void SanitizeFieldNameThrowsWhenNoIdentifierPossibleTest()
         {
-            Assert.ThrowsException<ArgumentException>(() => NativeContract.SanitizeFieldName("<>", out _));
-            Assert.ThrowsException<ArgumentException>(() => NativeContract.SanitizeFieldName("$$$", out _));
+            Assert.ThrowsExactly<ArgumentException>(() => NativeContract.SanitizeFieldName("<>", out _));
+            Assert.ThrowsExactly<ArgumentException>(() => NativeContract.SanitizeFieldName("$$$", out _));
         }
 
         [TestMethod]
@@ -488,7 +488,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
             SetFakeToken(clash, TokenType.Field);
             type.Fields.Add(clash);
 
-            ArgumentException exception = Assert.ThrowsException<ArgumentException>(() => BuildContext(assembly));
+            ArgumentException exception = Assert.ThrowsExactly<ArgumentException>(() => BuildContext(assembly));
 
             StringAssert.Contains(exception.Message, "StubsGenerationTestNFApp.PrimaryConstructorHolder");
             StringAssert.Contains(exception.Message, "'<width>P'");
@@ -510,7 +510,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
             SetFakeToken(second, TokenType.Field);
             type.Fields.Add(second);
 
-            ArgumentException exception = Assert.ThrowsException<ArgumentException>(() => BuildContext(assembly));
+            ArgumentException exception = Assert.ThrowsExactly<ArgumentException>(() => BuildContext(assembly));
 
             StringAssert.Contains(exception.Message, "FIELD_STATIC__a_b");
         }
