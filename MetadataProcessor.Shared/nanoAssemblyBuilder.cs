@@ -1200,6 +1200,12 @@ namespace nanoFramework.Tools.MetadataProcessor
                                 || i.Operand is TypeReference)
                             {
                                 set.Add(((IMetadataTokenProvider)i.Operand).MetadataToken);
+
+                                // the signature of a TypeSpec operand is written from these
+                                if (i.Operand is TypeSpecification operandSpec)
+                                {
+                                    PinTypeSpecificationParts(operandSpec, set);
+                                }
                             }
                             else if (i.OpCode.OperandType == OperandType.InlineType
                                 || i.Operand is GenericInstanceType
@@ -1681,6 +1687,32 @@ namespace nanoFramework.Tools.MetadataProcessor
             yield return context.ResourceFileTable;
 
             yield return nanoEmptyTable.Instance;
+        }
+
+        /// <summary>
+        /// Pins the types that a TypeSpecification signature refers to: element types and generic arguments.
+        /// </summary>
+        private void PinTypeSpecificationParts(TypeReference t, HashSet<MetadataToken> set)
+        {
+            if (t is GenericInstanceType git)
+            {
+                foreach (TypeReference arg in git.GenericArguments)
+                {
+                    PinTypeSpecificationParts(arg, set);
+                }
+
+                PinTypeSpecificationParts(git.ElementType, set);
+            }
+            else if (t is TypeSpecification ts)
+            {
+                PinTypeSpecificationParts(ts.ElementType, set);
+            }
+            else if (!(t is GenericParameter)
+                     && (t.MetadataType == MetadataType.Class
+                         || (t.IsValueType && !t.IsPrimitive)))
+            {
+                set.Add(t.MetadataToken);
+            }
         }
 
         /// <summary>

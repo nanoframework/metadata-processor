@@ -519,6 +519,20 @@ namespace nanoFramework.Tools.MetadataProcessor
         {
             var itemsToRemove = new List<TypeReference>();
 
+            var usedAsOperand = new HashSet<ushort>();
+
+            foreach (MethodDefinition md in _context.MethodDefinitionTable.Items.Where(m => m.HasBody))
+            {
+                foreach (Instruction instr in md.Body.Instructions)
+                {
+                    if (instr.Operand is GenericInstanceType operand
+                        && TryGetTypeReferenceId(operand, out ushort operandIndex))
+                    {
+                        usedAsOperand.Add(operandIndex);
+                    }
+                }
+            }
+
             foreach (var kvp in _idByTypeSpecifications.ToList())
             {
                 TypeReference typeReference = kvp.Key;
@@ -549,6 +563,10 @@ namespace nanoFramework.Tools.MetadataProcessor
                 {
                     // ByRef and Pointer types might be referenced without explicit member refs
                     // Keep them for now
+                    continue;
+                }
+                else if (usedAsOperand.Contains(index))
+                {
                     continue;
                 }
                 else if (typeReference is GenericInstanceType genericInstanceType)

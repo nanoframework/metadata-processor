@@ -112,6 +112,10 @@ namespace TestNFApp
             Console.WriteLine("GenericParameterArgumentTypeSpec tests");
             _ = new GenericParameterArgumentTypeSpecTests();
 
+            // generic-instance TypeSpec reached only as an instruction operand, with no member references
+            Console.WriteLine("InstructionOnlyGenericTypeSpec tests");
+            _ = new InstructionOnlyGenericTypeSpecTests();
+
             // 
             Console.WriteLine("Exiting TestNFApp");
         }

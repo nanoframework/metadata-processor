@@ -805,7 +805,14 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
                     bool usedAsInterface = _tablesContext.TypeDefinitionTable.Items
                         .Any(td => td.Interfaces.Any(i => i.InterfaceType.FullName == typeReference.FullName));
 
-                    Debug.Assert(usedAsInterface, $"Couldn't find any MethodRef for TypeSpec[{typeReference}] {typeReference.FullName}");
+                    // Same for a TypeSpec used only as an instruction operand (castclass, isinst, newarr...).
+                    bool usedAsOperand = _tablesContext.MethodDefinitionTable.Items
+                        .Where(md => md.HasBody)
+                        .Any(md => md.Body.Instructions.Any(i => i.Operand is GenericInstanceType operand
+                            && _tablesContext.TypeSpecificationsTable.TryGetTypeReferenceId(operand, out ushort operandId)
+                            && operandId == index));
+
+                    Debug.Assert(usedAsInterface || usedAsOperand, $"Couldn't find any MethodRef for TypeSpec[{typeReference}] {typeReference.FullName}");
                 }
             }
 

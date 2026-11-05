@@ -45,6 +45,7 @@
     <Compile Include="TestingDestructors.cs" />
     <Compile Include="GenericInterfaceTypeSpecTests.cs" />
     <Compile Include="GenericParameterArgumentTypeSpecTests.cs" />
+    <Compile Include="InstructionOnlyGenericTypeSpecTests.cs" />
     <Compile Include="TestingDelegates.cs" />
   </ItemGroup>
   <ItemGroup>
