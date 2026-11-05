@@ -86,7 +86,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
 
                 foreach (var a in iut.Items)
                 {
-                    writerTestOutput.Write(context.StringTable.GetOrCreateStringId(a.Name));
+                    writerTestOutput.Write(context.StringTable.GetOrCreateAssemblyNameId(a.Name));
 
                     // version
                     writerTestOutput.Write((ushort)a.Version.Major);

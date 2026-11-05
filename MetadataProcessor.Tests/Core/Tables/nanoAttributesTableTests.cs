@@ -114,6 +114,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
                 .ToList();
 
             var actual = accessor.CustomAttributes
+                .Where(attribute => attribute.AttributeType.IsToInclude())
                 .Select(attribute => attribute.AttributeType.Name)
                 .OrderBy(name => name)
                 .ToList();
@@ -128,8 +129,9 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
             var typeDefinition = TestObjectHelper.GetTestNFAppOneClassOverAllTypeDefinition(context.AssemblyDefinition);
             var property = typeDefinition.Properties.Single(item => item.Name == "DummyProperty");
 
-            int getterCount = property.GetMethod.CustomAttributes.Count;
-            int setterCount = property.SetMethod.CustomAttributes.Count;
+            // attributes the runtime ignores (e.g. CompilerGenerated on auto-property accessors) don't count
+            int getterCount = property.GetMethod.CustomAttributes.Count(a => a.AttributeType.IsToInclude());
+            int setterCount = property.SetMethod.CustomAttributes.Count(a => a.AttributeType.IsToInclude());
 
             Assert.AreEqual(2, getterCount);
             Assert.AreEqual(2, setterCount);
@@ -143,8 +145,8 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
                 false,
                 false);
 
-            Assert.AreEqual(getterCount, property.GetMethod.CustomAttributes.Count);
-            Assert.AreEqual(setterCount, property.SetMethod.CustomAttributes.Count);
+            Assert.AreEqual(getterCount, property.GetMethod.CustomAttributes.Count(a => a.AttributeType.IsToInclude()));
+            Assert.AreEqual(setterCount, property.SetMethod.CustomAttributes.Count(a => a.AttributeType.IsToInclude()));
         }
 
         [TestMethod]
