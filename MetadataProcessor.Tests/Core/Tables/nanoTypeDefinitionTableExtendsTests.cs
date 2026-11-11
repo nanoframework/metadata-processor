@@ -83,6 +83,94 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
             return TestObjectHelper.GetTestNFAppAssemblyDefinitionWithLoadHints();
         }
 
+        // C# can't write a modifier in the argument of a base type: build the assembly with Cecil, and read it back so
+        // its metadata has the tokens of a compiled one. The modifier is a type reference that nothing else uses.
+        private static AssemblyDefinition CreateAssemblyWithModifiedGenericBase(bool required)
+        {
+            AssemblyDefinition mscorlib = TestObjectHelper.GetmscorlibAssemblyDefinition();
+            var resolver = new LoadHintsAssemblyResolver(
+                new Dictionary<string, string>(StringComparer.Ordinal) { ["mscorlib"] = mscorlib.MainModule.FileName });
+
+            AssemblyDefinition created = AssemblyDefinition.CreateAssembly(
+                new AssemblyNameDefinition("ModifiedGenericBase", new Version(1, 0, 0, 0)),
+                "ModifiedGenericBase",
+                new ModuleParameters { Kind = ModuleKind.Dll, AssemblyResolver = resolver });
+            ModuleDefinition module = created.MainModule;
+
+            TypeReference objectType = module.ImportReference(mscorlib.MainModule.GetType("System.Object"));
+            TypeReference intType = module.ImportReference(mscorlib.MainModule.GetType("System.Int32"));
+            TypeReference modifier = module.ImportReference(mscorlib.MainModule.GetType("System.Version"));
+
+            var genericBase = new TypeDefinition("Fixture", "GenericBase`1", Mono.Cecil.TypeAttributes.Public | Mono.Cecil.TypeAttributes.Class, objectType);
+            genericBase.GenericParameters.Add(new GenericParameter("T", genericBase));
+            module.Types.Add(genericBase);
+
+            var baseType = new GenericInstanceType(genericBase);
+            baseType.GenericArguments.Add(required
+                ? (TypeReference)new RequiredModifierType(modifier, intType)
+                : new OptionalModifierType(modifier, intType));
+
+            module.Types.Add(new TypeDefinition("Fixture", "ModifiedBase", Mono.Cecil.TypeAttributes.Public | Mono.Cecil.TypeAttributes.Class, baseType));
+
+            using (var stream = new MemoryStream())
+            {
+                created.Write(stream);
+                stream.Position = 0;
+
+                return AssemblyDefinition.ReadAssembly(stream, new ReaderParameters { AssemblyResolver = resolver, ReadingMode = ReadingMode.Immediate });
+            }
+        }
+
+        private static void AssertModifiedGenericBaseIsWritten(bool required)
+        {
+            // the modifier type is a type reference that only the signature of the base needs: minimizing prunes it
+            // unless the dependencies of the base include it, and writing the signature fails without it
+            FinalAssembly assembly = BuildFinalAssembly(CreateAssemblyWithModifiedGenericBase(required));
+            ushort extends = assembly.Extends("Fixture.ModifiedBase");
+
+            Assert.AreEqual(0xC000, extends & 0xC000);
+
+            int typeSpecIndex = extends & 0x3FFF;
+            var baseType = (GenericInstanceType)assembly.Context.TypeSpecificationsTable.TryGetTypeReferenceByIndex((ushort)typeSpecIndex);
+            var argument = (IModifierType)baseType.GenericArguments[0];
+
+            Assert.IsInstanceOfType(argument, required ? typeof(RequiredModifierType) : typeof(OptionalModifierType));
+            Assert.IsTrue(
+                assembly.Context.TypeReferencesTable.TryGetTypeReferenceId(argument.ModifierType, out ushort modifierId),
+                "The type reference of the modifier was removed.");
+
+            MethodInfo getSignature = typeof(nanoSignaturesTable).GetMethod(
+                "GetSignature",
+                BindingFlags.Instance | BindingFlags.NonPublic,
+                null,
+                new[] { typeof(TypeReference), typeof(bool) },
+                null);
+            byte[] expected = (byte[])getSignature.Invoke(assembly.Context.SignaturesTable, new object[] { baseType, false });
+            byte[] written = assembly.SignatureAt(assembly.SignatureIdOfTypeSpec(typeSpecIndex), expected.Length);
+
+            CollectionAssert.AreEqual(expected, written);
+
+            // the modifier marker is followed by the type reference of the modifier
+            byte marker = (byte)(required ? nanoSerializationType.ELEMENT_TYPE_CMOD_REQD : nanoSerializationType.ELEMENT_TYPE_CMOD_OPT);
+            int markerAt = Array.IndexOf(written, marker);
+            byte[] token = ArgumentToken(modifierId);
+
+            Assert.IsTrue(markerAt >= 0, "The signature has no modifier.");
+            CollectionAssert.AreEqual(token, written.Skip(markerAt + 1).Take(token.Length).ToArray());
+        }
+
+        [TestMethod]
+        public void Extends_GenericBaseWithRequiredModifier_SurvivesMinimizationAndSerialization()
+        {
+            AssertModifiedGenericBaseIsWritten(true);
+        }
+
+        [TestMethod]
+        public void Extends_GenericBaseWithOptionalModifier_SurvivesMinimizationAndSerialization()
+        {
+            AssertModifiedGenericBaseIsWritten(false);
+        }
+
         private static byte[] ArgumentToken(ushort typeRefId)
         {
             using (var stream = new MemoryStream())
