@@ -655,6 +655,12 @@ namespace nanoFramework.Tools.MetadataProcessor
                     if (td.BaseType != null)
                     {
                         set.Add(td.BaseType.MetadataToken);
+
+                        // the signature of a generic base is written from these
+                        if (td.BaseType is TypeSpecification)
+                        {
+                            PinTypeSpecificationParts(td.BaseType, set);
+                        }
                     }
 
                     if (td.DeclaringType != null)
@@ -1702,6 +1708,11 @@ namespace nanoFramework.Tools.MetadataProcessor
                 }
 
                 PinTypeSpecificationParts(git.ElementType, set);
+            }
+            else if (t is IModifierType modifier)
+            {
+                PinTypeSpecificationParts(modifier.ModifierType, set);
+                PinTypeSpecificationParts(((TypeSpecification)t).ElementType, set);
             }
             else if (t is TypeSpecification ts)
             {

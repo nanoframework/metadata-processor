@@ -21,6 +21,7 @@
     <Compile Include="AttributesOnAnotherAssembly.cs" />
     <Compile Include="IAmAClassWithAnEnum.cs" />
     <Compile Include="ClassOnAnotherAssembly.cs" />
+    <Compile Include="GenericClassOnAnotherAssembly.cs" />
     <Compile Include="ClassWithNativeImplementation.cs" />
     <Compile Include="IAmAnEnumToExclude.cs" />
     <Compile Include="IAmAlsoATypeToExclude.cs" />

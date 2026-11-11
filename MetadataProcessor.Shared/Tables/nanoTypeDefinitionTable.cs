@@ -121,7 +121,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             WriteStringReference(writer, item.Namespace);
 
             // Extends
-            writer.WriteUInt16(GetEncodedTypeReferenceOrDefinitionId(item.BaseType));
+            writer.WriteUInt16(GetEncodedExtendsId(item.BaseType));
 
             // EnclosingType
             writer.WriteUInt16(GetEncodedTypeReferenceOrDefinitionId(item.DeclaringType));
@@ -369,6 +369,32 @@ namespace nanoFramework.Tools.MetadataProcessor
                 _context.SignaturesTable.GetOrCreateSignatureId(method.Body.Variables);
             }
             _context.StringTable.GetOrCreateStringId(method.Name);
+        }
+
+        private ushort GetEncodedExtendsId(
+            TypeReference baseType)
+        {
+            // base is a generic instance: TypeSpec, tag 0xC000 (TypeRef indexes are below 0x4000, no valid TypeSpec index reaches 0x3FFF)
+            if (baseType is GenericInstanceType
+                && _context.TypeSpecificationsTable.TryGetTypeReferenceId(baseType, out ushort typeSpecId))
+            {
+                if (typeSpecId >= 0x3FFF)
+                {
+                    throw new InvalidOperationException($"Too many type specifications to encode the base type of '{baseType.FullName}'.");
+                }
+
+                return (ushort)(0xC000 | typeSpecId);
+            }
+
+            ushort encoded = GetEncodedTypeReferenceOrDefinitionId(baseType);
+
+            // a TypeRef index beyond 0x3FFF would be read as a TypeSpec
+            if (encoded != 0xFFFF && (encoded & 0xC000) == 0xC000)
+            {
+                throw new InvalidOperationException($"Too many type references to encode the base type of '{baseType.FullName}'.");
+            }
+
+            return encoded;
         }
 
         private ushort GetEncodedTypeReferenceOrDefinitionId(

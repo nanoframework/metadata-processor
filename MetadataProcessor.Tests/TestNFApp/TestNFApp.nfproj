@@ -43,6 +43,7 @@
     <Compile Include="TestingReadOnlySpan.cs" />
     <Compile Include="TestingSpan.cs" />
     <Compile Include="TestingDestructors.cs" />
+    <Compile Include="GenericBaseTypeEncodingTests.cs" />
     <Compile Include="GenericInterfaceTypeSpecTests.cs" />
     <Compile Include="GenericParameterArgumentTypeSpecTests.cs" />
     <Compile Include="InstructionOnlyGenericTypeSpecTests.cs" />

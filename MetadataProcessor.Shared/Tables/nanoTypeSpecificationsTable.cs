@@ -362,6 +362,11 @@ namespace nanoFramework.Tools.MetadataProcessor
                     }
                 }
 
+                if (td.BaseType is GenericInstanceType)
+                {
+                    ExpandNestedTypeSpecs(td.BaseType);
+                }
+
                 // Interface implementations on the type
                 if (td.HasInterfaces)
                 {
@@ -681,6 +686,20 @@ namespace nanoFramework.Tools.MetadataProcessor
                                     hasMemberReferences = true;
                                     break;
                                 }
+                            }
+                        }
+                    }
+
+                    // Check if used as the base type of any TypeDefinition
+                    if (!hasMemberReferences)
+                    {
+                        string baseFullName = genericInstanceType.FullName;
+                        foreach (TypeDefinition td in _context.TypeDefinitionTable.Items)
+                        {
+                            if (td.BaseType is GenericInstanceType && td.BaseType.FullName == baseFullName)
+                            {
+                                hasMemberReferences = true;
+                                break;
                             }
                         }
                     }
