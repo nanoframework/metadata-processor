@@ -351,7 +351,7 @@ jobs:
       gitHubConnection: 'github.com_nano-$(System.TeamProject)'
       tagSource: userSpecifiedTag
       tag: v$(NBGV_NuGetPackageVersion)
-      title: 'nanoFramework Metadata Processor v$(NBGV_NuGetPackageVersion)'
+      title: 'v$(NBGV_NuGetPackageVersion)'
       assets: '$(Build.ArtifactStagingDirectory)/*'
       isPreRelease: false
       isDraft: false
