@@ -1709,6 +1709,11 @@ namespace nanoFramework.Tools.MetadataProcessor
 
                 PinTypeSpecificationParts(git.ElementType, set);
             }
+            else if (t is IModifierType modifier)
+            {
+                PinTypeSpecificationParts(modifier.ModifierType, set);
+                PinTypeSpecificationParts(((TypeSpecification)t).ElementType, set);
+            }
             else if (t is TypeSpecification ts)
             {
                 PinTypeSpecificationParts(ts.ElementType, set);
