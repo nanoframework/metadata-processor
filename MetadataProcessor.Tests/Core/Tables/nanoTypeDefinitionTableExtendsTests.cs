@@ -43,6 +43,45 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
             return TestObjectHelper.GetTestNFAppNanoTablesContext();
         }
 
+        private static nanoTablesContext BuildMinimizedContext()
+        {
+            var assemblyDefinition = TestObjectHelper.GetTestNFAppAssemblyDefinitionWithLoadHints();
+            var assemblyBuilder = new nanoAssemblyBuilder(assemblyDefinition, false);
+
+            TestObjectHelper.DoWithNanoBinaryWriter(
+                bw => nanoBinaryWriter.CreateLittleEndianBinaryWriter(bw),
+                (ms, bw, writer) => assemblyBuilder.Write(writer));
+
+            assemblyBuilder.Minimize();
+
+            return assemblyBuilder.TablesContext;
+        }
+
+        [TestMethod]
+        public void Extends_AfterMinimize_KeepsGenericBaseAndItsArguments()
+        {
+            nanoTablesContext context = BuildMinimizedContext();
+            ushort extends = ReadExtends(context, "TestNFApp.DerivedFromGenericOfExternalType");
+
+            Assert.AreEqual(0xC000, extends & 0xC000);
+
+            // the index is the one of the rebuilt TypeSpec table
+            TypeReference baseType = context.TypeSpecificationsTable.TryGetTypeReferenceByIndex((ushort)(extends & 0x3FFF));
+
+            Assert.IsNotNull(baseType);
+            Assert.AreEqual("TestNFApp.GenericBase`1<System.Version>", baseType.FullName);
+
+            // the signature of the base is written from its argument, which has to survive the trimming of type references
+            TypeReference argument = ((GenericInstanceType)baseType).GenericArguments[0];
+
+            Assert.IsTrue(
+                context.TypeReferencesTable.TryGetTypeReferenceId(argument, out _),
+                "The type reference used as argument of the generic base was removed.");
+
+            // and the other encodings are still found after the minimization
+            Assert.AreEqual(0, ReadExtends(BuildMinimizedContext(), "TestNFApp.DerivedFromNonGeneric") & 0x8000);
+        }
+
         [TestMethod]
         public void Extends_PlainBase_IsEncodedAsTypeDef()
         {
