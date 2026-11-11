@@ -28,4 +28,9 @@ namespace TestNFApp
     public class DerivedFromGenericOfExternalType : GenericBase<System.Version>
     {
     }
+
+    // the generic definition of the base is in another assembly
+    public class DerivedFromExternalGeneric : TestNFClassLibrary.ExternalGenericBase<System.Version>
+    {
+    }
 }
