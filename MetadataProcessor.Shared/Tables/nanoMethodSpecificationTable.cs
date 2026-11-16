@@ -64,48 +64,11 @@ namespace nanoFramework.Tools.MetadataProcessor
                 {
                     foreach (TypeReference argument in instance.GenericArguments)
                     {
-                        AppendTypeKey(key, argument);
-                        key.Append(',');
+                        key.Append(TypeReferenceEqualityComparer.GetTypeKey(argument)).Append(',');
                     }
                 }
 
                 return key.ToString();
-            }
-
-            private static void AppendTypeKey(System.Text.StringBuilder key, TypeReference type)
-            {
-                switch (type)
-                {
-                    case GenericParameter parameter:
-                        key.Append(parameter.Type == GenericParameterType.Type ? "!" : "!!").Append(parameter.Position);
-                        break;
-
-                    case GenericInstanceType instance:
-                        key.Append(instance.ElementType.FullName).Append('<');
-
-                        foreach (TypeReference argument in instance.GenericArguments)
-                        {
-                            AppendTypeKey(key, argument);
-                            key.Append(',');
-                        }
-
-                        key.Append('>');
-                        break;
-
-                    case ArrayType array:
-                        AppendTypeKey(key, array.ElementType);
-                        key.Append('[').Append(array.Rank).Append(']');
-                        break;
-
-                    case ByReferenceType byReference:
-                        AppendTypeKey(key, byReference.ElementType);
-                        key.Append('&');
-                        break;
-
-                    default:
-                        key.Append(type.FullName);
-                        break;
-                }
             }
         }
 

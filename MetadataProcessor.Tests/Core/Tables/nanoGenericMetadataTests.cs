@@ -244,7 +244,9 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
             ushort flags = assembly.TypeSpecFlags(
                 assembly.FindTypeSpec(t => t is GenericInstanceType g
                                            && g.ElementType.FullName == "TestNFApp.IBoundMarker`1"
-                                           && g.GenericArguments[0] is GenericParameter));
+                                           && g.GenericArguments[0] is GenericParameter argument
+                                           && argument.Type == GenericParameterType.Type
+                                           && argument.Position == 0));
 
             Assert.AreEqual(TS_OverOwnParameters | TS_HasVar | TS_GenericInstance | (1 << 4), flags);
             Assert.AreEqual(0, flags & TS_Closed);

@@ -19,7 +19,7 @@ namespace nanoFramework.Tools.MetadataProcessor
 
         /// <inheritdoc/>
         // Key is the type itself
-        private static string GetTypeKey(TypeReference type)
+        internal static string GetTypeKey(TypeReference type)
         {
             var key = new System.Text.StringBuilder();
 

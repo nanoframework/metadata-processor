@@ -180,6 +180,11 @@ namespace nanoFramework.Tools.MetadataProcessor
                 return 0xFFFF;
             }
 
+            if (genericParameter.Constraints.Count > byte.MaxValue)
+            {
+                throw new ArgumentException($"Generic parameter '{genericParameter.Name}' has {genericParameter.Constraints.Count} constraints, the maximum supported is {byte.MaxValue}.");
+            }
+
             using (var buffer = new MemoryStream())
             using (var writer = new BinaryWriter(buffer))
             {

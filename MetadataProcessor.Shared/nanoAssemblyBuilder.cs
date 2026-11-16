@@ -1417,6 +1417,11 @@ namespace nanoFramework.Tools.MetadataProcessor
                             {
                                 set.Add(c.ConstraintType.MetadataToken);
                             }
+
+                            if (c.ConstraintType is TypeSpecification)
+                            {
+                                PinTypeSpecificationParts(c.ConstraintType, set);
+                            }
                         }
                     }
                     break;
