@@ -51,7 +51,7 @@ jobs:
 ##############################
 - job: Build_Prep
   pool:
-    vmImage: 'windows-2025-vs2026'
+    vmImage: 'windows-latest'
 
   steps:
   - checkout: self
