@@ -44,13 +44,68 @@ namespace nanoFramework.Tools.MetadataProcessor
                     throw new ArgumentNullException(nameof(y));
                 }
 
-                return x.MetadataToken.ToInt32() == y.MetadataToken.ToInt32();
+                return x.MetadataToken.ToInt32() == y.MetadataToken.ToInt32()
+                       || (x.ElementMethod.MetadataToken == y.ElementMethod.MetadataToken
+                           && GetInstantiationKey(x) == GetInstantiationKey(y));
             }
 
             /// <inheritdoc/>
             public int GetHashCode(MethodSpecification obj)
             {
-                return obj.MetadataToken.ToInt32().GetHashCode();
+                return unchecked(obj.ElementMethod.MetadataToken.ToInt32() * 31 + GetInstantiationKey(obj).GetHashCode());
+            }
+
+            // same element method and same type arguments are the same row, whatever token the source gave it
+            private static string GetInstantiationKey(MethodSpecification specification)
+            {
+                var key = new System.Text.StringBuilder();
+
+                if (specification is GenericInstanceMethod instance)
+                {
+                    foreach (TypeReference argument in instance.GenericArguments)
+                    {
+                        AppendTypeKey(key, argument);
+                        key.Append(',');
+                    }
+                }
+
+                return key.ToString();
+            }
+
+            private static void AppendTypeKey(System.Text.StringBuilder key, TypeReference type)
+            {
+                switch (type)
+                {
+                    case GenericParameter parameter:
+                        key.Append(parameter.Type == GenericParameterType.Type ? "!" : "!!").Append(parameter.Position);
+                        break;
+
+                    case GenericInstanceType instance:
+                        key.Append(instance.ElementType.FullName).Append('<');
+
+                        foreach (TypeReference argument in instance.GenericArguments)
+                        {
+                            AppendTypeKey(key, argument);
+                            key.Append(',');
+                        }
+
+                        key.Append('>');
+                        break;
+
+                    case ArrayType array:
+                        AppendTypeKey(key, array.ElementType);
+                        key.Append('[').Append(array.Rank).Append(']');
+                        break;
+
+                    case ByReferenceType byReference:
+                        AppendTypeKey(key, byReference.ElementType);
+                        key.Append('&');
+                        break;
+
+                    default:
+                        key.Append(type.FullName);
+                        break;
+                }
             }
         }
 

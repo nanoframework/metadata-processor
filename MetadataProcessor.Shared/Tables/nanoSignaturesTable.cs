@@ -169,6 +169,34 @@ namespace nanoFramework.Tools.MetadataProcessor
         }
 
         /// <summary>
+        /// Gets existing or creates new signature identifier for the type constraints of a generic parameter:
+        /// a count followed by one type per constraint. 0xFFFF when there are none.
+        /// </summary>
+        /// <param name="genericParameter">Generic parameter in Mono.Cecil format.</param>
+        public ushort GetOrCreateConstraintsSignatureId(GenericParameter genericParameter)
+        {
+            if (!genericParameter.HasConstraints)
+            {
+                return 0xFFFF;
+            }
+
+            using (var buffer = new MemoryStream())
+            using (var writer = new BinaryWriter(buffer))
+            {
+                var binaryWriter = nanoBinaryWriter.CreateLittleEndianBinaryWriter(writer);
+
+                binaryWriter.WriteByte((byte)genericParameter.Constraints.Count);
+
+                foreach (GenericParameterConstraint constraint in genericParameter.Constraints)
+                {
+                    WriteTypeInfo(constraint.ConstraintType, binaryWriter);
+                }
+
+                return GetOrCreateSignatureIdImpl(buffer.ToArray());
+            }
+        }
+
+        /// <summary>
         /// Gets existing or creates new signature identifier for field reference.
         /// </summary>
         /// <param name="fieldReference">Field reference in Mono.Cecil format.</param>

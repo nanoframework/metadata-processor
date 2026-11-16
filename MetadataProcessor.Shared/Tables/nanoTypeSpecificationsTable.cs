@@ -24,7 +24,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         //////////////////////////////////////////////////////////////////////////////////////////////
         // <SYNC-WITH-NATIVE>                                                                       //
         // when updating this size here need to update matching define in nanoCLR_Types.h in native //
-        private const int sizeOf_CLR_RECORD_TYPESPEC = 2;
+        private const int sizeOf_CLR_RECORD_TYPESPEC = 4;
         //////////////////////////////////////////////////////////////////////////////////////////////
         //////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -79,7 +79,47 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// <summary>
         /// Maps for each unique type specification and related identifier.
         /// </summary>
-        private Dictionary<TypeReference, ushort> _idByTypeSpecifications;
+        // Insertion ordered: the row index of a TypeSpec is its position, a Dictionary does not guarantee any order.
+        private sealed class OrderedTypeSpecs : IEnumerable<KeyValuePair<TypeReference, ushort>>
+        {
+            private readonly List<KeyValuePair<TypeReference, ushort>> _list = new List<KeyValuePair<TypeReference, ushort>>();
+            private readonly HashSet<TypeReference> _keys;
+
+            public OrderedTypeSpecs(IEqualityComparer<TypeReference> comparer)
+            {
+                _keys = new HashSet<TypeReference>(comparer);
+            }
+
+            public int Count => _list.Count;
+
+            public IEnumerable<TypeReference> Keys => _list.Select(i => i.Key);
+
+            public KeyValuePair<TypeReference, ushort> this[int index] => _list[index];
+
+            public bool ContainsKey(TypeReference key) => _keys.Contains(key);
+
+            public bool ContainsValue(ushort value) => _list.Any(i => i.Value == value);
+
+            public void Add(TypeReference key, ushort value)
+            {
+                _keys.Add(key);
+                _list.Add(new KeyValuePair<TypeReference, ushort>(key, value));
+            }
+
+            public void Remove(TypeReference key)
+            {
+                if (_keys.Remove(key))
+                {
+                    _list.RemoveAll(i => ReferenceEquals(i.Key, key) || _keys.Comparer.Equals(i.Key, key));
+                }
+            }
+
+            public IEnumerator<KeyValuePair<TypeReference, ushort>> GetEnumerator() => _list.GetEnumerator();
+
+            System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => _list.GetEnumerator();
+        }
+
+        private OrderedTypeSpecs _idByTypeSpecifications;
 
         /// <summary>
         /// Maps type reference to its index in the table (insertion order).
@@ -114,7 +154,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         {
             _context = context;
 
-            _idByTypeSpecifications = new Dictionary<TypeReference, ushort>(new TypeReferenceEqualityComparer(context));
+            _idByTypeSpecifications = new OrderedTypeSpecs(new TypeReferenceEqualityComparer(context));
             _indexByTypeReference = new Dictionary<TypeReference, ushort>(new TypeReferenceEqualityComparer(context));
 
             AddTypeLevelGenericParameters();
@@ -215,7 +255,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                 return null;
             }
 
-            return _idByTypeSpecifications.ElementAt(index).Key;
+            return _idByTypeSpecifications[index].Key;
         }
 
         /// <inheritdoc/>
@@ -228,10 +268,126 @@ namespace nanoFramework.Tools.MetadataProcessor
                 var writerStartPosition = writer.BaseStream.Position;
 
                 writer.WriteUInt16(item.Value);
+                writer.WriteUInt16(ComputeFlags(item.Key));
 
                 var writerEndPosition = writer.BaseStream.Position;
 
                 Debug.Assert((writerEndPosition - writerStartPosition) == sizeOf_CLR_RECORD_TYPESPEC);
+            }
+        }
+
+        //////////////////////////////////////////////////////////////////////////////////////////////
+        //////////////////////////////////////////////////////////////////////////////////////////////
+        // <SYNC-WITH-NATIVE>                                                                       //
+        // CLR_RECORD_TYPESPEC::TS_* flags in nanoCLR_Types.h                                       //
+        private const ushort TS_Closed = 0x0001;
+        private const ushort TS_OverOwnParameters = 0x0002;
+        private const ushort TS_HasVar = 0x0004;
+        private const ushort TS_HasMVar = 0x0008;
+        private const int TS_DepthShift = 4;
+        private const ushort TS_DepthMask = 0x0070;
+        private const ushort TS_GenericInstance = 0x0080;
+        private const ushort TS_Array = 0x0100;
+        private const ushort TS_ByRefOrPointer = 0x0200;
+        //////////////////////////////////////////////////////////////////////////////////////////////
+        //////////////////////////////////////////////////////////////////////////////////////////////
+
+        internal static ushort ComputeFlags(TypeReference typeReference)
+        {
+            AnalyzeParameters(typeReference, out bool hasVar, out bool hasMVar, out int depth);
+
+            ushort flags = 0;
+
+            if (!hasVar && !hasMVar)
+            {
+                flags |= TS_Closed;
+            }
+
+            if (hasVar)
+            {
+                flags |= TS_HasVar;
+            }
+
+            if (hasMVar)
+            {
+                flags |= TS_HasMVar;
+            }
+
+            flags |= (ushort)((Math.Min(depth, 7) << TS_DepthShift) & TS_DepthMask);
+
+            if (typeReference is GenericInstanceType)
+            {
+                flags |= TS_GenericInstance;
+            }
+
+            // levels are not taken into account, G<!0>[] is over its own parameters too
+            TypeReference core = typeReference;
+
+            while (core is TypeSpecification specification && !(core is GenericInstanceType))
+            {
+                core = specification.ElementType;
+            }
+
+            if (core is GenericInstanceType instance && instance.GenericArguments.Count > 0)
+            {
+                bool ownParameters = true;
+
+                for (int i = 0; i < instance.GenericArguments.Count && ownParameters; i++)
+                {
+                    ownParameters = instance.GenericArguments[i] is GenericParameter gp
+                                    && gp.Type == GenericParameterType.Type
+                                    && gp.Position == i;
+                }
+
+                if (ownParameters)
+                {
+                    flags |= TS_OverOwnParameters;
+                }
+            }
+
+            if (typeReference is ArrayType)
+            {
+                flags |= TS_Array;
+            }
+            else if (typeReference is ByReferenceType || typeReference is PointerType)
+            {
+                flags |= TS_ByRefOrPointer;
+            }
+
+            return flags;
+        }
+
+        private static void AnalyzeParameters(TypeReference typeReference, out bool hasVar, out bool hasMVar, out int depth)
+        {
+            hasVar = false;
+            hasMVar = false;
+            depth = 0;
+
+            switch (typeReference)
+            {
+                case GenericParameter gp:
+                    hasVar = gp.Type == GenericParameterType.Type;
+                    hasMVar = !hasVar;
+                    break;
+
+                case GenericInstanceType instance:
+                    int argumentsDepth = 0;
+
+                    foreach (TypeReference argument in instance.GenericArguments)
+                    {
+                        AnalyzeParameters(argument, out bool argVar, out bool argMVar, out int argDepth);
+
+                        hasVar |= argVar;
+                        hasMVar |= argMVar;
+                        argumentsDepth = Math.Max(argumentsDepth, argDepth);
+                    }
+
+                    depth = argumentsDepth + 1;
+                    break;
+
+                case TypeSpecification specification:
+                    AnalyzeParameters(specification.ElementType, out hasVar, out hasMVar, out depth);
+                    break;
             }
         }
 

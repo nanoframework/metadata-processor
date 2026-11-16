@@ -376,8 +376,14 @@ namespace nanoFramework.Tools.MetadataProcessor
                     FieldsTable.TryGetFieldDefinitionId((FieldDefinition)token, false, out referenceId);
                     return (uint)0x05000000 | referenceId;
                 case TokenType.GenericParam:
-                    GenericParamsTable.TryGetParameterId((GenericParameter)token, out referenceId);
-                    return (uint)0x07000000 | referenceId;
+                    // a bare type parameter is a TypeSpec like in every other instruction
+                    if (!TypeSpecificationsTable.TryGetTypeReferenceId((GenericParameter)token, out referenceId))
+                    {
+                        Debug.Fail("Can't find type specification.");
+                        throw new ArgumentException($"Can't find type specification for {token}.");
+                    }
+
+                    return (uint)0x09000000 | referenceId;
 
                 default:
                     System.Diagnostics.Debug.Fail("Unsupported TokenType");
