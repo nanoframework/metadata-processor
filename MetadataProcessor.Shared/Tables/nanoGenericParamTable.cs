@@ -55,11 +55,8 @@ namespace nanoFramework.Tools.MetadataProcessor
         }
 
         /// <summary>
-        /// Maps each unique generic parameter and its type.
+        /// Gets the table index of this table in the target assembly.
         /// </summary>
-        private Dictionary<GenericParameter, TypeReference> _typeForGenericParam =
-            new Dictionary<GenericParameter, TypeReference>();
-
         public NanoClrTable TableIndex => NanoClrTable.TBL_GenericParam;
 
         /// <summary>
@@ -74,97 +71,8 @@ namespace nanoFramework.Tools.MetadataProcessor
             nanoTablesContext context)
             : base(items, new GenericParameterComparer(), context)
         {
-            foreach (GenericParameter gp in items)
-            {
-                MethodDefinition methodWithGenericParam = _context.MethodDefinitionTable.Items.SingleOrDefault(m => m.GenericParameters.Contains(gp));
-
-                if (methodWithGenericParam != null)
-                {
-                    // get the first method specification that matches this type AND name
-                    GenericInstanceMethod instanceMethod = _context.MethodSpecificationTable.Items.FirstOrDefault(
-                        mr => mr.DeclaringType.GetElementType() == methodWithGenericParam.DeclaringType &&
-                        mr.Name == methodWithGenericParam.Name) as GenericInstanceMethod;
-
-                    if (instanceMethod == null)
-                    {
-                        // No instantiation was ever emitted in the IL, treat the parameter as an "open generic"
-                        _typeForGenericParam.Add(gp, gp);
-                    }
-                    else
-                    {
-                        // found a closed instantiation, so pick the real type argument
-                        _typeForGenericParam.Add(
-                            gp,
-                            instanceMethod.GenericArguments.ElementAt(gp.Position)
-                        );
-                    }
-                }
-                else
-                {
-                    TypeDefinition typeWithGenericParam = _context.TypeDefinitionTable.Items.SingleOrDefault(t => t.GenericParameters.Contains(gp));
-
-                    if (typeWithGenericParam != null)
-                    {
-                        if (_context.MethodReferencesTable.Items.Any())
-                        {
-                            // try to find an existing GenericInstanceType in the TypeReferencesTable
-                            GenericInstanceType genericInstance = _context.TypeReferencesTable.Items
-                                .OfType<GenericInstanceType>()
-                                .FirstOrDefault(gt => gt.ElementType == typeWithGenericParam);
-
-                            // fallback to whatever TryGetTypeSpecification gives us
-                            if (genericInstance == null)
-                            {
-                                TypeReference spec = _context.TypeSpecificationsTable.TryGetTypeSpecification(typeWithGenericParam.MetadataToken);
-
-                                // If it really is an instance, grab its args...
-                                if (spec is GenericInstanceType genericInstanceType)
-                                {
-                                    genericInstance = genericInstanceType;
-                                }
-                                else
-                                {
-                                    // ... otherwise it's just an open generic definition (unbound T),
-                                    // so our "argument" for gp is gp itself:
-                                    _typeForGenericParam.Add(gp, gp);
-
-                                    // done here
-                                    continue;
-                                }
-                            }
-
-                            // at this point we know we've got a GenericInstanceType,
-                            // so pull out the actual generic‐argument at position gp.Position:
-                            Debug.Assert(
-                                genericInstance != null,
-                                $"Couldn't find a generic instance for type {typeWithGenericParam} when processing generic parameter {gp}."
-                            );
-
-                            _typeForGenericParam.Add(
-                                gp,
-                                genericInstance.GenericArguments.ElementAt(gp.Position)
-                            );
-                        }
-                        else
-                        {
-                            // No methods in scope → no instantiation possible
-                            _typeForGenericParam.Add(gp, null);
-                        }
-                    }
-                    else
-                    {
-                        _typeForGenericParam.Add(gp, null);
-                    }
-                }
-            }
         }
 
-        /// <summary>
-        /// Gets generic parameter ID if possible (if generic parameter is stored in this table).
-        /// </summary>
-        /// <param name="genericParameter">Generic parameter TypeReference in Mono.Cecil format.</param>
-        /// <param name="referenceId">Generic parameter identifier for filling.</param>
-        /// <returns>Returns <c>true</c> the parameter was found, otherwise returns <c>false</c>.</returns>
         public bool TryGetParameterId(
             TypeReference genericParameter,
             out ushort referenceId)
@@ -208,16 +116,8 @@ namespace nanoFramework.Tools.MetadataProcessor
             // owner
             writer.WriteUInt16((ushort)(item.Owner.ToEncodedNanoTypeOrMethodDefToken() | referenceId));
 
-            // Signature
-            if (_typeForGenericParam[item] != null)
-            {
-                writer.WriteUInt16(_context.SignaturesTable.GetOrCreateSignatureId(_typeForGenericParam[item]));
-            }
-            else
-            {
-                // no type for this generic parameter
-                writer.WriteUInt16(0xFFFF);
-            }
+            // Signature: type constraints, 0xFFFF when there are none
+            writer.WriteUInt16(_context.SignaturesTable.GetOrCreateConstraintsSignatureId(item));
 
             // name
             WriteStringReference(writer, item.Name);

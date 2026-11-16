@@ -18,6 +18,65 @@ namespace nanoFramework.Tools.MetadataProcessor
         public TypeReferenceEqualityComparer(nanoTablesContext context) => _context = context;
 
         /// <inheritdoc/>
+        // Key is the type itself
+        internal static string GetTypeKey(TypeReference type)
+        {
+            var key = new System.Text.StringBuilder();
+
+            AppendTypeKey(key, type);
+
+            return key.ToString();
+        }
+
+        private static void AppendTypeKey(System.Text.StringBuilder key, TypeReference type)
+        {
+            switch (type)
+            {
+                case GenericParameter parameter:
+                    key.Append(parameter.Type == GenericParameterType.Type ? "!" : "!!").Append(parameter.Position);
+                    break;
+
+                case GenericInstanceType instance:
+                    AppendTypeKey(key, instance.ElementType);
+                    key.Append('<');
+
+                    foreach (TypeReference argument in instance.GenericArguments)
+                    {
+                        AppendTypeKey(key, argument);
+                        key.Append(',');
+                    }
+
+                    key.Append('>');
+                    break;
+
+                case ArrayType array:
+                    AppendTypeKey(key, array.ElementType);
+                    key.Append('[').Append(array.Rank).Append(']');
+                    break;
+
+                case ByReferenceType byReference:
+                    AppendTypeKey(key, byReference.ElementType);
+                    key.Append('&');
+                    break;
+
+                case PointerType pointer:
+                    AppendTypeKey(key, pointer.ElementType);
+                    key.Append('*');
+                    break;
+
+                case IModifierType modifier:
+                    AppendTypeKey(key, ((TypeSpecification)type).ElementType);
+                    key.Append(modifier is RequiredModifierType ? " modreq(" : " modopt(");
+                    AppendTypeKey(key, modifier.ModifierType);
+                    key.Append(')');
+                    break;
+
+                default:
+                    key.Append('[').Append(type.Scope?.Name).Append(']').Append(type.FullName);
+                    break;
+            }
+        }
+
         public bool Equals(TypeReference x, TypeReference y)
         {
             if (x is null)
@@ -43,11 +102,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             else if (x is TypeSpecification &&
                      y is TypeSpecification)
             {
-                // get signatures to perform comparison
-                ushort xSignatureId = _context.SignaturesTable.GetOrCreateSignatureId(x);
-                ushort ySignatureId = _context.SignaturesTable.GetOrCreateSignatureId(y);
-
-                return xSignatureId == ySignatureId;
+                return GetTypeKey(x) == GetTypeKey(y);
             }
             else if (x is GenericParameter && y is GenericParameter)
             {
@@ -74,23 +129,13 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             if (obj is TypeSpecification)
             {
-                ushort signatureId = _context.SignaturesTable.GetOrCreateSignatureId(obj);
-
-                // Combine signature ID with metadata token hash for better distribution
-                // Use unchecked to allow overflow and maintain consistent hash code behavior
-                int hash = 17;
-                hash = unchecked(hash * 31 + signatureId);
-                hash = unchecked(hash * 31 + obj.MetadataToken.GetHashCode());
-
-                return hash;
+                // has to follow Equals
+                return GetTypeKey(obj).GetHashCode();
             }
             else if (obj is GenericParameter genericParam)
             {
-                // provide an hash code based on the generic parameter position and type, 
-                // which is what makes it unique when comparing GenericParameter as a TypeReference
-
+                // has to follow Equals: type (VAR or MVAR) and position, the owner doesn't count
                 int hash = 17;
-                hash = unchecked(hash * 31 + genericParam.DeclaringType?.MetadataToken.ToInt32() ?? 0);
                 hash = unchecked(hash * 31 + genericParam.Position);
                 hash = unchecked(hash * 31 + (int)genericParam.Type);
 

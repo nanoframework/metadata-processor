@@ -1412,6 +1412,16 @@ namespace nanoFramework.Tools.MetadataProcessor
                         foreach (GenericParameterConstraint c in gpar.Constraints)
                         {
                             set.Add(c.MetadataToken);
+
+                            if (c.ConstraintType.MetadataToken.RID != 0)
+                            {
+                                set.Add(c.ConstraintType.MetadataToken);
+                            }
+
+                            if (c.ConstraintType is TypeSpecification)
+                            {
+                                PinTypeSpecificationParts(c.ConstraintType, set);
+                            }
                         }
                     }
                     break;

@@ -26,7 +26,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
         // sizes of CLR_RECORD_TYPEDEF and CLR_RECORD_TYPESPEC; the extends field is after name and namespace
         private const int TypeDefRecordSize = 27;
         private const int ExtendsOffset = 4;
-        private const int TypeSpecRecordSize = 2;
+        private const int TypeSpecRecordSize = 4;
 
         private sealed class FinalAssembly
         {
