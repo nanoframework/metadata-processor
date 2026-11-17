@@ -79,7 +79,8 @@ System.Drawing and need platform-specific qualification.
 
 ### Package regression gate
 
-Run `eng\Verify-MdpPackage.ps1` against the **packed** task and console nupkgs, supplying
+Use PowerShell 7.3 or newer (`pwsh`) to run `eng\Verify-MdpPackage.ps1` against the
+**packed** task and console nupkgs, supplying
 `-TaskPackage`, `-CliPackage` and `-MSBuild` with the installed host paths.
 For modern MSBuild pass the SDK's `MSBuild.dll`; for Framework pass `MSBuild.exe`.
 Build the Release test fixtures first, or supply `-Fixture` and `-StubsFixture`.
@@ -87,8 +88,14 @@ The gate extracts both packages into a temporary directory with spaces, invokes 
 and native-stub generation (including parallel invocations), and compares PE, semantic PDBX and native outputs across
 hosts, both console content layouts and a restored PackageReference consumer. It also checks
 CLI dependency output and failure diagnostics, and snapshots fixture directories before running.
-PDBX comparison treats only the existing `DATATYPE_LAST_PRIMITIVE`/`DATATYPE_STRING`
-enum aliases as equivalent; no production serialization or debug-format change is made.
+PDBX comparison treats the existing `DATATYPE_LAST_PRIMITIVE`/`DATATYPE_STRING` and
+`DATATYPE_LAST_PRIMITIVE_TO_PRESERVE`/`DATATYPE_R8` enum aliases as equivalent;
+no production serialization or debug-format change is made.
+
+CI runs the gate against the Framework MSBuild hosts discovered on its agent and the
+selected .NET SDK's MSBuild. A green run covers only those installed hosts, not the
+complete VS2019/2022/2026 matrix. Release qualification must cover VS2019 x86,
+VS2022 x64 and VS2026 x64 separately when they are not all available on the CI agent.
 
 Release qualification must run this gate before signing/publication, inspect both
 consumer VSIX archives, and include clean-install/upgrade, IDE build and debugger smoke

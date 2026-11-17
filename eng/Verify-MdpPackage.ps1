@@ -1,4 +1,6 @@
-﻿param(
+﻿#requires -Version 7.3
+
+param(
     [Parameter(Mandatory = $true)]
     [string] $TaskPackage,
     [Parameter(Mandatory = $true)]
@@ -34,6 +36,8 @@ function Assert-SamePdbx([string] $Expected, [string] $Actual) {
     # Enum.ToString can choose either name for the same NanoCLRDataType byte value.
     $expectedJson = $expectedJson -replace '"PrimitiveType": "DATATYPE_LAST_PRIMITIVE"', '"PrimitiveType": "DATATYPE_STRING"'
     $actualJson = $actualJson -replace '"PrimitiveType": "DATATYPE_LAST_PRIMITIVE"', '"PrimitiveType": "DATATYPE_STRING"'
+    $expectedJson = $expectedJson -replace '"PrimitiveType": "DATATYPE_LAST_PRIMITIVE_TO_PRESERVE"', '"PrimitiveType": "DATATYPE_R8"'
+    $actualJson = $actualJson -replace '"PrimitiveType": "DATATYPE_LAST_PRIMITIVE_TO_PRESERVE"', '"PrimitiveType": "DATATYPE_R8"'
     if ($expectedJson -cne $actualJson) {
         throw "Packaged hosts produced different PDBX: $Expected and $Actual"
     }
