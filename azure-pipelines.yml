@@ -187,6 +187,12 @@ jobs:
 
   - template: azure-pipelines-templates/check-nf-interpreter-to-test.yml
 
+  - task: UseDotNet@2
+    displayName: Install .NET 10 SDK
+    inputs:
+      packageType: sdk
+      version: '10.0.4xx'
+
   - task: NuGetCommand@2
     displayName: NuGet restore
     inputs:
@@ -194,13 +200,17 @@ jobs:
       feedsToUse: config
       nugetConfigPath: 'NuGet.config'
 
-  - task: VSBuild@1
-    inputs:
-      solution: '$(solution)'
-      platform: '$(buildPlatform)'
-      msbuildArchitecture: x64
-      msbuildArgs: '/p:PublicRelease=true'
-      configuration: '$(buildConfiguration)'
+  - pwsh: |
+      $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+      $msbuild = & $vswhere -latest -products '*' -requires Microsoft.Component.MSBuild `
+        -version '[18.0,19.0)' -find 'MSBuild\Current\Bin\amd64\MSBuild.exe'
+      if (!$msbuild) {
+        throw 'Building MDP with the .NET 10.0.4xx SDK requires an agent with Visual Studio 2026 / MSBuild 18.'
+      }
+      & $msbuild "$(solution)" "/p:Platform=$(buildPlatform)" `
+        "/p:Configuration=$(buildConfiguration)" /p:PublicRelease=true /m /nr:false
+      if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+    displayName: Build with MSBuild 18 x64
 
   - task: PowerShell@2
     displayName: Remove test framework from mscorlib
@@ -410,7 +420,27 @@ jobs:
     displayName: Pack NuGet with MetadataProcessor Console
     inputs:
       command: 'custom'
-      arguments: 'pack MetadataProcessor.Console\package.nuspec -Version $(NBGV_NuGetPackageVersion) -properties commit="$(Build.SourceVersion)" -properties NoWarn=NU5100'
+      arguments: 'pack MetadataProcessor.Console\package.nuspec -Version $(NBGV_NuGetPackageVersion) -properties "configuration=$(buildConfiguration);commit=$(Build.SourceVersion);NoWarn=NU5100"'
+
+  - pwsh: |
+      $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+      $frameworkHosts = @(& $vswhere -all -products '*' -requires Microsoft.Component.MSBuild `
+        -version '[16.11,19.0)' -find 'MSBuild\Current\Bin\MSBuild.exe')
+      $frameworkHosts += @(& $vswhere -all -products '*' -requires Microsoft.Component.MSBuild `
+        -version '[16.11,19.0)' -find 'MSBuild\Current\Bin\amd64\MSBuild.exe')
+      if (!$frameworkHosts.Count) { throw 'No Framework MSBuild host was found for package qualification.' }
+      $sdkVersion = dotnet --version
+      if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      $sdkLine = dotnet --list-sdks | Where-Object { $_ -like "$sdkVersion *" } | Select-Object -First 1
+      $sdkRoot = [regex]::Match($sdkLine, '\[(.+)\]').Groups[1].Value
+      if (!$sdkRoot) { throw 'Cannot locate the selected .NET SDK for package qualification.' }
+      $hosts = @($frameworkHosts | Sort-Object -Unique) + (Join-Path $sdkRoot "$sdkVersion\MSBuild.dll")
+      .\eng\Verify-MdpPackage.ps1 `
+        -TaskPackage ".\MetadataProcessor.MsBuildTask\bin\$(buildConfiguration)\nanoFramework.Tools.MetadataProcessor.MsBuildTask.$(NBGV_NuGetPackageVersion).nupkg" `
+        -CliPackage ".\nanoFramework.Tools.MetadataProcessor.CLI.$(NBGV_NuGetPackageVersion).nupkg" `
+        -MSBuild $hosts
+    condition: succeeded()
+    displayName: Qualify task and console packages before signing
 
   - task: CopyFiles@1
     condition: succeeded()

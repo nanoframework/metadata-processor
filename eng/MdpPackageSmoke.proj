@@ -1,0 +1,34 @@
+﻿<Project DefaultTargets="Verify" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <TaskFramework Condition="'$(MSBuildRuntimeType)' == 'Core'">net10.0</TaskFramework>
+    <TaskFramework Condition="'$(MSBuildRuntimeType)' != 'Core'">net472</TaskFramework>
+  </PropertyGroup>
+  <UsingTask TaskName="nanoFramework.Tools.MetadataProcessor.MsBuildTask.MetaDataProcessorTask"
+             AssemblyFile="$(PackageRoot)\tasks\$(TaskFramework)\nanoFramework.Tools.MetadataProcessor.MsBuildTask.dll" />
+  <Target Name="Verify">
+    <Error Condition="'$(PackageRoot)' == '' or '$(Fixture)' == '' or '$(OutputDirectory)' == ''"
+           Text="PackageRoot, Fixture and OutputDirectory are required." />
+    <MakeDir Directories="$(OutputDirectory)" />
+    <ItemGroup>
+      <LoadHint Include="$(FixtureDirectory)\*.dll" />
+    </ItemGroup>
+    <MetaDataProcessorTask Parse="$(Fixture)" Compile="$(OutputDirectory)\Smoke.pe"
+                          LoadHints="@(LoadHint)" GenerateStubs="$(GenerateStubs)"
+                          GenerateSkeletonFile="$(OutputDirectory)\stubs"
+                          GenerateSkeletonName="PackageSmoke" GenerateSkeletonProject="PackageSmoke">
+      <Output TaskParameter="FilesWritten" ItemName="WrittenFiles" />
+      <Output TaskParameter="NativeContractHash" PropertyName="ContractHash" />
+    </MetaDataProcessorTask>
+    <Error Condition="!Exists('$(OutputDirectory)\Smoke.pe') or !Exists('$(OutputDirectory)\Smoke.pdbx')"
+           Text="The packaged task did not generate PE and PDBX output." />
+    <Error Condition="'@(WrittenFiles)' == ''" Text="The packaged task did not report FilesWritten." />
+    <WriteLinesToFile File="$(OutputDirectory)\native-contract.txt" Lines="$(ContractHash)" Overwrite="true" />
+  </Target>
+  <Target Name="VerifyParallel" DependsOnTargets="Verify">
+    <ItemGroup>
+      <ParallelRun Include="$(MSBuildProjectFullPath)" AdditionalProperties="OutputDirectory=$(OutputDirectory)\parallel-one" />
+      <ParallelRun Include="$(MSBuildProjectFullPath)" AdditionalProperties="OutputDirectory=$(OutputDirectory)\parallel-two" />
+    </ItemGroup>
+    <MSBuild Projects="@(ParallelRun)" Targets="Verify" BuildInParallel="true" />
+  </Target>
+</Project>
