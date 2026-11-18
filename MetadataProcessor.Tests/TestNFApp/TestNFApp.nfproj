@@ -46,6 +46,7 @@
     <Compile Include="GenericBaseTypeEncodingTests.cs" />
     <Compile Include="GenericInterfaceTypeSpecTests.cs" />
     <Compile Include="GenericMetadataTests.cs" />
+    <Compile Include="GenericReturnTypeTypeSpecTests.cs" />
     <Compile Include="GenericParameterArgumentTypeSpecTests.cs" />
     <Compile Include="InstructionOnlyGenericTypeSpecTests.cs" />
     <Compile Include="TestingDelegates.cs" />

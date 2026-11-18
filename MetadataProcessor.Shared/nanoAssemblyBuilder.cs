@@ -462,6 +462,8 @@ namespace nanoFramework.Tools.MetadataProcessor
                             }
                         }
 
+                        PinTypeSpecificationParts(mrReturnType, set, pinTypeSpecs: true);
+
                         // Now process the actual return type
                         if (mrReturnType.IsValueType &&
                             !mrReturnType.IsPrimitive)
@@ -506,6 +508,8 @@ namespace nanoFramework.Tools.MetadataProcessor
                         // parameters
                         foreach (ParameterDefinition p in mr.Parameters)
                         {
+                            PinTypeSpecificationParts(p.ParameterType, set, pinTypeSpecs: true);
+
                             if (p.ParameterType.DeclaringType != null)
                             {
                                 TypeDefinition resolvedType = p.ParameterType.Resolve();
@@ -575,6 +579,8 @@ namespace nanoFramework.Tools.MetadataProcessor
                                     set.Add(fr.DeclaringType.MetadataToken);
                                 }
                             }
+
+                            PinTypeSpecificationParts(fr.FieldType, set, pinTypeSpecs: true);
 
                             if (fr.FieldType.MetadataType == MetadataType.Class)
                             {
@@ -721,6 +727,8 @@ namespace nanoFramework.Tools.MetadataProcessor
                 case TokenType.Field:
                     FieldDefinition fd = _tablesContext.FieldsTable.Items.FirstOrDefault(i => i.MetadataToken == token);
 
+                    PinTypeSpecificationParts(fd.FieldType, set, pinTypeSpecs: true);
+
                     if (fd is TypeReference)
                     {
                         set.Add(fd.MetadataToken);
@@ -811,6 +819,8 @@ namespace nanoFramework.Tools.MetadataProcessor
                         }
                     }
 
+                    PinTypeSpecificationParts(mdReturnType, set, pinTypeSpecs: true);
+
                     // Now process the actual return type
                     if (mdReturnType.IsValueType
                   && !mdReturnType.IsPrimitive)
@@ -855,6 +865,8 @@ namespace nanoFramework.Tools.MetadataProcessor
                     // parameters
                     foreach (ParameterDefinition p in md.Parameters)
                     {
+                        PinTypeSpecificationParts(p.ParameterType, set, pinTypeSpecs: true);
+
                         TypeReference parameterType = null;
 
                         if (p.ParameterType is ByReferenceType byReference)
@@ -939,6 +951,8 @@ namespace nanoFramework.Tools.MetadataProcessor
                         // variables
                         foreach (VariableDefinition v in md.Body.Variables)
                         {
+                            PinTypeSpecificationParts(v.VariableType, set, pinTypeSpecs: true);
+
                             if (v.VariableType.DeclaringType != null)
                             {
                                 TypeDefinition resolvedType = v.VariableType.Resolve();
@@ -1708,25 +1722,32 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// <summary>
         /// Pins the types that a TypeSpecification signature refers to: element types and generic arguments.
         /// </summary>
-        private void PinTypeSpecificationParts(TypeReference t, HashSet<MetadataToken> set)
+        /// <param name="pinTypeSpecs">Also pins the TypeSpec of every generic instance found, in the same traversal.</param>
+        private void PinTypeSpecificationParts(TypeReference t, HashSet<MetadataToken> set, bool pinTypeSpecs = false)
         {
             if (t is GenericInstanceType git)
             {
-                foreach (TypeReference arg in git.GenericArguments)
+                if (pinTypeSpecs
+                    && _tablesContext.TypeSpecificationsTable.TryGetTypeReferenceId(git, out ushort specRid))
                 {
-                    PinTypeSpecificationParts(arg, set);
+                    set.Add(new MetadataToken(TokenType.TypeSpec, specRid));
                 }
 
-                PinTypeSpecificationParts(git.ElementType, set);
+                foreach (TypeReference arg in git.GenericArguments)
+                {
+                    PinTypeSpecificationParts(arg, set, pinTypeSpecs);
+                }
+
+                PinTypeSpecificationParts(git.ElementType, set, pinTypeSpecs);
             }
             else if (t is IModifierType modifier)
             {
-                PinTypeSpecificationParts(modifier.ModifierType, set);
-                PinTypeSpecificationParts(((TypeSpecification)t).ElementType, set);
+                PinTypeSpecificationParts(modifier.ModifierType, set, pinTypeSpecs);
+                PinTypeSpecificationParts(((TypeSpecification)t).ElementType, set, pinTypeSpecs);
             }
             else if (t is TypeSpecification ts)
             {
-                PinTypeSpecificationParts(ts.ElementType, set);
+                PinTypeSpecificationParts(ts.ElementType, set, pinTypeSpecs);
             }
             else if (!(t is GenericParameter)
                      && (t.MetadataType == MetadataType.Class
