@@ -6,265 +6,76 @@
 using System;
 using System.ComponentModel;
 using System.IO;
-using System.Net.Http;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using CliWrap;
-using CliWrap.Buffered;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
 
 namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
 {
     [TestClass]
     public class ClrIntegrationTests
     {
-        public static bool NanoClrIsInstalled { get; private set; } = false;
+        public TestContext TestContext { get; set; }
 
         [ClassInitialize]
-        public static void InstallNanoClr(TestContext context)
+        public static Task InitializeNanoClr(TestContext context)
         {
-            Console.WriteLine("Install/upate nanoclr tool");
+            string instancePreviewSetting = Environment.GetEnvironmentVariable("NF_MDP_NANOCLR_INSTANCE_USE_PREVIEW");
+            bool usePreviewClrInstance = false;
 
-            // get installed tool version (if installed)
-            Command cmd = Cli.Wrap("nanoclr")
-                .WithArguments("--help")
-                .WithValidation(CommandResultValidation.None);
-
-            bool performInstallUpdate = false;
-
-            // setup cancellation token with a timeout of 10 seconds
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-
-            try
+            if (string.IsNullOrEmpty(TestObjectHelper.NanoClrLocalInstance)
+                && !string.IsNullOrEmpty(instancePreviewSetting))
             {
-                BufferedCommandResult cliResult = cmd.ExecuteBufferedAsync(cts.Token).Task.Result;
-
-                if (cliResult.ExitCode == 0)
-                {
-                    Match regexResult = Regex.Match(cliResult.StandardOutput, @"(?'version'\d+\.\d+\.\d+)", RegexOptions.RightToLeft);
-
-                    if (regexResult.Success)
-                    {
-                        Console.WriteLine($"Running nanoclr v{regexResult.Groups["version"].Value}");
-
-                        // compose version
-                        Version installedVersion = new Version(regexResult.Groups[1].Value);
-
-                        NanoClrIsInstalled = true;
-                        string responseContent = null;
-
-                        // check latest version
-                        using (HttpClient client = new HttpClient())
-                        {
-                            try
-                            {
-                                // Set the user agent string to identify the client.
-                                client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36");
-
-                                // Set any additional headers, if needed.
-                                client.DefaultRequestHeaders.Add("Accept", "application/json");
-
-                                // Set the URL to request.
-                                string url = "https://api.nuget.org/v3-flatcontainer/nanoclr/index.json";
-
-                                // Make the HTTP request and retrieve the response.
-                                responseContent = client.GetStringAsync(url).Result;
-                            }
-                            catch (HttpRequestException e)
-                            {
-                                // Handle any exceptions that occurred during the request.
-                                Console.WriteLine(e.Message);
-                            }
-                        }
-
-                        NuGetPackage package = JsonConvert.DeserializeObject<NuGetPackage>(responseContent);
-                        Version latestPackageVersion = new Version(package.Versions[package.Versions.Length - 1]);
-
-                        // check if we are running the latest one
-                        if (latestPackageVersion > installedVersion)
-                        {
-                            // need to update
-                            performInstallUpdate = true;
-                        }
-                        else
-                        {
-                            Console.WriteLine($"No need to update. Running v{latestPackageVersion}");
-
-                            performInstallUpdate = false;
-                        }
-                    }
-                    else
-                    {
-                        // something wrong with the output, can't proceed
-                        Console.WriteLine("Failed to parse current nanoCLR CLI version!");
-                    }
-                }
-                else
-                {
-                    NanoClrIsInstalled = false;
-
-                    // give it a try by forcing the install
-                    performInstallUpdate = true;
-                }
-            }
-            catch (Win32Exception)
-            {
-                // nanoclr doesn't seem to be installed
-                performInstallUpdate = true;
-                NanoClrIsInstalled = false;
+                Assert.IsTrue(
+                    bool.TryParse(instancePreviewSetting, out usePreviewClrInstance),
+                    "NF_MDP_NANOCLR_INSTANCE_USE_PREVIEW must be 'true' or 'false'.");
             }
 
-            if (performInstallUpdate)
+            return InitializeNanoClr(context, usePreviewClrInstance);
+        }
+
+        public static async Task InitializeNanoClr(TestContext context, bool usePreviewClrInstance)
+        {
+            await ExecuteNanoClrAsync("--version", TimeSpan.FromSeconds(10), context);
+
+            if (string.IsNullOrEmpty(TestObjectHelper.NanoClrLocalInstance))
             {
-                cmd = Cli.Wrap("dotnet")
-                .WithArguments("tool update -g nanoclr")
-                .WithValidation(CommandResultValidation.None);
-
-                // setup cancellation token with a timeout of 1 minute
-                using (var cts1 = new CancellationTokenSource(TimeSpan.FromMinutes(1)))
-                {
-                    BufferedCommandResult cliResult = cmd.ExecuteBufferedAsync(cts1.Token).Task.Result;
-
-                    if (cliResult.ExitCode == 0)
-                    {
-                        // this will be either (on update): 
-                        // Tool 'nanoclr' was successfully updated from version '1.0.205' to version '1.0.208'.
-                        // or (update becoming reinstall with same version, if there is no new version):
-                        // Tool 'nanoclr' was reinstalled with the latest stable version (version '1.0.208').
-                        Match regexResult = Regex.Match(cliResult.StandardOutput, @"((?>version ')(?'version'\d+\.\d+\.\d+)(?>'))");
-
-                        if (regexResult.Success)
-                        {
-                            Console.WriteLine($"Install/update successful. Running v{regexResult.Groups["version"].Value}");
-
-                            NanoClrIsInstalled = true;
-                        }
-                        else
-                        {
-                            Console.WriteLine($"*** Failed to install/update nanoclr *** {Environment.NewLine} {cliResult.StandardOutput}");
-
-                            NanoClrIsInstalled = false;
-                        }
-                    }
-                    else
-                    {
-                        Console.WriteLine(
-                            $"Failed to install/update nanoclr. Exit code {cliResult.ExitCode}."
-                            + Environment.NewLine
-                            + Environment.NewLine
-                            + "****************************************"
-                            + Environment.NewLine
-                            + "*** WON'T BE ABLE TO RUN UNITS TESTS ***"
-                            + Environment.NewLine
-                            + "****************************************");
-
-                        NanoClrIsInstalled = false;
-                    }
-                }
-            }
-
-            if (!string.IsNullOrEmpty(TestObjectHelper.NanoClrLocalInstance))
-            {
-                // done here as we are using a local instance of nanoCLR DLL
+                string previewOption = usePreviewClrInstance ? " --preview" : string.Empty;
+                await ExecuteNanoClrAsync($"instance --update{previewOption} -v diag", TimeSpan.FromMinutes(1), context);
             }
             else
             {
-                Console.WriteLine("Upate nanoCLR instance");
-
-                // update nanoCLR instance
-                string arguments = "instance --update";
-
-                cmd = Cli.Wrap("nanoclr")
-                    .WithArguments(arguments)
-                    .WithValidation(CommandResultValidation.None);
-
-                using CancellationTokenSource updateCts = new CancellationTokenSource(TimeSpan.FromMinutes(1));
-
-                BufferedCommandResult cliResult = cmd.ExecuteBufferedAsync(updateCts.Token).Task.Result;
-
-                if (cliResult.ExitCode == 0)
-                {
-                    // this will be either (on update): 
-                    // Updated to v1.8.1.102
-                    // or (on same version):
-                    // Already at v1.8.1.102
-                    Match regexResult = Regex.Match(cliResult.StandardOutput, @"((?>version )(?'version'\d+\.\d+\.\d+))");
-
-                    if (regexResult.Success)
-                    {
-                        Console.WriteLine($"Install/update successful. Running v{regexResult.Groups["version"].Value}");
-                    }
-                    else
-                    {
-                        Console.WriteLine($"*** Failed to update nanoCLR instance ***");
-                        Console.WriteLine($"\r\nExit code {cliResult.ExitCode}. \r\nOutput: {Environment.NewLine} {cliResult.StandardOutput}");
-                    }
-                }
-                else
-                {
-                    Console.WriteLine($"*** Failed to update nanoCLR instance ***");
-                    Console.WriteLine($"\r\nExit code {cliResult.ExitCode}. \r\nOutput: {Environment.NewLine} {cliResult.StandardOutput}");
-                }
+                context.WriteLine("Using local nanoCLR DLL: {0}", TestObjectHelper.NanoClrLocalInstance);
             }
+
+            await ExecuteNanoClrAsync(
+                $"instance --getversion {ComposeLocalClrInstancePath()} -v diag",
+                TimeSpan.FromSeconds(10),
+                context);
         }
 
         [TestMethod]
         public async Task RunBCLTest()
         {
-            if (!NanoClrIsInstalled)
-            {
-                Assert.Inconclusive("nanoclr is not installed, can't run this test");
-            }
-
             string mscorlibPeLocation = Path.Combine(TestObjectHelper.TestNFAppLocation, "mscorlib.pe");
 
             // prepare launch of nanoCLR CLI
             string arguments = $"run --assemblies {mscorlibPeLocation} {ComposeLocalClrInstancePath()} -v diag";
 
-            Console.WriteLine($"Launching nanoclr with these arguments: '{arguments}'");
+            string output = await ExecuteNanoClrAsync(arguments, TimeSpan.FromSeconds(30), TestContext);
 
-            Command cmd = Cli.Wrap("nanoclr")
-                .WithArguments(arguments)
-                .WithValidation(CommandResultValidation.None);
+            // look for any error message
+            Assert.IsFalse(output.Contains("Error:"), $"Unexpected error message in output of NanoCLR.{Environment.NewLine}Output is:{Environment.NewLine}{output}");
 
-            // setup cancellation token with a timeout of 30 seconds
-            using (var cts = new CancellationTokenSource())
-            {
-                cts.CancelAfter(TimeSpan.FromSeconds(30));
-
-                BufferedCommandResult cliResult = await cmd.ExecuteBufferedAsync(cts.Token);
-                int exitCode = cliResult.ExitCode;
-                // read standard output
-                string output = cliResult.StandardOutput;
-
-                if (exitCode == 0)
-                {
-                    // look for any error message 
-                    Assert.IsFalse(output.Contains("Error:"), $"Unexpected error message in output of NanoCLR.{Environment.NewLine}Output is:{Environment.NewLine}{output}");
-
-                    // look for the error message reporting that there is no entry point
-                    Assert.IsTrue(output.Contains("Cannot find any entrypoint!"));
-
-                    Console.WriteLine($"\r\n>>>>>>>>>>>>>\r\n{output}\r\n>>>>>>>>>>>>>");
-                }
-                else
-                {
-                    Assert.Fail($"nanoCLR ended with '{exitCode}' exit code.\r\n>>>>>>>>>>>>>\r\n{output}\r\n>>>>>>>>>>>>>");
-                }
-            }
+            // look for the error message reporting that there is no entry point
+            Assert.IsTrue(output.Contains("Cannot find any entrypoint!"));
         }
 
         [TestMethod]
         public async Task RunTestNFAppTest()
         {
-            if (!NanoClrIsInstalled)
-            {
-                Assert.Inconclusive("nanoclr is not installed, can't run this test");
-            }
-
             string mscorlibPeLocation = Path.Combine(TestObjectHelper.TestNFAppLocation, "mscorlib.pe");
             string nfTestAppPeLocation = TestObjectHelper.NFAppFullPath.Replace("exe", "pe");
             string nfTestClassLibPeLocation = TestObjectHelper.TestNFClassLibFullPath.Replace("dll", "pe");
@@ -272,74 +83,94 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
             // prepare launch of nanoCLR CLI
             string arguments = $"run --assemblies {mscorlibPeLocation} {nfTestAppPeLocation} {nfTestClassLibPeLocation} {ComposeLocalClrInstancePath()} -v diag";
 
-            Console.WriteLine($"Launching nanoclr with these arguments: '{arguments}'");
+            string output = await ExecuteNanoClrAsync(arguments, TimeSpan.FromSeconds(30), TestContext);
 
+            // look for standard messages
+            Assert.IsTrue(output.Contains("Ready."), $"Failed to find READY message.{Environment.NewLine}Output is:{Environment.NewLine}{output}");
+            Assert.IsTrue(output.Contains("Done."), $"Failed to find DONE message.{Environment.NewLine}Output is:{Environment.NewLine}{output}");
+            Assert.IsTrue(output.Contains("Exiting."), $"Failed to find EXITING message.{Environment.NewLine}Output is:{Environment.NewLine}{output}");
+
+            // look for any exceptions
+            Assert.IsFalse(output.Contains("++++ Exception "), $"Exception thrown by TestNFApp application.{Environment.NewLine}Output is:{Environment.NewLine}{output}");
+
+            // look for any error message
+            Assert.IsFalse(output.Contains("Error:"), "Unexpected error message in output of NanoCLR");
+
+            // look for the error message reporting that there is no entry point
+            Assert.IsFalse(output.Contains("Cannot find any entrypoint!"));
+
+            // attribute declared on a property (MyClass1.MyField) has to be reachable through the getter
+            Assert.IsTrue(output.Contains(">>>>>>> get_MyField has 'IgnoreAttribute' attribute"), $"Attribute declared on property wasn't cascaded to the getter.{Environment.NewLine}Output is:{Environment.NewLine}{output}");
+
+            // attributes declared on properties have to be reachable through the accessors, without duplicating
+            // the ones declared on the accessor itself (see TestNFApp.PropertyAttributesTestClass)
+            AssertAccessorAttributes(output, "OneClassOverAll", "get_DummyProperty", 1, 1);
+            AssertAccessorAttributes(output, "OneClassOverAll", "set_DummyProperty", 1, 1);
+
+            AssertAccessorAttributes(output, "PropertyAttributesTestClass", "get_GetOnlyProperty", 1, 1);
+            AssertAccessorNotPresent(output, "PropertyAttributesTestClass", "set_GetOnlyProperty");
+
+            AssertAccessorNotPresent(output, "PropertyAttributesTestClass", "get_SetOnlyProperty");
+            AssertAccessorAttributes(output, "PropertyAttributesTestClass", "set_SetOnlyProperty", 1, 1);
+
+            AssertAccessorAttributes(output, "PropertyAttributesTestClass", "get_PropertyWithSetterAttribute", 1, 1);
+            AssertAccessorAttributes(output, "PropertyAttributesTestClass", "set_PropertyWithSetterAttribute", 1, 1);
+
+            AssertAccessorAttributes(output, "PropertyAttributesTestClass", "get_PropertyWithOtherAttributeOnSetter", 1, 0);
+            AssertAccessorAttributes(output, "PropertyAttributesTestClass", "set_PropertyWithOtherAttributeOnSetter", 1, 1);
+
+            AssertAccessorAttributes(output, "PropertyAttributesTestClass", "get_SetterOnlyAttribute", 0, 0);
+            AssertAccessorAttributes(output, "PropertyAttributesTestClass", "set_SetterOnlyAttribute", 1, 0);
+
+            AssertAccessorAttributes(output, "PropertyAttributesTestClass", "get_GetterOnlyAttribute", 1, 0);
+            AssertAccessorAttributes(output, "PropertyAttributesTestClass", "set_GetterOnlyAttribute", 0, 0);
+
+            AssertAccessorNotPresent(output, "PropertyAttributesTestClass", "get_SetOnlyPropertyWithSetterAttribute");
+            AssertAccessorAttributes(output, "PropertyAttributesTestClass", "set_SetOnlyPropertyWithSetterAttribute", 1, 1);
+        }
+
+        private static async Task<string> ExecuteNanoClrAsync(string arguments, TimeSpan timeout, TestContext context)
+        {
+            context.WriteLine("Launching nanoclr {0}", arguments);
+
+            StringBuilder output = new StringBuilder();
+            StringBuilder error = new StringBuilder();
             Command cmd = Cli.Wrap("nanoclr")
                 .WithArguments(arguments)
+                .WithStandardOutputPipe(PipeTarget.ToDelegate(line =>
+                {
+                    output.AppendLine(line);
+                    context.WriteLine("{0}", line);
+                }))
+                .WithStandardErrorPipe(PipeTarget.ToDelegate(line =>
+                {
+                    error.AppendLine(line);
+                    context.WriteLine("[stderr] {0}", line);
+                }))
                 .WithValidation(CommandResultValidation.None);
 
-            // setup cancellation token with a timeout of 30 seconds
-            using (CancellationTokenSource cts = new CancellationTokenSource())
+            using CancellationTokenSource cts = new CancellationTokenSource(timeout);
+
+            try
             {
-                cts.CancelAfter(TimeSpan.FromSeconds(30));
+                CommandResult result = await cmd.ExecuteAsync(cts.Token);
 
-                BufferedCommandResult cliResult = await cmd.ExecuteBufferedAsync(cts.Token);
-                int exitCode = cliResult.ExitCode;
-                // read standard output
-                string output = cliResult.StandardOutput;
-
-                if (exitCode == 0)
-                {
-                    // look for standard messages
-                    Assert.IsTrue(output.Contains("Ready."), $"Failed to find READY message.{Environment.NewLine}Output is:{Environment.NewLine}{output}");
-                    Assert.IsTrue(output.Contains("Done."), $"Failed to find DONE message.{Environment.NewLine}Output is:{Environment.NewLine}{output}");
-                    Assert.IsTrue(output.Contains("Exiting."), $"Failed to find EXITING message.{Environment.NewLine}Output is:{Environment.NewLine}{output}");
-
-                    // look for any exceptions
-                    Assert.IsFalse(output.Contains("++++ Exception "), $"Exception thrown by TestNFApp application.{Environment.NewLine}Output is:{Environment.NewLine}{output}");
-
-                    // look for any error message 
-                    Assert.IsFalse(output.Contains("Error:"), "Unexpected error message in output of NanoCLR");
-
-                    // look for the error message reporting that there is no entry point
-                    Assert.IsFalse(output.Contains("Cannot find any entrypoint!"));
-
-                    // attribute declared on a property (MyClass1.MyField) has to be reachable through the getter
-                    Assert.IsTrue(output.Contains(">>>>>>> get_MyField has 'IgnoreAttribute' attribute"), $"Attribute declared on property wasn't cascaded to the getter.{Environment.NewLine}Output is:{Environment.NewLine}{output}");
-
-                    // attributes declared on properties have to be reachable through the accessors, without duplicating
-                    // the ones declared on the accessor itself (see TestNFApp.PropertyAttributesTestClass)
-                    AssertAccessorAttributes(output, "OneClassOverAll", "get_DummyProperty", 1, 1);
-                    AssertAccessorAttributes(output, "OneClassOverAll", "set_DummyProperty", 1, 1);
-
-                    AssertAccessorAttributes(output, "PropertyAttributesTestClass", "get_GetOnlyProperty", 1, 1);
-                    AssertAccessorNotPresent(output, "PropertyAttributesTestClass", "set_GetOnlyProperty");
-
-                    AssertAccessorNotPresent(output, "PropertyAttributesTestClass", "get_SetOnlyProperty");
-                    AssertAccessorAttributes(output, "PropertyAttributesTestClass", "set_SetOnlyProperty", 1, 1);
-
-                    AssertAccessorAttributes(output, "PropertyAttributesTestClass", "get_PropertyWithSetterAttribute", 1, 1);
-                    AssertAccessorAttributes(output, "PropertyAttributesTestClass", "set_PropertyWithSetterAttribute", 1, 1);
-
-                    AssertAccessorAttributes(output, "PropertyAttributesTestClass", "get_PropertyWithOtherAttributeOnSetter", 1, 0);
-                    AssertAccessorAttributes(output, "PropertyAttributesTestClass", "set_PropertyWithOtherAttributeOnSetter", 1, 1);
-
-                    AssertAccessorAttributes(output, "PropertyAttributesTestClass", "get_SetterOnlyAttribute", 0, 0);
-                    AssertAccessorAttributes(output, "PropertyAttributesTestClass", "set_SetterOnlyAttribute", 1, 0);
-
-                    AssertAccessorAttributes(output, "PropertyAttributesTestClass", "get_GetterOnlyAttribute", 1, 0);
-                    AssertAccessorAttributes(output, "PropertyAttributesTestClass", "set_GetterOnlyAttribute", 0, 0);
-
-                    AssertAccessorNotPresent(output, "PropertyAttributesTestClass", "get_SetOnlyPropertyWithSetterAttribute");
-                    AssertAccessorAttributes(output, "PropertyAttributesTestClass", "set_SetOnlyPropertyWithSetterAttribute", 1, 1);
-
-                    Console.WriteLine($"\r\n>>>>>>>>>>>>>\r\n{output}\r\n>>>>>>>>>>>>>");
-                }
-                else
-                {
-                    Assert.Fail($"nanoCLR ended with '{exitCode}' exit code.\r\n>>>>>>>>>>>>>\r\n{output}\r\n>>>>>>>>>>>>>");
-                }
+                context.WriteLine("nanoCLR exit code: {0}", result.ExitCode);
+                Assert.AreEqual(
+                    0,
+                    result.ExitCode,
+                    $"nanoclr {arguments} failed.{Environment.NewLine}{output}{Environment.NewLine}{error}");
             }
+            catch (Win32Exception ex)
+            {
+                Assert.Fail($"Cannot start nanoclr: {ex.Message}. Install the tool before running tests: dotnet tool install --global nanoclr");
+            }
+            catch (OperationCanceledException)
+            {
+                Assert.Fail($"nanoclr {arguments} timed out after {timeout.TotalSeconds} seconds.{Environment.NewLine}{output}{Environment.NewLine}{error}");
+            }
+
+            return output.ToString();
         }
 
         private static void AssertAccessorAttributes(
@@ -372,7 +203,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
                 $"{typeName}.{accessorName} wasn't expected to exist.{Environment.NewLine}Output is:{Environment.NewLine}{output}");
         }
 
-        private string ComposeLocalClrInstancePath()
+        private static string ComposeLocalClrInstancePath()
         {
             StringBuilder arguments = new StringBuilder(" --localinstance");
 
@@ -386,11 +217,6 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
             }
 
             return arguments.ToString();
-        }
-
-        internal class NuGetPackage
-        {
-            public string[] Versions { get; set; }
         }
     }
 }

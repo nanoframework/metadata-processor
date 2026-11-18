@@ -70,4 +70,11 @@ steps:
     inputs:
       targetType: 'inline'
       script: |
-        Write-Host "##vso[task.setvariable variable=NF_MDP_NANOCLR_INSTANCE_PATH]$(Pipeline.Workspace)/nanoclr/nanoFramework.nanoCLR.dll"
+        $nanoClrPath = Join-Path '$(Pipeline.Workspace)' 'nanoclr\nanoFramework.nanoCLR.dll'
+        if (!(Test-Path -LiteralPath $nanoClrPath -PathType Leaf))
+        {
+          throw "nanoCLR DLL not found for build $(NFINTERPRETER_BUILDID): $nanoClrPath"
+        }
+
+        Write-Host "Using nanoCLR from build $(NFINTERPRETER_BUILDID): $nanoClrPath"
+        Write-Host "##vso[task.setvariable variable=NF_MDP_NANOCLR_INSTANCE_PATH]$nanoClrPath"
