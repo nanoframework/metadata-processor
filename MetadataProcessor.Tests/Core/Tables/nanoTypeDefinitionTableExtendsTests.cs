@@ -311,7 +311,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
             {
                 var set = new HashSet<MetadataToken>();
 
-                pin.Invoke(assemblyBuilder, new object[] { spec, set });
+                pin.Invoke(assemblyBuilder, new object[] { spec, set, false });
 
                 Assert.IsTrue(set.Contains(modifier.MetadataToken), $"{spec.GetType().Name}: modifier type not pinned.");
                 Assert.IsTrue(set.Contains(element.MetadataToken), $"{spec.GetType().Name}: element type not pinned.");
