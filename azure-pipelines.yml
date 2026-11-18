@@ -61,7 +61,7 @@ jobs:
 ##############################
 - job: Build_Prep
   pool:
-    vmImage: 'windows-latest'
+    vmImage: 'windows-2025-vs2026'
 
   steps:
   - checkout: self
@@ -139,7 +139,7 @@ jobs:
     - Build_Prep
 
   pool:
-    vmImage: 'windows-latest'
+    vmImage: 'windows-2025-vs2026'
 
   variables:
     - group: sign-client-credentials
@@ -556,7 +556,7 @@ jobs:
     - Build_MDP
 
   pool:
-    vmImage: 'windows-latest'
+    vmImage: 'windows-2025-vs2026'
 
   steps:
   # need this here in order to persist GitHub credentials 
