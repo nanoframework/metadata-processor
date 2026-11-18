@@ -462,6 +462,8 @@ namespace nanoFramework.Tools.MetadataProcessor
                             }
                         }
 
+                        PinGenericInstanceTypes(mrReturnType, set);
+
                         // Now process the actual return type
                         if (mrReturnType.IsValueType &&
                             !mrReturnType.IsPrimitive)
@@ -506,6 +508,8 @@ namespace nanoFramework.Tools.MetadataProcessor
                         // parameters
                         foreach (ParameterDefinition p in mr.Parameters)
                         {
+                            PinGenericInstanceTypes(p.ParameterType, set);
+
                             if (p.ParameterType.DeclaringType != null)
                             {
                                 TypeDefinition resolvedType = p.ParameterType.Resolve();
@@ -721,6 +725,8 @@ namespace nanoFramework.Tools.MetadataProcessor
                 case TokenType.Field:
                     FieldDefinition fd = _tablesContext.FieldsTable.Items.FirstOrDefault(i => i.MetadataToken == token);
 
+                    PinGenericInstanceTypes(fd.FieldType, set);
+
                     if (fd is TypeReference)
                     {
                         set.Add(fd.MetadataToken);
@@ -811,6 +817,8 @@ namespace nanoFramework.Tools.MetadataProcessor
                         }
                     }
 
+                    PinGenericInstanceTypes(mdReturnType, set);
+
                     // Now process the actual return type
                     if (mdReturnType.IsValueType
                   && !mdReturnType.IsPrimitive)
@@ -855,6 +863,8 @@ namespace nanoFramework.Tools.MetadataProcessor
                     // parameters
                     foreach (ParameterDefinition p in md.Parameters)
                     {
+                        PinGenericInstanceTypes(p.ParameterType, set);
+
                         TypeReference parameterType = null;
 
                         if (p.ParameterType is ByReferenceType byReference)
@@ -939,6 +949,8 @@ namespace nanoFramework.Tools.MetadataProcessor
                         // variables
                         foreach (VariableDefinition v in md.Body.Variables)
                         {
+                            PinGenericInstanceTypes(v.VariableType, set);
+
                             if (v.VariableType.DeclaringType != null)
                             {
                                 TypeDefinition resolvedType = v.VariableType.Resolve();
@@ -1733,6 +1745,34 @@ namespace nanoFramework.Tools.MetadataProcessor
                          || (t.IsValueType && !t.IsPrimitive)))
             {
                 set.Add(t.MetadataToken);
+            }
+        }
+
+        /// <summary>
+        /// Pins the TypeSpec and the types behind every generic instance found in a signature type, including the ones nested in arrays, by-refs, modifiers and generic arguments.
+        /// </summary>
+        private void PinGenericInstanceTypes(TypeReference t, HashSet<MetadataToken> set)
+        {
+            switch (t)
+            {
+                case GenericInstanceType git:
+                    if (_tablesContext.TypeSpecificationsTable.TryGetTypeReferenceId(git, out ushort specRid))
+                    {
+                        set.Add(new MetadataToken(TokenType.TypeSpec, specRid));
+                    }
+
+                    PinTypeSpecificationParts(git, set);
+
+                    foreach (TypeReference arg in git.GenericArguments)
+                    {
+                        PinGenericInstanceTypes(arg, set);
+                    }
+
+                    break;
+
+                case TypeSpecification ts:
+                    PinGenericInstanceTypes(ts.ElementType, set);
+                    break;
             }
         }
 

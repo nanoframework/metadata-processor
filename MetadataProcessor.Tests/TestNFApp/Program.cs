@@ -116,6 +116,10 @@ namespace TestNFApp
             Console.WriteLine("InstructionOnlyGenericTypeSpec tests");
             _ = new InstructionOnlyGenericTypeSpecTests();
 
+            // generic-instance TypeSpec reached only from a method return type
+            Console.WriteLine("GenericReturnTypeTypeSpec tests");
+            _ = new GenericReturnTypeTypeSpecTests();
+
             // 
             Console.WriteLine("Exiting TestNFApp");
         }
