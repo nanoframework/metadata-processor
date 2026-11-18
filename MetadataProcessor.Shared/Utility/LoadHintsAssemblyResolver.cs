@@ -25,12 +25,14 @@ namespace nanoFramework.Tools.MetadataProcessor
 
         private AssemblyDefinition ReadCached(string name, string assemblyFileName)
         {
+            string key = name + "|" + assemblyFileName;
+
             lock (_resolved)
             {
-                if (!_resolved.TryGetValue(name, out AssemblyDefinition assembly))
+                if (!_resolved.TryGetValue(key, out AssemblyDefinition assembly))
                 {
                     assembly = AssemblyDefinition.ReadAssembly(assemblyFileName);
-                    _resolved[name] = assembly;
+                    _resolved[key] = assembly;
                 }
 
                 return assembly;
