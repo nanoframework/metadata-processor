@@ -235,7 +235,7 @@ jobs:
         succeeded(),
         ne(variables['System.PullRequest.PullRequestNumber'], '')
       )
-    displayName: Install .NET SDK for nanoCLR
+    displayName: Install .NET SDK
     inputs:
       packageType: sdk
       version: '10.x'
