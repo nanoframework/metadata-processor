@@ -107,11 +107,13 @@ vstest.console MetadataProcessor.Tests\bin\Release\nanoFramework.Tools.MetadataP
 
 Install the `nanoclr` .NET tool before running `ClrIntegrationTests` locally (`dotnet tool install --global nanoclr`); CI installs it in a dedicated pipeline task. The tests update only the native CLR instance. The environment variable `NF_MDP_NANOCLR_INSTANCE_PATH` selects a local nanoCLR DLL instead and skips the instance update.
 
+Without a local DLL override, `instance --update` must succeed; a nonzero exit fails initialization before `instance --getversion` or any tests.
+
 The tool package and native instance channels are independent:
 - Tool package: locally, install/update selects stable packages unless `--prerelease` is added. Reinstall when switching from a newer preview package to an older stable package. Pipeline parameter `nanoClrToolUsePreview` controls the installation task's `NF_MDP_NANOCLR_TOOL_USE_PREVIEW`.
 - Native instance: local environment variable `NF_MDP_NANOCLR_INSTANCE_USE_PREVIEW` and CI parameter `nanoClrInstanceUsePreview` control `instance --update --preview`. Both default to stable (`false` or unset). A local DLL override takes precedence.
 
-Both pipeline parameters default to `false` (stable). Automatic develop CI and PRs targeting develop override both channels to include previews for vNext testing. Manual runs honor each parameter independently on every branch.
+Both pipeline parameters default to `false` (stable). PR builds targeting develop override both channels to include previews for vNext testing. The nanoCLR setup and test steps are PR-only; manual pipeline runs currently skip them.
 
 ---
 

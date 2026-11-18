@@ -102,8 +102,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core
             // attribute declared on a property (MyClass1.MyField) has to be reachable through the getter
             Assert.IsTrue(output.Contains(">>>>>>> get_MyField has 'IgnoreAttribute' attribute"), $"Attribute declared on property wasn't cascaded to the getter.{Environment.NewLine}Output is:{Environment.NewLine}{output}");
 
-            // attributes declared on properties have to be reachable through the accessors, without duplicating
-            // the ones declared on the accessor itself (see TestNFApp.PropertyAttributesTestClass)
+            // Accessors inherit property attributes without duplicating attributes declared on the accessor.
             AssertAccessorAttributes(output, "OneClassOverAll", "get_DummyProperty", 1, 1);
             AssertAccessorAttributes(output, "OneClassOverAll", "set_DummyProperty", 1, 1);
 

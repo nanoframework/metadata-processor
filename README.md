@@ -65,9 +65,11 @@ The .NET tool package and native CLR instance have **independent** channel setti
 - **nanoCLR .NET tool package:** locally, the commands above select stable packages; adding `--prerelease` includes preview packages. To switch from a newer preview package to an older stable package, uninstall the tool first, then install it without `--prerelease`. The pipeline boolean parameter `nanoClrToolUsePreview` controls `--prerelease` through the installation task's `NF_MDP_NANOCLR_TOOL_USE_PREVIEW` variable.
 - **Native nanoCLR instance:** tests run `nanoclr instance --update` before execution. Locally, `NF_MDP_NANOCLR_INSTANCE_USE_PREVIEW=true` adds `--preview`; `false` or unset selects stable releases. In CI, the boolean parameter `nanoClrInstanceUsePreview` sets this environment variable and defaults to `false`.
 
-Both pipeline parameters default to `false` (stable). Automatic CI builds on `develop`, including PRs targeting `develop`, override **both** selections to include previews for vNext testing. Manual pipeline runs honor each parameter independently on any branch. Outside that develop CI override, selecting preview tool packages does not select preview native CLR instances, and vice versa.
+Both pipeline parameters default to `false` (stable). PR builds targeting `develop` override **both** selections to include previews for vNext testing. The nanoCLR setup and test steps are PR-only; manual pipeline runs currently skip them. Outside that PR override, selecting preview tool packages does not select preview native CLR instances, and vice versa.
 
 To use a locally built DLL instead, set the environment variable `NF_MDP_NANOCLR_INSTANCE_PATH` to its full path. This selects `NanoClrLocalInstance` and skips the instance update, taking precedence over the stable/preview setting.
+
+Without a local DLL override, `instance --update` must succeed; a nonzero exit fails initialization before `instance --getversion` or any tests.
 
 For CI testing against a specific nf-interpreter build, add `[tested against nanoclr buildId NNN]` to the PR description. The pipeline downloads that build's `nanoclr_dll` artifact and passes its DLL path to the tests through the same environment variable.
 
