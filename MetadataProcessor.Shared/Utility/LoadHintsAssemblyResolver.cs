@@ -21,6 +21,22 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// </summary>
         private readonly IDictionary<string, string> _loadHints;
 
+        private readonly Dictionary<string, AssemblyDefinition> _resolved = new Dictionary<string, AssemblyDefinition>(StringComparer.Ordinal);
+
+        private AssemblyDefinition ReadCached(string name, string assemblyFileName)
+        {
+            lock (_resolved)
+            {
+                if (!_resolved.TryGetValue(name, out AssemblyDefinition assembly))
+                {
+                    assembly = AssemblyDefinition.ReadAssembly(assemblyFileName);
+                    _resolved[name] = assembly;
+                }
+
+                return assembly;
+            }
+        }
+
         /// <summary>
         /// Creates new instance of <see cref="LoadHintsAssemblyResolver"/> object.
         /// </summary>
@@ -38,7 +54,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             {
                 if (_loadHints.TryGetValue(name.Name, out string assemblyFileName))
                 {
-                    return AssemblyDefinition.ReadAssembly(assemblyFileName);
+                    return ReadCached(name.Name, assemblyFileName);
                 }
                 else
                 {
@@ -63,9 +79,11 @@ namespace nanoFramework.Tools.MetadataProcessor
         {
             try
             {
-                if (_loadHints.TryGetValue(new AssemblyName(name.FullName).Name, out string assemblyFileName))
+                string simpleName = new AssemblyName(name.FullName).Name;
+
+                if (_loadHints.TryGetValue(simpleName, out string assemblyFileName))
                 {
-                    return AssemblyDefinition.ReadAssembly(assemblyFileName);
+                    return ReadCached(simpleName, assemblyFileName);
                 }
                 else
                 {
