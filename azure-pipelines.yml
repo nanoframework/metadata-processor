@@ -223,6 +223,18 @@ jobs:
       vsTestVersion: toolsInstaller
       codeCoverageEnabled: true
 
+  - task: PublishPipelineArtifact@1
+    condition: >-
+      and(
+        succeededOrFailed(),
+        ne(variables['System.PullRequest.PullRequestNumber'], '')
+      )
+    displayName: Publish code coverage reports
+    inputs:
+      targetPath: '$(Agent.TempDirectory)/TestResults'
+      artifactName: CodeCoverage
+      artifactType: pipeline
+
   - task: CopyFiles@1
     condition: failed()
     displayName: Collecting test results
