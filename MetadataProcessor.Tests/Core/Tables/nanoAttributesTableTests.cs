@@ -74,7 +74,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
         }
 
         // see TestNFApp.PropertyAttributesTestClass for the declarations
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("GetOnlyProperty", "DummyCustomAttribute1,DummyCustomAttribute2", null)]
         [DataRow("SetOnlyProperty", null, "DummyCustomAttribute1,DummyCustomAttribute2")]
         [DataRow("PropertyWithSetterAttribute", "DummyCustomAttribute1,DummyCustomAttribute2", "DummyCustomAttribute1,DummyCustomAttribute2")]

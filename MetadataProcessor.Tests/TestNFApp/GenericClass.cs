@@ -106,13 +106,12 @@ namespace TestNFApp
 
     class GenericClass<T>
     {
-        public int NativeField;
+        public int NativeField = 0;
 
         public T GenericField;
 
         public void NoGenerics()
         {
-            int v = 1;
         }
 
         public void InstanceGenericDoOne(T t)
@@ -140,7 +139,7 @@ namespace TestNFApp
 
     class AnotherGenericClass<T, T1>
     {
-        public int NativeField;
+        public int NativeField = 0;
 
         public T GenericField;
         public T1 AnotherGenericField;

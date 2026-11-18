@@ -19,8 +19,6 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
         private readonly string _name;
         private readonly string _project;
 
-        private string _assemblyName;
-        private nanoTablesContext tablesContext;
         private string _fileName;
 
         public nanoDependencyGenerator(

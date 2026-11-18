@@ -729,11 +729,7 @@ namespace nanoFramework.Tools.MetadataProcessor
 
                     PinTypeSpecificationParts(fd.FieldType, set, pinTypeSpecs: true);
 
-                    if (fd is TypeReference)
-                    {
-                        set.Add(fd.MetadataToken);
-                    }
-                    else if (fd.FieldType is GenericInstanceType)
+                    if (fd.FieldType is GenericInstanceType)
                     {
                         set.Add(fd.FieldType.MetadataToken);
                         set.Add(fd.FieldType.GetElementType().MetadataToken);

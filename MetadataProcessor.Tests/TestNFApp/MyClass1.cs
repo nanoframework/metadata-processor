@@ -36,7 +36,7 @@ namespace TestNFApp
         {
         }
 
-        private readonly int _myField;
+        private readonly int _myField = 0;
 
         [Ignore("I'm ignoring you!")]
         public int MyField => _myField;
