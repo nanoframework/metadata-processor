@@ -1,6 +1,16 @@
 # Copyright (c) .NET Foundation and Contributors
 # See LICENSE file in the project root for full license information.
 
+parameters:
+  - name: nanoClrToolUsePreview
+    displayName: Include preview nanoCLR .NET tool packages
+    type: boolean
+    default: false
+  - name: nanoClrInstanceUsePreview
+    displayName: Include preview native nanoCLR instances
+    type: boolean
+    default: false
+
 trigger:
   branches:
     include:
@@ -141,6 +151,12 @@ jobs:
       value: 'nanoFramework.Tools.MetadataProcessor.sln'
     - name: NF_MDP_MSBUILDTASK_PATH
       value: '$(System.DefaultWorkingDirectory)/MetadataProcessor.MsBuildTask/bin/Release/net472'
+    - name: NF_MDP_NANOCLR_INSTANCE_PATH
+      value: ''
+    - name: NF_MDP_NANOCLR_TOOL_USE_PREVIEW
+      value: ${{ parameters.nanoClrToolUsePreview }}
+    - name: NF_MDP_NANOCLR_INSTANCE_USE_PREVIEW
+      value: ${{ parameters.nanoClrInstanceUsePreview }}
 
   steps:
 
@@ -193,6 +209,71 @@ jobs:
       script: |
         Remove-Item -Path $env:System_DefaultWorkingDirectory\MetadataProcessor.Tests\mscorlib\nanoFramework.TestFramework -Recurse -Force
 
+  - task: PowerShell@2
+    condition: >-
+      and(
+        succeeded(),
+        ne(variables['System.PullRequest.PullRequestNumber'], '')
+      )
+    displayName: Select nanoCLR tool and instance channels
+    inputs:
+      targetType: inline
+      script: |
+        $isDevelopCi = ($env:BUILD_REASON -ne 'Manual') -and (
+          $env:BUILD_SOURCEBRANCH -eq 'refs/heads/develop' -or
+          $env:SYSTEM_PULLREQUEST_TARGETBRANCH -in @('develop', 'refs/heads/develop'))
+        if ($isDevelopCi)
+        {
+          Write-Host 'Using preview nanoCLR .NET tool packages and native instances for develop CI.'
+          Write-Host '##vso[task.setvariable variable=NF_MDP_NANOCLR_TOOL_USE_PREVIEW]true'
+          Write-Host '##vso[task.setvariable variable=NF_MDP_NANOCLR_INSTANCE_USE_PREVIEW]true'
+        }
+
+  - task: UseDotNet@2
+    condition: >-
+      and(
+        succeeded(),
+        ne(variables['System.PullRequest.PullRequestNumber'], '')
+      )
+    displayName: Install .NET SDK for nanoCLR
+    inputs:
+      packageType: sdk
+      version: '8.x'
+
+  - task: PowerShell@2
+    condition: >-
+      and(
+        succeeded(),
+        ne(variables['System.PullRequest.PullRequestNumber'], '')
+      )
+    displayName: Install nanoCLR tool
+    inputs:
+      targetType: inline
+      script: |
+        $toolPath = Join-Path '$(Agent.TempDirectory)' 'nanoclr'
+        $usePreviewTool = [bool]::Parse($env:NF_MDP_NANOCLR_TOOL_USE_PREVIEW)
+        $toolArguments = @('tool', 'install', 'nanoclr', '--tool-path', $toolPath)
+        if ($usePreviewTool)
+        {
+          $toolArguments += '--prerelease'
+        }
+
+        Write-Host "Installing nanoCLR .NET tool (include preview packages: $usePreviewTool)"
+        dotnet @toolArguments
+        if ($LASTEXITCODE -ne 0)
+        {
+          throw "nanoCLR tool installation failed with exit code $LASTEXITCODE."
+        }
+
+        Write-Host "##vso[task.prependpath]$toolPath"
+        & (Join-Path $toolPath 'nanoclr.exe') --version
+        if ($LASTEXITCODE -ne 0)
+        {
+          throw "nanoCLR tool failed to start with exit code $LASTEXITCODE."
+        }
+    env:
+      NF_MDP_NANOCLR_TOOL_USE_PREVIEW: $(NF_MDP_NANOCLR_TOOL_USE_PREVIEW)
+
   - task: VisualStudioTestPlatformInstaller@1
     condition: succeeded()
     displayName: 'Visual Studio Test Platform Installer'
@@ -220,8 +301,12 @@ jobs:
       platform: '$(BuildPlatform)'
       configuration: '$(BuildConfiguration)'
       diagnosticsEnabled: true
+      otherConsoleOptions: '/Logger:"console;verbosity=detailed"'
       vsTestVersion: toolsInstaller
       codeCoverageEnabled: true
+    env:
+      NF_MDP_NANOCLR_INSTANCE_PATH: $(NF_MDP_NANOCLR_INSTANCE_PATH)
+      NF_MDP_NANOCLR_INSTANCE_USE_PREVIEW: $(NF_MDP_NANOCLR_INSTANCE_USE_PREVIEW)
 
   - powershell: |
       dotnet tool install --global dotnet-coverage
