@@ -223,6 +223,42 @@ jobs:
       vsTestVersion: toolsInstaller
       codeCoverageEnabled: true
 
+  - powershell: |
+      dotnet tool install --global dotnet-coverage
+      $coverageFiles = Get-ChildItem -Path "$(Agent.TempDirectory)/TestResults" -Filter *.coverage -Recurse
+      if ($coverageFiles) {
+        dotnet-coverage merge $coverageFiles.FullName -f cobertura -o "$(Agent.TempDirectory)/CoverageReport/coverage.cobertura.xml"
+      }
+    displayName: Convert code coverage to Cobertura
+    condition: >-
+      and(
+        succeededOrFailed(),
+        ne(variables['System.PullRequest.PullRequestNumber'], '')
+      )
+
+  - task: PublishCodeCoverageResults@2
+    condition: >-
+      and(
+        succeededOrFailed(),
+        ne(variables['System.PullRequest.PullRequestNumber'], '')
+      )
+    displayName: Publish code coverage results
+    inputs:
+      summaryFileLocation: '$(Agent.TempDirectory)/CoverageReport/coverage.cobertura.xml'
+      failIfCoverageEmpty: false
+
+  - task: PublishPipelineArtifact@1
+    condition: >-
+      and(
+        succeededOrFailed(),
+        ne(variables['System.PullRequest.PullRequestNumber'], '')
+      )
+    displayName: Publish code coverage reports
+    inputs:
+      targetPath: '$(Agent.TempDirectory)/TestResults'
+      artifactName: CodeCoverage
+      artifactType: pipeline
+
   - task: CopyFiles@1
     condition: failed()
     displayName: Collecting test results
