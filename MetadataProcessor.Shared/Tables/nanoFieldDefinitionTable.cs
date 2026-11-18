@@ -134,8 +134,9 @@ namespace nanoFramework.Tools.MetadataProcessor
             const ushort FD_SpecialName = 0x0100; // field is special.  Name describes how.
             const ushort FD_HasDefault = 0x0200; // Field has default.
             const ushort FD_HasFieldRVA = 0x0400; // Field has RVA.
-
-            const ushort FD_NoReflection = 0x0800; // field does not allow reflection
+#pragma warning disable CS0219 // Keep the unused flag in sync with native CLR_RECORD_FIELDDEF.
+            const ushort FD_NoReflection = 0x0800; // Field does not allow reflection.
+#pragma warning restore CS0219
 
             const ushort FD_HasAttributes = 0x8000;
 

@@ -215,7 +215,9 @@ namespace nanoFramework.Tools.MetadataProcessor
             const uint MD_NewSlot = 0x00000100; // Method always gets a new slot in the vtable.
             const uint MD_Abstract = 0x00000200; // Method does not provide an implementation.
             const uint MD_SpecialName = 0x00000400; // Method is special.  Name describes how.
+#pragma warning disable CS0219 // Keep unused flags in sync with native CLR_RECORD_METHODDEF.
             const uint MD_NativeProfiled = 0x00000800;
+#pragma warning restore CS0219
 
             const uint MD_Constructor = 0x00001000;
             const uint MD_StaticConstructor = 0x00002000;
@@ -231,12 +233,16 @@ namespace nanoFramework.Tools.MetadataProcessor
             const uint MD_ContainsGenericParameter = 0x00200000;
 
             const uint MD_Synchronized = 0x01000000;
+#pragma warning disable CS0219 // Keep unused flags in sync with native CLR_RECORD_METHODDEF.
             const uint MD_GloballySynchronized = 0x02000000;
             const uint MD_Patched = 0x04000000;
+#pragma warning restore CS0219
             const uint MD_EntryPoint = 0x08000000;
 
+#pragma warning disable CS0219 // Keep unused flags in sync with native CLR_RECORD_METHODDEF.
             const uint MD_RequireSecObject = 0x10000000; // Method calls another method containing security code.
-            const uint MD_HasSecurity = 0x20000000; // Method has security associate with it.
+            const uint MD_HasSecurity = 0x20000000; // Method has security associated with it.
+#pragma warning restore CS0219
             const uint MD_HasExceptionHandlers = 0x40000000;
             const uint MD_HasAttributes = 0x80000000;
 
@@ -298,12 +304,6 @@ namespace nanoFramework.Tools.MetadataProcessor
             if (method.IsSpecialName)
             {
                 flag |= MD_SpecialName;
-            }
-
-            if (method.IsNative)
-            {
-                // can't find anything relevant to do with this...
-                //    flag |= MD_NativeProfiled; // ???
             }
 
             if (method.IsConstructor)

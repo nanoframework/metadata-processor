@@ -130,9 +130,14 @@
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
+    <!-- Suppress known compiler warnings only when building the pinned CoreLibrary test fixture. -->
     <PreBuildEvent>
       nuget restore "$(ProjectDir)mscorlib\nanoFramework.CoreLibrary.sln"
+      setlocal
+      set "NoWarn=$(NoWarn),0162,0169,0649,0660,0661,8603,8632"
       "$(MSBuildBinPath)\msbuild" "$(ProjectDir)mscorlib\nanoFramework.CoreLibrary\CoreLibrary.nfproj" -t:Build -nr:False -p:Configuration=$(Configuration) -p:NF_MDP_MSBUILDTASK_PATH="$(ProjectDir)..\MetadataProcessor.MsBuildTask\bin\$(Configuration)\net472" /m
+      if errorlevel 1 exit /b 1
+      endlocal
       "$(MSBuildBinPath)\msbuild" "$(ProjectDir)TestNFClassLibrary\TestNFClassLibrary\TestNFClassLibrary.nfproj" -t:Build -nr:False -p:Configuration=$(Configuration) -p:NF_MDP_MSBUILDTASK_PATH="$(ProjectDir)..\MetadataProcessor.MsBuildTask\bin\$(Configuration)\net472" -p:MDP_UNIT_TESTS_BUILD=1 /m
       "$(MSBuildBinPath)\msbuild" "$(ProjectDir)TestNFApp\TestNFApp.nfproj" -t:Build -nr:False -p:Configuration=$(Configuration) -p:NF_MDP_MSBUILDTASK_PATH="$(ProjectDir)..\MetadataProcessor.MsBuildTask\bin\$(Configuration)\net472"
       "$(MSBuildBinPath)\msbuild" "$(ProjectDir)StubsGenerationTestNFApp\StubsGenerationTestNFApp.nfproj" -t:Build -nr:False -p:Configuration=$(Configuration) -p:NF_MDP_MSBUILDTASK_PATH="$(ProjectDir)..\MetadataProcessor.MsBuildTask\bin\$(Configuration)\net472"

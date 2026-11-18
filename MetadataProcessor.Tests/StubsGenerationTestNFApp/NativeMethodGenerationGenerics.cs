@@ -13,7 +13,6 @@ namespace StubsGenerationTestNFApp
 
             byte a = 0;
             ushort b = 0;
-            U genParam = default;
 
             NativeMethodWithReferenceParameters<T, U>(ref a, ref b);
             

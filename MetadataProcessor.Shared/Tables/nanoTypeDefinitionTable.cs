@@ -383,8 +383,6 @@ namespace nanoFramework.Tools.MetadataProcessor
         private ushort GetEncodedTypeReferenceOrDefinitionId(
             TypeReference typeReference)
         {
-            ushort tag;
-
             if (_context.TypeReferencesTable.TryGetTypeReferenceId(typeReference, out ushort referenceId))
             {
                 // check "nested inside" case

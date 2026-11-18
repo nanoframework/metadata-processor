@@ -11,10 +11,10 @@ namespace StubsGenerationTestNFApp
     /// </summary>
     internal class NativeWithFields
     {
-        private static int s_counter;
+        private static int s_counter = 0;
 
-        private int _value;
-        private byte _flag;
+        private int _value = 0;
+        private byte _flag = 0;
 
         public int Value => _value + _flag + s_counter;
 
@@ -30,7 +30,7 @@ namespace StubsGenerationTestNFApp
     /// </summary>
     internal class NativeException : Exception
     {
-        private int _nativeErrorCode;
+        private int _nativeErrorCode = 0;
 
         public int NativeErrorCode => _nativeErrorCode;
 
@@ -43,8 +43,8 @@ namespace StubsGenerationTestNFApp
     /// </summary>
     internal class ManagedOnlyWithFields
     {
-        private int _managedValue;
-        private string _managedName;
+        private int _managedValue = 0;
+        private string _managedName = null;
 
         public int ManagedValue => _managedValue;
 
@@ -59,7 +59,7 @@ namespace StubsGenerationTestNFApp
     /// </summary>
     internal class CompilerGeneratedTypesHost
     {
-        private int _seed;
+        private int _seed = 0;
 
         public IntProvider GetProvider(int offset)
         {

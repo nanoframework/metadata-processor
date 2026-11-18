@@ -19,7 +19,6 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests
 
         private static string _testExecutionLocation;
         private static string _testNFAppLocation;
-        private static string _nfAppProjectLocation;
         private static string _testNFClassLibLocation;
         private static string _nanoClrLocation;
         private static string _configuration;
