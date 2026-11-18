@@ -462,7 +462,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                             }
                         }
 
-                        PinGenericInstanceTypes(mrReturnType, set);
+                        PinTypeSpecificationParts(mrReturnType, set, pinTypeSpecs: true);
 
                         // Now process the actual return type
                         if (mrReturnType.IsValueType &&
@@ -508,7 +508,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                         // parameters
                         foreach (ParameterDefinition p in mr.Parameters)
                         {
-                            PinGenericInstanceTypes(p.ParameterType, set);
+                            PinTypeSpecificationParts(p.ParameterType, set, pinTypeSpecs: true);
 
                             if (p.ParameterType.DeclaringType != null)
                             {
@@ -579,6 +579,8 @@ namespace nanoFramework.Tools.MetadataProcessor
                                     set.Add(fr.DeclaringType.MetadataToken);
                                 }
                             }
+
+                            PinTypeSpecificationParts(fr.FieldType, set, pinTypeSpecs: true);
 
                             if (fr.FieldType.MetadataType == MetadataType.Class)
                             {
@@ -725,7 +727,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                 case TokenType.Field:
                     FieldDefinition fd = _tablesContext.FieldsTable.Items.FirstOrDefault(i => i.MetadataToken == token);
 
-                    PinGenericInstanceTypes(fd.FieldType, set);
+                    PinTypeSpecificationParts(fd.FieldType, set, pinTypeSpecs: true);
 
                     if (fd is TypeReference)
                     {
@@ -817,7 +819,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                         }
                     }
 
-                    PinGenericInstanceTypes(mdReturnType, set);
+                    PinTypeSpecificationParts(mdReturnType, set, pinTypeSpecs: true);
 
                     // Now process the actual return type
                     if (mdReturnType.IsValueType
@@ -863,7 +865,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                     // parameters
                     foreach (ParameterDefinition p in md.Parameters)
                     {
-                        PinGenericInstanceTypes(p.ParameterType, set);
+                        PinTypeSpecificationParts(p.ParameterType, set, pinTypeSpecs: true);
 
                         TypeReference parameterType = null;
 
@@ -949,7 +951,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                         // variables
                         foreach (VariableDefinition v in md.Body.Variables)
                         {
-                            PinGenericInstanceTypes(v.VariableType, set);
+                            PinTypeSpecificationParts(v.VariableType, set, pinTypeSpecs: true);
 
                             if (v.VariableType.DeclaringType != null)
                             {
@@ -1720,59 +1722,38 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// <summary>
         /// Pins the types that a TypeSpecification signature refers to: element types and generic arguments.
         /// </summary>
-        private void PinTypeSpecificationParts(TypeReference t, HashSet<MetadataToken> set)
+        /// <param name="pinTypeSpecs">Also pins the TypeSpec of every generic instance found, in the same traversal.</param>
+        private void PinTypeSpecificationParts(TypeReference t, HashSet<MetadataToken> set, bool pinTypeSpecs = false)
         {
             if (t is GenericInstanceType git)
             {
-                foreach (TypeReference arg in git.GenericArguments)
+                if (pinTypeSpecs
+                    && _tablesContext.TypeSpecificationsTable.TryGetTypeReferenceId(git, out ushort specRid))
                 {
-                    PinTypeSpecificationParts(arg, set);
+                    set.Add(new MetadataToken(TokenType.TypeSpec, specRid));
                 }
 
-                PinTypeSpecificationParts(git.ElementType, set);
+                foreach (TypeReference arg in git.GenericArguments)
+                {
+                    PinTypeSpecificationParts(arg, set, pinTypeSpecs);
+                }
+
+                PinTypeSpecificationParts(git.ElementType, set, pinTypeSpecs);
             }
             else if (t is IModifierType modifier)
             {
-                PinTypeSpecificationParts(modifier.ModifierType, set);
-                PinTypeSpecificationParts(((TypeSpecification)t).ElementType, set);
+                PinTypeSpecificationParts(modifier.ModifierType, set, pinTypeSpecs);
+                PinTypeSpecificationParts(((TypeSpecification)t).ElementType, set, pinTypeSpecs);
             }
             else if (t is TypeSpecification ts)
             {
-                PinTypeSpecificationParts(ts.ElementType, set);
+                PinTypeSpecificationParts(ts.ElementType, set, pinTypeSpecs);
             }
             else if (!(t is GenericParameter)
                      && (t.MetadataType == MetadataType.Class
                          || (t.IsValueType && !t.IsPrimitive)))
             {
                 set.Add(t.MetadataToken);
-            }
-        }
-
-        /// <summary>
-        /// Pins the TypeSpec and the types behind every generic instance found in a signature type, including the ones nested in arrays, by-refs, modifiers and generic arguments.
-        /// </summary>
-        private void PinGenericInstanceTypes(TypeReference t, HashSet<MetadataToken> set)
-        {
-            switch (t)
-            {
-                case GenericInstanceType git:
-                    if (_tablesContext.TypeSpecificationsTable.TryGetTypeReferenceId(git, out ushort specRid))
-                    {
-                        set.Add(new MetadataToken(TokenType.TypeSpec, specRid));
-                    }
-
-                    PinTypeSpecificationParts(git, set);
-
-                    foreach (TypeReference arg in git.GenericArguments)
-                    {
-                        PinGenericInstanceTypes(arg, set);
-                    }
-
-                    break;
-
-                case TypeSpecification ts:
-                    PinGenericInstanceTypes(ts.ElementType, set);
-                    break;
             }
         }
 

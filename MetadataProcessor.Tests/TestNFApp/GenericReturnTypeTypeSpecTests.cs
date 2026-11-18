@@ -11,6 +11,8 @@ using System.Collections.Generic;
 
 namespace TestNFApp
 {
+    // The calls to TestNFClassLibrary.ExternalGenericSignatures reach the generic instances through member references only:
+    // their arguments are not used anywhere else in this assembly.
     // Trivial bodies on purpose: with optimizations there are no locals, so the return types are the only references.
     public class GenericReturnTypeTypeSpecTests : IEnumerable<string>
     {
@@ -52,7 +54,9 @@ namespace TestNFApp
             if (GetEnumerator() != null
                 || ReturnsInstance() != null
                 || ReturnsNestedArgument() != null
-                || ReturnsArrayOfInstances() != null)
+                || ReturnsArrayOfInstances() != null
+                || TestNFClassLibrary.ExternalGenericSignatures.Items() != null
+                || TestNFClassLibrary.ExternalGenericSignatures.Field != null)
             {
                 throw new Exception("methods must return null");
             }
