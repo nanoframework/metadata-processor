@@ -1,4 +1,4 @@
-# Copyright (c) .NET Foundation and Contributors
+﻿# Copyright (c) .NET Foundation and Contributors
 # See LICENSE file in the project root for full license information.
 
 parameters:
@@ -238,7 +238,7 @@ jobs:
     displayName: Install .NET SDK for nanoCLR
     inputs:
       packageType: sdk
-      version: '8.x'
+      version: '10.x'
 
   - task: PowerShell@2
     condition: >-
