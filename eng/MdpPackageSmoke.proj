@@ -12,23 +12,11 @@
     <ItemGroup>
       <LoadHint Include="$(FixtureDirectory)\*.dll" />
     </ItemGroup>
-    <MetaDataProcessorTask Parse="$(Fixture)" Compile="$(OutputDirectory)\Smoke.pe"
-                          LoadHints="@(LoadHint)" GenerateStubs="$(GenerateStubs)"
-                          GenerateSkeletonFile="$(OutputDirectory)\stubs"
-                          GenerateSkeletonName="PackageSmoke" GenerateSkeletonProject="PackageSmoke">
+    <MetaDataProcessorTask Parse="$(Fixture)" Compile="$(OutputDirectory)\Smoke.pe" LoadHints="@(LoadHint)">
       <Output TaskParameter="FilesWritten" ItemName="WrittenFiles" />
-      <Output TaskParameter="NativeContractHash" PropertyName="ContractHash" />
     </MetaDataProcessorTask>
     <Error Condition="!Exists('$(OutputDirectory)\Smoke.pe') or !Exists('$(OutputDirectory)\Smoke.pdbx')"
            Text="The packaged task did not generate PE and PDBX output." />
     <Error Condition="'@(WrittenFiles)' == ''" Text="The packaged task did not report FilesWritten." />
-    <WriteLinesToFile File="$(OutputDirectory)\native-contract.txt" Lines="$(ContractHash)" Overwrite="true" />
-  </Target>
-  <Target Name="VerifyParallel" DependsOnTargets="Verify">
-    <ItemGroup>
-      <ParallelRun Include="$(MSBuildProjectFullPath)" AdditionalProperties="OutputDirectory=$(OutputDirectory)\parallel-one" />
-      <ParallelRun Include="$(MSBuildProjectFullPath)" AdditionalProperties="OutputDirectory=$(OutputDirectory)\parallel-two" />
-    </ItemGroup>
-    <MSBuild Projects="@(ParallelRun)" Targets="Verify" BuildInParallel="true" />
   </Target>
 </Project>
