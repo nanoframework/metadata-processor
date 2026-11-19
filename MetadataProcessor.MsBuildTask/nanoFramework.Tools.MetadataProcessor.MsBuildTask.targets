@@ -1,10 +1,15 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <ItemGroup Condition="'$(VssdkCompatibleExtension)' == 'true' or '$(CreateVsixContainer)' == 'true'">
-    <Content Include="$(MSBuildThisFileDirectory)..\tasks\net472\**\*">
-      <Link>MetadataProcessor\%(RecursiveDir)%(Filename)%(Extension)</Link>
-      <InstallRoot>MSBuild</InstallRoot>
-      <VSIXSubPath>nanoFramework\v1.0\%(RecursiveDir)</VSIXSubPath>
-      <IncludeInVSIX>true</IncludeInVSIX>
-    </Content>
-  </ItemGroup>
+  <!-- Evaluated at execution time: VSSDK properties are not final when this file is imported. -->
+  <Target Name="NanoFrameworkStageMetadataProcessorForVsix"
+          BeforeTargets="BeforeBuild;GetVsixSourceItems"
+          Condition="'$(VssdkCompatibleExtension)' == 'true' or '$(CreateVsixContainer)' == 'true'">
+    <ItemGroup>
+      <Content Include="$(MSBuildThisFileDirectory)..\tasks\net472\**\*">
+        <Link>MetadataProcessor\%(RecursiveDir)%(Filename)%(Extension)</Link>
+        <InstallRoot>MSBuild</InstallRoot>
+        <VSIXSubPath>nanoFramework\v1.0\%(RecursiveDir)</VSIXSubPath>
+        <IncludeInVSIX>true</IncludeInVSIX>
+      </Content>
+    </ItemGroup>
+  </Target>
 </Project>
