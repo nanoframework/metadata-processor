@@ -25,7 +25,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// <summary>
         /// SHA-256 of the catalog strings, used by the generator to detect a change without a version bump.
         /// </summary>
-        internal const string CatalogHash = "0b5be11a0239b7f625697ebdfeb9e114a86b9f98d2e7ad60f6c82f450c022711";
+        internal const string CatalogHash = "aad5df9df5cdcd720ff9a001fcafc17e907938ad536daa27d44c9fd4673cd0bc";
 
         /// <summary>
         /// Gets string reference identifier for passed string from constants table.

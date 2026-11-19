@@ -117,8 +117,8 @@ namespace nanoFramework.Tools.MetadataProcessor
 
                 var length = Encoding.UTF8.GetByteCount(value) + 1;
 
-                // sanity check for ID overflow
-                if (_lastAvailableId + length > nanoStringsConstants.FirstId)
+                // provisional offsets only have to fit 16 bits: the final ones are checked against the shared IDs by Freeze
+                if (_lastAvailableId + length > ushort.MaxValue)
                 {
                     throw new InvalidOperationException($"String table overflow in assembly '{_context.AssemblyDefinition.Name}'. Can't use so many strings.");
                 }
@@ -150,6 +150,24 @@ namespace nanoFramework.Tools.MetadataProcessor
             _userStrings.Add(value);
             return GetOrCreateStringId(value);
         }
+
+        /// <summary>
+        /// Gets the identifier of a non-null string argument of a custom attribute.
+        /// </summary>
+        /// <remarks>
+        /// 0xFFFF encodes a null string in an attribute blob, so a shared string with that identifier gets a local copy.
+        /// </remarks>
+        internal ushort GetOrCreateAttributeStringId(string value)
+        {
+            ushort id = GetOrCreateStringId(value);
+
+            return id == NullAttributeStringId ? GetOrCreateStringId(value, false) : id;
+        }
+
+        /// <summary>
+        /// Identifier written for a null string argument of a custom attribute.
+        /// </summary>
+        internal const ushort NullAttributeStringId = 0xFFFF;
 
         internal bool IsUserString(string value) => _userStrings.Contains(value);
 

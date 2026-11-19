@@ -943,11 +943,11 @@ namespace nanoFramework.Tools.MetadataProcessor
                         if (argument.Value == null)
                         {
                             // write sentinel for null string
-                            writer.Write((ushort)0xFFFF);
+                            writer.Write(nanoStringTable.NullAttributeStringId);
                         }
                         else
                         {
-                            writer.Write(_context.StringTable.GetOrCreateStringId((string)argument.Value));
+                            writer.Write(_context.StringTable.GetOrCreateAttributeStringId((string)argument.Value));
                         }
                         break;
                     default:
@@ -1071,8 +1071,8 @@ namespace nanoFramework.Tools.MetadataProcessor
                     break;
                 case NanoCLRDataType.DATATYPE_STRING:
                     writer.Write(value == null
-                        ? (ushort)0xFFFF
-                        : _context.StringTable.GetOrCreateStringId((string)value));
+                        ? nanoStringTable.NullAttributeStringId
+                        : _context.StringTable.GetOrCreateAttributeStringId((string)value));
                     break;
                 default:
                     throw new ArgumentException($"Failed to generate signature for CustomAttribute. Unsupported array element type: {dataType}.");

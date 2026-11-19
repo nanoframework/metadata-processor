@@ -553,7 +553,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         {
             if (argument.Value is string text)
             {
-                StringTable.GetOrCreateStringId(text);
+                StringTable.GetOrCreateAttributeStringId(text);
             }
             else if (argument.Value is TypeReference type)
             {

@@ -61,7 +61,8 @@ internal static class StringGenerator
 
             foreach ((string path, byte[] content) in outputs)
             {
-                bool upToDate = File.Exists(path) && File.ReadAllBytes(path).AsSpan().SequenceEqual(content);
+                bool upToDate = File.Exists(path)
+                    && NormalizeLineEndings(File.ReadAllBytes(path)).AsSpan().SequenceEqual(NormalizeLineEndings(content));
 
                 if (upToDate)
                 {
@@ -127,7 +128,10 @@ internal static class StringGenerator
                 $"catalog version {catalog.Version} is lower than the version already generated ({previousVersion}).");
         }
 
-        if (catalogHash.Groups[1].Value != hash && catalog.Version == previousVersion)
+        string previousHash = catalogHash.Groups[1].Value;
+        bool unchanged = previousHash == hash || previousHash == catalog.ComputeLegacyHash();
+
+        if (!unchanged && catalog.Version == previousVersion)
         {
             throw new GeneratorException(
                 $"the strings changed but the catalog version is still {previousVersion}. "
@@ -157,6 +161,24 @@ internal static class StringGenerator
         byte[] body = new UTF8Encoding(false).GetBytes(text);
 
         return hasBom ? [0xEF, 0xBB, 0xBF, .. body] : body;
+    }
+
+    // a checkout may have LF or CRLF line endings: only the text is compared
+    private static byte[] NormalizeLineEndings(byte[] content)
+    {
+        var normalized = new List<byte>(content.Length);
+
+        for (int i = 0; i < content.Length; i++)
+        {
+            if (content[i] == '\r' && i + 1 < content.Length && content[i + 1] == '\n')
+            {
+                continue;
+            }
+
+            normalized.Add(content[i]);
+        }
+
+        return [.. normalized];
     }
 
     private static byte[] Utf8WithBom(string text) => [0xEF, 0xBB, 0xBF, .. new UTF8Encoding(false).GetBytes(text)];
@@ -310,7 +332,25 @@ internal sealed class Catalog
         return new Catalog { Version = file.Version, Stride = file.Stride, Strings = file.Strings };
     }
 
+    // each string as a 32-bit little endian UTF-8 length followed by its bytes, in UTF-8 ordinal order
     public string ComputeHash()
+    {
+        using var data = new MemoryStream();
+        Span<byte> length = stackalloc byte[4];
+
+        foreach (string value in Strings.OrderBy(s => s, Utf8Ordinal.Instance))
+        {
+            byte[] bytes = Encoding.UTF8.GetBytes(value);
+            System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian(length, bytes.Length);
+            data.Write(length);
+            data.Write(bytes);
+        }
+
+        return Convert.ToHexStringLower(SHA256.HashData(data.ToArray()));
+    }
+
+    // hash of the first generated files, newline terminated strings: still accepted so they validate
+    public string ComputeLegacyHash()
     {
         var text = new StringBuilder();
 
@@ -534,7 +574,8 @@ internal static class CSharpWriter
             {
                 '\\' => "\\\\",
                 '"' => "\\\"",
-                < ' ' or (> '~' and < ' ') => $"\\u{(int)c:X4}",
+                // C# line terminators (U+0085, U+2028, U+2029) and other control characters can't be in a literal
+                < ' ' or (> '~' and < '\u00A0') or '\u2028' or '\u2029' => $"\\u{(int)c:X4}",
                 _ => c.ToString(),
             });
         }
