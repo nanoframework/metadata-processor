@@ -125,7 +125,7 @@ namespace nanoFramework.Tools.MetadataProcessor
 
         }
 
-        private static string GetFullName(TypeReference typeReference)
+        internal static string GetFullName(TypeReference typeReference)
         {
             if (typeReference.DeclaringType == null)
             {

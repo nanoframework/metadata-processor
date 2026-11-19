@@ -5,9 +5,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
-using Mono.Cecil;
 
 namespace nanoFramework.Tools.MetadataProcessor
 {
@@ -34,7 +34,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// <summary>
         /// Maps for each unique string and related identifier (offset in strings table).
         /// </summary>
-        private Dictionary<string, ushort> _idsByStrings =
+        private readonly Dictionary<string, ushort> _idsByStrings =
             new Dictionary<string, ushort>(StringComparer.Ordinal);
 
         /// <summary>
@@ -47,7 +47,13 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// </summary>
         private ushort _lastAvailableId;
 
-        private ushort _lastPreAllocatedId;
+        private readonly HashSet<string> _userStrings = new HashSet<string>(StringComparer.Ordinal);
+        private readonly HashSet<string> _assemblyNames = new HashSet<string>(StringComparer.Ordinal);
+        private readonly HashSet<string> _knownStrings = new HashSet<string>(StringComparer.Ordinal);
+        private byte[] _frozenData;
+        private bool _collecting;
+
+        internal bool IsFrozen => _frozenData != null;
 
         /// <summary>
         /// Assembly tables context - contains all tables used for building target assembly.
@@ -57,21 +63,15 @@ namespace nanoFramework.Tools.MetadataProcessor
         public NanoClrTable TableIndex => NanoClrTable.TBL_Strings;
 
         /// <summary>
-        /// Last pre-allocated string identifier.
-        /// </summary>
-        public ushort LastPreAllocatedId { get => _lastPreAllocatedId; }
-
-        /// <summary>
         /// Creates new instance of <see cref="nanoStringTable"/> object.
         /// </summary>
         public nanoStringTable(
             nanoTablesContext context,
             ICustomStringSorter stringSorter = null)
         {
+            _context = context;
             GetOrCreateStringId(string.Empty); // First item in string table always empty string
             _stringSorter = stringSorter ?? new EmptyStringSorter();
-
-            _context = context;
         }
 
         /// <summary>
@@ -82,31 +82,49 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// </remarks>
         /// <param name="value">String value for obtaining identifier.</param>
         /// <param name="useConstantsTable">
-        /// If <c>true</c> hard-coded string constants table will be used (should be <c>false</c>
-        /// for byte code writer because only loader use this pre-defined string table optimization).
+        /// If <c>true</c>, shared string constants may be used for metadata and IL literals.
         /// </param>
         /// <returns>Existing identifier if string already in table or new one.</returns>
         public ushort GetOrCreateStringId(
             string value,
             bool useConstantsTable = true)
         {
+            if (IsFrozen && !_knownStrings.Contains(value))
+            {
+                throw new InvalidOperationException($"String '{value}' was not collected before freezing assembly '{_context.AssemblyDefinition.Name}'.");
+            }
+
+            _knownStrings.Add(value);
             ushort id;
-            if (useConstantsTable && nanoStringsConstants.TryGetStringIndex(value, out id))
+            if (useConstantsTable &&
+                !_assemblyNames.Contains(value) &&
+                nanoStringsConstants.TryGetStringIndex(value, out id))
             {
                 return id;
             }
             if (!_idsByStrings.TryGetValue(value, out id))
             {
-                id = _lastAvailableId;
-                _idsByStrings.Add(value, id);
-                var length = Encoding.UTF8.GetBytes(value).Length + 1;
+                if (IsFrozen)
+                {
+                    throw new InvalidOperationException($"String '{value}' was not collected before freezing assembly '{_context.AssemblyDefinition.Name}'.");
+                }
+
+                if (_collecting)
+                {
+                    _idsByStrings.Add(value, 0);
+                    return 0;
+                }
+
+                var length = Encoding.UTF8.GetByteCount(value) + 1;
 
                 // sanity check for ID overflow
-                if (_lastAvailableId + length > ushort.MaxValue)
+                if (_lastAvailableId + length > nanoStringsConstants.FirstId)
                 {
                     throw new InvalidOperationException($"String table overflow in assembly '{_context.AssemblyDefinition.Name}'. Can't use so many strings.");
                 }
 
+                id = _lastAvailableId;
+                _idsByStrings.Add(value, id);
                 _lastAvailableId += (ushort)(length);
             }
             return id;
@@ -123,7 +141,85 @@ namespace nanoFramework.Tools.MetadataProcessor
         /// <returns>Existing identifier if string already in table or new one.</returns>
         public ushort GetOrCreateAssemblyNameId(string name)
         {
+            _assemblyNames.Add(name);
             return GetOrCreateStringId(name, false);
+        }
+
+        internal ushort GetOrCreateStringLiteralId(string value)
+        {
+            _userStrings.Add(value);
+            return GetOrCreateStringId(value);
+        }
+
+        internal bool IsUserString(string value) => _userStrings.Contains(value);
+
+        internal IEnumerable<KeyValuePair<string, ushort>> GetUserStrings()
+        {
+            return _userStrings.Select(value =>
+                new KeyValuePair<string, ushort>(value, GetOrCreateStringId(value)));
+        }
+
+        internal void BeginCollection()
+        {
+            if (IsFrozen)
+            {
+                throw new InvalidOperationException("The string table is already frozen.");
+            }
+
+            _idsByStrings.Clear();
+            _userStrings.Clear();
+            _assemblyNames.Clear();
+            _knownStrings.Clear();
+            _lastAvailableId = 0;
+            _collecting = true;
+            GetOrCreateStringId(string.Empty, false);
+        }
+
+        internal void Freeze()
+        {
+            if (IsFrozen)
+            {
+                throw new InvalidOperationException("The string table is already frozen.");
+            }
+
+            // Offsets are assigned before signatures and resource records; see CLAUDE.md "Frozen string layout".
+            var strings = _idsByStrings.Keys.Where(s => s.Length > 0)
+                .OrderByDescending(s => Encoding.UTF8.GetByteCount(s))
+                .ThenBy(s => s, StringComparer.Ordinal)
+                .ToList();
+            var roots = new List<KeyValuePair<byte[], ushort>>();
+            _idsByStrings.Clear();
+            _idsByStrings.Add(string.Empty, 0);
+
+            using (var stream = new MemoryStream())
+            {
+                stream.WriteByte(0);
+                foreach (string value in strings)
+                {
+                    byte[] data = Encoding.UTF8.GetBytes(value);
+                    var root = roots.FirstOrDefault(r => r.Key.Length >= data.Length &&
+                        r.Key.Skip(r.Key.Length - data.Length).SequenceEqual(data));
+                    if (root.Key != null)
+                    {
+                        _idsByStrings.Add(value, (ushort)(root.Value + root.Key.Length - data.Length));
+                        continue;
+                    }
+
+                    if (stream.Length + data.Length + 1 > nanoStringsConstants.FirstId)
+                    {
+                        throw new InvalidOperationException($"String table overflow in assembly '{_context.AssemblyDefinition.Name}'.");
+                    }
+
+                    ushort offset = (ushort)stream.Length;
+                    _idsByStrings.Add(value, offset);
+                    roots.Add(new KeyValuePair<byte[], ushort>(data, offset));
+                    stream.Write(data, 0, data.Length);
+                    stream.WriteByte(0);
+                }
+
+                _frozenData = stream.ToArray();
+                _collecting = false;
+            }
         }
 
         /// <summary>
@@ -149,6 +245,17 @@ namespace nanoFramework.Tools.MetadataProcessor
         public void Write(
             nanoBinaryWriter writer)
         {
+            if (_collecting)
+            {
+                throw new InvalidOperationException("The string table must be frozen before writing.");
+            }
+
+            if (IsFrozen)
+            {
+                writer.WriteBytes(_frozenData);
+                return;
+            }
+
             foreach (var item in _idsByStrings
                 .OrderBy(item => item.Value)
                 .Select(item => item.Key))
@@ -167,82 +274,10 @@ namespace nanoFramework.Tools.MetadataProcessor
             foreach (var item in _stringSorter.Sort(fakeStringTable._idsByStrings.Keys))
             {
                 GetOrCreateStringId(item, false);
-            }
-        }
-
-        public void RemoveUnusedItems(HashSet<MetadataToken> items)
-        {
-            var setAll = new HashSet<MetadataToken>();
-            List<string> usedStrings = new List<string>();
-
-            // build a collection of the existing tokens
-            foreach (var a in _idsByStrings)
-            {
-                setAll.Add(new MetadataToken(TokenType.String, a.Value));
-            }
-
-            // remove the ones that are used
-            foreach (var t in items)
-            {
-                if (setAll.Remove(t))
+                if (fakeStringTable.IsUserString(item))
                 {
-                    usedStrings.Add(TryGetString((ushort)t.ToUInt32()));
+                    _userStrings.Add(item);
                 }
-            }
-
-            // reset dictionary
-            _idsByStrings = new Dictionary<string, ushort>(StringComparer.Ordinal);
-
-            // and last ID too
-            _lastAvailableId = 0;
-
-            // First item in string table always empty string
-            GetOrCreateStringId(string.Empty);
-
-            // Pre-allocate strings from some tables
-            _context.AssemblyReferenceTable.AllocateStrings();
-            _context.TypeReferencesTable.AllocateStrings();
-
-
-            var memberReferences = _context.AssemblyDefinition.MainModule.GetMemberReferences();
-            List<MemberReference> memberReferencesInUse = new List<MemberReference>();
-
-            foreach (var item in memberReferences)
-            {
-                var memberRef = _context.TypeReferencesTable.Items.FirstOrDefault(m => m.FullName.Contains(item.DeclaringType.FullName));
-                if (memberRef != null)
-                {
-                    memberReferencesInUse.Add(item);
-                }
-            }
-
-            foreach (var item in memberReferencesInUse)
-            {
-                GetOrCreateStringId(item.Name);
-            }
-
-            foreach (var item in _context.TypeDefinitionTable.Items)
-            {
-                GetOrCreateStringId(item.Namespace);
-                GetOrCreateStringId(item.Name);
-
-                foreach (var f in item.Fields.Where(i => !i.IsStatic))
-                {
-                    GetOrCreateStringId(f.Name);
-                }
-
-                foreach (var m in item.Methods)
-                {
-                    GetOrCreateStringId(m.Name);
-                }
-            }
-
-            _lastPreAllocatedId = _idsByStrings.Last().Value;
-
-            // fill in the dictionary with the used strings
-            foreach (var s in usedStrings)
-            {
-                GetOrCreateStringId(s);
             }
         }
 
