@@ -24,6 +24,7 @@
 		<IncludeBuildOutput>true</IncludeBuildOutput>
 		<BuildOutputTargetFolder>tasks</BuildOutputTargetFolder>
 		<SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+		<DevelopmentDependency>true</DevelopmentDependency>
 		<TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);IncludeTaskRuntimeDependencies</TargetsForTfmSpecificBuildOutput>
 
 		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
