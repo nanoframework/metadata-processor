@@ -80,17 +80,12 @@ System.Drawing and need platform-specific qualification.
 ### Package regression gate
 
 Use PowerShell 7.3 or newer (`pwsh`) to run `eng\Verify-MdpPackage.ps1` against the
-**packed** task and console nupkgs, supplying
-`-TaskPackage`, `-CliPackage` and `-MSBuild` with the installed host paths.
-For modern MSBuild pass the SDK's `MSBuild.dll`; for Framework pass `MSBuild.exe`.
-Build the Release test fixtures first, or supply `-Fixture` and `-StubsFixture`.
-The gate extracts both packages into a temporary directory with spaces, invokes real conversions
-and native-stub generation (including parallel invocations), and compares PE, semantic PDBX and native outputs across
-hosts, both console content layouts and a restored PackageReference consumer. It also checks
-CLI dependency output and failure diagnostics, and snapshots fixture directories before running.
-PDBX comparison treats the existing `DATATYPE_LAST_PRIMITIVE`/`DATATYPE_STRING` and
-`DATATYPE_LAST_PRIMITIVE_TO_PRESERVE`/`DATATYPE_R8` enum aliases as equivalent;
-no production serialization or debug-format change is made.
+**packed** task and console nupkgs, supplying `-TaskPackage`, `-CliPackage` and `-MSBuild`
+with the installed host paths (the SDK's `MSBuild.dll` for modern MSBuild, `MSBuild.exe` for Framework).
+Build the Release test fixtures first, or supply `-Fixture`.
+The smoke check verifies the package layout (private `tasks\<tfm>` payloads, no MSBuild host assemblies,
+no `lib` assets, no flowing dependencies, development dependency), runs one real conversion per host
+and one conversion with the packaged console.
 
 CI runs the gate against the Framework MSBuild hosts discovered on its agent and the
 selected .NET SDK's MSBuild. A green run covers only those installed hosts, not the
