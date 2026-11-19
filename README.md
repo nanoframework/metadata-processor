@@ -33,12 +33,76 @@ git submodule update --init --recursive
 
 After which the NuGet packages in both the main solution and the mscorelib solution included within a submodule have to be restored. These have to be restored individually.
 
+### Build hosts and package layout
+
+Source builds require the .NET 10 SDK selected by `global.json` and Visual Studio 2026
+MSBuild 18 for the solution's Framework projects. This is separate from the hosts that
+can **run** the packaged task:
+
+| Consumer | Payload | Host |
+|---|---|---|
+| VS2019 extension / legacy project | `tasks\net472` | Framework MSBuild 16.11, x86 |
+| VS2022 extension / legacy project | `tasks\net472` | Framework MSBuild 17, x64 |
+| VS2026 extension / legacy project | `tasks\net472` | Framework MSBuild 18, x64 |
+| SDK / `dotnet build` | `tasks\net10.0` | .NET 10 MSBuild |
+| Standalone console | `MetadataProcessor` content directory | .NET Framework 4.7.2 or newer |
+
+The task package is a **tool**, not an application library: it has no `lib` assets.
+Each task directory carries its own runtime dependencies; the modern directory also
+contains the dependency manifest and runtime-specific assets. Microsoft.Build assemblies
+are supplied by the host, never deployed with MDP. The Framework task compiles against
+the MSBuild 16.11 API baseline, independently of the source-build toolchain.
+
+VSIX projects should reference the package with `IncludeAssets="build"` and
+`PrivateAssets="all"`. Its `build` targets stage the authoritative `tasks\net472`
+payload into the existing `MSBuild\nanoFramework\v1.0` location; they do not register
+tasks unconditionally or collect unrelated extension output DLLs.
+SDK consumers exclude the package's build imports and register the assembly from
+`tasks\net10.0` on Core MSBuild or `tasks\net472` on Framework MSBuild.
+`NF_MDP_MSBUILDTASK_PATH` continues to mean the directory containing the task DLL
+and its complete dependency payload, not the package root.
+
+The CLI remains a Framework executable. Keep its `.exe.config` and all adjacent
+dependencies together. Both `content\MetadataProcessor` and
+`contentFiles\any\any\MetadataProcessor` layouts are retained. Pack a built console
+with `nuget pack MetadataProcessor.Console\package.nuspec -Properties configuration=Release`
+and the version computed by Nerdbank.GitVersioning.
+
+The .NET 10 SDK feature band matters for **SDK-style** Visual Studio projects:
+10.0.1xx has a VS2022 17.14 compatibility bridge, while 10.0.2xx and later require
+VS2026/MSBuild 18. The `global.json` source-build policy selects 10.0.4xx; it does not
+promise SDK-style VS2022 support. Legacy VS2022 `.nfproj` builds use the Framework
+payload and do not require the modern task runtime. See Microsoft's
+[SDK/Visual Studio compatibility matrix](https://learn.microsoft.com/en-us/dotnet/core/porting/versioning-sdk-msbuild-vs).
+Retargeting does not make the MDP bitmap paths cross-platform: they still use
+System.Drawing and need platform-specific qualification.
+
+### Package regression gate
+
+Use PowerShell 7.3 or newer (`pwsh`) to run `eng\Verify-MdpPackage.ps1` against the
+**packed** task and console nupkgs, supplying `-TaskPackage`, `-CliPackage` and `-MSBuild`
+with the installed host paths (the SDK's `MSBuild.dll` for modern MSBuild, `MSBuild.exe` for Framework).
+Build the Release test fixtures first, or supply `-Fixture`.
+The smoke check verifies the package layout (private `tasks\<tfm>` payloads, no MSBuild host assemblies,
+no `lib` assets, no flowing dependencies, development dependency), runs one real conversion per host
+and one conversion with the packaged console.
+
+CI runs the gate against the Framework MSBuild hosts discovered on its agent and the
+selected .NET SDK's MSBuild. A green run covers only those installed hosts, not the
+complete VS2019/2022/2026 matrix. Release qualification must cover VS2019 x86,
+VS2022 x64 and VS2026 x64 separately when they are not all available on the CI agent.
+
+Release qualification must run this gate before signing/publication, inspect both
+consumer VSIX archives, and include clean-install/upgrade, IDE build and debugger smoke
+checks on supported Visual Studio releases. Publish a new MDP version first, then release
+the matching VSIX/SDK consumers; do not replace an already-published package in place.
+
 ### Adding projects to the solution
 
 When adding a project to the solution the following points have to be kept in mind for configuring the project and solution:
 
 - nanoFramework projects (.nfproj) have to be build in `AnyCPU` configuration.
-- DLLs for msbuild tasks have to be build in `x64` because Visual Studio uses this architecture since VS2022.
+- Use x64 MSBuild for source builds. Keep task DLLs AnyCPU so the same Framework payload also loads in VS2019's x86 MSBuild.
 - Any nanoFramework projects (.nfproj) that are required for Unit Tests have to have their build configuration changed so they don't build. Building those has to be added to the pre-build event of the Unit Test project that will be using it. See the [prebuild event](https://github.com/nanoframework/metadata-processor/blob/bcb82f6c9153cdc3863abf6fcc5b589437408b28/MetadataProcessor.Tests/MetadataProcessor.Tests.csproj#L118-L128) for the MetadataProcessor.Tests project. When adding nanoFramework projects to the pre-build event it is important to add the `-nr=False` flag<sup>[1]</sup>.
 
 1. This flag disables "nodeReuse", this is needed as a custom MsBuildTask is used which also gets rebuilt. "NodeReuse" keeps instances of MsBuild running which interferes with the rebuilding of the custom MsBuildTask.

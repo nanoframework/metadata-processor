@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<OutputType>Library</OutputType>
 
-		<TargetFrameworks>net8.0;net472</TargetFrameworks>
+		<TargetFrameworks>net10.0;net472</TargetFrameworks>
 		<PackageId>nanoFramework.Tools.MetadataProcessor.MsBuildTask</PackageId>
 		<AssemblyName>nanoFramework.Tools.MetadataProcessor.MsBuildTask</AssemblyName>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
@@ -15,8 +15,6 @@
 		<RepositoryType>git</RepositoryType>
 		<PackageIcon>nf-logo.png</PackageIcon>
 		<PackageLicenseFile>LICENSE.md</PackageLicenseFile>
-		<AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-		<GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
 	</PropertyGroup>
 
 	<PropertyGroup>
@@ -24,7 +22,10 @@
 		<EnableDefaultItems>false</EnableDefaultItems>
 		<GenerateDependencyFile>true</GenerateDependencyFile>
 		<IncludeBuildOutput>true</IncludeBuildOutput>
-		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+		<BuildOutputTargetFolder>tasks</BuildOutputTargetFolder>
+		<SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+		<DevelopmentDependency>true</DevelopmentDependency>
+		<TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);IncludeTaskRuntimeDependencies</TargetsForTfmSpecificBuildOutput>
 
 		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 
@@ -59,29 +60,25 @@
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="Microsoft.Build.Utilities.Core" Version="17.14.28" PrivateAssets="All" />
+		<PackageReference Include="Microsoft.Build.Framework" Version="16.11.0" PrivateAssets="All" ExcludeAssets="runtime" Condition="'$(TargetFramework)' == 'net472'" />
+		<PackageReference Include="Microsoft.Build.Utilities.Core" Version="16.11.0" PrivateAssets="All" ExcludeAssets="runtime" Condition="'$(TargetFramework)' == 'net472'" />
+		<PackageReference Include="Microsoft.Build.Framework" Version="17.14.28" PrivateAssets="All" ExcludeAssets="runtime" Condition="'$(TargetFramework)' == 'net10.0'" />
+		<PackageReference Include="Microsoft.Build.Utilities.Core" Version="17.14.28" PrivateAssets="All" ExcludeAssets="runtime" Condition="'$(TargetFramework)' == 'net10.0'" />
 		<PackageReference Include="Mono.Cecil" Version="0.11.6" PrivateAssets="All" />
 		<PackageReference Include="mustache-sharp" Version="1.0.0" PrivateAssets="All" />
-		<PackageReference Include="System.Drawing.Common" Version="8.0.34" PrivateAssets="All" />
+		<PackageReference Include="System.Drawing.Common" Version="10.0.15" PrivateAssets="All" Condition="'$(TargetFramework)' == 'net10.0'" />
+		<PackageReference Include="System.Text.Json" Version="10.0.15" PrivateAssets="All" Condition="'$(TargetFramework)' == 'net472'" />
+		<PackageReference Include="System.Text.Encodings.Web" Version="10.0.15" PrivateAssets="All" Condition="'$(TargetFramework)' == 'net472'" />
 	</ItemGroup>
-	
-  <Target Name="PackTaskDependencies" BeforeTargets="GenerateNuspec">
-    <!--
-    The include needs to happen after output has been copied to build output folder
-    but before NuGet generates a nuspec. See https://github.com/NuGet/Home/issues/4704.
-    Pack dependency DLLs per-TFM so they sit alongside the task DLL.
-    -->
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
+    <Reference Include="System.Drawing" />
+  </ItemGroup>
+
+  <Target Name="IncludeTaskRuntimeDependencies" DependsOnTargets="ResolveReferences">
     <ItemGroup>
-      <_PackageFiles Include="bin\$(Configuration)\net472\Mono.Cecil.dll;bin\$(Configuration)\net472\Mono.Cecil.Pdb.dll;bin\$(Configuration)\net472\Mono.Cecil.Rocks.dll;bin\$(Configuration)\net472\mustache-sharp.dll;bin\$(Configuration)\net472\System.Drawing.Common.dll">
-        <PackagePath>lib\net472\</PackagePath>
-        <Visible>false</Visible>
-        <BuildAction>Content</BuildAction>
-      </_PackageFiles>
-      <_PackageFiles Include="bin\$(Configuration)\net8.0\Mono.Cecil.dll;bin\$(Configuration)\net8.0\Mono.Cecil.Pdb.dll;bin\$(Configuration)\net8.0\Mono.Cecil.Rocks.dll;bin\$(Configuration)\net8.0\mustache-sharp.dll;bin\$(Configuration)\net8.0\System.Drawing.Common.dll;bin\$(Configuration)\net8.0\nanoFramework.Tools.MetadataProcessor.MsBuildTask.deps.json">
-        <PackagePath>lib\net8.0\</PackagePath>
-        <Visible>false</Visible>
-        <BuildAction>Content</BuildAction>
-      </_PackageFiles>
+      <BuildOutputInPackage Include="@(ReferenceCopyLocalPaths)" TargetPath="%(ReferenceCopyLocalPaths.DestinationSubPath)" />
+      <BuildOutputInPackage Include="$(ProjectDepsFilePath)" TargetPath="$(ProjectDepsFileName)" Condition="'$(TargetFramework)' == 'net10.0'" />
     </ItemGroup>
   </Target>
 	

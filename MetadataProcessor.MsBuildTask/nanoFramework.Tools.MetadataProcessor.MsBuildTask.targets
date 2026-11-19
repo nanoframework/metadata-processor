@@ -1,41 +1,15 @@
-<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- Evaluated at execution time: VSSDK properties are not final when this file is imported. -->
+  <Target Name="NanoFrameworkStageMetadataProcessorForVsix"
+          BeforeTargets="BeforeBuild;GetVsixSourceItems"
+          Condition="'$(VssdkCompatibleExtension)' == 'true' or '$(CreateVsixContainer)' == 'true'">
     <ItemGroup>
-        <Content Include="$(OutDir)nanoFramework.Tools.MetadataProcessor.MsBuildTask.dll">
-            <InstallRoot>MSBuild</InstallRoot>
-            <VSIXSubPath>nanoFramework\v1.0\</VSIXSubPath>
-            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-            <IncludeInVSIX>true</IncludeInVSIX>
-        </Content>
-        <Content Include="$(OutDir)Mono.Cecil.dll">
-            <InstallRoot>MSBuild</InstallRoot>
-            <VSIXSubPath>nanoFramework\v1.0\</VSIXSubPath>
-            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-            <IncludeInVSIX>true</IncludeInVSIX>
-        </Content>
-        <Content Include="$(OutDir)Mono.Cecil.Pdb.dll">
-            <InstallRoot>MSBuild</InstallRoot>
-            <VSIXSubPath>nanoFramework\v1.0\</VSIXSubPath>
-            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-            <IncludeInVSIX>true</IncludeInVSIX>
-        </Content>
-        <Content Include="$(OutDir)Mono.Cecil.Rocks.dll">
-            <InstallRoot>MSBuild</InstallRoot>
-            <VSIXSubPath>nanoFramework\v1.0\</VSIXSubPath>
-            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-            <IncludeInVSIX>true</IncludeInVSIX>
-        </Content>
-        <Content Include="$(OutDir)mustache-sharp.dll">
-            <InstallRoot>MSBuild</InstallRoot>
-            <VSIXSubPath>nanoFramework\v1.0\</VSIXSubPath>
-            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-            <IncludeInVSIX>true</IncludeInVSIX>
-        </Content>
-		<Content Include="$(OutDir)System.Drawing.Common.dll">
-			<InstallRoot>MSBuild</InstallRoot>
-			<VSIXSubPath>nanoFramework\v1.0\</VSIXSubPath>
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-			<IncludeInVSIX>true</IncludeInVSIX>
-		</Content>
-
-	</ItemGroup>
+      <Content Include="$(MSBuildThisFileDirectory)..\tasks\net472\**\*">
+        <Link>MetadataProcessor\%(RecursiveDir)%(Filename)%(Extension)</Link>
+        <InstallRoot>MSBuild</InstallRoot>
+        <VSIXSubPath>nanoFramework\v1.0\%(RecursiveDir)</VSIXSubPath>
+        <IncludeInVSIX>true</IncludeInVSIX>
+      </Content>
+    </ItemGroup>
+  </Target>
 </Project>

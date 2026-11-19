@@ -86,7 +86,7 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="System.Text.Json">
-      <Version>8.0.6</Version>
+      <Version>10.0.15</Version>
     </PackageReference>
   </ItemGroup>
   <Import Project="..\MetadataProcessor.Shared\MetadataProcessor.Shared.projitems" Label="Shared" />
