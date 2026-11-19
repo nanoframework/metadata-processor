@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using Mono.Cecil;
 using nanoFramework.Tools.MetadataProcessor.Core.Extensions;
@@ -479,6 +480,97 @@ namespace nanoFramework.Tools.MetadataProcessor
         }
 
         public AssemblyDefinition AssemblyDefinition { get; private set; }
+
+        internal void PrepareStringTable()
+        {
+            StringTable.BeginCollection();
+            StringTable.GetOrCreateAssemblyNameId(AssemblyDefinition.Name.Name);
+            foreach (var assembly in AssemblyReferenceTable.Items)
+            {
+                StringTable.GetOrCreateAssemblyNameId(assembly.Name);
+            }
+
+            foreach (var type in TypeReferencesTable.Items)
+            {
+                StringTable.GetOrCreateStringId(nanoTypeReferenceTable.GetFullName(type));
+                StringTable.GetOrCreateStringId(type.Namespace);
+            }
+
+            foreach (var type in TypeDefinitionTable.Items)
+            {
+                StringTable.GetOrCreateStringId(type.Name);
+                StringTable.GetOrCreateStringId(type.Namespace);
+            }
+
+            foreach (var field in FieldReferencesTable.Items.Cast<FieldReference>().Concat(FieldsTable.Items))
+            {
+                StringTable.GetOrCreateStringId(field.DeclaringType.Name);
+                StringTable.GetOrCreateStringId(field.Name);
+            }
+
+            foreach (var method in MethodReferencesTable.Items.Cast<MethodReference>().Concat(MethodDefinitionTable.Items))
+            {
+                StringTable.GetOrCreateStringId(method.Name);
+            }
+
+            foreach (var parameter in GenericParamsTable.Items)
+            {
+                StringTable.GetOrCreateStringId(parameter.Name);
+            }
+
+            foreach (var method in MethodDefinitionTable.Items.Where(m => m.HasBody))
+            {
+                foreach (var instruction in method.Body.Instructions.Where(i =>
+                    i.OpCode.OperandType == Mono.Cecil.Cil.OperandType.InlineString))
+                {
+                    StringTable.GetOrCreateStringLiteralId((string)instruction.Operand);
+                }
+            }
+
+            foreach (var attribute in AttributesTable.GetAllAttributes().Select(a => a.Item1))
+            {
+                foreach (var argument in attribute.ConstructorArguments)
+                {
+                    CollectAttributeStrings(argument);
+                }
+
+                foreach (var argument in attribute.Fields.Concat(attribute.Properties))
+                {
+                    StringTable.GetOrCreateStringId(argument.Name);
+                    CollectAttributeStrings(argument.Argument);
+                }
+            }
+
+            foreach (var resource in AssemblyDefinition.MainModule.Resources.OfType<EmbeddedResource>())
+            {
+                StringTable.GetOrCreateStringId(Path.ChangeExtension(resource.Name, ".nanoresources"));
+            }
+
+            StringTable.Freeze();
+        }
+
+        private void CollectAttributeStrings(CustomAttributeArgument argument)
+        {
+            if (argument.Value is string text)
+            {
+                StringTable.GetOrCreateAttributeStringId(text);
+            }
+            else if (argument.Value is TypeReference type)
+            {
+                StringTable.GetOrCreateStringId(type.FullName);
+            }
+            else if (argument.Value is CustomAttributeArgument boxed)
+            {
+                CollectAttributeStrings(boxed);
+            }
+            else if (argument.Value is CustomAttributeArgument[] values)
+            {
+                foreach (var value in values)
+                {
+                    CollectAttributeStrings(value);
+                }
+            }
+        }
 
         /// <summary>
         /// Native contract of the assembly: native methods slots, field layouts and contract hash.

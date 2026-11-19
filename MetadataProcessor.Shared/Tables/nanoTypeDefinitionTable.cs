@@ -149,7 +149,8 @@ namespace nanoFramework.Tools.MetadataProcessor
                             _byteCodeOffsets.Add(method.MetadataToken.ToUInt32(), offsets);
                         }
                     }
-                    foreach (var nestedType in item.NestedTypes)
+                    // excluded nested types are not written: their literals were not collected in the string table
+                    foreach (var nestedType in item.NestedTypes.Where(t => TryGetTypeReferenceId(t, out _)))
                     {
                         foreach (var method in nestedType.Methods)
                         {

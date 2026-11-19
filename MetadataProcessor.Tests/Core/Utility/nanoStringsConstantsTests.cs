@@ -18,7 +18,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
             var r = nanoStringsConstants.TryGetStringIndex("DateTime", out index);
 
             Assert.IsTrue(r);
-            Assert.AreEqual(0xFFFF - 0x0058, index);
+            Assert.AreEqual(0xFFFF - 0x0270, index);
 
             // test
             r = nanoStringsConstants.TryGetStringIndex(Guid.NewGuid().ToString(), out index);
@@ -30,7 +30,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
         public void TryGetStringTest()
         {
             // test
-            var r = nanoStringsConstants.TryGetString(0xFFFF - 0x00A2);
+            var r = nanoStringsConstants.TryGetString(0xFFFF - 0x0062);
 
             Assert.AreEqual("FromBase64String", r);
 

@@ -23,6 +23,9 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
         {
             nanoTablesContext nanoTablesContext = TestObjectHelper.GetTestNFAppNanoTablesContext();
 
+            // the dumper runs on the frozen string table, like in the tool
+            nanoTablesContext.PrepareStringTable();
+
             string fileNameBase = $"{DateTime.UtcNow.ToShortDateString()}_{DateTime.UtcNow.ToLongTimeString()}";
             fileNameBase = fileNameBase.Replace(':', '_').Replace('/', '_');
 
@@ -161,7 +164,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Utility
             }
 
             // UserStrings
-            System.Collections.Generic.KeyValuePair<string, ushort> lastStringEntry = nanoTablesContext.StringTable.GetItems().OrderBy(i => i.Value).Last();
+            System.Collections.Generic.KeyValuePair<string, ushort> lastStringEntry = nanoTablesContext.StringTable.GetUserStrings().OrderBy(i => i.Value).Last();
             Assert.IsTrue(dumpFileContent.Contains($"{new nanoMetadataToken(NanoClrTable.TBL_Strings, nanoTablesContext.StringTable.GetOrCreateStringId(lastStringEntry.Key, true))} : ({lastStringEntry.Key.Length:x2}) \"{lastStringEntry.Key}\""));
         }
     }

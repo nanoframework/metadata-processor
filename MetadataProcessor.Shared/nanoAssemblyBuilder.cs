@@ -220,7 +220,6 @@ namespace nanoFramework.Tools.MetadataProcessor
             _tablesContext.TypeDefinitionTable.ResetByteCodeOffsets();
             _tablesContext.ResetTypeSpecificationsTable();
             _tablesContext.AttributesTable.RemoveUnusedItems(set);
-            _tablesContext.StringTable.RemoveUnusedItems(set);
 
             // renormalise type definitions look-up tables
             // by removing items that are not used
@@ -292,6 +291,8 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             // flag minimize completed
             _tablesContext.MinimizeComplete = true;
+
+            _tablesContext.PrepareStringTable();
         }
 
         private void ShowDependencies(MetadataToken token, HashSet<MetadataToken> set, HashSet<MetadataToken> setTmp)

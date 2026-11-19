@@ -234,7 +234,7 @@ namespace nanoFramework.Tools.MetadataProcessor.Core
 
         private void DumpUserStrings(DumpAllTable dumpTable)
         {
-            foreach (var s in _tablesContext.StringTable.GetItems().OrderBy(i => i.Value).Where(i => i.Value > _tablesContext.StringTable.LastPreAllocatedId))
+            foreach (var s in _tablesContext.StringTable.GetUserStrings().OrderBy(i => i.Value))
             {
                 // don't output the empty string
                 if (s.Value == 0)

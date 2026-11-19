@@ -148,7 +148,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                 : _context.StringTable.GetOrCreateAssemblyNameId(_context.AssemblyDefinition.Name.Name));
 
             // string table version
-            writer.WriteUInt16(1);
+            writer.WriteUInt16(nanoStringsConstants.Version);
 
             //For every table, a number of bytes that were padded to the end of the table
             //to align to unsigned long.  Each table starts at a unsigned long boundary, and ends 
