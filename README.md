@@ -84,8 +84,8 @@ Use PowerShell 7.3 or newer (`pwsh`) to run `eng\Verify-MdpPackage.ps1` against 
 with the installed host paths (the SDK's `MSBuild.dll` for modern MSBuild, `MSBuild.exe` for Framework).
 Build the Release test fixtures first, or supply `-Fixture`.
 The smoke check verifies the package layout (private `tasks\<tfm>` payloads, no MSBuild host assemblies,
-no `lib` assets, no flowing dependencies, development dependency), runs one real conversion per host
-and one conversion with the packaged console.
+no `lib` assets, no flowing dependencies, development dependency), checks VSIX staging
+with existing extension content, and runs one real conversion per host and one with the packaged console.
 
 CI runs the gate against the Framework MSBuild hosts discovered on its agent and the
 selected .NET SDK's MSBuild. A green run covers only those installed hosts, not the

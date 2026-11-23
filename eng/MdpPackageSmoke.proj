@@ -5,7 +5,27 @@
   </PropertyGroup>
   <UsingTask TaskName="nanoFramework.Tools.MetadataProcessor.MsBuildTask.MetaDataProcessorTask"
              AssemblyFile="$(PackageRoot)\tasks\$(TaskFramework)\nanoFramework.Tools.MetadataProcessor.MsBuildTask.dll" />
-  <Target Name="Verify">
+  <PropertyGroup>
+    <CreateVsixContainer>true</CreateVsixContainer>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="Images\Extension.imagemanifest" />
+    <Content Include="Resources\strings.json" />
+  </ItemGroup>
+  <Import Project="$(PackageRoot)\build\nanoFramework.Tools.MetadataProcessor.MsBuildTask.targets" />
+  <Target Name="VerifyVsixStaging" DependsOnTargets="NanoFrameworkStageMetadataProcessorForVsix">
+    <ItemGroup>
+      <ExpectedPayload Include="$(PackageRoot)\tasks\net472\**\*" />
+      <StagedPayload Include="@(Content)" Condition="'%(Content.InstallRoot)' == 'MSBuild'" />
+    </ItemGroup>
+    <Error Condition="'@(StagedPayload->Count())' != '@(ExpectedPayload->Count())'"
+           Text="VSIX staging must add exactly one content item per Framework payload file." />
+    <Error Condition="'%(StagedPayload.Link)' != 'MetadataProcessor\%(StagedPayload.RecursiveDir)%(StagedPayload.Filename)%(StagedPayload.Extension)' or
+                      '%(StagedPayload.VSIXSubPath)' != 'nanoFramework\v1.0\%(StagedPayload.RecursiveDir)' or
+                      '%(StagedPayload.IncludeInVSIX)' != 'true'"
+           Text="Invalid VSIX staging metadata for %(StagedPayload.Identity): %(StagedPayload.Link)." />
+  </Target>
+  <Target Name="Verify" DependsOnTargets="VerifyVsixStaging">
     <Error Condition="'$(PackageRoot)' == '' or '$(Fixture)' == '' or '$(OutputDirectory)' == ''"
            Text="PackageRoot, Fixture and OutputDirectory are required." />
     <MakeDir Directories="$(OutputDirectory)" />

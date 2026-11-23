@@ -4,12 +4,14 @@
           BeforeTargets="BeforeBuild;GetVsixSourceItems"
           Condition="'$(VssdkCompatibleExtension)' == 'true' or '$(CreateVsixContainer)' == 'true'">
     <ItemGroup>
-      <Content Include="$(MSBuildThisFileDirectory)..\tasks\net472\**\*">
-        <Link>MetadataProcessor\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <_NanoFrameworkMdpVsixPayload Include="$(MSBuildThisFileDirectory)..\tasks\net472\**\*" />
+      <_NanoFrameworkMdpVsixPayload Update="@(_NanoFrameworkMdpVsixPayload)">
+        <Link>MetadataProcessor\%(_NanoFrameworkMdpVsixPayload.RecursiveDir)%(_NanoFrameworkMdpVsixPayload.Filename)%(_NanoFrameworkMdpVsixPayload.Extension)</Link>
         <InstallRoot>MSBuild</InstallRoot>
-        <VSIXSubPath>nanoFramework\v1.0\%(RecursiveDir)</VSIXSubPath>
+        <VSIXSubPath>nanoFramework\v1.0\%(_NanoFrameworkMdpVsixPayload.RecursiveDir)</VSIXSubPath>
         <IncludeInVSIX>true</IncludeInVSIX>
-      </Content>
+      </_NanoFrameworkMdpVsixPayload>
+      <Content Include="@(_NanoFrameworkMdpVsixPayload)" />
     </ItemGroup>
   </Target>
 </Project>
