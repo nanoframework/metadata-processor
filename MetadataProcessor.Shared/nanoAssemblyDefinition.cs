@@ -247,7 +247,17 @@ namespace nanoFramework.Tools.MetadataProcessor
             outputStream.Seek(startOffset, SeekOrigin.Begin);
 
             var buffer = new byte[size];
-            outputStream.Read(buffer, 0, buffer.Length);
+            int bytesRead = 0;
+            while (bytesRead < buffer.Length)
+            {
+                int count = outputStream.Read(buffer, bytesRead, buffer.Length - bytesRead);
+                if (count == 0)
+                {
+                    throw new EndOfStreamException();
+                }
+
+                bytesRead += count;
+            }
 
             outputStream.Seek(currentPosition, SeekOrigin.Begin);
 
