@@ -437,6 +437,29 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
         }
 
         [TestMethod]
+        public void MethodImplementingMoreThanOneNonGenericInterfaceMethod_IsRejected()
+        {
+            FinalAssembly assembly = BuildFinalAssembly();
+
+            MethodDefinition method = assembly.Context.TypeDefinitionTable.Items
+                .First(t => t.FullName == "TestNFApp.ExplicitTwoInstances")
+                .Methods
+                .First(m => m.HasOverrides && m.Overrides[0].DeclaringType.FullName == "TestNFApp.IExplicitPlain");
+            MethodReference second = method.Overrides[0];
+
+            method.Overrides.Add(second);
+
+            try
+            {
+                Assert.ThrowsExactly<ArgumentException>(() => nanoMethodDefinitionTable.GetFlags(method, assembly.Context));
+            }
+            finally
+            {
+                method.Overrides.Remove(second);
+            }
+        }
+
+        [TestMethod]
         public void Assembly_IsWrittenTheSameEveryTime()
         {
             CollectionAssert.AreEqual(BuildFinalAssembly().Bytes, BuildFinalAssemblyUncached().Bytes);

@@ -207,8 +207,7 @@ namespace nanoFramework.Tools.MetadataProcessor
         {
             ownerId = 0xFFFF;
 
-            if (!method.HasOverrides ||
-                !method.Overrides.Any(o => o.DeclaringType is GenericInstanceType))
+            if (!method.HasOverrides)
             {
                 return false;
             }
@@ -216,6 +215,11 @@ namespace nanoFramework.Tools.MetadataProcessor
             if (method.Overrides.Count > 1)
             {
                 throw new ArgumentException($"Method '{method.FullName}' implements more than one interface method, which isn't supported.");
+            }
+
+            if (!(method.Overrides[0].DeclaringType is GenericInstanceType))
+            {
+                return false;
             }
 
             return context.TypeSpecificationsTable.TryGetTypeReferenceId(method.Overrides[0].DeclaringType, out ownerId);
