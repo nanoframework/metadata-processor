@@ -167,7 +167,12 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             ushort genericParamRefId = 0xFFFF;
 
-            if (item.HasGenericParameters)
+            if (TryGetExplicitOverrideOwner(item, _context, out ushort ownerId))
+            {
+                // TypeSpec of the generic interface instance, the CLR finds the generic parameters of the method by owner
+                genericParamRefId = ownerId;
+            }
+            else if (item.HasGenericParameters)
             {
                 // no need to check if it's found
                 _context.GenericParamsTable.TryGetParameterId(item.GenericParameters.FirstOrDefault(), out genericParamRefId);
@@ -185,6 +190,35 @@ namespace nanoFramework.Tools.MetadataProcessor
             var writerEndPosition = writer.BaseStream.Position;
 
             Debug.Assert((writerEndPosition - writerStartPosition) == sizeOf_CLR_RECORD_METHODDEF);
+        }
+
+        /// <summary>
+        /// Gets the TypeSpec of the generic interface instance that <paramref name="method"/> explicitly implements
+        /// (the declaration of its <c>.override</c>), so the CLR doesn't have to guess it from the method name.
+        /// </summary>
+        /// <param name="method">Method definition.</param>
+        /// <param name="context">Assembly tables context.</param>
+        /// <param name="ownerId">TypeSpec identifier of the interface instance.</param>
+        /// <returns><c>true</c> if the method implements a method of a generic interface instance.</returns>
+        internal static bool TryGetExplicitOverrideOwner(
+            MethodDefinition method,
+            nanoTablesContext context,
+            out ushort ownerId)
+        {
+            ownerId = 0xFFFF;
+
+            if (!method.HasOverrides ||
+                !method.Overrides.Any(o => o.DeclaringType is GenericInstanceType))
+            {
+                return false;
+            }
+
+            if (method.Overrides.Count > 1)
+            {
+                throw new ArgumentException($"Method '{method.FullName}' implements more than one interface method, which isn't supported.");
+            }
+
+            return context.TypeSpecificationsTable.TryGetTypeReferenceId(method.Overrides[0].DeclaringType, out ownerId);
         }
 
         /// <summary>
@@ -231,6 +265,7 @@ namespace nanoFramework.Tools.MetadataProcessor
 
             const uint MD_IsGenericInstance = 0x00100000;
             const uint MD_ContainsGenericParameter = 0x00200000;
+            const uint MD_ExplicitOverride = 0x00400000; // FirstGenericParam holds the TypeSpec of the generic interface instance.
 
             const uint MD_Synchronized = 0x01000000;
 #pragma warning disable CS0219 // Keep unused flags in sync with native CLR_RECORD_METHODDEF.
@@ -372,6 +407,12 @@ namespace nanoFramework.Tools.MetadataProcessor
             if (method.IsGenericInstance)
             {
                 flag |= MD_IsGenericInstance;
+            }
+
+            if (context != null &&
+                TryGetExplicitOverrideOwner(method, context, out _))
+            {
+                flag |= MD_ExplicitOverride;
             }
 
             if (context?.NativeContract != null &&

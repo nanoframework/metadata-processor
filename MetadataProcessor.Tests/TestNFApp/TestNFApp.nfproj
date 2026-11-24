@@ -47,6 +47,7 @@
     <Compile Include="GenericInterfaceTypeSpecTests.cs" />
     <Compile Include="GenericMetadataTests.cs" />
     <Compile Include="GenericReturnTypeTypeSpecTests.cs" />
+    <Compile Include="ExplicitOverrideTests.cs" />
     <Compile Include="GenericParameterArgumentTypeSpecTests.cs" />
     <Compile Include="InstructionOnlyGenericTypeSpecTests.cs" />
     <Compile Include="TestingDelegates.cs" />
