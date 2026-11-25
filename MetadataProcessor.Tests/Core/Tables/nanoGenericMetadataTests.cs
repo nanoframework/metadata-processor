@@ -18,11 +18,15 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
     {
         // replicate a CLR_RECORD_ASSEMBLY
         private const int StartOfTablesOffset = 36;
+        private const int MethodDefTable = 6;
         private const int GenericParamTable = 7;
         private const int TypeSpecTable = 9;
         private const int SignaturesTable = 14;
         private const int TypeSpecRecordSize = 4;
         private const int GenericParamRecordSize = 10;
+        private const int MethodDefRecordSize = 19;
+
+        private const uint MD_ExplicitOverride = 0x00400000;
 
         private const ushort TS_Closed = 0x0001;
         private const ushort TS_OverOwnParameters = 0x0002;
@@ -90,6 +94,47 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
                 Assert.IsTrue(Context.GenericParamsTable.TryGetParameterId(parameter, out ushort id));
 
                 return TableStart(GenericParamTable) + (id * GenericParamRecordSize);
+            }
+
+            private int MethodRow(MethodDefinition method)
+            {
+                Assert.IsTrue(Context.MethodDefinitionTable.TryGetMethodReferenceId(method, out ushort id));
+
+                return TableStart(MethodDefTable) + (id * MethodDefRecordSize);
+            }
+
+            public uint MethodFlags(MethodDefinition method)
+            {
+                return BitConverter.ToUInt32(Bytes, MethodRow(method) + 4);
+            }
+
+            public ushort MethodFirstGenericParam(MethodDefinition method)
+            {
+                return BitConverter.ToUInt16(Bytes, MethodRow(method) + 14);
+            }
+
+            public byte MethodGenericParamCount(MethodDefinition method)
+            {
+                return Bytes[MethodRow(method) + 16];
+            }
+
+            public ushort GenericParamOwner(GenericParameter parameter)
+            {
+                return BitConverter.ToUInt16(Bytes, GenericParamRow(parameter) + 4);
+            }
+
+            public ushort MethodId(MethodDefinition method)
+            {
+                Assert.IsTrue(Context.MethodDefinitionTable.TryGetMethodReferenceId(method, out ushort id));
+
+                return id;
+            }
+
+            public ushort TypeSpecId(TypeReference type)
+            {
+                Assert.IsTrue(Context.TypeSpecificationsTable.TryGetTypeReferenceId(type, out ushort id));
+
+                return id;
             }
 
             public ushort GenericParamFlags(GenericParameter parameter)
@@ -296,6 +341,122 @@ namespace nanoFramework.Tools.MetadataProcessor.Tests.Core.Tables
             Assert.AreEqual(0x01, assembly.GenericParamFlags(assembly.GenericParameterOf("TestNFApp.IBoundOut`1")) & 0x03);
             Assert.AreEqual(0x02, assembly.GenericParamFlags(assembly.GenericParameterOf("TestNFApp.IBoundIn`1")) & 0x03);
             Assert.AreEqual(0x00, assembly.GenericParamFlags(assembly.GenericParameterOf("TestNFApp.NotConstrained`1")) & 0x03);
+        }
+
+        private static MethodDefinition ExplicitImplementation(FinalAssembly assembly, string interfaceName, string argument, string name)
+        {
+            return assembly.Context.TypeDefinitionTable.Items
+                .First(t => t.FullName == "TestNFApp.ExplicitTwoInstances")
+                .Methods
+                .First(m => m.HasOverrides &&
+                    m.Overrides[0].Name == name &&
+                    m.Overrides[0].DeclaringType.GetElementType().FullName == interfaceName &&
+                    m.Overrides[0].DeclaringType is GenericInstanceType instance &&
+                    instance.GenericArguments[0].FullName == argument);
+        }
+
+        [TestMethod]
+        public void ExplicitImplementationOfGenericInterface_HasTheInterfaceInstanceInFirstGenericParam()
+        {
+            FinalAssembly assembly = BuildFinalAssembly();
+
+            MethodDefinition forInt = ExplicitImplementation(assembly, "TestNFApp.IExplicitGeneric`1", "System.Int32", "Name");
+            MethodDefinition forString = ExplicitImplementation(assembly, "TestNFApp.IExplicitGeneric`1", "System.String", "Name");
+
+            Assert.AreEqual(MD_ExplicitOverride, assembly.MethodFlags(forInt) & MD_ExplicitOverride);
+            Assert.AreEqual(MD_ExplicitOverride, assembly.MethodFlags(forString) & MD_ExplicitOverride);
+
+            Assert.AreEqual(assembly.TypeSpecId(forInt.Overrides[0].DeclaringType), assembly.MethodFirstGenericParam(forInt));
+            Assert.AreEqual(assembly.TypeSpecId(forString.Overrides[0].DeclaringType), assembly.MethodFirstGenericParam(forString));
+            Assert.AreNotEqual(assembly.MethodFirstGenericParam(forInt), assembly.MethodFirstGenericParam(forString));
+        }
+
+        [TestMethod]
+        public void ExplicitImplementationOfGenericMethod_KeepsItsGenericParameters()
+        {
+            FinalAssembly assembly = BuildFinalAssembly();
+
+            MethodDefinition forInt = ExplicitImplementation(assembly, "TestNFApp.IExplicitGeneric`1", "System.Int32", "Convert");
+            MethodDefinition forString = ExplicitImplementation(assembly, "TestNFApp.IExplicitGeneric`1", "System.String", "Convert");
+
+            foreach (MethodDefinition method in new[] { forInt, forString })
+            {
+                Assert.AreEqual(MD_ExplicitOverride, assembly.MethodFlags(method) & MD_ExplicitOverride);
+                Assert.AreEqual(1, assembly.MethodGenericParamCount(method));
+                Assert.AreEqual(assembly.TypeSpecId(method.Overrides[0].DeclaringType), assembly.MethodFirstGenericParam(method));
+
+                // the CLR finds the parameter row by its owner: a method, encoded with the top bit
+                ushort owner = assembly.GenericParamOwner(method.GenericParameters[0]);
+
+                Assert.AreEqual(0x8000, owner & 0x8000);
+                Assert.AreEqual(assembly.MethodId(method), owner & 0x7FFF);
+            }
+        }
+
+        [TestMethod]
+        public void MethodsWithoutGenericInterfaceOverride_AreNotFlagged()
+        {
+            FinalAssembly assembly = BuildFinalAssembly();
+
+            MethodDefinition plain = assembly.Context.TypeDefinitionTable.Items
+                .First(t => t.FullName == "TestNFApp.ExplicitTwoInstances")
+                .Methods
+                .First(m => m.HasOverrides && m.Overrides[0].DeclaringType.FullName == "TestNFApp.IExplicitPlain");
+
+            Assert.AreEqual(0u, assembly.MethodFlags(plain) & MD_ExplicitOverride);
+            Assert.AreEqual(0xFFFF, assembly.MethodFirstGenericParam(plain));
+
+            MethodDefinition generic = assembly.Context.TypeDefinitionTable.Items
+                .First(t => t.FullName == "TestNFApp.ExplicitTwoInstances")
+                .Methods
+                .First(m => m.Name == "Other");
+
+            Assert.AreEqual(0u, assembly.MethodFlags(generic) & MD_ExplicitOverride);
+            Assert.AreNotEqual(0xFFFF, assembly.MethodFirstGenericParam(generic));
+            Assert.AreEqual(1, assembly.MethodGenericParamCount(generic));
+        }
+
+        [TestMethod]
+        public void MethodImplementingMoreThanOneInterfaceMethod_IsRejected()
+        {
+            FinalAssembly assembly = BuildFinalAssembly();
+
+            MethodDefinition method = ExplicitImplementation(assembly, "TestNFApp.IExplicitGeneric`1", "System.Int32", "Name");
+            MethodReference second = ExplicitImplementation(assembly, "TestNFApp.IExplicitGeneric`1", "System.String", "Name").Overrides[0];
+
+            method.Overrides.Add(second);
+
+            try
+            {
+                Assert.ThrowsExactly<ArgumentException>(() => nanoMethodDefinitionTable.GetFlags(method, assembly.Context));
+            }
+            finally
+            {
+                method.Overrides.Remove(second);
+            }
+        }
+
+        [TestMethod]
+        public void MethodImplementingMoreThanOneNonGenericInterfaceMethod_IsRejected()
+        {
+            FinalAssembly assembly = BuildFinalAssembly();
+
+            MethodDefinition method = assembly.Context.TypeDefinitionTable.Items
+                .First(t => t.FullName == "TestNFApp.ExplicitTwoInstances")
+                .Methods
+                .First(m => m.HasOverrides && m.Overrides[0].DeclaringType.FullName == "TestNFApp.IExplicitPlain");
+            MethodReference second = method.Overrides[0];
+
+            method.Overrides.Add(second);
+
+            try
+            {
+                Assert.ThrowsExactly<ArgumentException>(() => nanoMethodDefinitionTable.GetFlags(method, assembly.Context));
+            }
+            finally
+            {
+                method.Overrides.Remove(second);
+            }
         }
 
         [TestMethod]
