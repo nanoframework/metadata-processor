@@ -66,7 +66,7 @@ namespace nanoFramework.Tools.MetadataProcessor
 
         /// <summary>
         /// Gets the table's reference to an enum decoded from a custom attribute blob, matching the resolved enum
-        /// (assembly included) when the table has several references with the same full name.
+        /// (assembly included), not only its full name.
         /// </summary>
         /// <param name="type">Enum type as decoded from the attribute blob.</param>
         /// <param name="resolved">The resolved enum definition.</param>
@@ -75,15 +75,13 @@ namespace nanoFramework.Tools.MetadataProcessor
             TypeReference type,
             TypeDefinition resolved)
         {
-            List<TypeReference> candidates = Items.Where(item => item.FullName == type.FullName).ToList();
-
-            if (candidates.Count < 2)
+            return Items.FirstOrDefault(item =>
             {
-                return candidates.FirstOrDefault();
-            }
+                if (item.FullName != type.FullName)
+                {
+                    return false;
+                }
 
-            return candidates.FirstOrDefault(item =>
-            {
                 TypeDefinition itemType = item.Resolve();
 
                 return itemType != null &&
