@@ -1030,7 +1030,13 @@ namespace nanoFramework.Tools.MetadataProcessor
             // the argument type is decoded from the blob by name: use the module's own definition or reference
             TypeReference tableType = enumType.Module == _context.AssemblyDefinition.MainModule
                 ? enumType
-                : _context.TypeReferencesTable.Items.FirstOrDefault(item => item.FullName == argument.Type.FullName) ?? argument.Type;
+                : _context.TypeReferencesTable.FindEnumReference(argument.Type, enumType);
+
+            if (tableType == null)
+            {
+                throw new ArgumentException(
+                    $"Failed to generate signature for CustomAttribute. The enum {argument.Type.FullName} has no type reference in the assembly: use it somewhere else in the code (for example as a field or a parameter) so it gets one.");
+            }
 
             WriteSubTypeInfo(tableType, nanoBinaryWriter.CreateLittleEndianBinaryWriter(writer));
 

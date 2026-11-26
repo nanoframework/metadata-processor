@@ -379,8 +379,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                 if (enumType?.IsEnum == true)
                 {
                     // the argument type is decoded from the blob by name, so it may not be the table's own instance
-                    TypeReference reference = _tablesContext.TypeReferencesTable.Items
-                        .FirstOrDefault(item => item.FullName == argument.Type.FullName);
+                    TypeReference reference = _tablesContext.TypeReferencesTable.FindEnumReference(argument.Type, enumType);
 
                     if (reference != null)
                     {
