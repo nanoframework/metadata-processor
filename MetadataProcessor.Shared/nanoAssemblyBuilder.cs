@@ -346,6 +346,54 @@ namespace nanoFramework.Tools.MetadataProcessor
                 }
             }
         }
+        private void AddAttributeEnumTypes(CustomAttribute attribute, HashSet<MetadataToken> set)
+        {
+            foreach (CustomAttributeArgument argument in attribute.ConstructorArguments)
+            {
+                AddAttributeEnumTypes(argument, set);
+            }
+
+            foreach (CustomAttributeNamedArgument named in attribute.Fields.Concat(attribute.Properties))
+            {
+                AddAttributeEnumTypes(named.Argument, set);
+            }
+        }
+
+        private void AddAttributeEnumTypes(CustomAttributeArgument argument, HashSet<MetadataToken> set)
+        {
+            if (argument.Value is CustomAttributeArgument[] items)
+            {
+                foreach (CustomAttributeArgument item in items)
+                {
+                    AddAttributeEnumTypes(item, set);
+                }
+            }
+            else if (argument.Value is CustomAttributeArgument nested)
+            {
+                AddAttributeEnumTypes(nested, set);
+            }
+            else if (!argument.Type.IsArray)
+            {
+                TypeDefinition enumType = argument.Type.Resolve();
+
+                if (enumType?.IsEnum == true)
+                {
+                    // the argument type is decoded from the blob by name, so it may not be the table's own instance
+                    TypeReference reference = _tablesContext.TypeReferencesTable.Items
+                        .FirstOrDefault(item => item.FullName == argument.Type.FullName);
+
+                    if (reference != null)
+                    {
+                        set.Add(reference.MetadataToken);
+                    }
+
+                    if (enumType.Module == _tablesContext.AssemblyDefinition.MainModule)
+                    {
+                        set.Add(enumType.MetadataToken);
+                    }
+                }
+            }
+        }
 
         private HashSet<int> BuildDependencyList(int token)
         {
@@ -682,6 +730,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                             c.AttributeType.IsToInclude())
                         {
                             set.Add(c.Constructor.MetadataToken);
+                            AddAttributeEnumTypes(c, set);
                         }
                     }
 
@@ -773,6 +822,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                             c.AttributeType.IsToInclude())
                         {
                             set.Add(c.Constructor.MetadataToken);
+                            AddAttributeEnumTypes(c, set);
                         }
                     }
 
@@ -1287,6 +1337,7 @@ namespace nanoFramework.Tools.MetadataProcessor
                             c.AttributeType.IsToInclude())
                         {
                             set.Add(c.Constructor.MetadataToken);
+                            AddAttributeEnumTypes(c, set);
                         }
                     }
 

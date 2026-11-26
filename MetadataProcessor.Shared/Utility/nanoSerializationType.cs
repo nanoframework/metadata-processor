@@ -66,5 +66,6 @@ namespace nanoFramework.Tools.MetadataProcessor
 
         SERIALIZATION_TYPE_FIELD = 0x53,
         SERIALIZATION_TYPE_PROPERTY = 0x54,
+        SERIALIZATION_TYPE_ENUM = 0x55,
     }
 }
