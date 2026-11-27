@@ -473,7 +473,7 @@ namespace nanoFramework.Tools.MetadataProcessor.MsBuildTask
             }
             catch (ArgumentException ex)
             {
-                Log.LogError($"Exception minimizing assembly: {ex.Message}");
+                Log.LogError($"Exception minimizing assembly: {ex}");
             }
             catch (Exception)
             {
