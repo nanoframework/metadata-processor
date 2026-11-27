@@ -92,9 +92,21 @@ namespace nanoFramework.Tools.MetadataProcessor
             _methods.Add(method);
             _lastAvailableRva += (ushort)byteCode.Length;
 
-            _rvasByMethodNames.Add(method.FullName, rva);
+            _rvasByMethodNames.Add(GetMethodKey(method), rva);
 
             return id;
+        }
+
+        /// <summary>
+        /// The full name does not include the generic parameters of a method definition, so overloads that
+        /// differ only in generic arity (<c>M()</c> and <c>M&lt;T&gt;()</c>) need the arity in the key.
+        /// </summary>
+        private static string GetMethodKey(
+            MethodReference method)
+        {
+            return method.GenericParameters.Count == 0
+                ? method.FullName
+                : method.FullName + "`" + method.GenericParameters.Count;
         }
 
         /// <summary>
@@ -108,7 +120,7 @@ namespace nanoFramework.Tools.MetadataProcessor
             MethodReference method)
         {
             ushort rva;
-            return (_rvasByMethodNames.TryGetValue(method.FullName, out rva) ? rva : (ushort)0xFFFF);
+            return (_rvasByMethodNames.TryGetValue(GetMethodKey(method), out rva) ? rva : (ushort)0xFFFF);
         }
 
         /// <inheritdoc/>
