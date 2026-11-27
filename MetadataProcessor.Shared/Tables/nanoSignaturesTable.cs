@@ -956,6 +956,13 @@ namespace nanoFramework.Tools.MetadataProcessor
                 }
             }
 
+            TypeDefinition enumType = argument.Type.IsArray ? null : argument.Type.Resolve();
+            if (enumType != null && enumType.IsEnum)
+            {
+                WriteAttributeEnumArgumentValue(writer, argument, enumType);
+                return;
+            }
+
             if (argument.Type.IsArray && argument.Type.GetElementType().FullName == "System.Object")
             {
                 var paramCollection = (CustomAttributeArgument[])argument.Value;
@@ -1003,6 +1010,37 @@ namespace nanoFramework.Tools.MetadataProcessor
                 writer.Write((byte)nanoSerializationType.ELEMENT_TYPE_STRING);
                 writer.Write(_context.StringTable.GetOrCreateStringId(((TypeReference)argument.Value).FullName));
             }
+        }
+
+        private void WriteAttributeEnumArgumentValue(
+            BinaryWriter writer,
+            CustomAttributeArgument argument,
+            TypeDefinition enumType)
+        {
+            // enum: SERIALIZATION_TYPE_ENUM, TypeDefOrRef coded index of the enum, underlying type value
+            FieldDefinition valueField = enumType.Fields.FirstOrDefault(item => item.IsSpecialName && !item.IsStatic);
+
+            if (valueField == null || !s_primitiveTypes.ContainsKey(valueField.FieldType.FullName))
+            {
+                throw new ArgumentException($"Failed to generate signature for CustomAttribute. Unsupported enum type: {argument.Type.FullName}.");
+            }
+
+            writer.Write((byte)nanoSerializationType.SERIALIZATION_TYPE_ENUM);
+
+            // the argument type is decoded from the blob by name: use the module's own definition or reference
+            TypeReference tableType = enumType.Module == _context.AssemblyDefinition.MainModule
+                ? enumType
+                : _context.TypeReferencesTable.FindEnumReference(argument.Type, enumType);
+
+            if (tableType == null)
+            {
+                throw new ArgumentException(
+                    $"Failed to generate signature for CustomAttribute. The enum {argument.Type.FullName} has no type reference in the assembly: use it somewhere else in the code (for example as a field or a parameter) so it gets one.");
+            }
+
+            WriteSubTypeInfo(tableType, nanoBinaryWriter.CreateLittleEndianBinaryWriter(writer));
+
+            WriteAttributeArgumentValue(writer, new CustomAttributeArgument(valueField.FieldType, argument.Value));
         }
 
         private void WriteAttributeArrayArgumentValue(

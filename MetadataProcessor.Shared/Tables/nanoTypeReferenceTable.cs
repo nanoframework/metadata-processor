@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using Mono.Cecil;
 
 namespace nanoFramework.Tools.MetadataProcessor
@@ -61,6 +62,31 @@ namespace nanoFramework.Tools.MetadataProcessor
             }
 
             return TryGetIdByValue(typeReference, out referenceId);
+        }
+
+        /// <summary>
+        /// Gets the table's reference to an enum decoded from a custom attribute blob, matching the resolved enum
+        /// (assembly included), not only its full name.
+        /// </summary>
+        /// <param name="type">Enum type as decoded from the attribute blob.</param>
+        /// <param name="resolved">The resolved enum definition.</param>
+        /// <returns>The table's reference, or <c>null</c> if there is none or it can't be identified.</returns>
+        public TypeReference FindEnumReference(
+            TypeReference type,
+            TypeDefinition resolved)
+        {
+            return Items.FirstOrDefault(item =>
+            {
+                if (item.FullName != type.FullName)
+                {
+                    return false;
+                }
+
+                TypeDefinition itemType = item.Resolve();
+
+                return itemType != null &&
+                       itemType.Module.Assembly.FullName == resolved.Module.Assembly.FullName;
+            });
         }
 
         /// <inheritdoc/>
